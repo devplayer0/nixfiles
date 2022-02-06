@@ -8,6 +8,7 @@
     # For extra-stable systems
     nixpkgs-stable.url = "nixpkgs/nixos-21.11";
 
+    nix.url = "nix/latest-release";
     agenix.url = "github:ryantm/agenix";
     agenix.inputs.nixpkgs.follows = "nixpkgs-unstable";
     deploy-rs.url = "github:serokell/deploy-rs";
@@ -25,6 +26,7 @@
 
       nixpkgs-unstable, nixpkgs-stable,
 
+      nix,
       agenix,
       deploy-rs,
 

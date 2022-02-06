@@ -1,4 +1,4 @@
-{ lib, pkgs, inputs, config, options, ... }:
+{ lib, pkgs, inputs, system, config, options, ... }:
   let
     inherit (lib) mkIf mkDefault mkAliasDefinitions;
     inherit (lib.my) mkOpt;
@@ -32,6 +32,14 @@
             enable = mkDefault true;
             wheelNeedsPassword = mkDefault false;
           };
+        };
+
+        nix = {
+          package = inputs.nix.defaultPackage.${system};
+          extraOptions =
+            ''
+              experimental-features = nix-command flakes ca-derivations
+            '';
         };
 
         environment.systemPackages = with pkgs; [

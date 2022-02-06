@@ -12,8 +12,8 @@
         lib = pkgsFlakes.${nixpkgs}.lib;
       in lib.nixosSystem {
         inherit lib system;
-        specialArgs = { inherit inputs; myModules = modules; };
-        modules = attrValues modules ++ [ { networking.hostName = mkDefault name; } config  ];
+        specialArgs = { inherit inputs system; };
+        modules = attrValues modules ++ [ { networking.hostName = mkDefault name; } config ];
       };
   in mapAttrs mkSystem {
     colony = {
