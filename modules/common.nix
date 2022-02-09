@@ -12,19 +12,22 @@
         defaultUsername = "dev";
         uname = config.my.user.name;
       in {
-        my.user = rec {
-          name = mkDefault defaultUsername;
-          isNormalUser = true;
-          uid = mkDefault 1000;
-          extraGroups = mkDefault [ "wheel" ];
-          password = mkDefault "hunter2"; # TODO: secrets...
+        my = {
+          user = {
+            name = mkDefault defaultUsername;
+            isNormalUser = true;
+            uid = mkDefault 1000;
+            extraGroups = mkDefault [ "wheel" ];
+            password = mkDefault "hunter2"; # TODO: secrets...
+          };
         };
 
         time.timeZone = mkDefault "Europe/Dublin";
 
-        users.mutableUsers = false;
-        users.users.${uname} = mkAliasDefinitions options.my.user;
-        users.groups.${uname}.gid = mkDefault config.users.users.${uname}.uid;
+        users = {
+          mutableUsers = false;
+          users.${uname} = mkAliasDefinitions options.my.user;
+        };
 
         security = {
           sudo.enable = mkDefault false;
@@ -43,11 +46,15 @@
         };
 
         environment.systemPackages = with pkgs; [
+          bash-completion
           vim
+          htop
           iperf3
         ];
 
-        system.stateVersion = "21.11";
-        system.configurationRevision = with inputs; mkIf (self ? rev) self.rev;
+        system = {
+          stateVersion = "21.11";
+          configurationRevision = with inputs; mkIf (self ? rev) self.rev;
+        };
       };
   }

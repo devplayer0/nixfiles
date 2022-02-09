@@ -60,6 +60,7 @@
           imports = [ (import path') ];
         }) {
         common = "common.nix";
+        tmproot = "tmproot.nix";
         server = "server.nix";
       };
 
