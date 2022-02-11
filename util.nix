@@ -1,6 +1,6 @@
 { lib }:
   let
-    inherit (lib) genAttrs mapAttrs' types mkOption;
+    inherit (lib) genAttrs mapAttrs' types mkOption mkOverride;
     inherit (lib.flake) defaultSystems;
   in {
     addPrefix = prefix: mapAttrs' (n: v: { name = "${prefix}${n}"; value = v; });
@@ -12,4 +12,5 @@
       type = types.bool;
       example = true;
     };
+    mkVMOverride' = mkOverride 9;
   }

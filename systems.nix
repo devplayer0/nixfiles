@@ -18,7 +18,7 @@
   in mapAttrs mkSystem {
     colony = {
       system = "x86_64-linux";
-      nixpkgs = "stable";
+      nixpkgs = "unstable";
       config = boxes/colony.nix;
     };
   }

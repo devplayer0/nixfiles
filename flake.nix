@@ -8,14 +8,18 @@
     # For extra-stable systems
     nixpkgs-stable.url = "nixpkgs/nixos-21.11";
 
-    nix.url = "nix/latest-release";
+    # Stuff used by the flake for build / deployment
     agenix.url = "github:ryantm/agenix";
     agenix.inputs.nixpkgs.follows = "nixpkgs-unstable";
     deploy-rs.url = "github:serokell/deploy-rs";
     deploy-rs.inputs.nixpkgs.follows = "nixpkgs-unstable";
-
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs-unstable";
+
+    # Stuff used by systems
+    nix.url = "nix/latest-release";
+    #impermanence.url = "github:nix-community/impermanence";
+    impermanence.url = "github:devplayer0/impermanence/qemu-vm-dirs";
   };
 
   outputs =
@@ -26,7 +30,6 @@
 
       nixpkgs-unstable, nixpkgs-stable,
 
-      nix,
       agenix,
       deploy-rs,
 
@@ -51,7 +54,7 @@
 
       lib = pkgsFlakes.unstable.lib;
 
-      pkgs' = mapAttrs (_: path: lib.my.mkPkgs path { overlays = [libOverlay]; }) pkgsFlakes;
+      pkgs' = mapAttrs (_: path: lib.my.mkPkgs path { overlays = [ libOverlay ]; }) pkgsFlakes;
     in {
       inherit lib;
 
@@ -60,12 +63,14 @@
           imports = [ (import path') ];
         }) {
         common = "common.nix";
+        build = "build.nix";
         tmproot = "tmproot.nix";
         server = "server.nix";
       };
 
       nixosConfigurations = import ./systems.nix { inherit lib pkgsFlakes inputs; modules = self.nixosModules; };
-      vms = mapAttrs (_: system: system.config.system.build.vm) self.nixosConfigurations;
+      systems = mapAttrs (_: system: system.config.system.build.toplevel) self.nixosConfigurations;
+      vms = mapAttrs (_: system: system.config.my.build.devVM) self.nixosConfigurations;
 
       apps =
         let apps' = {}

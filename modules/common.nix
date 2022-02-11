@@ -44,6 +44,29 @@
               experimental-features = nix-command flakes ca-derivations
             '';
         };
+        nixpkgs = {
+          config = {
+            allowUnfree = true;
+          };
+        };
+
+        boot = {
+          # Use latest LTS release by default
+          kernelPackages = mkDefault pkgs.linuxKernel.packages.linux_5_15;
+          loader = {
+            efi = {
+              efiSysMountPoint = mkDefault "/boot";
+              canTouchEfiVariables = mkDefault false;
+            };
+            systemd-boot = {
+              enable = mkDefault true;
+              editor = mkDefault true;
+              consoleMode = mkDefault "max";
+              configurationLimit = mkDefault 10;
+              memtest86.enable = mkDefault true;
+            };
+          };
+        };
 
         environment.systemPackages = with pkgs; [
           bash-completion

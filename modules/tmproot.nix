@@ -1,7 +1,7 @@
-{ lib, pkgs, inputs, config, ... }:
+{ lib, pkgs, inputs, config, ... }@args:
   let
-    inherit (lib) concatStringsSep mkIf mkDefault mkAliasDefinitions;
-    inherit (lib.my) mkOpt mkBoolOpt;
+    inherit (lib) any concatStringsSep mkIf mkDefault mkMerge mkVMOverride;
+    inherit (lib.my) mkOpt mkBoolOpt mkVMOverride';
 
     cfg = config.my.tmproot;
 
@@ -45,17 +45,63 @@
 
         recurse(base)
       '';
+
+    rootDef = {
+      device = "yeet";
+      fsType = "tmpfs";
+      options = [ "size=${cfg.size}" ];
+    };
   in {
+    imports = [ inputs.impermanence.nixosModules.impermanence ];
+
     options.my.tmproot = with lib.types; {
       enable = mkBoolOpt true;
+      persistDir = mkOpt str "/persist";
+      size = mkOpt str "2G";
       ignoreUnsaved = mkOpt (listOf str) [
         "/tmp"
       ];
     };
 
-    config = mkIf cfg.enable {
-      environment.systemPackages = [
-        (pkgs.writeScriptBin "tmproot-unsaved" showUnsaved)
-      ];
-    };
+    config = mkMerge [
+      (mkIf cfg.enable {
+        assertions = [
+          {
+            assertion = config.fileSystems ? "${cfg.persistDir}";
+            message = "The 'fileSystems' option does not specify your persistence file system (${cfg.persistDir}).";
+          }
+        ];
+
+        environment.systemPackages = [
+          (pkgs.writeScriptBin "tmproot-unsaved" showUnsaved)
+        ];
+
+        environment.persistence."${cfg.persistDir}" = {
+          hideMounts = mkDefault true;
+          directories = [
+            "/var/log"
+          ];
+          files = [
+            "/etc/machine-id"
+          ];
+        };
+
+        fileSystems."/" = rootDef;
+
+        # If we need to override any VM-specific options that the modules system won't know about this early
+        my.asDevVM.config.virtualisation = {
+          diskImage = "./.vms/${config.system.name}-persist.qcow2";
+        };
+      })
+      (mkIf (cfg.enable && config.my.boot.isDevVM) {
+        fileSystems = mkVMOverride {
+          "/" = mkVMOverride' rootDef;
+          # Hijack the "root" device for persistence in the VM
+          "${cfg.persistDir}" = {
+            device = config.virtualisation.bootDevice;
+            neededForBoot = true;
+          };
+        };
+      })
+    ];
   }
