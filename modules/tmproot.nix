@@ -1,7 +1,7 @@
 { lib, pkgs, inputs, config, ... }@args:
   let
     inherit (lib) any concatStringsSep mkIf mkDefault mkMerge mkVMOverride;
-    inherit (lib.my) mkOpt mkBoolOpt mkVMOverride';
+    inherit (lib.my) mkOpt mkBoolOpt mkVMOverride' dummyOption;
 
     cfg = config.my.tmproot;
 
@@ -63,6 +63,11 @@
       ];
     };
 
+    # Forward declare options that won't exist until the VM module is actually imported
+    options.virtualisation = {
+      diskImage = dummyOption;
+    };
+
     config = mkMerge [
       (mkIf cfg.enable {
         assertions = [
@@ -88,8 +93,7 @@
 
         fileSystems."/" = rootDef;
 
-        # If we need to override any VM-specific options that the modules system won't know about this early
-        my.asDevVM.config.virtualisation = {
+        virtualisation = {
           diskImage = "./.vms/${config.system.name}-persist.qcow2";
         };
       })

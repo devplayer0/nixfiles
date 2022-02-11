@@ -13,4 +13,5 @@
       example = true;
     };
     mkVMOverride' = mkOverride 9;
+    dummyOption = mkOption {};
   }
