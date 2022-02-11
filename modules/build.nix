@@ -1,15 +1,16 @@
-{ lib, extendModules, modulesPath, options, config, ... }:
+{ lib, extendModules, modulesPath, baseModules, options, config, ... }:
   let
     inherit (lib) mkOption;
     inherit (lib.my) mkBoolOpt;
 
     cfg = config.my.build;
 
-    # TODO: This is broken on 21.11 (https://github.com/NixOS/nixpkgs/issues/148343)
     asDevVM = extendModules {
+      # TODO: Hack because this is kinda broken on 21.11 (https://github.com/NixOS/nixpkgs/issues/148343)
+      specialArgs = { inherit baseModules; };
       modules = [
-        (import "${modulesPath}/virtualisation/qemu-vm.nix")
-        ({ config, ... }: {
+        "${modulesPath}/virtualisation/qemu-vm.nix"
+        ({ ... }: {
           my.boot.isDevVM = true;
         })
       ];
