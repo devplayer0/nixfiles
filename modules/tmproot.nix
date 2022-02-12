@@ -1,6 +1,6 @@
-{ lib, pkgs, inputs, config, ... }@args:
+{ lib, pkgs, inputs, config, ... }:
   let
-    inherit (lib) any concatStringsSep mkIf mkDefault mkMerge mkVMOverride;
+    inherit (lib) concatStringsSep mkIf mkDefault mkMerge mkVMOverride;
     inherit (lib.my) mkOpt mkBoolOpt mkVMOverride' dummyOption;
 
     cfg = config.my.tmproot;
@@ -52,24 +52,26 @@
       options = [ "size=${cfg.size}" ];
     };
   in {
-    imports = [ inputs.impermanence.nixosModules.impermanence ];
+    imports = [ inputs.impermanence.nixosModule ];
 
-    options.my.tmproot = with lib.types; {
-      enable = mkBoolOpt true;
-      persistDir = mkOpt str "/persist";
-      size = mkOpt str "2G";
-      ignoreUnsaved = mkOpt (listOf str) [
-        "/tmp"
-      ];
+    options = {
+      my.tmproot = with lib.types; {
+        enable = mkBoolOpt true;
+        persistDir = mkOpt str "/persist";
+        size = mkOpt str "2G";
+        ignoreUnsaved = mkOpt (listOf str) [
+          "/tmp"
+        ];
+      };
+
+      # Forward declare options that won't exist until the VM module is actually imported
+      virtualisation = {
+        diskImage = dummyOption;
+      };
     };
 
-    # Forward declare options that won't exist until the VM module is actually imported
-    options.virtualisation = {
-      diskImage = dummyOption;
-    };
-
-    config = mkMerge [
-      (mkIf cfg.enable {
+    config = mkIf cfg.enable (mkMerge [
+      {
         assertions = [
           {
             assertion = config.fileSystems ? "${cfg.persistDir}";
@@ -96,8 +98,8 @@
         virtualisation = {
           diskImage = "./.vms/${config.system.name}-persist.qcow2";
         };
-      })
-      (mkIf (cfg.enable && config.my.boot.isDevVM) {
+      }
+      (mkIf config.my.boot.isDevVM {
         fileSystems = mkVMOverride {
           "/" = mkVMOverride' rootDef;
           # Hijack the "root" device for persistence in the VM
@@ -107,5 +109,5 @@
           };
         };
       })
-    ];
+    ]);
   }

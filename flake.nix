@@ -65,6 +65,7 @@
         common = "common.nix";
         build = "build.nix";
         tmproot = "tmproot.nix";
+        firewall = "firewall.nix";
         server = "server.nix";
       };
 

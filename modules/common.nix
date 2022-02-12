@@ -68,12 +68,22 @@
           };
         };
 
+        networking = {
+          useDHCP = mkDefault false;
+          enableIPv6 = mkDefault true;
+        };
+
         environment.systemPackages = with pkgs; [
           bash-completion
+          tree
           vim
           htop
           iperf3
         ];
+
+        services.openssh = {
+          enable = true;
+        };
 
         system = {
           stateVersion = "21.11";

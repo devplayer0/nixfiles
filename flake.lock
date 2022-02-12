@@ -95,11 +95,11 @@
     },
     "impermanence": {
       "locked": {
-        "lastModified": 1644585928,
-        "narHash": "sha256-jOnLRLnzFI/YHE53bHgz/9QjR4Qt6dgIXLnTZOf5oLc=",
+        "lastModified": 1644623728,
+        "narHash": "sha256-aG+JnIaFXTM9YqcE5uyBgPlPrkmX4bs+yY5YCfA/vBQ=",
         "owner": "devplayer0",
         "repo": "impermanence",
-        "rev": "47809005570ee4d5b504e382309f5b6dcc5999e5",
+        "rev": "74be13a87a3bbcbbaf94aea66f9576a1163db4f0",
         "type": "github"
       },
       "original": {
