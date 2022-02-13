@@ -26,7 +26,13 @@ let
     nixosSystem' {
       inherit lib system;
       specialArgs = { inherit inputs system; };
-      modules = attrValues modules ++ [ { networking.hostName = mkDefault name; } config ];
+      modules = attrValues modules ++ [
+        {
+          system.name = name;
+          networking.hostName = mkDefault name;
+        }
+        config
+      ];
     };
 in
 mapAttrs mkSystem {
