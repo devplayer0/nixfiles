@@ -55,27 +55,32 @@
       lib = pkgsFlakes.unstable.lib;
 
       pkgs' = mapAttrs (_: path: lib.my.mkPkgs path { overlays = [ libOverlay ]; }) pkgsFlakes;
-    in {
+    in
+    {
       inherit lib;
 
-      nixosModules = mapAttrs (_: path: let path' = ./. + "/modules/${path}"; in {
-          _file = path';
-          imports = [ (import path') ];
-        }) {
-        common = "common.nix";
-        build = "build.nix";
-        dynamic-motd = "dynamic-motd.nix";
-        tmproot = "tmproot.nix";
-        firewall = "firewall.nix";
-        server = "server.nix";
-      };
+      nixosModules = mapAttrs
+        (_: path:
+          let path' = ./. + "/modules/${path}"; in
+          {
+            _file = path';
+            imports = [ (import path') ];
+          })
+        {
+          common = "common.nix";
+          build = "build.nix";
+          dynamic-motd = "dynamic-motd.nix";
+          tmproot = "tmproot.nix";
+          firewall = "firewall.nix";
+          server = "server.nix";
+        };
 
       nixosConfigurations = import ./systems.nix { inherit lib pkgsFlakes inputs; modules = self.nixosModules; };
       systems = mapAttrs (_: system: system.config.system.build.toplevel) self.nixosConfigurations;
       vms = mapAttrs (_: system: system.config.my.build.devVM) self.nixosConfigurations;
 
       apps =
-        let apps' = {}
+        let apps' = { }
           // addPrefix "vms/" (mapAttrs (name: vm: { type = "app"; program = "${vm}/bin/run-${name}-vm"; }) self.vms);
         in { x86_64-linux = apps'; };
 
@@ -83,12 +88,13 @@
         let
           pkgs = pkgs'.unstable.${system};
           flakePkg = f: f.defaultPackage.${system};
-        in pkgs.mkShell {
-            packages = map flakePkg [
-              agenix
-              deploy-rs
-            ];
-          }
-        );
+        in
+        pkgs.mkShell {
+          packages = map flakePkg [
+            agenix
+            deploy-rs
+          ];
+        }
+      );
     };
 }
