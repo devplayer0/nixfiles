@@ -1,6 +1,6 @@
 { lib, extendModules, modulesPath, baseModules, options, config, ... }:
 let
-  inherit (lib) mkOption;
+  inherit (lib) recursiveUpdate mkOption;
   inherit (lib.my) mkBoolOpt;
 
   cfg = config.my.build;
@@ -28,6 +28,7 @@ in
   };
 
   config.my.build = {
-    devVM = config.my.asDevVM.system.build.vm;
+    # The meta.mainProgram should probably be set upstream but oh well...
+    devVM = recursiveUpdate config.my.asDevVM.system.build.vm { meta.mainProgram = "run-${config.system.name}-vm"; };
   };
 }

@@ -39,7 +39,7 @@
       inherit (builtins) mapAttrs;
       inherit (lib) genAttrs mapAttrs';
       inherit (lib.flake) defaultSystems eachDefaultSystem;
-      inherit (lib.my) addPrefix;
+      inherit (lib.my) addPrefix mkApp;
 
       extendLib = lib: lib.extend (final: prev: {
         my = import ./util.nix { lib = final; };
@@ -77,12 +77,7 @@
 
       nixosConfigurations = import ./systems.nix { inherit lib pkgsFlakes inputs; modules = self.nixosModules; };
       systems = mapAttrs (_: system: system.config.system.build.toplevel) self.nixosConfigurations;
-      vms = mapAttrs (_: system: system.config.my.build.devVM) self.nixosConfigurations;
-
-      apps =
-        let apps' = { }
-          // addPrefix "vms/" (mapAttrs (name: vm: { type = "app"; program = "${vm}/bin/run-${name}-vm"; }) self.vms);
-        in { x86_64-linux = apps'; };
+      vms = mapAttrs (name: system: system.config.my.build.devVM) self.nixosConfigurations;
 
       devShell = genAttrs defaultSystems (system:
         let

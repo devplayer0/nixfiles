@@ -22,6 +22,7 @@ rec {
     };
 
   mkPkgs = path: args: genAttrs defaultSystems (system: import path (args // { inherit system; }));
+  mkApp = program: { type = "app"; inherit program; };
 
   mkOpt = type: default: mkOption { inherit type default; };
   mkBoolOpt = default: mkOption {
