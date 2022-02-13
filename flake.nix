@@ -30,16 +30,13 @@
 
       nixpkgs-unstable, nixpkgs-stable,
 
-      agenix,
-      deploy-rs,
-
       ...
     }:
     let
       inherit (builtins) mapAttrs;
       inherit (lib) genAttrs mapAttrs';
       inherit (lib.flake) defaultSystems eachDefaultSystem;
-      inherit (lib.my) addPrefix mkApp;
+      inherit (lib.my) addPrefix mkApp mkShellApp;
 
       extendLib = lib: lib.extend (final: prev: {
         my = import ./util.nix { lib = final; };
@@ -54,10 +51,20 @@
 
       lib = pkgsFlakes.unstable.lib;
 
-      pkgs' = mapAttrs (_: path: lib.my.mkPkgs path { overlays = [ libOverlay ]; }) pkgsFlakes;
+      pkgs' = mapAttrs
+        (_: path: lib.my.mkDefaultSystemsPkgs path {
+          overlays = [
+            libOverlay
+            inputs.agenix.overlay
+            inputs.deploy-rs.overlay
+            inputs.nix.overlay
+          ];
+        })
+        pkgsFlakes;
     in
+    # Platform independent stuff
     {
-      inherit lib;
+      lib = lib.my;
 
       nixosModules = mapAttrs
         (_: path:
@@ -77,19 +84,26 @@
 
       nixosConfigurations = import ./systems.nix { inherit lib pkgsFlakes inputs; modules = self.nixosModules; };
       systems = mapAttrs (_: system: system.config.system.build.toplevel) self.nixosConfigurations;
-      vms = mapAttrs (name: system: system.config.my.build.devVM) self.nixosConfigurations;
+      vms = mapAttrs (_: system: system.config.my.build.devVM) self.nixosConfigurations;
+    } //
+    (eachDefaultSystem (system:
+    let
+      pkgs = pkgs'.unstable.${system};
+      lib = pkgs.lib;
+    in
+    # Stuff for each platform
+    {
+      apps = {
+        fmt = mkShellApp pkgs "fmt" ''exec "${pkgs.nixpkgs-fmt}/bin/nixpkgs-fmt" "$@" .'';
+      };
 
-      devShell = genAttrs defaultSystems (system:
-        let
-          pkgs = pkgs'.unstable.${system};
-          flakePkg = f: f.defaultPackage.${system};
-        in
-        pkgs.mkShell {
-          packages = map flakePkg [
-            agenix
-            deploy-rs
-          ];
-        }
-      );
-    };
+      devShell = pkgs.mkShell {
+        packages = with pkgs; [
+          nix
+          agenix
+          deploy-rs.deploy-rs
+          nixpkgs-fmt
+        ];
+      };
+    }));
 }

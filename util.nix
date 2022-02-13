@@ -21,8 +21,9 @@ rec {
       ports = checked (replaceStrings ["-"] [":"] (elemAt m 1));
     };
 
-  mkPkgs = path: args: genAttrs defaultSystems (system: import path (args // { inherit system; }));
+  mkDefaultSystemsPkgs = path: args: genAttrs defaultSystems (system: import path (args // { inherit system; }));
   mkApp = program: { type = "app"; inherit program; };
+  mkShellApp = pkgs: name: text: mkApp (pkgs.writeShellScript name text).outPath;
 
   mkOpt = type: default: mkOption { inherit type default; };
   mkBoolOpt = default: mkOption {
