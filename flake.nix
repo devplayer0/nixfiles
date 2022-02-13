@@ -99,6 +99,11 @@
       };
 
       devShell = pkgs.mkShell {
+        NIX_CONFIG = pkgs.writeText "nix.conf"
+          ''
+            experimental-features = nix-command flakes ca-derivations
+          '';
+
         packages = with pkgs; [
           nix
           agenix
