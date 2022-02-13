@@ -25,9 +25,16 @@ let
     in
     nixosSystem' {
       inherit lib system;
-      specialArgs = { inherit inputs system; };
-      modules = attrValues modules ++ [
+      baseModules =
+        (import "${pkgsFlake}/nixos/modules/module-list.nix") ++ [
+          # Importing modules from module args causes infinite recursion
+          inputs.impermanence.nixosModule
+          inputs.agenix.nixosModules.age
+          inputs.home-manager.nixosModule
+        ] ++ modules;
+      modules = [
         {
+          _module.args = { inherit system inputs; };
           system.name = name;
           networking.hostName = mkDefault name;
         }

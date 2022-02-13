@@ -1,8 +1,7 @@
-{ lib, pkgs, inputs, config, ... }:
+{ lib, pkgs, config, ... }:
 let
-  inherit (builtins) elem;
-  inherit (lib) concatStringsSep concatMap concatMapStringsSep mkIf mkDefault mkMerge mkForce mkVMOverride;
-  inherit (lib.my) mkOpt mkBoolOpt mkVMOverride' dummyOption;
+  inherit (lib) concatStringsSep concatMap concatMapStringsSep mkIf mkDefault mkMerge mkVMOverride;
+  inherit (lib.my) mkOpt' mkBoolOpt' mkVMOverride' dummyOption;
 
   cfg = config.my.tmproot;
 
@@ -54,16 +53,14 @@ let
   };
 in
 {
-  imports = [ inputs.impermanence.nixosModule ];
-
   options = with lib.types; {
     my.tmproot = {
-      enable = mkBoolOpt true;
-      persistDir = mkOpt str "/persist";
-      size = mkOpt str "2G";
+      enable = mkBoolOpt' true "Whether to enable tmproot.";
+      persistDir = mkOpt' str "/persist" "Path where persisted files are stored.";
+      size = mkOpt' str "2G" "Size of tmpfs root";
       unsaved = {
-        showMotd = mkBoolOpt true;
-        ignore = mkOpt (listOf str) [ ];
+        showMotd = mkBoolOpt' true "Whether to show unsaved files with `dynamic-motd`.";
+        ignore = mkOpt' (listOf str) [ ] "Path prefixes to ignore if unsaved.";
       };
     };
 

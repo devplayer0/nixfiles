@@ -1,24 +1,24 @@
 { lib, options, config, ... }:
 let
   inherit (lib) optionalString concatStringsSep concatMapStringsSep optionalAttrs mkIf mkDefault mkMerge mkOverride;
-  inherit (lib.my) parseIPPort mkOpt mkBoolOpt dummyOption;
+  inherit (lib.my) parseIPPort mkOpt' mkBoolOpt' dummyOption;
 
   cfg = config.my.firewall;
 in
 {
   options.my.firewall = with lib.types; {
-    enable = mkBoolOpt true;
+    enable = mkBoolOpt' true "Whether to enable the nftables-based firewall.";
     trustedInterfaces = options.networking.firewall.trustedInterfaces;
     tcp = {
-      allowed = mkOpt (listOf (either port str)) [ "ssh" ];
+      allowed = mkOpt' (listOf (either port str)) [ "ssh" ] "TCP ports to open.";
     };
     udp = {
-      allowed = mkOpt (listOf (either port str)) [ ];
+      allowed = mkOpt' (listOf (either port str)) [ ] "UDP ports to open.";
     };
-    extraRules = mkOpt lines "";
+    extraRules = mkOpt' lines "" "Arbitrary additional nftables rules.";
 
     nat = with options.networking.nat; {
-      enable = mkBoolOpt true;
+      enable = mkBoolOpt' true "Whether to enable IP forwarding and NAT.";
       inherit externalInterface forwardPorts;
     };
   };

@@ -33,10 +33,9 @@
       ...
     }:
     let
-      inherit (builtins) mapAttrs;
-      inherit (lib) genAttrs mapAttrs';
-      inherit (lib.flake) defaultSystems eachDefaultSystem;
-      inherit (lib.my) addPrefix mkApp mkShellApp;
+      inherit (builtins) mapAttrs attrValues;
+      inherit (lib.flake) eachDefaultSystem;
+      inherit (lib.my) mkApp mkShellApp;
 
       extendLib = lib: lib.extend (final: prev: {
         my = import ./util.nix { lib = final; };
@@ -61,28 +60,30 @@
           ];
         })
         pkgsFlakes;
+
+      modules = mapAttrs (_: f: ./. + "/modules/${f}") {
+        common = "common.nix";
+        build = "build.nix";
+        dynamic-motd = "dynamic-motd.nix";
+        tmproot = "tmproot.nix";
+        firewall = "firewall.nix";
+        server = "server.nix";
+      };
     in
     # Platform independent stuff
     {
       lib = lib.my;
+      nixpkgs = pkgs';
 
       nixosModules = mapAttrs
         (_: path:
-          let path' = ./. + "/modules/${path}"; in
           {
-            _file = path';
-            imports = [ (import path') ];
+            _file = path;
+            imports = [ (import path) ];
           })
-        {
-          common = "common.nix";
-          build = "build.nix";
-          dynamic-motd = "dynamic-motd.nix";
-          tmproot = "tmproot.nix";
-          firewall = "firewall.nix";
-          server = "server.nix";
-        };
+        modules;
 
-      nixosConfigurations = import ./systems.nix { inherit lib pkgsFlakes inputs; modules = self.nixosModules; };
+      nixosConfigurations = import ./systems.nix { inherit lib pkgsFlakes inputs; modules = attrValues modules; };
       systems = mapAttrs (_: system: system.config.system.build.toplevel) self.nixosConfigurations;
       vms = mapAttrs (_: system: system.config.my.build.devVM) self.nixosConfigurations;
     } //

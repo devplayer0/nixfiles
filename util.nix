@@ -26,11 +26,18 @@ rec {
   mkShellApp = pkgs: name: text: mkApp (pkgs.writeShellScript name text).outPath;
 
   mkOpt = type: default: mkOption { inherit type default; };
+  mkOpt' = type: default: description: mkOption { inherit type default description; };
   mkBoolOpt = default: mkOption {
     inherit default;
     type = types.bool;
     example = true;
   };
-  mkVMOverride' = mkOverride 9;
+  mkBoolOpt' = default: description: mkOption {
+    inherit default description;
+    type = types.bool;
+    example = true;
+  };
   dummyOption = mkOption { };
+
+  mkVMOverride' = mkOverride 9;
 }

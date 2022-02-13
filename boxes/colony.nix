@@ -1,4 +1,4 @@
-{ lib, pkgs, inputs, ... }:
+{ lib, pkgs, ... }:
 {
   fileSystems = {
     "/persist" = {

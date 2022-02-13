@@ -1,7 +1,7 @@
 { lib, extendModules, modulesPath, baseModules, options, config, ... }:
 let
   inherit (lib) recursiveUpdate mkOption;
-  inherit (lib.my) mkBoolOpt;
+  inherit (lib.my) mkBoolOpt';
 
   cfg = config.my.build;
 
@@ -18,12 +18,13 @@ let
 in
 {
   options.my = with lib.types; {
-    boot.isDevVM = mkBoolOpt false;
+    boot.isDevVM = mkBoolOpt' false "Whether the system is a development VM.";
     build = options.system.build;
     asDevVM = mkOption {
       inherit (asDevVM) type;
       default = { };
       visible = "shallow";
+      description = "Configuration as a development VM";
     };
   };
 

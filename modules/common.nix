@@ -1,11 +1,12 @@
 { lib, pkgs, inputs, system, config, options, ... }:
 let
   inherit (lib) mkIf mkDefault mkAliasDefinitions;
-  inherit (lib.my) mkOpt;
+  inherit (lib.my) mkOpt';
 in
 {
   options.my = with lib.types; {
-    user = mkOpt (attrsOf anything) { };
+    # Pretty hacky but too lazy to figure out if there's a better way to alias the options
+    user = mkOpt' (attrsOf anything) { } "User definition (as `users.users.*`).";
   };
 
   config =
@@ -40,13 +41,15 @@ in
       };
 
       nix = {
-        package = inputs.nix.defaultPackage.${system};
         extraOptions =
           ''
             experimental-features = nix-command flakes ca-derivations
           '';
       };
       nixpkgs = {
+        overlays = [
+          inputs.nix.overlay
+        ];
         config = {
           allowUnfree = true;
         };
