@@ -1,7 +1,7 @@
 { lib, extendModules, modulesPath, baseModules, options, config, ... }:
 let
-  inherit (lib) recursiveUpdate mkOption;
-  inherit (lib.my) mkBoolOpt';
+  inherit (lib) recursiveUpdate mkOption mkDefault;
+  inherit (lib.my) mkBoolOpt' dummyOption;
 
   cfg = config.my.build;
 
@@ -17,19 +17,31 @@ let
   };
 in
 {
-  options.my = with lib.types; {
-    boot.isDevVM = mkBoolOpt' false "Whether the system is a development VM.";
-    build = options.system.build;
-    asDevVM = mkOption {
-      inherit (asDevVM) type;
-      default = { };
-      visible = "shallow";
-      description = "Configuration as a development VM";
+  options = with lib.types; {
+    my = {
+      boot.isDevVM = mkBoolOpt' false "Whether the system is a development VM.";
+      build = options.system.build;
+      asDevVM = mkOption {
+        inherit (asDevVM) type;
+        default = { };
+        visible = "shallow";
+        description = "Configuration as a development VM";
+      };
+    };
+
+    # Forward declare options that won't exist until the VM module is actually imported
+    virtualisation = {
+      diskImage = dummyOption;
     };
   };
 
-  config.my.build = {
-    # The meta.mainProgram should probably be set upstream but oh well...
-    devVM = recursiveUpdate config.my.asDevVM.system.build.vm { meta.mainProgram = "run-${config.system.name}-vm"; };
+  config = {
+    virtualisation = {
+      diskImage = mkDefault "./.vms/${config.system.name}.qcow2";
+    };
+    my.build = {
+      # The meta.mainProgram should probably be set upstream but oh well...
+      devVM = recursiveUpdate config.my.asDevVM.system.build.vm { meta.mainProgram = "run-${config.system.name}-vm"; };
+    };
   };
 }

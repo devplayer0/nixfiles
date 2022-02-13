@@ -1,13 +1,14 @@
 { lib, pkgsFlakes, inputs, modules }:
 let
   inherit (builtins) attrValues mapAttrs;
-  inherit (lib) mkDefault;
+  inherit (lib) optionals mkDefault;
 
   mkSystem =
     name: {
       system,
       nixpkgs ? "unstable",
       config,
+      docCustom ? true,
     }:
     let
       pkgsFlake = pkgsFlakes.${nixpkgs};
@@ -31,8 +32,8 @@ let
           inputs.impermanence.nixosModule
           inputs.agenix.nixosModules.age
           inputs.home-manager.nixosModule
-        ] ++ modules;
-      modules = [
+        ] ++ (optionals docCustom modules);
+      modules = (optionals (!docCustom) modules) ++ [
         {
           _module.args = { inherit system inputs; };
           system.name = name;

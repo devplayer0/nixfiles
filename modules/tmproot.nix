@@ -1,9 +1,10 @@
 { lib, pkgs, config, ... }:
 let
-  inherit (lib) concatStringsSep concatMap concatMapStringsSep mkIf mkDefault mkMerge mkVMOverride;
-  inherit (lib.my) mkOpt' mkBoolOpt' mkVMOverride' dummyOption;
+  inherit (lib) optionalString concatStringsSep concatMap concatMapStringsSep mkIf mkDefault mkMerge mkVMOverride;
+  inherit (lib.my) mkOpt' mkBoolOpt' mkVMOverride';
 
   cfg = config.my.tmproot;
+  enablePersistence = cfg.persistDir != null;
 
   showUnsaved =
     ''
@@ -56,27 +57,18 @@ in
   options = with lib.types; {
     my.tmproot = {
       enable = mkBoolOpt' true "Whether to enable tmproot.";
-      persistDir = mkOpt' str "/persist" "Path where persisted files are stored.";
+      persistDir = mkOpt' (nullOr str) "/persist" "Path where persisted files are stored.";
       size = mkOpt' str "2G" "Size of tmpfs root";
       unsaved = {
         showMotd = mkBoolOpt' true "Whether to show unsaved files with `dynamic-motd`.";
         ignore = mkOpt' (listOf str) [ ] "Path prefixes to ignore if unsaved.";
       };
     };
-
-    # Forward declare options that won't exist until the VM module is actually imported
-    virtualisation = {
-      diskImage = dummyOption;
-    };
   };
 
   config = mkIf cfg.enable (mkMerge [
     {
       assertions = [
-        {
-          assertion = config.fileSystems ? "${cfg.persistDir}";
-          message = "The 'fileSystems' option does not specify your persistence file system (${cfg.persistDir}).";
-        }
         {
           # I mean you probably _could_, but if you're doing tmproot... come on
           assertion = !config.users.mutableUsers;
@@ -112,48 +104,6 @@ in
         (pkgs.writeScriptBin "tmproot-unsaved" showUnsaved)
       ];
 
-      # Catch non-existent source directories that are needed for boot (see `pathsNeededForBoot` in
-      # nixos/lib/util.nix). We do this by monkey-patching the `waitDevice` function that would otherwise hang.
-      boot.initrd.postDeviceCommands =
-        ''
-          ensurePersistSource() {
-            [ -e "/mnt-root$1" ] && return
-            echo "Persistent source directory $1 does not exist, creating..."
-            install -dm "$2" "/mnt-root$1" || fail
-          }
-
-          _waitDevice() {
-            local device="$1"
-
-            ${concatMapStringsSep " || \\\n  " (d:
-              let
-                sourceDir = "${d.persistentStoragePath}${d.directory}";
-              in
-                ''([ "$device" = "/mnt-root${sourceDir}" ] && ensurePersistSource "${sourceDir}" "${d.mode}")'')
-              config.environment.persistence."${cfg.persistDir}".directories}
-
-            waitDevice "$@"
-          }
-
-          type waitDevice > /dev/null || (echo "waitDevice is missing!"; fail)
-          alias waitDevice=_waitDevice
-        '';
-
-      environment.persistence."${cfg.persistDir}" = {
-        hideMounts = mkDefault true;
-        directories = [
-          "/var/log"
-          # In theory we'd include only the files needed individually (i.e. the {U,G}ID map files that track deleted
-          # users and groups), but `update-users-groups.pl` actually deletes the original files for "atomic update".
-          # Also the script runs before impermanence does.
-          "/var/lib/nixos"
-          "/var/lib/systemd"
-        ];
-        files = [
-          "/etc/machine-id"
-        ];
-      };
-
       my.dynamic-motd.script = mkIf cfg.unsaved.showMotd
         ''
           tmprootUnsaved() {
@@ -163,8 +113,10 @@ in
             echo
             echo -e "\t\e[31;1;4mWarning:\e[0m $count file(s) on / will be lost on shutdown!"
             echo -e '\tTo see them, run `tmproot-unsaved` as root.'
-            echo -e '\tAdd these files to `environment.persistence."${cfg.persistDir}"` to keep them!'
-            echo -e '\tOtherwise, they can be ignored by adding to `my.tmproot.unsaved.ignore`.'
+            ${optionalString enablePersistence ''
+              echo -e '\tAdd these files to `environment.persistence."${cfg.persistDir}"` to keep them!'
+            ''}
+            echo -e "\tIf they don't need to be kept, add them to \`my.tmproot.unsaved.ignore\`."
             echo
           }
 
@@ -172,15 +124,8 @@ in
         '';
 
       fileSystems."/" = rootDef;
-
-      virtualisation = {
-        diskImage = "./.vms/${config.system.name}-persist.qcow2";
-      };
     }
-    (mkIf config.services.openssh.enable {
-      environment.persistence."${cfg.persistDir}".files =
-        concatMap (k: [ k.path "${k.path}.pub" ]) config.services.openssh.hostKeys;
-    })
+
     (mkIf config.networking.resolvconf.enable {
       my.tmproot.unsaved.ignore = [ "/etc/resolv.conf" ];
     })
@@ -192,12 +137,77 @@ in
 
       fileSystems = mkVMOverride {
         "/" = mkVMOverride' rootDef;
-        # Hijack the "root" device for persistence in the VM
-        "${cfg.persistDir}" = {
-          device = config.virtualisation.bootDevice;
-          neededForBoot = true;
-        };
       };
     })
+
+    (mkIf enablePersistence (mkMerge [
+      {
+        assertions = [
+          {
+            assertion = config.fileSystems ? "${cfg.persistDir}";
+            message = "The 'fileSystems' option does not specify your persistence file system (${cfg.persistDir}).";
+          }
+        ];
+
+        # Catch non-existent source directories that are needed for boot (see `pathsNeededForBoot` in
+        # nixos/lib/util.nix). We do this by monkey-patching the `waitDevice` function that would otherwise hang.
+        boot.initrd.postDeviceCommands =
+          ''
+            ensurePersistSource() {
+              [ -e "/mnt-root$1" ] && return
+              echo "Persistent source directory $1 does not exist, creating..."
+              install -dm "$2" "/mnt-root$1" || fail
+            }
+
+            _waitDevice() {
+              local device="$1"
+
+              ${concatMapStringsSep " || \\\n  " (d:
+                let
+                  sourceDir = "${d.persistentStoragePath}${d.directory}";
+                in
+                  ''([ "$device" = "/mnt-root${sourceDir}" ] && ensurePersistSource "${sourceDir}" "${d.mode}")'')
+                config.environment.persistence."${cfg.persistDir}".directories}
+
+              waitDevice "$@"
+            }
+
+            type waitDevice > /dev/null || (echo "waitDevice is missing!"; fail)
+            alias waitDevice=_waitDevice
+          '';
+
+        environment.persistence."${cfg.persistDir}" = {
+          hideMounts = mkDefault true;
+          directories = [
+            "/var/log"
+            # In theory we'd include only the files needed individually (i.e. the {U,G}ID map files that track deleted
+            # users and groups), but `update-users-groups.pl` actually deletes the original files for "atomic update".
+            # Also the script runs before impermanence does.
+            "/var/lib/nixos"
+            "/var/lib/systemd"
+          ];
+          files = [
+            "/etc/machine-id"
+          ];
+        };
+
+        virtualisation = {
+          diskImage = "./.vms/${config.system.name}-persist.qcow2";
+        };
+      }
+      (mkIf config.services.openssh.enable {
+        environment.persistence."${cfg.persistDir}".files =
+          concatMap (k: [ k.path "${k.path}.pub" ]) config.services.openssh.hostKeys;
+      })
+      (mkIf config.my.boot.isDevVM {
+        fileSystems = mkVMOverride {
+          # Hijack the "root" device for persistence in the VM
+          "${cfg.persistDir}" = {
+            device = config.virtualisation.bootDevice;
+            neededForBoot = true;
+          };
+        };
+      })
+    ]))
   ]);
 }
