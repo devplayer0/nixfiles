@@ -1,6 +1,6 @@
 { lib }:
 let
-  inherit (builtins) replaceStrings elemAt;
+  inherit (builtins) replaceStrings elemAt mapAttrs;
   inherit (lib) genAttrs mapAttrs' types mkOption mkOverride;
   inherit (lib.flake) defaultSystems;
 in
@@ -21,9 +21,25 @@ rec {
       ports = checked (replaceStrings ["-"] [":"] (elemAt m 1));
     };
 
-  mkDefaultSystemsPkgs = path: args: genAttrs defaultSystems (system: import path (args // { inherit system; }));
+  mkDefaultSystemsPkgs = path: args': genAttrs defaultSystems (system: import path ((args' system) // { inherit system; }));
   mkApp = program: { type = "app"; inherit program; };
   mkShellApp = pkgs: name: text: mkApp (pkgs.writeShellScript name text).outPath;
+  inlineModules = modules: mapAttrs
+    (_: path:
+      {
+        _file = path;
+        imports = [ (import path) ];
+      })
+    modules;
+  flakePackageOverlay' = flake: pkg: system: (final: prev:
+    let
+      pkg' = if pkg != null then flake.packages.${system}.${pkg} else flake.defaultPackage.${system};
+      name = if pkg != null then pkg else pkg'.name;
+    in
+    {
+      ${name} = pkg';
+    });
+  flakePackageOverlay = flake: flakePackageOverlay' flake null;
 
   mkOpt = type: default: mkOption { inherit type default; };
   mkOpt' = type: default: description: mkOption { inherit type default description; };

@@ -1,4 +1,4 @@
-{ lib, pkgsFlakes, inputs, modules }:
+{ lib, pkgsFlakes, inputs, modules, homeModules }:
 let
   inherit (builtins) attrValues mapAttrs;
   inherit (lib) optionals mkDefault;
@@ -35,7 +35,7 @@ let
         ] ++ (optionals docCustom modules);
       modules = (optionals (!docCustom) modules) ++ [
         {
-          _module.args = { inherit system inputs; };
+          _module.args = { inherit system inputs homeModules; };
           system.name = name;
           networking.hostName = mkDefault name;
         }

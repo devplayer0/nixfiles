@@ -1,15 +1,5 @@
 { lib, pkgs, ... }:
 {
-  fileSystems = {
-    "/persist" = {
-      device = "/dev/disk/by-label/persist";
-      fsType = "ext4";
-      neededForBoot = true;
-    };
-  };
-
-  networking = { };
-
   my = {
     firewall = {
       trustedInterfaces = [ "blah" ];
@@ -25,5 +15,21 @@
       };
     };
     server.enable = true;
+
+    homeConfig = {
+      programs = {
+        fish.enable = true;
+      };
+    };
   };
+
+  fileSystems = {
+    "/persist" = {
+      device = "/dev/disk/by-label/persist";
+      fsType = "ext4";
+      neededForBoot = true;
+    };
+  };
+
+  networking = { };
 }

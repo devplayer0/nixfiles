@@ -1,5 +1,6 @@
-{ lib, pkgs, inputs, system, config, options, ... }:
+{ lib, pkgs, inputs, homeModules, config, options, ... }:
 let
+  inherit (builtins) attrValues;
   inherit (lib) mkIf mkDefault mkAliasDefinitions;
   inherit (lib.my) mkOpt';
 in
@@ -7,6 +8,7 @@ in
   options.my = with lib.types; {
     # Pretty hacky but too lazy to figure out if there's a better way to alias the options
     user = mkOpt' (attrsOf anything) { } "User definition (as `users.users.*`).";
+    homeConfig = mkOpt' anything {} "Home configuration (as `home-manager.users.*`)";
   };
 
   config =
@@ -25,12 +27,22 @@ in
         };
       };
 
-      time.timeZone = mkDefault "Europe/Dublin";
+      home-manager = {
+        useGlobalPkgs = mkDefault true;
+        useUserPackages = mkDefault true;
+        sharedModules = homeModules ++ [{
+          _module.args = { inherit inputs; isStandalone = false; };
+        }];
+      };
 
       users = {
         mutableUsers = false;
         users.${uname} = mkAliasDefinitions options.my.user;
       };
+
+      # NOTE: As the "outermost" module is still being evaluated in NixOS land, special params (e.g. pkgs) won't be
+      # passed to it
+      home-manager.users.${uname} = config.my.homeConfig;
 
       security = {
         sudo.enable = mkDefault false;
@@ -54,6 +66,8 @@ in
           allowUnfree = true;
         };
       };
+
+      time.timeZone = mkDefault "Europe/Dublin";
 
       boot = {
         # Use latest LTS release by default
@@ -80,10 +94,7 @@ in
 
       environment.systemPackages = with pkgs; [
         bash-completion
-        tree
         vim
-        htop
-        iperf3
       ];
 
       services.openssh = {

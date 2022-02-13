@@ -13,7 +13,7 @@
     agenix.inputs.nixpkgs.follows = "nixpkgs-unstable";
     deploy-rs.url = "github:serokell/deploy-rs";
     deploy-rs.inputs.nixpkgs.follows = "nixpkgs-unstable";
-    home-manager.url = "github:nix-community/home-manager";
+    home-manager.url = "home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
     # Stuff used by systems
@@ -35,7 +35,7 @@
     let
       inherit (builtins) mapAttrs attrValues;
       inherit (lib.flake) eachDefaultSystem;
-      inherit (lib.my) mkApp mkShellApp;
+      inherit (lib.my) mkApp mkShellApp inlineModules mkDefaultSystemsPkgs flakePackageOverlay;
 
       extendLib = lib: lib.extend (final: prev: {
         my = import ./util.nix { lib = final; };
@@ -51,14 +51,24 @@
       lib = pkgsFlakes.unstable.lib;
 
       pkgs' = mapAttrs
-        (_: path: lib.my.mkDefaultSystemsPkgs path {
+        (_: path: mkDefaultSystemsPkgs path (system: {
           overlays = [
             libOverlay
             inputs.agenix.overlay
             inputs.deploy-rs.overlay
             inputs.nix.overlay
+            (flakePackageOverlay inputs.home-manager system)
           ];
-        })
+        }))
+        pkgsFlakes;
+
+      # Easiest to build the basic pkgs here (with our lib overlay too)
+      homePkgs' = mapAttrs
+        (_: path: mkDefaultSystemsPkgs path (_: {
+          overlays = [
+            libOverlay
+          ];
+        }))
         pkgsFlakes;
 
       modules = mapAttrs (_: f: ./. + "/modules/${f}") {
@@ -69,23 +79,32 @@
         firewall = "firewall.nix";
         server = "server.nix";
       };
+      homeModules = mapAttrs (_: f: ./. + "/home-modules/${f}") {
+        common = "common.nix";
+      };
     in
     # Platform independent stuff
     {
       lib = lib.my;
       nixpkgs = pkgs';
 
-      nixosModules = mapAttrs
-        (_: path:
-          {
-            _file = path;
-            imports = [ (import path) ];
-          })
-        modules;
+      nixosModules = inlineModules modules;
+      homeModules = inlineModules homeModules;
 
-      nixosConfigurations = import ./systems.nix { inherit lib pkgsFlakes inputs; modules = attrValues modules; };
+      nixosConfigurations = import ./systems.nix {
+        inherit lib pkgsFlakes inputs;
+        modules = attrValues modules;
+        homeModules = attrValues homeModules;
+      };
       systems = mapAttrs (_: system: system.config.system.build.toplevel) self.nixosConfigurations;
       vms = mapAttrs (_: system: system.config.my.build.devVM) self.nixosConfigurations;
+
+      homeConfigurations = import ./homes.nix {
+        inherit lib inputs;
+        pkgs' = homePkgs';
+        modules = attrValues homeModules;
+      };
+      homes = mapAttrs(_: home: home.activationPackage) self.homeConfigurations;
     } //
     (eachDefaultSystem (system:
     let
@@ -99,7 +118,7 @@
       };
 
       devShell = pkgs.mkShell {
-        NIX_CONFIG = pkgs.writeText "nix.conf"
+        NIX_USER_CONF_FILES = pkgs.writeText "nix.conf"
           ''
             experimental-features = nix-command flakes ca-derivations
           '';
@@ -109,6 +128,7 @@
           agenix
           deploy-rs.deploy-rs
           nixpkgs-fmt
+          home-manager
         ];
       };
     }));
