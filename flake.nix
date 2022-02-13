@@ -64,6 +64,7 @@
         }) {
         common = "common.nix";
         build = "build.nix";
+        dynamic-motd = "dynamic-motd.nix";
         tmproot = "tmproot.nix";
         firewall = "firewall.nix";
         server = "server.nix";

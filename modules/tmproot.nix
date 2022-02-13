@@ -1,4 +1,4 @@
-{ lib, pkgs, inputs, config, utils, ... }:
+{ lib, pkgs, inputs, config, ... }:
   let
     inherit (builtins) elem;
     inherit (lib) concatStringsSep concatMap concatMapStringsSep mkIf mkDefault mkMerge mkForce mkVMOverride;
@@ -14,7 +14,7 @@
         import os
 
         ignored = [
-          ${concatStringsSep ",\n  " (map (p: "'${p}'") cfg.ignoreUnsaved)}
+          ${concatStringsSep ",\n  " (map (p: "'${p}'") cfg.unsaved.ignore)}
         ]
 
         base = '/'
@@ -60,7 +60,10 @@
         enable = mkBoolOpt true;
         persistDir = mkOpt str "/persist";
         size = mkOpt str "2G";
-        ignoreUnsaved = mkOpt (listOf str) [];
+        unsaved = {
+          showMotd = mkBoolOpt true;
+          ignore = mkOpt (listOf str) [];
+        };
       };
 
       # Forward declare options that won't exist until the VM module is actually imported
@@ -83,7 +86,7 @@
           }
         ];
 
-        my.tmproot.ignoreUnsaved = [
+        my.tmproot.unsaved.ignore = [
           "/tmp"
 
           # setup-etc.pl will create this for us
@@ -153,6 +156,23 @@
           ];
         };
 
+        my.dynamic-motd.script = mkIf cfg.unsaved.showMotd
+          ''
+            tmprootUnsaved() {
+              local count="$(tmproot-unsaved | wc -l)"
+              [ $count -eq 0 ] && return
+
+              echo
+              echo -e "\t\e[31;1;4mWarning:\e[0m $count file(s) on / will be lost on shutdown!"
+              echo -e '\tTo see them, run `tmproot-unsaved` as root.'
+              echo -e '\tAdd these files to `environment.persistence."${cfg.persistDir}"` to keep them!'
+              echo -e '\tOtherwise, they can be ignored by adding to `my.tmproot.unsaved.ignore`.'
+              echo
+            }
+
+            tmprootUnsaved
+          '';
+
         fileSystems."/" = rootDef;
 
         virtualisation = {
@@ -164,13 +184,13 @@
           concatMap (k: [ k.path "${k.path}.pub" ]) config.services.openssh.hostKeys;
       })
       (mkIf config.networking.resolvconf.enable {
-        my.tmproot.ignoreUnsaved = [ "/etc/resolv.conf" ];
+        my.tmproot.unsaved.ignore = [ "/etc/resolv.conf" ];
       })
       (mkIf config.security.doas.enable {
-        my.tmproot.ignoreUnsaved = [ "/etc/doas.conf" ];
+        my.tmproot.unsaved.ignore = [ "/etc/doas.conf" ];
       })
       (mkIf config.my.boot.isDevVM {
-        my.tmproot.ignoreUnsaved = [ "/nix" ];
+        my.tmproot.unsaved.ignore = [ "/nix" ];
 
         fileSystems = mkVMOverride {
           "/" = mkVMOverride' rootDef;
