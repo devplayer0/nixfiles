@@ -1,7 +1,7 @@
 { lib }:
 let
   inherit (builtins) replaceStrings elemAt mapAttrs;
-  inherit (lib) genAttrs mapAttrs' types mkOption mkOverride;
+  inherit (lib) genAttrs mapAttrs' mapAttrsToList nameValuePair types mkOption mkOverride;
   inherit (lib.flake) defaultSystems;
 in
 rec {
@@ -20,6 +20,7 @@ rec {
       ip = checked (elemAt m 0);
       ports = checked (replaceStrings ["-"] [":"] (elemAt m 1));
     };
+  attrsToList = mapAttrsToList nameValuePair;
 
   mkDefaultSystemsPkgs = path: args': genAttrs defaultSystems (system: import path ((args' system) // { inherit system; }));
   mkApp = program: { type = "app"; inherit program; };

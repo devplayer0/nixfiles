@@ -3,6 +3,8 @@
 
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
+    devshell.url = "github:numtide/devshell";
+    devshell.inputs.nixpkgs.follows = "nixpkgs-unstable";
     # Used by most systems
     nixpkgs-unstable.url = "nixpkgs/nixos-unstable";
     # For extra-stable systems
@@ -35,7 +37,7 @@
     let
       inherit (builtins) mapAttrs attrValues;
       inherit (lib.flake) eachDefaultSystem;
-      inherit (lib.my) mkApp mkShellApp mkShellApp' inlineModules mkDefaultSystemsPkgs flakePackageOverlay;
+      inherit (lib.my) attrsToList mkApp mkShellApp mkShellApp' inlineModules mkDefaultSystemsPkgs flakePackageOverlay;
 
       extendLib = lib: lib.extend (final: prev: {
         my = import ./util.nix { lib = final; };
@@ -54,6 +56,7 @@
         (_: path: mkDefaultSystemsPkgs path (system: {
           overlays = [
             libOverlay
+            inputs.devshell.overlay
             inputs.agenix.overlay
             inputs.deploy-rs.overlay
             inputs.nix.overlay
@@ -115,35 +118,58 @@
     in
     # Stuff for each platform
     {
-      apps = {
-        fmt = mkShellApp pkgs "fmt" ''exec "${pkgs.nixpkgs-fmt}/bin/nixpkgs-fmt" "$@" .'';
-        link = mkShellApp' pkgs {
-          name = "install-home-link";
-          runtimeInputs = [ pkgs.coreutils ];
-          text =
+      devShell = pkgs.devshell.mkShell {
+        env = attrsToList {
+          # starship will show this
+          name = "devshell";
+
+          NIX_USER_CONF_FILES = toString (pkgs.writeText "nix.conf"
             ''
-              [ -e "${homeFlake}" ] && echo "${homeFlake} already exists" && exit 1
-
-              mkdir -p "$(dirname "${homeFlake}")"
-              ln -s "$(pwd)/flake.nix" "${homeFlake}"
-              echo "Installed link to $(pwd)/flake.nix at ${homeFlake}"
-            '';
+              experimental-features = nix-command flakes ca-derivations
+            '');
         };
-        unlink = mkShellApp pkgs "remove-home-link" ''rm -f ${homeFlake}'';
-      };
-
-      devShell = pkgs.mkShell {
-        NIX_USER_CONF_FILES = pkgs.writeText "nix.conf"
-          ''
-            experimental-features = nix-command flakes ca-derivations
-          '';
 
         packages = with pkgs; [
+          coreutils
           nix
           agenix
           deploy-rs.deploy-rs
-          nixpkgs-fmt
           home-manager
+        ];
+
+        commands = [
+          {
+            name = "home-link";
+            category = "utilities";
+            help = "Install link to flake.nix for home-manager to use";
+            command =
+              ''
+                [ -e "${homeFlake}" ] && echo "${homeFlake} already exists" && exit 1
+
+                mkdir -p "$(dirname "${homeFlake}")"
+                ln -s "$(pwd)/flake.nix" "${homeFlake}"
+                echo "Installed link to $(pwd)/flake.nix at ${homeFlake}"
+              '';
+          }
+          {
+            name = "home-unlink";
+            category = "utilities";
+            help = "Remove home-manager flake.nix link";
+            command = "rm -f ${homeFlake}";
+          }
+
+          {
+            name = "fmt";
+            category = "tasks";
+            help = pkgs.nixpkgs-fmt.meta.description;
+            command = ''exec "${pkgs.nixpkgs-fmt}/bin/nixpkgs-fmt" "$@"'';
+          }
+          {
+            name = "home-switch";
+            category = "tasks";
+            help = "Run `home-manager switch`";
+            command = ''home-manager switch --flake . "$@"'';
+          }
         ];
       };
     }));
