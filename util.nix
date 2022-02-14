@@ -24,6 +24,10 @@ rec {
   mkDefaultSystemsPkgs = path: args': genAttrs defaultSystems (system: import path ((args' system) // { inherit system; }));
   mkApp = program: { type = "app"; inherit program; };
   mkShellApp = pkgs: name: text: mkApp (pkgs.writeShellScript name text).outPath;
+  mkShellApp' = pkgs: args:
+    let
+      app = pkgs.writeShellApplication args;
+    in mkApp "${app}/bin/${app.meta.mainProgram}";
   inlineModules = modules: mapAttrs
     (_: path:
       {

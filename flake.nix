@@ -35,7 +35,7 @@
     let
       inherit (builtins) mapAttrs attrValues;
       inherit (lib.flake) eachDefaultSystem;
-      inherit (lib.my) mkApp mkShellApp inlineModules mkDefaultSystemsPkgs flakePackageOverlay;
+      inherit (lib.my) mkApp mkShellApp mkShellApp' inlineModules mkDefaultSystemsPkgs flakePackageOverlay;
 
       extendLib = lib: lib.extend (final: prev: {
         my = import ./util.nix { lib = final; };
@@ -108,6 +108,8 @@
     } //
     (eachDefaultSystem (system:
     let
+      homeFlake = "$HOME/.config/nixpkgs/flake.nix";
+
       pkgs = pkgs'.unstable.${system};
       lib = pkgs.lib;
     in
@@ -115,6 +117,19 @@
     {
       apps = {
         fmt = mkShellApp pkgs "fmt" ''exec "${pkgs.nixpkgs-fmt}/bin/nixpkgs-fmt" "$@" .'';
+        link = mkShellApp' pkgs {
+          name = "install-home-link";
+          runtimeInputs = [ pkgs.coreutils ];
+          text =
+            ''
+              [ -e "${homeFlake}" ] && echo "${homeFlake} already exists" && exit 1
+
+              mkdir -p "$(dirname "${homeFlake}")"
+              ln -s "$(pwd)/flake.nix" "${homeFlake}"
+              echo "Installed link to $(pwd)/flake.nix at ${homeFlake}"
+            '';
+        };
+        unlink = mkShellApp pkgs "remove-home-link" ''rm -f ${homeFlake}'';
       };
 
       devShell = pkgs.mkShell {

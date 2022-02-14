@@ -14,6 +14,10 @@ mkMerge [
         enable = true;
         settings = {};
       };
+
+      lsd = {
+        enable = mkDefault true;
+      };
     };
 
     home = {
