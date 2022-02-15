@@ -62,7 +62,7 @@ in
       };
       nixpkgs = {
         overlays = [
-          inputs.nix.overlay
+          (final: prev: { nix = inputs.nix.defaultPackage.${config.nixpkgs.system}; })
         ];
         config = {
           allowUnfree = true;

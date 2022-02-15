@@ -87,7 +87,7 @@ in
       # Note: If globalPkgs mode is on, then these will be overridden by the NixOS equivalents of these options
       nixpkgs = {
         overlays = [
-          inputs.nix.overlay
+          (final: prev: { nix = inputs.nix.defaultPackage.${config.nixpkgs.system}; })
           # TODO: Wait for https://github.com/NixOS/nixpkgs/pull/159074 to arrive to nixos-unstable
           (final: prev: { remarshal = pkgs'.master.remarshal; })
         ];

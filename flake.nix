@@ -73,8 +73,6 @@
             inputs.devshell.overlay
             inputs.agenix.overlay
             inputs.deploy-rs.overlay
-            # TODO: This causes a compile from source which is pretty unnecessary
-            inputs.nix.overlay
             (flakePackageOverlay inputs.home-manager-unstable system)
           ];
         }))
