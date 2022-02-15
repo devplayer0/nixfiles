@@ -25,17 +25,6 @@ mkMerge [
         enable = mkDefault true;
       };
 
-      lsd = {
-        enable = mkDefault true;
-      };
-
-      starship = {
-        enable = mkDefault true;
-        settings = {
-          aws.disabled = true;
-        };
-      };
-
       direnv = {
         enable = mkDefault true;
         nix-direnv.enable = true;
@@ -53,6 +42,10 @@ mkMerge [
         iperf3
       ];
 
+      sessionVariables = {
+        EDITOR = "vim";
+      };
+
       language.base = mkDefault "en_IE.UTF-8";
 
       # The flake passes a default setting, but we don't care about that
@@ -69,6 +62,8 @@ mkMerge [
         allowUnfree = true;
       };
     };
+
+    fonts.fontconfig.enable = true;
 
     home = {
       packages = with pkgs; [

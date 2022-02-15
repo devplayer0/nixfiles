@@ -84,6 +84,7 @@
       };
       homeModules = mapAttrs (_: f: ./. + "/home-modules/${f}") {
         common = "common.nix";
+        gui = "gui.nix";
       };
     in
     # Platform independent stuff
