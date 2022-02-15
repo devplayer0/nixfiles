@@ -139,6 +139,12 @@
 
         commands = [
           {
+            name = "repl";
+            category = "utilities";
+            help = "Open a `nix repl` with this flake";
+            command = ''nix repl ${pkgs.writeText "repl.nix" "builtins.getFlake \"${./.}\""}'';
+          }
+          {
             name = "home-link";
             category = "utilities";
             help = "Install link to flake.nix for home-manager to use";
