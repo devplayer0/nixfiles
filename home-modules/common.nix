@@ -79,6 +79,9 @@ in
         sessionVariables = {
           EDITOR = "vim";
         };
+        shellAliases = {
+          hm = "home-manager";
+        };
 
         language.base = mkDefault "en_IE.UTF-8";
       };
