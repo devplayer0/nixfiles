@@ -4,6 +4,16 @@ let
 in
 mkMerge [
   {
+    nix.registry = {
+      pkgs = {
+        to = {
+          type = "path";
+          path = toString pkgs.path;
+        };
+        exact = true;
+      };
+    };
+
     programs = {
       # Even when enabled this will only be actually installed in standalone mode
       # Note: `home-manager.path` is for telling home-manager is installed and setting it in NIX_PATH, which we should
