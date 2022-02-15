@@ -10,4 +10,6 @@ in
   config = mkIf cfg.enable {
     services.getty.autologinUser = config.my.user.name;
   };
+
+  meta.buildDocsInSandbox = false;
 }

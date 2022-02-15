@@ -1,7 +1,7 @@
 { lib }:
 let
   inherit (builtins) replaceStrings elemAt mapAttrs;
-  inherit (lib) genAttrs mapAttrs' mapAttrsToList nameValuePair types mkOption mkOverride;
+  inherit (lib) genAttrs mapAttrs' mapAttrsToList nameValuePair types mkOption mkOverride mkForce;
   inherit (lib.flake) defaultSystems;
 in
 rec {
@@ -61,4 +61,9 @@ rec {
   dummyOption = mkOption { };
 
   mkVMOverride' = mkOverride 9;
+
+  homeStateVersion = hmBranch: {
+    # The flake passes a default setting, but we don't care about that
+    home.stateVersion = mkForce (if hmBranch == "unstable" then "22.05" else "21.11");
+  };
 }

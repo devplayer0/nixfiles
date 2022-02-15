@@ -5,18 +5,20 @@
     flake-utils.url = "github:numtide/flake-utils";
     devshell.url = "github:numtide/devshell";
     devshell.inputs.nixpkgs.follows = "nixpkgs-unstable";
-    # Used by most systems
+
+    nixpkgs-master.url = "nixpkgs";
     nixpkgs-unstable.url = "nixpkgs/nixos-unstable";
-    # For extra-stable systems
     nixpkgs-stable.url = "nixpkgs/nixos-21.11";
+    home-manager-unstable.url = "home-manager";
+    home-manager-unstable.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    home-manager-stable.url = "home-manager/release-21.11";
+    home-manager-stable.inputs.nixpkgs.follows = "nixpkgs-stable";
 
     # Stuff used by the flake for build / deployment
     agenix.url = "github:ryantm/agenix";
     agenix.inputs.nixpkgs.follows = "nixpkgs-unstable";
     deploy-rs.url = "github:serokell/deploy-rs";
     deploy-rs.inputs.nixpkgs.follows = "nixpkgs-unstable";
-    home-manager.url = "home-manager";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
     # Stuff used by systems
     nix.url = "nix/latest-release";
@@ -30,7 +32,8 @@
 
       flake-utils,
 
-      nixpkgs-unstable, nixpkgs-stable,
+      nixpkgs-master, nixpkgs-unstable, nixpkgs-stable,
+      home-manager-unstable, home-manager-stable,
 
       ...
     }:
@@ -39,37 +42,49 @@
       inherit (lib.flake) eachDefaultSystem;
       inherit (lib.my) attrsToList mkApp mkShellApp mkShellApp' inlineModules mkDefaultSystemsPkgs flakePackageOverlay;
 
-      extendLib = lib: lib.extend (final: prev: {
+      # Extend a lib with extras that _must not_ internally reference private nixpkgs. flake-utils doesn't, but many
+      # other flakes (e.g. home-manager) probably do internally.
+      libOverlay = final: prev: {
         my = import ./util.nix { lib = final; };
         flake = flake-utils.lib;
-      });
-      libOverlay = final: prev: { lib = extendLib prev.lib; };
+      };
+      pkgsLibOverlay = final: prev: { lib = prev.lib.extend libOverlay; };
 
-      pkgsFlakes = mapAttrs (_: pkgs: pkgs // { lib = extendLib pkgs.lib; }) {
+      # Override the flake-level lib since we're going to use it for non-config specific stuff
+      pkgsFlakes = mapAttrs (_: pkgsFlake: pkgsFlake // { lib = pkgsFlake.lib.extend libOverlay; }) {
+        master = nixpkgs-master;
         unstable = nixpkgs-unstable;
         stable = nixpkgs-stable;
       };
+      hmFlakes = {
+        unstable = home-manager-unstable;
+        stable = home-manager-stable;
+      };
 
+      # Should only be used for platform-independent flake stuff! This should never leak into a NixOS or home-manager
+      # config - they'll get their own.
       lib = pkgsFlakes.unstable.lib;
 
+      # pkgs for dev shell etc
       pkgs' = mapAttrs
         (_: path: mkDefaultSystemsPkgs path (system: {
           overlays = [
-            libOverlay
+            pkgsLibOverlay
             inputs.devshell.overlay
             inputs.agenix.overlay
             inputs.deploy-rs.overlay
+            # TODO: This causes a compile from source which is pretty unnecessary
             inputs.nix.overlay
-            (flakePackageOverlay inputs.home-manager system)
+            (flakePackageOverlay inputs.home-manager-unstable system)
           ];
         }))
         pkgsFlakes;
 
       # Easiest to build the basic pkgs here (with our lib overlay too)
-      homePkgs' = mapAttrs
+      configPkgs' = mapAttrs
         (_: path: mkDefaultSystemsPkgs path (_: {
           overlays = [
-            libOverlay
+            pkgsLibOverlay
           ];
         }))
         pkgsFlakes;
@@ -96,7 +111,8 @@
       homeModules = inlineModules homeModules;
 
       nixosConfigurations = import ./systems.nix {
-        inherit lib pkgsFlakes inputs;
+        inherit lib pkgsFlakes hmFlakes inputs;
+        pkgs' = configPkgs';
         modules = attrValues modules;
         homeModules = attrValues homeModules;
       };
@@ -104,8 +120,8 @@
       vms = mapAttrs (_: system: system.config.my.build.devVM) self.nixosConfigurations;
 
       homeConfigurations = import ./homes.nix {
-        inherit lib inputs;
-        pkgs' = homePkgs';
+        inherit lib hmFlakes inputs;
+        pkgs' = configPkgs';
         modules = attrValues homeModules;
       };
       homes = mapAttrs(_: home: home.activationPackage) self.homeConfigurations;

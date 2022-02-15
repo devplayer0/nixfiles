@@ -210,4 +210,6 @@ in
       })
     ]))
   ]);
+
+  meta.buildDocsInSandbox = false;
 }

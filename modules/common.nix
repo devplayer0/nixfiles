@@ -1,14 +1,19 @@
-{ lib, pkgs, inputs, homeModules, config, options, ... }:
+{ lib, pkgs, inputs, options, config, ... }:
 let
   inherit (builtins) attrValues;
   inherit (lib) mkIf mkDefault mkAliasDefinitions;
-  inherit (lib.my) mkOpt';
+  inherit (lib.my) mkOpt' dummyOption;
 in
 {
-  options.my = with lib.types; {
-    # Pretty hacky but too lazy to figure out if there's a better way to alias the options
-    user = mkOpt' (attrsOf anything) { } "User definition (as `users.users.*`).";
-    homeConfig = mkOpt' anything {} "Home configuration (as `home-manager.users.*`)";
+  options = with lib.types; {
+    my = {
+      # Pretty hacky but too lazy to figure out if there's a better way to alias the options
+      user = mkOpt' (attrsOf anything) { } "User definition (as `users.users.*`).";
+      homeConfig = mkOpt' anything { } "Home configuration (as `home-manager.users.*`)";
+    };
+
+    # Only present in >=22.05, so forward declare
+    documentation.nixos.options.warningsAreErrors = dummyOption;
   };
 
   config =
@@ -28,11 +33,8 @@ in
       };
 
       home-manager = {
-        useGlobalPkgs = mkDefault true;
+        # Installs packages in the system config instead of in the local profile on activation
         useUserPackages = mkDefault true;
-        sharedModules = homeModules ++ [{
-          _module.args = { inherit inputs; isStandalone = false; };
-        }];
       };
 
       users = {
@@ -64,6 +66,13 @@ in
         ];
         config = {
           allowUnfree = true;
+        };
+      };
+
+      documentation = {
+        nixos = {
+          enable = mkDefault true;
+          options.warningsAreErrors = mkDefault false;
         };
       };
 
@@ -106,4 +115,6 @@ in
         configurationRevision = with inputs; mkIf (self ? rev) self.rev;
       };
     };
+
+  meta.buildDocsInSandbox = false;
 }

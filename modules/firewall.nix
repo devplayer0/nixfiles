@@ -164,4 +164,6 @@ in
         '';
     })
   ]);
+
+  meta.buildDocsInSandbox = false;
 }

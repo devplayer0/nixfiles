@@ -44,4 +44,6 @@ in
       devVM = recursiveUpdate config.my.asDevVM.system.build.vm { meta.mainProgram = "run-${config.system.name}-vm"; };
     };
   };
+
+  meta.buildDocsInSandbox = false;
 }
