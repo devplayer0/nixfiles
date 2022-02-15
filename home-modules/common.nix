@@ -28,6 +28,23 @@ mkMerge [
       direnv = {
         enable = mkDefault true;
         nix-direnv.enable = true;
+        stdlib =
+          ''
+            # addition to nix-direnv's use_nix that registers outputs as gc roots (as well as the .drv)
+            use_nix_outputs() {
+              local layout_dir drv deps
+              layout_dir="$(direnv_layout_dir)"
+              drv="$layout_dir/drv"
+              deps="$layout_dir/deps"
+
+              if [ ! -e "$deps" ] || (( "$(stat --format=%Z "$drv")" > "$(stat --format=%Z "$deps")" )); then
+                rm -rf "$deps"
+                mkdir -p "$deps"
+                nix-store --indirect --add-root "$deps/out" --realise $(nix-store --query --references "$drv") > /dev/null
+                log_status renewed outputs gc roots
+              fi
+            }
+          '';
       };
 
       htop = {
