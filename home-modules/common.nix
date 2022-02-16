@@ -40,6 +40,12 @@ in
         bash = {
           # This not only installs bash but has home-manager control .bashrc and friends
           enable = mkDefault true;
+          initExtra =
+          ''
+            flake-src() {
+              cd "$(nix eval "''${@:2}" --impure --raw --expr "builtins.getFlake \"$1\"")"
+            }
+          '';
         };
 
         direnv = {
