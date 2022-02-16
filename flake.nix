@@ -9,6 +9,8 @@
     nixpkgs-master.url = "nixpkgs";
     nixpkgs-unstable.url = "nixpkgs/nixos-unstable";
     nixpkgs-stable.url = "nixpkgs/nixos-21.11";
+    nixpkgs-mine.url = "github:devplayer0/nixpkgs";
+
     home-manager-unstable.url = "home-manager";
     home-manager-unstable.inputs.nixpkgs.follows = "nixpkgs-unstable";
     home-manager-stable.url = "home-manager/release-21.11";
@@ -32,7 +34,7 @@
 
       flake-utils,
 
-      nixpkgs-master, nixpkgs-unstable, nixpkgs-stable,
+      nixpkgs-master, nixpkgs-unstable, nixpkgs-stable, nixpkgs-mine,
       home-manager-unstable, home-manager-stable,
 
       ...
@@ -55,6 +57,7 @@
         master = nixpkgs-master;
         unstable = nixpkgs-unstable;
         stable = nixpkgs-stable;
+        mine = nixpkgs-mine;
       };
       hmFlakes = {
         unstable = home-manager-unstable;

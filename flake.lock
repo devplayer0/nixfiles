@@ -229,6 +229,21 @@
         "type": "indirect"
       }
     },
+    "nixpkgs-mine": {
+      "locked": {
+        "lastModified": 1644969450,
+        "narHash": "sha256-DgDeMJmgIWJcZGzGYpF8V3dHzM77pXlrXxFyGM29Ze8=",
+        "owner": "devplayer0",
+        "repo": "nixpkgs",
+        "rev": "c374a5dd496f0acb95ab44fe54241195ea6b55b9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "devplayer0",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs-regression": {
       "locked": {
         "lastModified": 1643052045,
@@ -285,6 +300,7 @@
         "impermanence": "impermanence",
         "nix": "nix",
         "nixpkgs-master": "nixpkgs-master",
+        "nixpkgs-mine": "nixpkgs-mine",
         "nixpkgs-stable": "nixpkgs-stable",
         "nixpkgs-unstable": "nixpkgs-unstable"
       }
