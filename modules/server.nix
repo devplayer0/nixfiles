@@ -8,7 +8,14 @@ in
 {
   options.my.server.enable = mkBoolOpt' false "Whether to enable common configuration for servers.";
   config = mkIf cfg.enable {
-    services.getty.autologinUser = config.my.user.name;
+    services = {
+      getty.autologinUser = config.my.user.name;
+      kmscon.autologinUser = config.my.user.name;
+    };
+
+    my.homeConfig = {
+      my.gui.enable = false;
+    };
   };
 
   meta.buildDocsInSandbox = false;

@@ -1,8 +1,11 @@
 { lib, pkgs, inputs, options, config, ... }:
 let
   inherit (builtins) attrValues;
-  inherit (lib) mkIf mkDefault mkAliasDefinitions;
+  inherit (lib) mkIf mkDefault mkMerge mkAliasDefinitions;
   inherit (lib.my) mkOpt' dummyOption;
+
+  defaultUsername = "dev";
+  uname = config.my.user.name;
 in
 {
   options = with lib.types; {
@@ -16,11 +19,7 @@ in
     documentation.nixos.options.warningsAreErrors = dummyOption;
   };
 
-  config =
-    let
-      defaultUsername = "dev";
-      uname = config.my.user.name;
-    in
+  config = mkMerge [
     {
       my = {
         user = {
@@ -106,15 +105,35 @@ in
         vim
       ];
 
-      services.openssh = {
-        enable = true;
+      services = {
+        kmscon = {
+          enable = mkDefault true;
+          hwRender = mkDefault true;
+          extraOptions = "--verbose";
+          extraConfig =
+            ''
+              font-name=SauceCodePro Nerd Font Mono
+            '';
+        };
+
+        openssh = {
+          enable = true;
+        };
       };
 
       system = {
         stateVersion = "21.11";
         configurationRevision = with inputs; mkIf (self ? rev) self.rev;
       };
-    };
+    }
+    (mkIf config.services.kmscon.enable {
+      fonts.fonts = with pkgs; [
+        (nerdfonts.override {
+          fonts = [ "SourceCodePro" ];
+        })
+      ];
+    })
+  ];
 
   meta.buildDocsInSandbox = false;
 }

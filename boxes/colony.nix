@@ -18,7 +18,8 @@
 
     homeConfig = {
       programs = {
-        fish.enable = true;
+        lsd.enable = true;
+        starship.enable = true;
       };
     };
   };

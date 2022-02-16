@@ -1,6 +1,6 @@
 { lib, pkgs, config, ... }:
 let
-  inherit (lib) mkIf mkDefault;
+  inherit (lib) mkIf mkDefault mkMerge;
   inherit (lib.my) mkBoolOpt';
 
   cfg = config.my.gui;
@@ -10,27 +10,33 @@ in
     enable = mkBoolOpt' true "Enable settings and packages meant for graphical systems";
   };
 
-  config = mkIf cfg.enable {
-    programs = {
-      lsd = {
-        enable = mkDefault true;
-        enableAliases = mkDefault true;
+  config = mkMerge [
+    (mkIf cfg.enable {
+      programs = {
+        lsd.enable = true;
+        starship.enable = mkDefault true;
       };
 
-      starship = {
-        enable = mkDefault true;
-        settings = {
-          aws.disabled = true;
+      home = {
+        packages = with pkgs; [
+          (nerdfonts.override {
+            fonts = [ "DroidSansMono" "SourceCodePro" ];
+          })
+        ];
+      };
+    })
+    {
+      programs = {
+        lsd = {
+          enableAliases = mkDefault true;
+        };
+
+        starship = {
+          settings = {
+            aws.disabled = true;
+          };
         };
       };
-    };
-
-    home = {
-      packages = with pkgs; [
-        (pkgs.nerdfonts.override {
-          fonts = [ "DroidSansMono" "SourceCodePro" ];
-        })
-      ];
-    };
-  };
+    }
+  ];
 }
