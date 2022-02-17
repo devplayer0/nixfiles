@@ -108,4 +108,11 @@ mapAttrs mkSystem {
     config = boxes/colony.nix;
     docCustom = false;
   };
+
+  installer = {
+    system = "x86_64-linux";
+    nixpkgs = "unstable";
+    config = ./installer.nix;
+    docCustom = false;
+  };
 }

@@ -16,12 +16,7 @@
     };
     server.enable = true;
 
-    homeConfig = {
-      programs = {
-        lsd.enable = true;
-        starship.enable = true;
-      };
-    };
+    homeConfig = {};
   };
 
   fileSystems = {

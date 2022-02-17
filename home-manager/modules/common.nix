@@ -29,13 +29,25 @@ in
       };
     })
     {
-      my.isStandalone = !(args ? sysConfig);
+      my.isStandalone = !(args ? osConfig);
 
       programs = {
         # Even when enabled this will only be actually installed in standalone mode
         # Note: `home-manager.path` is for telling home-manager is installed and setting it in NIX_PATH, which we should
         # never care about.
         home-manager.enable = true;
+
+        lsd = {
+          enable = mkDefault true;
+          enableAliases = mkDefault true;
+        };
+
+        starship = {
+          enable = mkDefault true;
+          settings = {
+            aws.disabled = true;
+          };
+        };
 
         bash = {
           # This not only installs bash but has home-manager control .bashrc and friends
@@ -92,7 +104,7 @@ in
         language.base = mkDefault "en_IE.UTF-8";
       };
     }
-    (mkIf (config.my.isStandalone || !args.sysConfig.home-manager.useGlobalPkgs) {
+    (mkIf (config.my.isStandalone || !args.osConfig.home-manager.useGlobalPkgs) {
       # Note: If globalPkgs mode is on, then these will be overridden by the NixOS equivalents of these options
       nixpkgs = {
         overlays = [

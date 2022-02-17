@@ -1,7 +1,7 @@
 { lib, options, config, ... }:
 let
   inherit (lib) optionalString concatStringsSep concatMapStringsSep optionalAttrs mkIf mkDefault mkMerge mkOverride;
-  inherit (lib.my) parseIPPort mkOpt' mkBoolOpt' dummyOption;
+  inherit (lib.my) parseIPPort mkOpt' mkBoolOpt';
 
   cfg = config.my.firewall;
 in
@@ -149,7 +149,9 @@ in
               ${concatMapStringsSep "\n    " makeFilter cfg.nat.forwardPorts}
             }
             chain forward {
-              iifname ${cfg.nat.externalInterface} jump filter-port-forwards
+              ${optionalString
+                (cfg.nat.externalInterface != null)
+                "iifname ${cfg.nat.externalInterface} jump filter-port-forwards"}
             }
           }
 
@@ -158,7 +160,9 @@ in
               ${concatMapStringsSep "\n    " makeForward cfg.nat.forwardPorts}
             }
             chain prerouting {
-              iifname ${cfg.nat.externalInterface} jump port-forward
+              ${optionalString
+                (cfg.nat.externalInterface != null)
+                "iifname ${cfg.nat.externalInterface} jump port-forward"}
             }
           }
         '';

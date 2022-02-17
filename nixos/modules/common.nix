@@ -1,4 +1,4 @@
-{ lib, pkgs, inputs, options, config, ... }:
+{ lib, pkgs, pkgs', inputs, options, config, ... }:
 let
   inherit (builtins) attrValues;
   inherit (lib) mkIf mkDefault mkMerge mkAliasDefinitions;
@@ -62,6 +62,8 @@ in
       nixpkgs = {
         overlays = [
           (final: prev: { nix = inputs.nix.defaultPackage.${config.nixpkgs.system}; })
+          # TODO: Wait for https://github.com/NixOS/nixpkgs/pull/159074 to arrive to nixos-unstable
+          (final: prev: { remarshal = pkgs'.master.remarshal; })
         ];
         config = {
           allowUnfree = true;
@@ -84,6 +86,9 @@ in
           efi = {
             efiSysMountPoint = mkDefault "/boot";
             canTouchEfiVariables = mkDefault false;
+          };
+          grub = {
+            memtest86.enable = mkDefault true;
           };
           systemd-boot = {
             enable = mkDefault true;

@@ -132,7 +132,7 @@ in
     (mkIf config.security.doas.enable {
       my.tmproot.unsaved.ignore = [ "/etc/doas.conf" ];
     })
-    (mkIf config.my.boot.isDevVM {
+    (mkIf config.my.build.isDevVM {
       my.tmproot.unsaved.ignore = [ "/nix" ];
 
       fileSystems = mkVMOverride {
@@ -199,7 +199,7 @@ in
         environment.persistence."${cfg.persistDir}".files =
           concatMap (k: [ k.path "${k.path}.pub" ]) config.services.openssh.hostKeys;
       })
-      (mkIf config.my.boot.isDevVM {
+      (mkIf config.my.build.isDevVM {
         fileSystems = mkVMOverride {
           # Hijack the "root" device for persistence in the VM
           "${cfg.persistDir}" = {

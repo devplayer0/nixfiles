@@ -90,7 +90,7 @@
         }))
         pkgsFlakes;
 
-      modules = mapAttrs (_: f: ./. + "/modules/${f}") {
+      modules = mapAttrs (_: f: ./. + "/nixos/modules/${f}") {
         common = "common.nix";
         build = "build.nix";
         dynamic-motd = "dynamic-motd.nix";
@@ -98,7 +98,7 @@
         firewall = "firewall.nix";
         server = "server.nix";
       };
-      homeModules = mapAttrs (_: f: ./. + "/home-modules/${f}") {
+      homeModules = mapAttrs (_: f: ./. + "/home-manager/modules/${f}") {
         common = "common.nix";
         gui = "gui.nix";
       };
@@ -111,16 +111,17 @@
       nixosModules = inlineModules modules;
       homeModules = inlineModules homeModules;
 
-      nixosConfigurations = import ./systems.nix {
+      nixosConfigurations = import ./nixos {
         inherit lib pkgsFlakes hmFlakes inputs;
         pkgs' = configPkgs';
         modules = attrValues modules;
         homeModules = attrValues homeModules;
       };
       systems = mapAttrs (_: system: system.config.system.build.toplevel) self.nixosConfigurations;
-      vms = mapAttrs (_: system: system.config.my.build.devVM) self.nixosConfigurations;
+      vms = mapAttrs (_: system: system.config.my.buildAs.devVM) self.nixosConfigurations;
+      isos = mapAttrs (_: system: system.config.my.buildAs.iso) self.nixosConfigurations;
 
-      homeConfigurations = import ./homes.nix {
+      homeConfigurations = import ./home-manager {
         inherit lib hmFlakes inputs;
         pkgs' = configPkgs';
         modules = attrValues homeModules;

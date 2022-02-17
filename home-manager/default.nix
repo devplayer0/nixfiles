@@ -43,7 +43,7 @@ mapAttrs mkHome {
   "dev@castle" = {
     system = "x86_64-linux";
     nixpkgs = "unstable";
-    config = homes/castle.nix;
+    config = configs/castle.nix;
 
     homeDirectory = "/home/dev";
     username = "dev";

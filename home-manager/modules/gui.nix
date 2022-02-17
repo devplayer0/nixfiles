@@ -12,11 +12,6 @@ in
 
   config = mkMerge [
     (mkIf cfg.enable {
-      programs = {
-        lsd.enable = true;
-        starship.enable = mkDefault true;
-      };
-
       home = {
         packages = with pkgs; [
           (nerdfonts.override {
@@ -25,18 +20,5 @@ in
         ];
       };
     })
-    {
-      programs = {
-        lsd = {
-          enableAliases = mkDefault true;
-        };
-
-        starship = {
-          settings = {
-            aws.disabled = true;
-          };
-        };
-      };
-    }
   ];
 }
