@@ -122,7 +122,7 @@ in
         };
 
         openssh = {
-          enable = true;
+          enable = mkDefault true;
         };
       };
 

@@ -10,7 +10,7 @@ in
     enable = mkBoolOpt' true "Whether to enable the nftables-based firewall.";
     trustedInterfaces = options.networking.firewall.trustedInterfaces;
     tcp = {
-      allowed = mkOpt' (listOf (either port str)) [ "ssh" ] "TCP ports to open.";
+      allowed = mkOpt' (listOf (either port str)) [ ] "TCP ports to open.";
     };
     udp = {
       allowed = mkOpt' (listOf (either port str)) [ ] "UDP ports to open.";
@@ -32,14 +32,16 @@ in
           ruleset =
             let
               trusted' = "{ ${concatStringsSep ", " cfg.trustedInterfaces} }";
+              openTCP = cfg.tcp.allowed ++ config.networking.firewall.allowedTCPPorts;
+              openUDP = cfg.udp.allowed ++ config.networking.firewall.allowedUDPPorts;
             in
             ''
               table inet filter {
                 chain wan-tcp {
-                  ${concatMapStringsSep "\n    " (p: "tcp dport ${toString p} accept") cfg.tcp.allowed}
+                  ${concatMapStringsSep "\n    " (p: "tcp dport ${toString p} accept") openTCP}
                 }
                 chain wan-udp {
-                  ${concatMapStringsSep "\n    " (p: "udp dport ${toString p} accept") cfg.udp.allowed}
+                  ${concatMapStringsSep "\n    " (p: "udp dport ${toString p} accept") openUDP}
                 }
 
                 chain wan {
