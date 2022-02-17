@@ -1,8 +1,8 @@
 { lib, pkgs, pkgs', inputs, options, config, ... }:
 let
   inherit (builtins) attrValues;
-  inherit (lib) mkIf mkDefault mkMerge mkAliasDefinitions;
-  inherit (lib.my) mkOpt' dummyOption;
+  inherit (lib) flatten optional mkIf mkDefault mkMerge mkAliasDefinitions;
+  inherit (lib.my) mkOpt' mkBoolOpt' dummyOption;
 
   defaultUsername = "dev";
   uname = config.my.user.name;
@@ -13,6 +13,14 @@ in
       # Pretty hacky but too lazy to figure out if there's a better way to alias the options
       user = mkOpt' (attrsOf anything) { } "User definition (as `users.users.*`).";
       homeConfig = mkOpt' anything { } "Home configuration (as `home-manager.users.*`)";
+
+      ssh = {
+        # If enabled, we can't set `authorized_keys` from home-manager because SSH won't like the file being owned by
+        # root.
+        strictModes = mkBoolOpt' false
+          ("Specifies whether sshd(8) should check file modes and ownership of the user's files and home directory "+
+          "before accepting login.");
+      };
     };
 
     # Only present in >=22.05, so forward declare
@@ -104,6 +112,11 @@ in
         useDHCP = mkDefault false;
         enableIPv6 = mkDefault true;
       };
+      virtualisation = {
+        forwardPorts = flatten [
+          (optional config.services.openssh.openFirewall { from = "host"; host.port = 2222; guest.port = 22; })
+        ];
+      };
 
       environment.systemPackages = with pkgs; [
         bash-completion
@@ -123,6 +136,7 @@ in
 
         openssh = {
           enable = mkDefault true;
+          extraConfig = ''StrictModes ${if config.my.ssh.strictModes then "yes" else "no"}'';
         };
       };
 
@@ -137,6 +151,9 @@ in
           fonts = [ "SourceCodePro" ];
         })
       ];
+    })
+    (mkIf config.my.build.isDevVM {
+      networking.interfaces.eth0.useDHCP = mkDefault true;
     })
   ];
 

@@ -46,6 +46,16 @@ in
             "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC+kCHXqtznkT9IBN5WxZHmXI97k3BumT+N4lyHWMo0pykpACCOcGw52EXxQveNqgcwcRUgamL9A2JTE//WRf3O4nBofeTRNKcRxTjRoUVIt/F0xbf09yWBqJOXZ8rqLkXhRvSpr1TCUZtYVp5iLtpERp622OMIqHSwa6HlxBqsCFkBeq1bRyNtYK/IaQAuBPW9MNeFriGqA0Vq078ccXp+JINxJbr+ZJybVg6PVqnMD+PgGMZQLkoWjwjH3vcJZZt584UPtrXKpNZuKy6dcMCb2U+O9NOaO66168sBVuK0kZHh51nJ7ZH38VLGiBipRgIQ1fzic3Ncn6GC9ko3/OwT jackos1998@gmail.com"
           ];
           matchBlocks = {
+            nix-dev-vm = {
+              user = "dev";
+              hostname = "localhost";
+              port = 2222;
+              extraOptions = {
+                StrictHostKeyChecking = "no";
+                UserKnownHostsFile = "/dev/null";
+              };
+            };
+
             "rsync.net" = {
               host = "rsyncnet";
               user = "16413";

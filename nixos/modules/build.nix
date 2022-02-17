@@ -61,6 +61,7 @@ in
     # Forward declare options that won't exist until the VM module is actually imported
     virtualisation = {
       diskImage = dummyOption;
+      forwardPorts = dummyOption;
     };
   };
 

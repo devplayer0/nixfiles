@@ -1,4 +1,4 @@
-{ lib, modulesPath, config, ... }:
+{ lib, pkgs, modulesPath, config, ... }:
 let
   inherit (lib) mkDefault mkForce;
 in
@@ -39,5 +39,10 @@ in
     # download-using-manifests.pl from forking even if there is
     # plenty of free memory.
     boot.kernel.sysctl."vm.overcommit_memory" = "1";
+
+    environment.systemPackages = with pkgs; [
+      # We disable networking.useDHCP, so bring this in for the user
+      dhcpcd
+    ];
   };
 }
