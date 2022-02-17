@@ -23,7 +23,6 @@
     deploy-rs.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
     # Stuff used by systems
-    nix.url = "nix/latest-release";
     #impermanence.url = "github:nix-community/impermanence";
     impermanence.url = "github:devplayer0/impermanence/qemu-vm-dirs";
   };
@@ -150,7 +149,7 @@
 
         packages = with pkgs; [
           coreutils
-          nix
+          nixVersions.stable
           agenix
           deploy-rs.deploy-rs
           home-manager
