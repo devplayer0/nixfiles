@@ -40,6 +40,12 @@ in
     # plenty of free memory.
     boot.kernel.sysctl."vm.overcommit_memory" = "1";
 
+    # This should be overridden by whatever boot mechanism is used
+    fileSystems."/" = mkDefault {
+      device = "none";
+      fsType = "tmpfs";
+    };
+
     environment.systemPackages = with pkgs; [
       # We disable networking.useDHCP, so bring this in for the user
       dhcpcd

@@ -40,8 +40,9 @@
     }:
     let
       inherit (builtins) mapAttrs attrValues;
-      inherit (lib.flake) eachDefaultSystem;
-      inherit (lib.my) attrsToList mkApp mkShellApp mkShellApp' inlineModules mkDefaultSystemsPkgs flakePackageOverlay;
+      inherit (lib) recurseIntoAttrs;
+      inherit (lib.flake) flattenTree eachDefaultSystem;
+      inherit (lib.my) attrsToList inlineModules mkDefaultSystemsPkgs flakePackageOverlay;
 
       # Extend a lib with extras that _must not_ internally reference private nixpkgs. flake-utils doesn't, but many
       # other flakes (e.g. home-manager) probably do internally.
@@ -136,6 +137,10 @@
     in
     # Stuff for each platform
     {
+      checks = flattenTree {
+        homeConfigurations = recurseIntoAttrs self.homes;
+      };
+
       devShell = pkgs.devshell.mkShell {
         env = attrsToList {
           # starship will show this
