@@ -3,6 +3,17 @@
   # So home-manager will inject the sourcing of ~/.nix-profile/etc/profile.d/nix.sh
   targets.genericLinux.enable = true;
 
+  my = {
+    ssh.matchBlocks = {
+      home = {
+        host =
+          "vm keep.core fw firewall moat.vm storage cellar.vm lxd ship.vm docker whale.vm kerberos gatehouse.lxd " +
+          "nginx.lxd upnp.lxd souterrain.lxd drawbridge.lxd mailcow.lxd";
+        user = "root";
+      };
+    };
+  };
+
   programs = {
     kakoune.enable = true;
   };
