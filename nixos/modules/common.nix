@@ -1,29 +1,11 @@
-{ lib, pkgs, pkgs', inputs, options, config, ... }:
+{ lib, pkgs, pkgs', inputs, config, ... }:
 let
-  inherit (builtins) attrValues;
-  inherit (lib) flatten optional mkIf mkDefault mkMerge mkOption mkAliasDefinitions;
-  inherit (lib.my) mkOpt' mkBoolOpt' dummyOption mkDefault';
+  inherit (lib) flatten optional mkIf mkDefault mkMerge;
+  inherit (lib.my) mkBoolOpt' dummyOption;
 in
 {
   options = with lib.types; {
     my = {
-      # TODO: Move to separate module
-      user = {
-        enable = mkBoolOpt' true "Whether to create a primary user.";
-        config = mkOption {
-          type = options.users.users.type.nestedTypes.elemType;
-          default = { };
-          description = "User definition (as `users.users.*`).";
-        };
-        homeConfig = mkOption {
-          type = options.home-manager.users.type.nestedTypes.elemType;
-          default = { };
-          # Prevent docs traversing into all of home-manager
-          visible = "shallow";
-          description = "Home configuration (as `home-manager.users.*`)";
-        };
-      };
-
       ssh = {
         strictModes = mkBoolOpt' true
           ("Specifies whether sshd(8) should check file modes and ownership of the user's files and home directory "+
@@ -36,36 +18,6 @@ in
   };
 
   config = mkMerge [
-    (let
-      cfg = config.my.user;
-      user' = cfg.config;
-    in mkIf cfg.enable
-    {
-      my = {
-        user = {
-          config = {
-            name = mkDefault' "dev";
-            isNormalUser = true;
-            uid = mkDefault 1000;
-            extraGroups = mkDefault [ "wheel" ];
-            password = mkDefault "hunter2"; # TODO: secrets...
-            openssh.authorizedKeys.keyFiles = [ lib.my.authorizedKeys ];
-          };
-          # In order for this option to evaluate on its own, home-manager expects the `name` (which is derived from the
-          # parent attr name) to be the users name, aka `home-manager.users.<name>`
-          homeConfig = { _module.args.name = lib.mkForce user'.name; };
-        };
-
-        deploy.authorizedKeys = mkDefault user'.openssh.authorizedKeys;
-      };
-
-        # mkAliasDefinitions will copy the unmerged defintions to allow the upstream submodule to deal with
-      users.users.${user'.name} = mkAliasDefinitions options.my.user.config;
-
-      # NOTE: As the "outermost" module is still being evaluated in NixOS land, special params (e.g. pkgs) won't be
-      # passed to it
-      home-manager.users.${user'.name} = mkAliasDefinitions options.my.user.homeConfig;
-    })
     {
       home-manager = {
         # Installs packages in the system config instead of in the local profile on activation

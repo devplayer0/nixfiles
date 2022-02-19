@@ -92,6 +92,7 @@
 
       modules = mapAttrs (_: f: ./. + "/nixos/modules/${f}") {
         common = "common.nix";
+        user = "user.nix";
         build = "build.nix";
         dynamic-motd = "dynamic-motd.nix";
         tmproot = "tmproot.nix";
