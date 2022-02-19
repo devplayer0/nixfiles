@@ -42,7 +42,7 @@
       inherit (builtins) mapAttrs attrValues;
       inherit (lib) recurseIntoAttrs filterAttrs;
       inherit (lib.flake) flattenTree eachDefaultSystem;
-      inherit (lib.my) attrsToNVList inlineModules mkDefaultSystemsPkgs flakePackageOverlay;
+      inherit (lib.my) inlineModules mkDefaultSystemsPkgs flakePackageOverlay;
 
       # Extend a lib with extras that _must not_ internally reference private nixpkgs. flake-utils doesn't, but many
       # other flakes (e.g. home-manager) probably do internally.
@@ -141,8 +141,6 @@
     } //
     (eachDefaultSystem (system:
     let
-      homeFlake = "$HOME/.config/nixpkgs/flake.nix";
-
       pkgs = pkgs'.unstable.${system};
       lib = pkgs.lib;
     in
@@ -153,74 +151,6 @@
         deploy = recurseIntoAttrs (pkgs.deploy-rs.lib.deployChecks self.deploy);
       };
 
-      # TODO: Move shell to a separate file?
-      devShell = pkgs.devshell.mkShell {
-        imports = [ ./install.nix ];
-
-        env = attrsToNVList {
-          # starship will show this
-          name = "devshell";
-
-          NIX_USER_CONF_FILES = toString (pkgs.writeText "nix.conf"
-            ''
-              experimental-features = nix-command flakes ca-derivations
-            '');
-        };
-
-        packages = with pkgs; [
-          coreutils
-          nixVersions.stable
-          agenix
-          deploy-rs.deploy-rs
-          home-manager
-        ];
-
-        commands = [
-          {
-            name = "repl";
-            category = "utilities";
-            help = "Open a `nix repl` with this flake";
-            command =
-              ''
-                tmp="$(mktemp --tmpdir repl.nix.XXXXX)"
-                echo "builtins.getFlake \"$PRJ_ROOT\"" > "$tmp"
-                nix repl "$tmp" || true
-                rm "$tmp"
-              '';
-          }
-          {
-            name = "home-link";
-            category = "utilities";
-            help = "Install link to flake.nix for home-manager to use";
-            command =
-              ''
-                [ -e "${homeFlake}" ] && echo "${homeFlake} already exists" && exit 1
-
-                mkdir -p "$(dirname "${homeFlake}")"
-                ln -s "$(pwd)/flake.nix" "${homeFlake}"
-                echo "Installed link to $(pwd)/flake.nix at ${homeFlake}"
-              '';
-          }
-          {
-            name = "home-unlink";
-            category = "utilities";
-            help = "Remove home-manager flake.nix link";
-            command = "rm -f ${homeFlake}";
-          }
-
-          {
-            name = "fmt";
-            category = "tasks";
-            help = pkgs.nixpkgs-fmt.meta.description;
-            command = ''exec "${pkgs.nixpkgs-fmt}/bin/nixpkgs-fmt" "$@"'';
-          }
-          {
-            name = "home-switch";
-            category = "tasks";
-            help = "Run `home-manager switch`";
-            command = ''home-manager switch --flake . "$@"'';
-          }
-        ];
-      };
+      devShell = pkgs.devshell.mkShell ./devshell;
     }));
 }
