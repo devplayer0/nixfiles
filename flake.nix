@@ -113,23 +113,18 @@
       nixosModules = inlineModules modules;
       homeModules = inlineModules homeModules;
 
-      # TODO: Cleanup and possibly even turn into modules?
       nixosConfigurations = import ./nixos {
         inherit lib pkgsFlakes hmFlakes inputs;
         pkgs' = configPkgs';
         modules = attrValues modules;
         homeModules = attrValues homeModules;
       };
-      systems = mapAttrs (_: system: system.config.system.build.toplevel) self.nixosConfigurations;
-      vms = mapAttrs (_: system: system.config.my.buildAs.devVM) self.nixosConfigurations;
-      isos = mapAttrs (_: system: system.config.my.buildAs.iso) self.nixosConfigurations;
 
       homeConfigurations = import ./home-manager {
         inherit lib hmFlakes inputs;
         pkgs' = configPkgs';
         modules = attrValues homeModules;
       };
-      homes = mapAttrs (_: home: home.activationPackage) self.homeConfigurations;
 
       deploy = {
         nodes = filterAttrs (_: n: n != null)

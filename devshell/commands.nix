@@ -48,5 +48,33 @@ in
       help = "Run `home-manager switch`";
       command = ''home-manager switch --flake . "$@"'';
     }
+    {
+      name = "build-system";
+      category = "tasks";
+      help = "Build NixOS configuration";
+      command = ''nix build "''${@:2}" ".#nixosConfigurations.\"$1\".config.system.build.toplevel"'';
+    }
+    {
+      name = "run-vm";
+      category = "tasks";
+      help = "Run NixOS configuration as a VM";
+      command =
+        ''
+          cd "$PRJ_ROOT"
+          nix run ".#nixosConfigurations.\"$1\".config.my.buildAs.devVM"
+        '';
+    }
+    {
+      name = "build-iso";
+      category = "tasks";
+      help = "Build NixOS configuration into an ISO";
+      command = ''nix build "''${@:2}" ".#nixosConfigurations.\"$1\".config.my.buildAs.iso"'';
+    }
+    {
+      name = "build-home";
+      category = "tasks";
+      help = "Build home-manager configuration";
+      command = ''nix build "''${@:2}" ".#homeConfigurations.\"$1\".activationPackage"'';
+    }
   ];
 }

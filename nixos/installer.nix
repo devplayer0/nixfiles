@@ -17,9 +17,10 @@ in
       # Whatever installer mechanism is chosen will provied an appropriate `/`
       tmproot.enable = false;
       firewall.nat.enable = false;
-      server.enable = true;
       deploy.enable = false;
       user.enable = false;
+
+      server.enable = true;
     };
 
     environment.sessionVariables = {
