@@ -50,7 +50,8 @@ let
   rootDef = {
     device = "yeet";
     fsType = "tmpfs";
-    options = [ "size=${cfg.size}" ];
+    # The default mode for tmpfs is 777
+    options = [ "size=${cfg.size}" "mode=755" ];
   };
 in
 {
@@ -98,6 +99,10 @@ in
 
         # Specifies obsolete files that should be deleted on activation - we'll never have those!
         "/etc/.clean"
+
+        # These are set in environment.etc by the sshd module, but because their mode needs to be changed,
+        # setup-etc will copy them instead of symlinking
+        "/etc/ssh/authorized_keys.d"
       ];
 
       environment.systemPackages = [

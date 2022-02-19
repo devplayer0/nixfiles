@@ -1,7 +1,7 @@
 { lib, pkgs, pkgs', inputs, options, config, ... }@args:
 let
-  inherit (builtins) mapAttrs;
-  inherit (lib) concatStringsSep optionalAttrs versionAtLeast mkMerge mkIf mkDefault mkOption;
+  inherit (builtins) mapAttrs readFile;
+  inherit (lib) concatMapStrings concatStringsSep optionalAttrs versionAtLeast mkMerge mkIf mkDefault mkOption;
   inherit (lib.hm) dag;
   inherit (lib.my) mkOpt' dummyOption;
 in
@@ -17,6 +17,7 @@ in
       ssh = {
         authKeys = {
           literal = mkOpt' (listOf singleLineStr) [ ] "List of OpenSSH keys to allow";
+          files = mkOpt' (listOf str) [ ] "List of OpenSSH key files to allow";
         };
         matchBlocks = mkOpt' (attrsOf anything) { } "SSH match blocks";
       };
@@ -42,9 +43,6 @@ in
         isStandalone = !(args ? osConfig);
 
         ssh = {
-          authKeys.literal = [
-            "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC+kCHXqtznkT9IBN5WxZHmXI97k3BumT+N4lyHWMo0pykpACCOcGw52EXxQveNqgcwcRUgamL9A2JTE//WRf3O4nBofeTRNKcRxTjRoUVIt/F0xbf09yWBqJOXZ8rqLkXhRvSpr1TCUZtYVp5iLtpERp622OMIqHSwa6HlxBqsCFkBeq1bRyNtYK/IaQAuBPW9MNeFriGqA0Vq078ccXp+JINxJbr+ZJybVg6PVqnMD+PgGMZQLkoWjwjH3vcJZZt584UPtrXKpNZuKy6dcMCb2U+O9NOaO66168sBVuK0kZHh51nJ7ZH38VLGiBipRgIQ1fzic3Ncn6GC9ko3/OwT jackos1998@gmail.com"
-          ];
           matchBlocks = {
             nix-dev-vm = {
               user = "dev";
@@ -74,10 +72,13 @@ in
         };
       };
 
-      home.file.".ssh/authorized_keys".text = mkIf config.programs.ssh.enable
-        ''
-          ${concatStringsSep "\n" config.my.ssh.authKeys.literal}
-        '';
+      home.file.".ssh/authorized_keys" = with config.my.ssh.authKeys;
+        mkIf (config.programs.ssh.enable && (literal != [ ] || files != [ ])) {
+          text = ''
+            ${concatStringsSep "\n" literal}
+            ${concatMapStrings (f: readFile f + "\n") files}
+          '';
+        };
 
       programs = {
         # Even when enabled this will only be actually installed in standalone mode
@@ -179,6 +180,10 @@ in
       };
     })
     (mkIf config.my.isStandalone {
+      my = {
+        ssh.authKeys.files = [ lib.my.authorizedKeys ];
+      };
+
       fonts.fontconfig.enable = true;
 
       home = {

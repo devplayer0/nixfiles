@@ -1,23 +1,31 @@
 { lib, pkgs, pkgs', inputs, options, config, ... }:
 let
   inherit (builtins) attrValues;
-  inherit (lib) flatten optional mkIf mkDefault mkMerge mkAliasDefinitions;
-  inherit (lib.my) mkOpt' mkBoolOpt' dummyOption;
-
-  defaultUsername = "dev";
-  uname = config.my.user.name;
+  inherit (lib) flatten optional mkIf mkDefault mkMerge mkOption mkAliasDefinitions;
+  inherit (lib.my) mkOpt' mkBoolOpt' dummyOption mkDefault';
 in
 {
   options = with lib.types; {
     my = {
-      # Pretty hacky but too lazy to figure out if there's a better way to alias the options
-      user = mkOpt' (attrsOf anything) { } "User definition (as `users.users.*`).";
-      homeConfig = mkOpt' anything { } "Home configuration (as `home-manager.users.*`)";
+      # TODO: Move to separate module
+      user = {
+        enable = mkBoolOpt' true "Whether to create a primary user.";
+        config = mkOption {
+          type = options.users.users.type.nestedTypes.elemType;
+          default = { };
+          description = "User definition (as `users.users.*`).";
+        };
+        homeConfig = mkOption {
+          type = options.home-manager.users.type.nestedTypes.elemType;
+          default = { };
+          # Prevent docs traversing into all of home-manager
+          visible = "shallow";
+          description = "Home configuration (as `home-manager.users.*`)";
+        };
+      };
 
       ssh = {
-        # If enabled, we can't set `authorized_keys` from home-manager because SSH won't like the file being owned by
-        # root.
-        strictModes = mkBoolOpt' false
+        strictModes = mkBoolOpt' true
           ("Specifies whether sshd(8) should check file modes and ownership of the user's files and home directory "+
           "before accepting login.");
       };
@@ -28,17 +36,37 @@ in
   };
 
   config = mkMerge [
+    (let
+      cfg = config.my.user;
+      user' = cfg.config;
+    in mkIf cfg.enable
     {
       my = {
         user = {
-          name = mkDefault defaultUsername;
-          isNormalUser = true;
-          uid = mkDefault 1000;
-          extraGroups = mkDefault [ "wheel" ];
-          password = mkDefault "hunter2"; # TODO: secrets...
+          config = {
+            name = mkDefault' "dev";
+            isNormalUser = true;
+            uid = mkDefault 1000;
+            extraGroups = mkDefault [ "wheel" ];
+            password = mkDefault "hunter2"; # TODO: secrets...
+            openssh.authorizedKeys.keyFiles = [ lib.my.authorizedKeys ];
+          };
+          # In order for this option to evaluate on its own, home-manager expects the `name` (which is derived from the
+          # parent attr name) to be the users name, aka `home-manager.users.<name>`
+          homeConfig = { _module.args.name = lib.mkForce user'.name; };
         };
+
+        deploy.authorizedKeys = mkDefault user'.openssh.authorizedKeys;
       };
 
+        # mkAliasDefinitions will copy the unmerged defintions to allow the upstream submodule to deal with
+      users.users.${user'.name} = mkAliasDefinitions options.my.user.config;
+
+      # NOTE: As the "outermost" module is still being evaluated in NixOS land, special params (e.g. pkgs) won't be
+      # passed to it
+      home-manager.users.${user'.name} = mkAliasDefinitions options.my.user.homeConfig;
+    })
+    {
       home-manager = {
         # Installs packages in the system config instead of in the local profile on activation
         useUserPackages = mkDefault true;
@@ -46,12 +74,7 @@ in
 
       users = {
         mutableUsers = false;
-        users.${uname} = mkAliasDefinitions options.my.user;
       };
-
-      # NOTE: As the "outermost" module is still being evaluated in NixOS land, special params (e.g. pkgs) won't be
-      # passed to it
-      home-manager.users.${uname} = config.my.homeConfig;
 
       security = {
         sudo.enable = mkDefault false;
@@ -63,6 +86,8 @@ in
 
       nix = {
         package = pkgs'.unstable.nixVersions.stable;
+        # TODO: This has been renamed to nix.settings.trusted-users in 22.05
+        trustedUsers = [ "@wheel" ];
         extraOptions =
           ''
             experimental-features = nix-command flakes ca-derivations
@@ -70,6 +95,7 @@ in
       };
       nixpkgs = {
         overlays = [
+          inputs.deploy-rs.overlay
           # TODO: Wait for https://github.com/NixOS/nixpkgs/pull/159074 to arrive to nixos-unstable
           (final: prev: { remarshal = pkgs'.master.remarshal; })
         ];
@@ -109,6 +135,7 @@ in
       };
 
       networking = {
+        domain = mkDefault "int.nul.ie";
         useDHCP = mkDefault false;
         enableIPv6 = mkDefault true;
       };
@@ -137,6 +164,8 @@ in
         openssh = {
           enable = mkDefault true;
           extraConfig = ''StrictModes ${if config.my.ssh.strictModes then "yes" else "no"}'';
+          permitRootLogin = mkDefault "no";
+          passwordAuthentication = mkDefault false;
         };
       };
 

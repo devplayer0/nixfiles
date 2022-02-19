@@ -1,5 +1,7 @@
-{ lib, pkgs, ... }:
+{ lib, pkgs, modulesPath, ... }:
 {
+  imports = [ "${modulesPath}/profiles/qemu-guest.nix" ];
+
   my = {
     firewall = {
       trustedInterfaces = [ "blah" ];
@@ -15,11 +17,20 @@
       };
     };
     server.enable = true;
-
-    homeConfig = {};
+    tmproot.unsaved.ignore = [
+      "/var/db/dhcpcd/enp1s0.lease"
+    ];
   };
 
   fileSystems = {
+    "/boot" = {
+      device = "/dev/disk/by-label/ESP";
+      fsType = "vfat";
+    };
+    "/nix" = {
+      device = "/dev/disk/by-label/nix";
+      fsType = "ext4";
+    };
     "/persist" = {
       device = "/dev/disk/by-label/persist";
       fsType = "ext4";
@@ -27,5 +38,7 @@
     };
   };
 
-  networking = { };
+  networking = {
+    interfaces.enp1s0.useDHCP = true;
+  };
 }

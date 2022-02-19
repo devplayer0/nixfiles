@@ -40,9 +40,9 @@
     }:
     let
       inherit (builtins) mapAttrs attrValues;
-      inherit (lib) recurseIntoAttrs;
+      inherit (lib) recurseIntoAttrs filterAttrs;
       inherit (lib.flake) flattenTree eachDefaultSystem;
-      inherit (lib.my) attrsToList inlineModules mkDefaultSystemsPkgs flakePackageOverlay;
+      inherit (lib.my) attrsToNVList inlineModules mkDefaultSystemsPkgs flakePackageOverlay;
 
       # Extend a lib with extras that _must not_ internally reference private nixpkgs. flake-utils doesn't, but many
       # other flakes (e.g. home-manager) probably do internally.
@@ -97,6 +97,7 @@
         tmproot = "tmproot.nix";
         firewall = "firewall.nix";
         server = "server.nix";
+        deploy-rs = "deploy-rs.nix";
       };
       homeModules = mapAttrs (_: f: ./. + "/home-manager/modules/${f}") {
         common = "common.nix";
@@ -111,6 +112,7 @@
       nixosModules = inlineModules modules;
       homeModules = inlineModules homeModules;
 
+      # TODO: Cleanup and possibly even turn into modules?
       nixosConfigurations = import ./nixos {
         inherit lib pkgsFlakes hmFlakes inputs;
         pkgs' = configPkgs';
@@ -126,7 +128,15 @@
         pkgs' = configPkgs';
         modules = attrValues homeModules;
       };
-      homes = mapAttrs(_: home: home.activationPackage) self.homeConfigurations;
+      homes = mapAttrs (_: home: home.activationPackage) self.homeConfigurations;
+
+      deploy = {
+        nodes = filterAttrs (_: n: n != null)
+          (mapAttrs (_: system: system.config.my.deploy.rendered) self.nixosConfigurations);
+
+        autoRollback = true;
+        magicRollback = true;
+      };
     } //
     (eachDefaultSystem (system:
     let
@@ -139,10 +149,14 @@
     {
       checks = flattenTree {
         homeConfigurations = recurseIntoAttrs self.homes;
+        deploy = recurseIntoAttrs (pkgs.deploy-rs.lib.deployChecks self.deploy);
       };
 
+      # TODO: Move shell to a separate file?
       devShell = pkgs.devshell.mkShell {
-        env = attrsToList {
+        imports = [ ./install.nix ];
+
+        env = attrsToNVList {
           # starship will show this
           name = "devshell";
 
