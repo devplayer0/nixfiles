@@ -1,4 +1,4 @@
-{ lib, pkgs, pkgs', inputs, options, config, ... }@args:
+{ lib, pkgs, pkgs', inputs, config, ... }@args:
 let
   inherit (builtins) mapAttrs readFile;
   inherit (lib) concatMapStrings concatStringsSep optionalAttrs versionAtLeast mkMerge mkIf mkDefault mkOption;
@@ -153,6 +153,7 @@ in
 
       home = {
         packages = with pkgs; [
+          file
           tree
           iperf3
         ];
@@ -170,7 +171,9 @@ in
     (mkIf (config.my.isStandalone || !args.osConfig.home-manager.useGlobalPkgs) {
       # Note: If globalPkgs mode is on, then these will be overridden by the NixOS equivalents of these options
       nixpkgs = {
-        overlays = [ ];
+        overlays = [
+          inputs.deploy-rs.overlay
+        ];
         config = {
           allowUnfree = true;
         };

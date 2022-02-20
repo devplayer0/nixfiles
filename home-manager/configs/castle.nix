@@ -11,6 +11,10 @@
         targets.genericLinux.enable = true;
 
         my = {
+          deploy.node = {
+            hostname = "h.nul.ie";
+            sshOpts = [ "-4" "-p" "8022" ];
+          };
           ssh.matchBlocks = {
             home = {
               host =

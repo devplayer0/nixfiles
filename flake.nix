@@ -40,7 +40,7 @@
     }:
     let
       inherit (builtins) mapAttrs;
-      inherit (lib) recurseIntoAttrs filterAttrs evalModules;
+      inherit (lib) recurseIntoAttrs evalModules;
       inherit (lib.flake) flattenTree eachDefaultSystem;
       inherit (lib.my) mkDefaultSystemsPkgs flakePackageOverlay;
 
@@ -108,8 +108,12 @@
             };
           }
 
+          # Not an internal part of the module system apparently, but it doesn't have any dependencies other than lib
+          "${pkgsFlakes.unstable}/nixos/modules/misc/assertions.nix"
+
           ./nixos
           ./home-manager
+          ./deploy-rs.nix
         ] ++ configs;
       };
     in
@@ -125,13 +129,7 @@
       nixosConfigurations = mapAttrs (_: s: s.configuration) nixfiles.config.nixos.systems;
       homeConfigurations = mapAttrs (_: s: s.configuration) nixfiles.config.home-manager.homes;
 
-      deploy = {
-        nodes = filterAttrs (_: n: n != null)
-          (mapAttrs (_: system: system.config.my.deploy.rendered) self.nixosConfigurations);
-
-        autoRollback = true;
-        magicRollback = true;
-      };
+      deploy = nixfiles.config.deploy-rs.rendered;
     } //
     (eachDefaultSystem (system:
     let

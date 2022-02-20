@@ -91,7 +91,7 @@ rec {
       sshUser = nullOrOpt' str "Username deploy-rs will deploy with.";
       user = nullOrOpt' str "Username deploy-rs will deploy with.";
       sudo = nullOrOpt' str "Command to elevate privileges with (used if the deployment user != profile user).";
-      sshOpts = nullOrOpt' (listOf str)
+      sshOpts = mkOpt' (listOf str) [ ]
         "Options deploy-rs will pass to ssh. Note: overriding at a lower level _merges_ options.";
       fastConnection = nullOrOpt' bool "Whether to copy the whole closure instead of using substitution.";
       autoRollback = nullOrOpt' bool "Whether to roll back the profile if activation fails.";
@@ -104,18 +104,30 @@ rec {
       path = mkOpt' package "" "Derivation to build (should include activation script).";
       profilePath = nullOrOpt' str "Path to profile location";
     } // globalOpts;
-    profile = submodule { options = profileOpts; };
+    profileType = submodule { options = profileOpts; };
 
     nodeOpts = {
       hostname = mkOpt' str "" "Hostname deploy-rs will connect to.";
       profilesOrder = nullOrOpt' (listOf str)
         "Order to deploy profiles in (remainder will be deployed in arbitrary order).";
-      profiles = mkOpt' (attrsOf profile) { } "Profiles to deploy.";
+      profiles = mkOpt' (attrsOf profileType) { } "Profiles to deploy.";
     } // globalOpts;
+    nodeType = submodule { options = nodeOpts; };
+
+    deployOpts = {
+      nodes = mkOption {
+        type = attrsOf nodeType;
+        default = { };
+        internal = true;
+        description = "deploy-rs node configurations.";
+      };
+    } // globalOpts;
+    deployType = submodule { options = deployOpts; };
   in
-  rec {
-    inherit profile;
-    node = submodule { options = nodeOpts; };
+  {
+    inherit globalOpts;
+    node = mkOpt' nodeType { } "deploy-rs node configuration.";
+    deploy = mkOpt' deployType { } "deploy-rs configuration.";
 
     filterOpts = filterAttrsRecursive (_: v: v != null);
   };
