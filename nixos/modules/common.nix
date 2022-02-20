@@ -53,8 +53,6 @@ in
       nixpkgs = {
         overlays = [
           inputs.deploy-rs.overlay
-          # TODO: Wait for https://github.com/NixOS/nixpkgs/pull/159074 to arrive to nixos-unstable
-          (final: prev: { remarshal = pkgs'.master.remarshal; })
         ];
         config = {
           allowUnfree = true;
@@ -109,7 +107,8 @@ in
 
       services = {
         kmscon = {
-          enable = mkDefault true;
+          # As it turns out, kmscon hasn't been updated in years and has some bugs...
+          enable = mkDefault false;
           hwRender = mkDefault true;
           extraOptions = "--verbose";
           extraConfig =

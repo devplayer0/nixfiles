@@ -170,10 +170,7 @@ in
     (mkIf (config.my.isStandalone || !args.osConfig.home-manager.useGlobalPkgs) {
       # Note: If globalPkgs mode is on, then these will be overridden by the NixOS equivalents of these options
       nixpkgs = {
-        overlays = [
-          # TODO: Wait for https://github.com/NixOS/nixpkgs/pull/159074 to arrive to nixos-unstable
-          (final: prev: { remarshal = pkgs'.master.remarshal; })
-        ];
+        overlays = [ ];
         config = {
           allowUnfree = true;
         };
