@@ -1,20 +1,29 @@
-{ pkgs, ... }:
 {
-  # So home-manager will inject the sourcing of ~/.nix-profile/etc/profile.d/nix.sh
-  targets.genericLinux.enable = true;
+  home-manager.homes."dev@castle" = {
+    system = "x86_64-linux";
+    nixpkgs = "unstable";
+    homeDirectory = "/home/dev";
+    username = "dev";
 
-  my = {
-    ssh.matchBlocks = {
-      home = {
-        host =
-          "vm keep.core fw firewall moat.vm storage cellar.vm lxd ship.vm docker whale.vm kerberos gatehouse.lxd " +
-          "nginx.lxd upnp.lxd souterrain.lxd drawbridge.lxd mailcow.lxd";
-        user = "root";
+    configuration = { pkgs, ... }:
+      {
+        # So home-manager will inject the sourcing of ~/.nix-profile/etc/profile.d/nix.sh
+        targets.genericLinux.enable = true;
+
+        my = {
+          ssh.matchBlocks = {
+            home = {
+              host =
+                "vm keep.core fw firewall moat.vm storage cellar.vm lxd ship.vm docker whale.vm kerberos gatehouse.lxd " +
+                "nginx.lxd upnp.lxd souterrain.lxd drawbridge.lxd mailcow.lxd";
+              user = "root";
+            };
+          };
+        };
+
+        programs = {
+          kakoune.enable = true;
+        };
       };
-    };
-  };
-
-  programs = {
-    kakoune.enable = true;
   };
 }

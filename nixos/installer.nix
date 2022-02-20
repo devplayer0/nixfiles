@@ -1,97 +1,106 @@
-{ lib, pkgs, modulesPath, config, ... }:
-let
-  inherit (lib) mkDefault mkForce mkImageMediaOverride;
-
-  installRoot = "/mnt";
-in
 {
-  imports = [
-    # Lots of kernel modules and firmware
-    "${modulesPath}/profiles/all-hardware.nix"
-    # Useful tools to have
-    "${modulesPath}/profiles/base.nix"
-  ];
+  nixos.systems.installer = {
+    system = "x86_64-linux";
+    nixpkgs = "unstable";
+    docCustom = false;
 
-  config = {
-    my = {
-      # Whatever installer mechanism is chosen will provied an appropriate `/`
-      tmproot.enable = false;
-      firewall.nat.enable = false;
-      deploy.enable = false;
-      user.enable = false;
+    configuration =
+      { lib, pkgs, modulesPath, config, ... }:
+      let
+        inherit (lib) mkDefault mkForce mkImageMediaOverride;
 
-      server.enable = true;
-    };
+        installRoot = "/mnt";
+      in
+      {
+        imports = [
+          # Lots of kernel modules and firmware
+          "${modulesPath}/profiles/all-hardware.nix"
+          # Useful tools to have
+          "${modulesPath}/profiles/base.nix"
+        ];
 
-    environment.sessionVariables = {
-      INSTALL_ROOT = installRoot;
-    };
-    users.users.root.openssh.authorizedKeys.keyFiles = [ lib.my.authorizedKeys ];
-    home-manager.users.root = {
-      programs = {
-        starship.settings = {
-          hostname.ssh_only = false;
+        config = {
+          my = {
+            # Whatever installer mechanism is chosen will provied an appropriate `/`
+            tmproot.enable = false;
+            firewall.nat.enable = false;
+            deploy.enable = false;
+            user.enable = false;
+
+            server.enable = true;
+          };
+
+          environment.sessionVariables = {
+            INSTALL_ROOT = installRoot;
+          };
+          users.users.root.openssh.authorizedKeys.keyFiles = [ lib.my.authorizedKeys ];
+          home-manager.users.root = {
+            programs = {
+              starship.settings = {
+                hostname.ssh_only = false;
+              };
+            };
+
+            home.shellAliases = {
+              show-hw-config = "nixos-generate-config --show-hardware-config --root $INSTALL_ROOT";
+            };
+          };
+
+          services = {
+            openssh = {
+              permitRootLogin = mkImageMediaOverride "prohibit-password";
+            };
+          };
+
+          # Will be set dynamically
+          networking.hostName = "";
+
+          # This should be overridden by whatever boot mechanism is used
+          fileSystems."/" = mkDefault {
+            device = "none";
+            fsType = "tmpfs";
+          };
+
+          systemd.tmpfiles.rules = [
+            "d ${installRoot} 0755 root root"
+          ];
+          boot.postBootCommands =
+            ''
+              ${pkgs.nettools}/bin/hostname "installer-$(${pkgs.coreutils}/bin/head -c4 /dev/urandom | \
+                ${pkgs.coreutils}/bin/od -A none -t x4 | \
+                ${pkgs.gawk}/bin/awk '{ print $1 }')"
+            '';
+
+          environment.systemPackages = with pkgs; [
+            # We disable networking.useDHCP, so bring these in for the user
+            # dhcpcd probably has more features, but dhclient actually seems a bit more simple
+            (pkgs.writeShellScriptBin "dhclient" ''exec ${pkgs.dhcp}/bin/dhclient -v "$@"'')
+            dhcpcd
+          ];
+
+          # Much of this onwards is yoinked from modules/profiles/installation-device.nix
+          # Good to have docs in the installer!
+          # TODO: docs rebuilding every time?
+          documentation.enable = mkForce false;
+          documentation.nixos.enable = mkForce false;
+
+          # Enable wpa_supplicant, but don't start it by default.
+          networking.wireless.enable = mkDefault true;
+          networking.wireless.userControlled.enable = true;
+          systemd.services.wpa_supplicant.wantedBy = mkForce [];
+
+          # Tell the Nix evaluator to garbage collect more aggressively.
+          # This is desirable in memory-constrained environments that don't
+          # (yet) have swap set up.
+          environment.variables.GC_INITIAL_HEAP_SIZE = "1M";
+
+          # Make the installer more likely to succeed in low memory
+          # environments.  The kernel's overcommit heustistics bite us
+          # fairly often, preventing processes such as nix-worker or
+          # download-using-manifests.pl from forking even if there is
+          # plenty of free memory.
+          boot.kernel.sysctl."vm.overcommit_memory" = "1";
         };
       };
-
-      home.shellAliases = {
-        show-hw-config = "nixos-generate-config --show-hardware-config --root $INSTALL_ROOT";
-      };
-    };
-
-    services = {
-      openssh = {
-        permitRootLogin = mkImageMediaOverride "prohibit-password";
-      };
-    };
-
-    # Will be set dynamically
-    networking.hostName = "";
-
-    # This should be overridden by whatever boot mechanism is used
-    fileSystems."/" = mkDefault {
-      device = "none";
-      fsType = "tmpfs";
-    };
-
-    systemd.tmpfiles.rules = [
-      "d ${installRoot} 0755 root root"
-    ];
-    boot.postBootCommands =
-      ''
-        ${pkgs.nettools}/bin/hostname "installer-$(${pkgs.coreutils}/bin/head -c4 /dev/urandom | \
-          ${pkgs.coreutils}/bin/od -A none -t x4 | \
-          ${pkgs.gawk}/bin/awk '{ print $1 }')"
-      '';
-
-    environment.systemPackages = with pkgs; [
-      # We disable networking.useDHCP, so bring these in for the user
-      # dhcpcd probably has more features, but dhclient actually seems a bit more simple
-      (pkgs.writeShellScriptBin "dhclient" ''exec ${pkgs.dhcp}/bin/dhclient -v "$@"'')
-      dhcpcd
-    ];
-
-    # Much of this onwards is yoinked from modules/profiles/installation-device.nix
-    # Good to have docs in the installer!
-    # TODO: docs rebuilding every time?
-    documentation.enable = mkForce false;
-    documentation.nixos.enable = mkForce false;
-
-    # Enable wpa_supplicant, but don't start it by default.
-    networking.wireless.enable = mkDefault true;
-    networking.wireless.userControlled.enable = true;
-    systemd.services.wpa_supplicant.wantedBy = mkForce [];
-
-    # Tell the Nix evaluator to garbage collect more aggressively.
-    # This is desirable in memory-constrained environments that don't
-    # (yet) have swap set up.
-    environment.variables.GC_INITIAL_HEAP_SIZE = "1M";
-
-    # Make the installer more likely to succeed in low memory
-    # environments.  The kernel's overcommit heustistics bite us
-    # fairly often, preventing processes such as nix-worker or
-    # download-using-manifests.pl from forking even if there is
-    # plenty of free memory.
-    boot.kernel.sysctl."vm.overcommit_memory" = "1";
   };
 }

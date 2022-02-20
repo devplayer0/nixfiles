@@ -39,10 +39,10 @@
       ...
     }:
     let
-      inherit (builtins) mapAttrs attrValues;
-      inherit (lib) recurseIntoAttrs filterAttrs;
+      inherit (builtins) mapAttrs;
+      inherit (lib) recurseIntoAttrs filterAttrs evalModules;
       inherit (lib.flake) flattenTree eachDefaultSystem;
-      inherit (lib.my) inlineModules mkDefaultSystemsPkgs flakePackageOverlay;
+      inherit (lib.my) mkDefaultSystemsPkgs flakePackageOverlay;
 
       # Extend a lib with extras that _must not_ internally reference private nixpkgs. flake-utils doesn't, but many
       # other flakes (e.g. home-manager) probably do internally.
@@ -90,41 +90,40 @@
         }))
         pkgsFlakes;
 
-      modules = mapAttrs (_: f: ./. + "/nixos/modules/${f}") {
-        common = "common.nix";
-        user = "user.nix";
-        build = "build.nix";
-        dynamic-motd = "dynamic-motd.nix";
-        tmproot = "tmproot.nix";
-        firewall = "firewall.nix";
-        server = "server.nix";
-        deploy-rs = "deploy-rs.nix";
-      };
-      homeModules = mapAttrs (_: f: ./. + "/home-manager/modules/${f}") {
-        common = "common.nix";
-        gui = "gui.nix";
+      configs = [
+        # Systems
+        nixos/boxes/colony.nix
+        nixos/installer.nix
+
+        # Homes
+        home-manager/configs/castle.nix
+      ];
+
+      nixfiles = evalModules {
+        modules = [
+          {
+            _module.args = {
+              inherit lib pkgsFlakes hmFlakes inputs;
+              pkgs' = configPkgs';
+            };
+          }
+
+          ./nixos
+          ./home-manager
+        ] ++ configs;
       };
     in
     # Platform independent stuff
     {
       lib = lib.my;
       nixpkgs = pkgs';
+      inherit nixfiles;
 
-      nixosModules = inlineModules modules;
-      homeModules = inlineModules homeModules;
+      nixosModules = nixfiles.config.nixos.modules;
+      homeModules = nixfiles.config.home-manager.modules;
 
-      nixosConfigurations = import ./nixos {
-        inherit lib pkgsFlakes hmFlakes inputs;
-        pkgs' = configPkgs';
-        modules = attrValues modules;
-        homeModules = attrValues homeModules;
-      };
-
-      homeConfigurations = import ./home-manager {
-        inherit lib hmFlakes inputs;
-        pkgs' = configPkgs';
-        modules = attrValues homeModules;
-      };
+      nixosConfigurations = mapAttrs (_: s: s.configuration) nixfiles.config.nixos.systems;
+      homeConfigurations = mapAttrs (_: s: s.configuration) nixfiles.config.home-manager.homes;
 
       deploy = {
         nodes = filterAttrs (_: n: n != null)
@@ -142,7 +141,7 @@
     # Stuff for each platform
     {
       checks = flattenTree {
-        homeConfigurations = recurseIntoAttrs self.homes;
+        homeConfigurations = recurseIntoAttrs (mapAttrs (_: h: h.activationPackage) self.homeConfigurations);
         deploy = recurseIntoAttrs (pkgs.deploy-rs.lib.deployChecks self.deploy);
       };
 

@@ -17,6 +17,11 @@ in
     documentation.nixos.options.warningsAreErrors = dummyOption;
   };
 
+  imports = [
+    inputs.impermanence.nixosModule
+    inputs.agenix.nixosModules.age
+  ];
+
   config = mkMerge [
     {
       home-manager = {

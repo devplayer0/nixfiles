@@ -3,11 +3,10 @@ let
   inherit (builtins) replaceStrings elemAt mapAttrs;
   inherit (lib)
     genAttrs mapAttrs' mapAttrsToList filterAttrsRecursive nameValuePair types
-    mkOption mkOverride mkForce;
+    mkOption mkOverride mkForce mergeEqualOption;
   inherit (lib.flake) defaultSystems;
 in
 rec {
-  addPrefix = prefix: mapAttrs' (n: v: { name = "${prefix}${n}"; value = v; });
   # Yoinked from nixpkgs/nixos/modules/services/networking/nat.nix
   isIPv6 = ip: builtins.length (lib.splitString ":" ip) > 2;
   parseIPPort = ipp:
@@ -31,13 +30,6 @@ rec {
     let
       app = pkgs.writeShellApplication args;
     in mkApp "${app}/bin/${app.meta.mainProgram}";
-  inlineModules = modules: mapAttrs
-    (_: path:
-      {
-        _file = path;
-        imports = [ (import path) ];
-      })
-    modules;
   flakePackageOverlay' = flake: pkg: system: (final: prev:
     let
       pkg' = if pkg != null then flake.packages.${system}.${pkg} else flake.defaultPackage.${system};
@@ -47,6 +39,12 @@ rec {
       ${name} = pkg';
     });
   flakePackageOverlay = flake: flakePackageOverlay' flake null;
+
+  inlineModule' = path: module: {
+    _file = path;
+    imports = [ module ];
+  };
+  inlineModule = path: inlineModule' path (import path);
 
   # Merge together modules which are defined as functions with others that aren't
   naiveModule = with types; (coercedTo (attrsOf anything) (conf: { ... }: conf) (functionTo (attrsOf anything)));
@@ -73,6 +71,17 @@ rec {
   homeStateVersion = hmBranch: {
     # The flake passes a default setting, but we don't care about that
     home.stateVersion = mkForce (if hmBranch == "unstable" then "22.05" else "21.11");
+  };
+
+  commonOpts = with types; {
+    moduleType = mkOptionType {
+      name = "Inline flake-exportable module";
+      merge = loc: defs: inlineModule (mergeEqualOption loc defs);
+    };
+
+    system = mkOpt' (enum defaultSystems) null "Nix-style system string.";
+    nixpkgs = mkOpt' (enum [ "master" "unstable" "stable" "mine" ]) "unstable" "Branch of nixpkgs to use.";
+    home-manager = mkOpt' (enum [ "unstable" "stable" ]) "unstable" "Branch of home-manager to use.";
   };
 
   deploy-rs =
