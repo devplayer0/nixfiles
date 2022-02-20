@@ -14,6 +14,9 @@ in
         description = "Whether home-manager is running inside a NixOS system or not.";
       };
 
+      shell = mkOpt' str null "User's shell (so NixOS or others can set it externally).";
+      fishCompletionsFrequency = mkOpt' (nullOr str) "daily" "How often to generate fish completions from manpages.";
+
       ssh = {
         authKeys = {
           literal = mkOpt' (listOf singleLineStr) [ ] "List of OpenSSH keys to allow";
@@ -41,6 +44,8 @@ in
     {
       my = {
         isStandalone = !(args ? osConfig);
+
+        shell = mkDefault "${config.programs.fish.package}/bin/fish";
 
         ssh = {
           matchBlocks = {
@@ -99,7 +104,10 @@ in
         };
 
         bash = {
-          # This not only installs bash but has home-manager control .bashrc and friends
+          # This does not install bash but has home-manager control .bashrc and friends
+          # Bash has some really weird behaviour with non-login and non-interactive shells, particularly around which
+          # of profile and bashrc are loaded when. This causes issues with PATH not being set correctly for
+          # non-interactive SSH...
           enable = mkDefault true;
           initExtra =
           ''
@@ -107,6 +115,25 @@ in
               cd "$(nix eval "''${@:2}" --impure --raw --expr "builtins.getFlake \"$1\"")"
             }
           '';
+          shellAliases = {
+            hm = "home-manager";
+          };
+        };
+
+        fish = {
+          enable = mkDefault true;
+          functions = {
+            # Silence the default greeting
+            fish_greeting = ":";
+            flake-src = {
+              description = "cd into a flake reference's source directory";
+              body = ''cd (nix eval $argv[2..] --impure --raw --expr "builtins.getFlake $argv[1]")'';
+            };
+          };
+          shellAbbrs = {
+            hm = "home-manager";
+            k = "kubectl";
+          };
         };
 
         ssh = {
@@ -161,9 +188,6 @@ in
         sessionVariables = {
           EDITOR = "vim";
         };
-        shellAliases = {
-          hm = "home-manager";
-        };
 
         language.base = mkDefault "en_IE.UTF-8";
       };
@@ -192,5 +216,31 @@ in
         ];
       };
     })
+    (mkIf pkgs.stdenv.isLinux (mkMerge [
+      (mkIf (config.my.isStandalone && config.programs.fish.enable && config.my.fishCompletionsFrequency != null) {
+        systemd.user = {
+          services.fish-update-completions = {
+            Unit.Description = "fish completions update";
+
+            Service = {
+              Type = "oneshot";
+              ExecStart = "${config.programs.fish.package}/bin/fish -c fish_update_completions";
+            };
+          };
+
+          timers.fish-update-completions = {
+            Unit.Description = "fish completions update timer";
+
+            Timer = {
+              OnCalendar = config.my.fishCompletionsFrequency;
+              Persistent = true;
+              Unit = "fish-update-completions.service";
+            };
+
+            Install.WantedBy = [ "timers.target" ];
+          };
+        };
+      })
+    ]))
   ];
 }

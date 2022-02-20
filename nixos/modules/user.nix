@@ -32,6 +32,9 @@ in
           uid = mkDefault 1000;
           extraGroups = mkDefault [ "wheel" ];
           password = mkDefault "hunter2"; # TODO: secrets...
+          shell =
+            let shell = cfg.homeConfig.my.shell;
+            in mkIf (shell != null) (mkDefault' shell);
           openssh.authorizedKeys.keyFiles = [ lib.my.authorizedKeys ];
         };
         # In order for this option to evaluate on its own, home-manager expects the `name` (which is derived from the

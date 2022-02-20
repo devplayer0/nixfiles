@@ -24,6 +24,11 @@ in
 
   config = mkMerge [
     {
+      system = {
+        stateVersion = "21.11";
+        configurationRevision = with inputs; mkIf (self ? rev) self.rev;
+      };
+
       home-manager = {
         # Installs packages in the system config instead of in the local profile on activation
         useUserPackages = mkDefault true;
@@ -105,6 +110,12 @@ in
         vim
       ];
 
+      programs = {
+        # This will enable generating completions at build time and prevent home-manager fish from generating them
+        # locally
+        fish.enable = mkDefault true;
+      };
+
       services = {
         kmscon = {
           # As it turns out, kmscon hasn't been updated in years and has some bugs...
@@ -123,11 +134,6 @@ in
           permitRootLogin = mkDefault "no";
           passwordAuthentication = mkDefault false;
         };
-      };
-
-      system = {
-        stateVersion = "21.11";
-        configurationRevision = with inputs; mkIf (self ? rev) self.rev;
       };
     }
     (mkIf config.services.kmscon.enable {
