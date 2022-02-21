@@ -140,7 +140,8 @@
     # Stuff for each platform
     {
       checks = flattenTree {
-        homeConfigurations = recurseIntoAttrs (mapAttrs (_: h: h.activationPackage) self.homeConfigurations);
+        homeConfigurations = recurseIntoAttrs (mapAttrs (_: h: h.activationPackage)
+          (lib.filterAttrs (_: h: h.config.nixpkgs.system == system) self.homeConfigurations));
         deploy = recurseIntoAttrs (pkgs.deploy-rs.lib.deployChecks self.deploy);
       };
 
