@@ -265,6 +265,11 @@ in
     ]))
     (mkIf (pkgs.stdenv.isDarwin && config.my.isStandalone) {
       home = {
+        # No targets.genericLinux equivalent apparently
+        sessionVariablesExtra =
+          ''
+            . "${pkgs.nix}/etc/profile.d/nix.sh"
+          '';
         packages = with pkgs; [
           cacert
         ];
