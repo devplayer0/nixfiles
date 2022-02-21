@@ -97,6 +97,7 @@
 
         # Homes
         home-manager/configs/castle.nix
+        home-manager/configs/macsimum.nix
       ];
 
       nixfiles = evalModules {

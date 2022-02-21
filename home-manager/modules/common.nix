@@ -24,7 +24,6 @@ in
           literal = mkOpt' (listOf singleLineStr) [ ] "List of OpenSSH keys to allow";
           files = mkOpt' (listOf str) [ ] "List of OpenSSH key files to allow";
         };
-        matchBlocks = mkOpt' (attrsOf anything) { } "SSH match blocks";
       };
     };
 
@@ -48,35 +47,6 @@ in
         isStandalone = !(args ? osConfig);
 
         shell = mkDefault "${config.programs.fish.package}/bin/fish";
-
-        ssh = {
-          matchBlocks = {
-            nix-dev-vm = {
-              user = "dev";
-              hostname = "localhost";
-              port = 2222;
-              extraOptions = {
-                StrictHostKeyChecking = "no";
-                UserKnownHostsFile = "/dev/null";
-              };
-            };
-
-            "rsync.net" = {
-              host = "rsyncnet";
-              user = "16413";
-              hostname = "ch-s010.rsync";
-            };
-
-            shoe = {
-              host = "shoe.netsoc.tcd.ie shoe";
-              user = "netsoc";
-            };
-            netsocBoxes = {
-              host = "cube spoon napalm gandalf saruman";
-              user = "root";
-            };
-          };
-        };
       };
 
       home.file.".ssh/authorized_keys" = with config.my.ssh.authKeys;
@@ -152,16 +122,38 @@ in
 
         ssh = {
           enable = mkDefault true;
-          matchBlocks = (mapAttrs (_: b: dag.entryBefore [ "all" ] b) config.my.ssh.matchBlocks) // {
-            all = {
-              host = "*";
-              identityFile = [
-                "~/.ssh/id_rsa"
-                "~/.ssh/netsoc"
-                "~/.ssh/borg"
-              ];
+          matchBlocks = {
+            nix-dev-vm = {
+              user = "dev";
+              hostname = "localhost";
+              port = 2222;
+              extraOptions = {
+                StrictHostKeyChecking = "no";
+                UserKnownHostsFile = "/dev/null";
+              };
+            };
+
+            "rsync.net" = {
+              host = "rsyncnet";
+              user = "16413";
+              hostname = "ch-s010.rsync";
+            };
+
+            shoe = {
+              host = "shoe.netsoc.tcd.ie shoe";
+              user = "netsoc";
+            };
+            netsocBoxes = {
+              host = "cube spoon napalm gandalf saruman";
+              user = "root";
             };
           };
+          extraConfig =
+            ''
+              IdentityFile ~/.ssh/id_rsa
+              IdentityFile ~/.ssh/netsoc
+              IdentityFile ~/.ssh/borg
+            '';
         };
 
         direnv = {
@@ -197,6 +189,7 @@ in
           file
           tree
           iperf3
+          mosh
         ];
 
         sessionVariables = {
@@ -256,5 +249,12 @@ in
         };
       })
     ]))
+    (mkIf (pkgs.stdenv.isDarwin && config.my.isStandalone) {
+      home = {
+        packages = with pkgs; [
+          cacert
+        ];
+      };
+    })
   ];
 }

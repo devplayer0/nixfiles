@@ -15,6 +15,9 @@
             hostname = "h.nul.ie";
             sshOpts = [ "-4" "-p" "8022" ];
           };
+        };
+
+        programs = {
           ssh.matchBlocks = {
             home = {
               host =
@@ -23,9 +26,7 @@
               user = "root";
             };
           };
-        };
 
-        programs = {
           kakoune.enable = true;
         };
       };
