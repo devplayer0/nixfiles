@@ -9,6 +9,7 @@
       {
         my = {
           deploy.enable = false;
+          nix.config.cores = "6";
         };
 
         programs = {

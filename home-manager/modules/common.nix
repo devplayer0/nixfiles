@@ -3,7 +3,7 @@ let
   inherit (builtins) listToAttrs mapAttrs readFile;
   inherit (lib)
     optionalString nameValuePair concatMapStrings concatStringsSep optionalAttrs versionAtLeast
-    mkMerge mkIf mkDefault mkOption;
+    mapAttrsToList mkMerge mkIf mkDefault mkOption;
   inherit (lib.hm) dag;
   inherit (lib.my) mkOpt' dummyOption;
 in
@@ -18,6 +18,11 @@ in
 
       shell = mkOpt' str null "User's shell (so NixOS or others can set it externally).";
       fishCompletionsFrequency = mkOpt' (nullOr str) "daily" "How often to generate fish completions from manpages.";
+
+      nix = {
+        # TODO: Until https://github.com/nix-community/home-manager/issues/2324
+        config = mkOpt' (attrsOf str) { } "nix.conf options";
+      };
 
       ssh = {
         authKeys = {
@@ -47,6 +52,11 @@ in
         isStandalone = !(args ? osConfig);
 
         shell = mkDefault "${config.programs.fish.package}/bin/fish";
+
+        nix.config = {
+          experimental-features = mkDefault "nix-command flakes ca-derivations";
+          max-jobs = mkDefault "auto";
+        };
       };
 
       home.file.".ssh/authorized_keys" = with config.my.ssh.authKeys;
@@ -56,6 +66,10 @@ in
             ${concatMapStrings (f: readFile f + "\n") files}
           '';
         };
+
+      xdg.configFile."nix/nix.conf" = mkIf (config.my.nix.config != { }) {
+        text = (concatStringsSep "\n" (mapAttrsToList (k: v: "${k} = ${v}") config.my.nix.config)) + "\n";
+      };
 
       programs = {
         # Even when enabled this will only be actually installed in standalone mode

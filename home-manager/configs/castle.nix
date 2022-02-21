@@ -15,6 +15,7 @@
             hostname = "h.nul.ie";
             sshOpts = [ "-4" "-p" "8022" ];
           };
+          nix.config.cores = "16";
         };
 
         programs = {
