@@ -1,7 +1,9 @@
 { lib, pkgs, pkgs', inputs, config, ... }@args:
 let
-  inherit (builtins) mapAttrs readFile;
-  inherit (lib) concatMapStrings concatStringsSep optionalAttrs versionAtLeast mkMerge mkIf mkDefault mkOption;
+  inherit (builtins) listToAttrs mapAttrs readFile;
+  inherit (lib)
+    optionalString nameValuePair concatMapStrings concatStringsSep optionalAttrs versionAtLeast
+    mkMerge mkIf mkDefault mkOption;
   inherit (lib.hm) dag;
   inherit (lib.my) mkOpt' dummyOption;
 in
@@ -101,7 +103,9 @@ in
           settings = {
             aws.disabled = true;
           };
-        };
+        }
+        # We use custom behaviour for this
+        // listToAttrs (map (s: nameValuePair "enable${s}Integration" false) [ "Bash" "Zsh" "Fish" ]);
 
         bash = {
           # This does not install bash but has home-manager control .bashrc and friends
@@ -122,6 +126,16 @@ in
 
         fish = {
           enable = mkDefault true;
+          interactiveShellInit =
+            # TODO: Pull request?
+            (optionalString config.programs.starship.enable
+            ''
+              # Adapted from https://github.com/nix-community/home-manager/blob/0232fe1b75e6d7864fd82b5c72f6646f87838fc3/modules/programs/starship.nix#L113
+              # linux is the VTTY, which doesn't seem to have a suitable font for starship
+              if test "$TERM" != "dumb" -a "$TERM" != "linux" -a \( -z "$INSIDE_EMACS"  -o "$INSIDE_EMACS" = "vterm" \)
+                eval (${config.home.profileDirectory}/bin/starship init fish)
+              end
+            '');
           functions = {
             # Silence the default greeting
             fish_greeting = ":";
