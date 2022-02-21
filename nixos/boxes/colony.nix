@@ -5,7 +5,10 @@
     home-manager = "unstable";
     docCustom = false;
 
-    configuration = { lib, pkgs, modulesPath, ... }:
+    configuration = { lib, pkgs, modulesPath, config, ... }:
+      let
+        inherit (lib) mkIf;
+      in
       {
         imports = [ "${modulesPath}/profiles/qemu-guest.nix" ];
 
@@ -46,7 +49,9 @@
         };
 
         networking = {
-          interfaces.enp1s0.useDHCP = true;
+          interfaces = mkIf (!config.my.build.isDevVM) {
+            enp1s0.useDHCP = true;
+          };
         };
       };
   };
