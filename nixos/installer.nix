@@ -80,9 +80,8 @@
 
           # Much of this onwards is yoinked from modules/profiles/installation-device.nix
           # Good to have docs in the installer!
-          # TODO: docs rebuilding every time?
-          documentation.enable = mkForce false;
-          documentation.nixos.enable = mkForce false;
+          documentation.enable = mkForce true;
+          documentation.nixos.enable = mkForce true;
 
           # Enable wpa_supplicant, but don't start it by default.
           networking.wireless.enable = mkDefault true;

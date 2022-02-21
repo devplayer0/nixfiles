@@ -42,6 +42,8 @@ let
     options = {
       inherit (commonOpts) system nixpkgs home-manager;
       # TODO: docCustom for home-manager?
+      # Not possible I think, the doc generation code only ever includes its own modules...
+      # (https://github.com/nix-community/home-manager/blob/0232fe1b75e6d7864fd82b5c72f6646f87838fc3/docs/default.nix#L37)
       homeDirectory = mkOpt' str null "Absolute path to home directory.";
       username = mkOpt' str null "Username for the configuration.";
 

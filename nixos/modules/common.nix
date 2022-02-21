@@ -65,6 +65,7 @@ in
       };
 
       documentation = {
+        enable = mkDefault true;
         nixos = {
           enable = mkDefault true;
           options.warningsAreErrors = mkDefault false;

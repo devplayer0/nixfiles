@@ -98,6 +98,7 @@ let
       inherit (commonOpts) system nixpkgs home-manager;
       hmNixpkgs = commonOpts.nixpkgs;
       # This causes a (very slow) docs rebuild on every change to a module's options it seems
+      # TODO: Currently broken with infinite recursion...
       docCustom = mkBoolOpt' false "Whether to document nixfiles' custom NixOS modules.";
 
       configuration = mkOption {
