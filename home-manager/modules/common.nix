@@ -125,7 +125,7 @@ in
             fish_greeting = ":";
             flake-src = {
               description = "cd into a flake reference's source directory";
-              body = ''cd (nix eval $argv[2..] --impure --raw --expr "builtins.getFlake $argv[1]")'';
+              body = ''cd (nix eval $argv[2..] --impure --raw --expr "builtins.getFlake \"$argv[1]\"")'';
             };
           };
           shellAbbrs = {
