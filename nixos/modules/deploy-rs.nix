@@ -10,7 +10,7 @@ in
   options.my.deploy = with lib.types; {
     authorizedKeys = {
       keys = mkOpt' (listOf singleLineStr) [ ] "SSH public keys to add to the default deployment user.";
-      keyFiles = mkOpt' (listOf str) [ ] "SSH public key files to add to the default deployment user.";
+      keyFiles = mkOpt' (listOf path) [ lib.my.sshKeyFiles.deploy ] "SSH public key files to add to the default deployment user.";
     };
 
     enable = mkBoolOpt' true "Whether to expose deploy-rs configuration for this system.";

@@ -52,6 +52,7 @@ let
           ];
 
           _module.args = {
+            inherit (cfg) secretsPath;
             pkgs' = allPkgs;
           };
 
@@ -121,6 +122,7 @@ in
 
   options = with lib.types; {
     nixos = {
+      secretsPath = mkOpt' path null "Path to encrypted secret files.";
       modules = mkOpt' (attrsOf commonOpts.moduleType) { } "NixOS modules to be exported by nixfiles.";
       systems = mkOpt' (attrsOf (submodule systemOpts)) { } "NixOS systems to be exported by nixfiles.";
     };

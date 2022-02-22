@@ -13,6 +13,11 @@
         imports = [ "${modulesPath}/profiles/qemu-guest.nix" ];
 
         my = {
+          secrets = {
+            key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINkqdN5t3UKwrNOOPKlbnG1WYhnkV5H9luAzMotr8SbT";
+            files."test.txt" = {};
+          };
+
           firewall = {
             trustedInterfaces = [ "blah" ];
             nat = {

@@ -35,14 +35,12 @@ in
           shell =
             let shell = cfg.homeConfig.my.shell;
             in mkIf (shell != null) (mkDefault' shell);
-          openssh.authorizedKeys.keyFiles = [ lib.my.authorizedKeys ];
+          openssh.authorizedKeys.keyFiles = [ lib.my.sshKeyFiles.me ];
         };
         # In order for this option to evaluate on its own, home-manager expects the `name` (which is derived from the
         # parent attr name) to be the users name, aka `home-manager.users.<name>`
         homeConfig = { _module.args.name = lib.mkForce user'.name; };
       };
-
-      deploy.authorizedKeys = mkDefault user'.openssh.authorizedKeys;
     };
 
     # mkAliasDefinitions will copy the unmerged defintions to allow the upstream submodule to deal with

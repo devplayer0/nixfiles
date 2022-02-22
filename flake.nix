@@ -107,6 +107,8 @@
               inherit lib pkgsFlakes hmFlakes inputs;
               pkgs' = configPkgs';
             };
+
+            nixos.secretsPath = ./secrets;
           }
 
           # Not an internal part of the module system apparently, but it doesn't have any dependencies other than lib
@@ -120,9 +122,8 @@
     in
     # Platform independent stuff
     {
-      lib = lib.my;
       nixpkgs = pkgs';
-      inherit nixfiles;
+      inherit lib nixfiles;
 
       nixosModules = nixfiles.config.nixos.modules;
       homeModules = nixfiles.config.home-manager.modules;

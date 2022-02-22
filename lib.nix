@@ -132,5 +132,8 @@ rec {
     filterOpts = filterAttrsRecursive (_: v: v != null);
   };
 
-  authorizedKeys = toString ./authorized_keys;
+  sshKeyFiles = {
+    me = .keys/me.pub;
+    deploy = .keys/deploy.key;
+  };
 }

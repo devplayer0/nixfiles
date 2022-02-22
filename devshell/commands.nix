@@ -35,6 +35,12 @@ in
       help = "Remove home-manager flake.nix link";
       command = "rm -f ${homeFlake}";
     }
+    {
+      name = "agenix";
+      category = "utilities";
+      help = pkgs.agenix.meta.description;
+      command = ''exec ${pkgs.agenix}/bin/agenix --identity "$PRJ_ROOT/.keys/dev.key" "$@"'';
+    }
 
     {
       name = "fmt";

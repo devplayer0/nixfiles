@@ -8,5 +8,6 @@
     firewall = ./firewall.nix;
     server = ./server.nix;
     deploy-rs = ./deploy-rs.nix;
+    secrets = ./secrets.nix;
   };
 }

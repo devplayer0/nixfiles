@@ -18,7 +18,7 @@ in
   packages = with pkgs; [
     coreutils
     nixVersions.stable
-    agenix
+    rage
     deploy-rs.deploy-rs
     home-manager
   ];

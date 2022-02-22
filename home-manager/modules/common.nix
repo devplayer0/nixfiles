@@ -27,7 +27,7 @@ in
       ssh = {
         authKeys = {
           literal = mkOpt' (listOf singleLineStr) [ ] "List of OpenSSH keys to allow";
-          files = mkOpt' (listOf str) [ ] "List of OpenSSH key files to allow";
+          files = mkOpt' (listOf path) [ ] "List of OpenSSH key files to allow";
         };
       };
     };
@@ -226,7 +226,7 @@ in
     })
     (mkIf config.my.isStandalone {
       my = {
-        ssh.authKeys.files = [ lib.my.authorizedKeys ];
+        ssh.authKeys.files = [ lib.my.sshKeyFiles.me ];
       };
 
       fonts.fontconfig.enable = true;
