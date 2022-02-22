@@ -1,6 +1,7 @@
 { pkgs, ... }:
 let
   homeFlake = "$HOME/.config/nixpkgs/flake.nix";
+  devKey = ".keys/dev.key";
 in
 {
   commands = [
@@ -67,7 +68,9 @@ in
       command =
         ''
           cd "$PRJ_ROOT"
-          nix run ".#nixosConfigurations.\"$1\".config.my.buildAs.devVM"
+          tmp="$(mktemp -d nix-vm.XXXXXXXXXX --tmpdir)"
+          install -Dm0400 "${devKey}" "$tmp/xchg/dev.key"
+          TMPDIR="$tmp" USE_TMPDIR=1 nix run ".#nixosConfigurations.\"$1\".config.my.buildAs.devVM"
         '';
     }
     {

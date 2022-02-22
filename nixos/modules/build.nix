@@ -62,6 +62,7 @@ in
     virtualisation = {
       diskImage = dummyOption;
       forwardPorts = dummyOption;
+      sharedDirectories = dummyOption;
     };
   };
 
