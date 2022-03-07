@@ -18,6 +18,10 @@
           nix.config.cores = "16";
         };
 
+        home.packages = with pkgs; [
+          rpiboot
+        ];
+
         programs = {
           ssh.matchBlocks = {
             home = {
