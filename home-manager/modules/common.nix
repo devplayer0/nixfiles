@@ -91,6 +91,10 @@ in
         # We use custom behaviour for this
         // listToAttrs (map (s: nameValuePair "enable${s}Integration" false) [ "Bash" "Zsh" "Fish" ]);
 
+        tmux = {
+          enable = true;
+        };
+
         bash = {
           # This does not install bash but has home-manager control .bashrc and friends
           # Bash has some really weird behaviour with non-login and non-interactive shells, particularly around which
@@ -204,6 +208,7 @@ in
           tree
           iperf3
           mosh
+          wget
         ];
 
         sessionVariables = {
