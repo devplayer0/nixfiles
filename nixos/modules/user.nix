@@ -5,6 +5,7 @@ let
 
   cfg = config.my.user;
   user' = cfg.config;
+  user = config.users.users.${user'.name};
 in
 {
   options.my.user = with lib.types; {
@@ -37,9 +38,33 @@ in
             in mkIf (shell != null) (mkDefault' shell);
           openssh.authorizedKeys.keyFiles = [ lib.my.sshKeyFiles.me ];
         };
-        # In order for this option to evaluate on its own, home-manager expects the `name` (which is derived from the
-        # parent attr name) to be the users name, aka `home-manager.users.<name>`
-        homeConfig = { _module.args.name = lib.mkForce user'.name; };
+        homeConfig = {
+          # In order for this option to evaluate on its own, home-manager expects the `name` (which is derived from the
+          # parent attr name) to be the users name, aka `home-manager.users.<name>`
+          _module.args.name = lib.mkForce user'.name;
+        };
+      };
+      tmproot.persistence.config =
+      let
+        perms = {
+          mode = "0700";
+          user = user.name;
+          group = user.group;
+        };
+      in {
+        files = map (file: {
+          inherit file;
+          parentDirectory = perms;
+        }) [
+          "/home/${user'.name}/.bash_history"
+        ];
+        directories = map (directory: {
+          inherit directory;
+        } // perms) [
+          # Persist all of fish; it's not easy to persist just the history fish won't let you move it to a different
+          # directory. Also it does some funny stuff and can't really be a symlink it seems.
+          "/home/${user'.name}/.local/share/fish"
+        ];
       };
     };
 

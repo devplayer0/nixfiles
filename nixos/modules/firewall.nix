@@ -4,6 +4,7 @@ let
   inherit (lib.my) parseIPPort mkOpt' mkBoolOpt';
 
   cfg = config.my.firewall;
+  iptCfg = config.networking.firewall;
 in
 {
   options.my.firewall = with lib.types; {
@@ -31,9 +32,9 @@ in
           enable = true;
           ruleset =
             let
-              trusted' = "{ ${concatStringsSep ", " cfg.trustedInterfaces} }";
-              openTCP = cfg.tcp.allowed ++ config.networking.firewall.allowedTCPPorts;
-              openUDP = cfg.udp.allowed ++ config.networking.firewall.allowedUDPPorts;
+              trusted' = "{ ${concatStringsSep ", " (cfg.trustedInterfaces ++ iptCfg.trustedInterfaces)} }";
+              openTCP = cfg.tcp.allowed ++ iptCfg.allowedTCPPorts;
+              openUDP = cfg.udp.allowed ++ iptCfg.allowedUDPPorts;
             in
             ''
               table inet filter {

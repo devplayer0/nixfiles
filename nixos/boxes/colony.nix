@@ -1,9 +1,8 @@
 {
   nixos.systems.colony = {
     system = "x86_64-linux";
-    nixpkgs = "stable";
+    nixpkgs = "unstable";
     home-manager = "unstable";
-    docCustom = false;
 
     configuration = { lib, pkgs, modulesPath, config, ... }:
       let
@@ -32,9 +31,10 @@
             };
           };
           server.enable = true;
-          tmproot.unsaved.ignore = [
-            "/var/db/dhcpcd/enp1s0.lease"
-          ];
+
+          containers = {
+            instances.vaultwarden = {};
+          };
         };
 
         fileSystems = {
@@ -58,6 +58,8 @@
             enp1s0.useDHCP = true;
           };
         };
+
+        #systemd.services.systemd-networkd.environment.SYSTEMD_LOG_LEVEL = "debug";
       };
   };
 }

@@ -134,6 +134,6 @@ rec {
 
   sshKeyFiles = {
     me = .keys/me.pub;
-    deploy = .keys/deploy.key;
+    deploy = .keys/deploy.pub;
   };
 }

@@ -97,18 +97,15 @@ in
 
       networking = {
         domain = mkDefault "int.nul.ie";
-        useDHCP = mkDefault false;
+        useDHCP = false;
         enableIPv6 = mkDefault true;
-      };
-      virtualisation = {
-        forwardPorts = flatten [
-          (optional config.services.openssh.openFirewall { from = "host"; host.port = 2222; guest.port = 22; })
-        ];
+        useNetworkd = mkDefault true;
       };
 
       environment.systemPackages = with pkgs; [
         bash-completion
         vim
+        ldns
       ];
 
       programs = {
@@ -146,6 +143,11 @@ in
     })
     (mkIf config.my.build.isDevVM {
       networking.interfaces.eth0.useDHCP = mkDefault true;
+      virtualisation = {
+        forwardPorts = flatten [
+          (optional config.services.openssh.openFirewall { from = "host"; host.port = 2222; guest.port = 22; })
+        ];
+      };
     })
   ];
 

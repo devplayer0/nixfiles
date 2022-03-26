@@ -92,8 +92,10 @@
 
       configs = [
         # Systems
-        nixos/boxes/colony.nix
         nixos/installer.nix
+
+        nixos/boxes/colony.nix
+        nixos/containers/vaultwarden.nix
 
         # Homes
         home-manager/configs/castle.nix
@@ -109,6 +111,7 @@
             };
 
             nixos.secretsPath = ./secrets;
+            deploy-rs.deploy.sshOpts = [ "-i" ".keys/deploy.key" ];
           }
 
           # Not an internal part of the module system apparently, but it doesn't have any dependencies other than lib

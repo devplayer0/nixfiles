@@ -31,6 +31,15 @@ let
       }
     ];
   };
+  asContainer = extendModules {
+    # TODO: see previous
+    specialArgs = { inherit baseModules; };
+    modules = [
+      {
+        boot.isContainer = true;
+      }
+    ];
+  };
 in
 {
   options = with lib.types; {
@@ -46,13 +55,19 @@ in
         inherit (asDevVM) type;
         default = { };
         visible = "shallow";
-        description = "Configuration as a development VM";
+        description = "Configuration as a development VM.";
       };
       asISO = mkOption {
         inherit (asISO) type;
         default = { };
         visible = "shallow";
-        description = "Configuration as a bootable .iso image";
+        description = "Configuration as a bootable .iso image.";
+      };
+      asContainer = mkOption {
+        inherit (asContainer) type;
+        default = { };
+        visible = "shallow";
+        description = "Configuration as a container.";
       };
 
       buildAs = options.system.build;
@@ -76,6 +91,7 @@ in
         # The meta.mainProgram should probably be set upstream but oh well...
         devVM = recursiveUpdate config.my.asDevVM.system.build.vm { meta.mainProgram = "run-${config.system.name}-vm"; };
         iso = config.my.asISO.system.build.isoImage;
+        container = config.my.asContainer.system.build.toplevel;
       };
     };
   };

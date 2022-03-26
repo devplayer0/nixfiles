@@ -1,10 +1,12 @@
-{ lib, pkgs, config, ... }:
+{ lib, pkgs, options, config, ... }:
 let
-  inherit (lib) optionalString concatStringsSep concatMap concatMapStringsSep mkIf mkDefault mkMerge mkVMOverride;
+  inherit (lib)
+    optionalString concatStringsSep concatMap concatMapStringsSep mkIf mkDefault mkMerge mkForce mkVMOverride
+    mkAliasDefinitions;
   inherit (lib.my) mkOpt' mkBoolOpt' mkVMOverride';
 
   cfg = config.my.tmproot;
-  enablePersistence = cfg.persistDir != null;
+  enablePersistence = cfg.persistence.dir != null;
 
   showUnsaved =
     ''
@@ -58,8 +60,11 @@ in
   options = with lib.types; {
     my.tmproot = {
       enable = mkBoolOpt' true "Whether to enable tmproot.";
-      persistDir = mkOpt' (nullOr str) "/persist" "Path where persisted files are stored.";
       size = mkOpt' str "2G" "Size of tmpfs root";
+      persistence = {
+        dir = mkOpt' (nullOr str) "/persist" "Path where persisted files are stored.";
+        config = mkOpt' options.environment.persistence.type.nestedTypes.elemType { } "Persistence configuration";
+      };
       unsaved = {
         showMotd = mkBoolOpt' true "Whether to show unsaved files with `dynamic-motd`.";
         ignore = mkOpt' (listOf str) [ ] "Path prefixes to ignore if unsaved.";
@@ -77,33 +82,53 @@ in
         }
       ];
 
-      my.tmproot.unsaved.ignore = [
-        "/tmp"
+      my.tmproot = {
+        unsaved.ignore = [
+          "/tmp"
 
-        # setup-etc.pl will create this for us
-        "/etc/NIXOS"
+          # setup-etc.pl will create this for us
+          "/etc/NIXOS"
 
-        # Once mutableUsers is disabled, we should be all clear here
-        "/etc/passwd"
-        "/etc/group"
-        "/etc/shadow"
-        "/etc/subuid"
-        "/etc/subgid"
+          # Once mutableUsers is disabled, we should be all clear here
+          "/etc/passwd"
+          "/etc/group"
+          "/etc/shadow"
+          "/etc/subuid"
+          "/etc/subgid"
 
-        # Lock file for /etc/{passwd,shadow}
-        "/etc/.pwd.lock"
+          # Lock file for /etc/{passwd,shadow}
+          "/etc/.pwd.lock"
 
-        # systemd last updated? I presume they'll get updated on boot...
-        "/etc/.updated"
-        "/var/.updated"
+          # systemd last updated? I presume they'll get updated on boot...
+          "/etc/.updated"
+          "/var/.updated"
 
-        # Specifies obsolete files that should be deleted on activation - we'll never have those!
-        "/etc/.clean"
+          # Specifies obsolete files that should be deleted on activation - we'll never have those!
+          "/etc/.clean"
 
-        # These are set in environment.etc by the sshd module, but because their mode needs to be changed,
-        # setup-etc will copy them instead of symlinking
-        "/etc/ssh/authorized_keys.d"
-      ];
+          # These are set in environment.etc by the sshd module, but because their mode needs to be changed,
+          # setup-etc will copy them instead of symlinking
+          "/etc/ssh/authorized_keys.d"
+        ];
+        persistence.config = {
+          # In impermanence the key in `environment.persistence.*` (aka name passed the attrsOf submodule) sets the
+          # default value, so we need to override it when we mkAliasDefinitions
+          _module.args.name = mkForce cfg.persistence.dir;
+
+          hideMounts = mkDefault true;
+          directories = [
+            "/var/log"
+            # In theory we'd include only the files needed individually (i.e. the {U,G}ID map files that track deleted
+            # users and groups), but `update-users-groups.pl` actually deletes the original files for "atomic update".
+            # Also the script runs before impermanence does.
+            "/var/lib/nixos"
+            "/var/lib/systemd"
+          ];
+          files = [
+            "/etc/machine-id"
+          ];
+        };
+      };
 
       environment.systemPackages = [
         (pkgs.writeScriptBin "tmproot-unsaved" showUnsaved)
@@ -119,7 +144,7 @@ in
             echo -e "\t\e[31;1;4mWarning:\e[0m $count file(s) on / will be lost on shutdown!"
             echo -e '\tTo see them, run `tmproot-unsaved` as root.'
             ${optionalString enablePersistence ''
-              echo -e '\tAdd these files to `environment.persistence."${cfg.persistDir}"` to keep them!'
+              echo -e '\tAdd these files to `my.tmproot.persistence.config` to keep them!'
             ''}
             echo -e "\tIf they don't need to be kept, add them to \`my.tmproot.unsaved.ignore\`."
             echo
@@ -149,8 +174,8 @@ in
       {
         assertions = [
           {
-            assertion = config.fileSystems ? "${cfg.persistDir}";
-            message = "The 'fileSystems' option does not specify your persistence file system (${cfg.persistDir}).";
+            assertion = (config.fileSystems ? "${cfg.persistence.dir}") || config.boot.isContainer;
+            message = "The 'fileSystems' option does not specify your persistence file system (${cfg.persistence.dir}).";
           }
         ];
 
@@ -172,7 +197,7 @@ in
                   sourceDir = "${d.persistentStoragePath}${d.directory}";
                 in
                   ''([ "$device" = "/mnt-root${sourceDir}" ] && ensurePersistSource "${sourceDir}" "${d.mode}")'')
-                config.environment.persistence."${cfg.persistDir}".directories}
+                cfg.persistence.config.directories}
 
               waitDevice "$@"
             }
@@ -181,33 +206,20 @@ in
             alias waitDevice=_waitDevice
           '';
 
-        environment.persistence."${cfg.persistDir}" = {
-          hideMounts = mkDefault true;
-          directories = [
-            "/var/log"
-            # In theory we'd include only the files needed individually (i.e. the {U,G}ID map files that track deleted
-            # users and groups), but `update-users-groups.pl` actually deletes the original files for "atomic update".
-            # Also the script runs before impermanence does.
-            "/var/lib/nixos"
-            "/var/lib/systemd"
-          ];
-          files = [
-            "/etc/machine-id"
-          ];
-        };
+        environment.persistence."${cfg.persistence.dir}" = mkAliasDefinitions options.my.tmproot.persistence.config;
 
         virtualisation = {
           diskImage = "./.vms/${config.system.name}-persist.qcow2";
         };
       }
       (mkIf config.services.openssh.enable {
-        environment.persistence."${cfg.persistDir}".files =
+        my.tmproot.persistence.config.files =
           concatMap (k: [ k.path "${k.path}.pub" ]) config.services.openssh.hostKeys;
       })
       (mkIf config.my.build.isDevVM {
         fileSystems = mkVMOverride {
           # Hijack the "root" device for persistence in the VM
-          "${cfg.persistDir}" = {
+          "${cfg.persistence.dir}" = {
             device = config.virtualisation.bootDevice;
             neededForBoot = true;
           };

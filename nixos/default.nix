@@ -37,7 +37,7 @@ let
       lib = pkgs.lib;
 
       # Put the inputs in specialArgs to avoid infinite recursion when modules try to do imports
-      specialArgs = { inherit inputs; };
+      specialArgs = { inherit inputs; inherit (cfg) systems; };
 
       # `baseModules` informs the manual which modules to document
       baseModules =
