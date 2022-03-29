@@ -209,6 +209,7 @@ in
           iperf3
           mosh
           wget
+          dhex
         ];
 
         sessionVariables = {
