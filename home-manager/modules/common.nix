@@ -209,7 +209,7 @@ in
           iperf3
           mosh
           wget
-          dhex
+          hyx
         ];
 
         sessionVariables = {
