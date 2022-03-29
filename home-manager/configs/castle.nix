@@ -20,6 +20,7 @@
 
         home.packages = with pkgs; [
           rpiboot
+          mame
         ];
 
         programs = {
