@@ -1,10 +1,23 @@
-{ lib, pkgs, config, ... }:
+{ lib, pkgs, config, systems, ... }:
 let
-  inherit (builtins) head;
-  inherit (lib) mkMerge mkIf mkDefault;
+  inherit (builtins) head attrNames;
+  inherit (lib) mkMerge mkIf mkDefault optionalAttrs mapAttrs';
   inherit (lib.my) mkOpt' mkBoolOpt';
 
   cfg = config.my.deploy;
+
+  ctrProfiles = optionalAttrs cfg.generate.containers.enable (mapAttrs' (n: c: {
+    name = "container-${n}";
+    value = {
+      path = pkgs.deploy-rs.lib.activate.custom systems."${n}".configuration.config.my.buildAs.container
+        ''
+          systemctl restart systemd-nspawn@${n}
+        '';
+      profilePath = "/nix/var/nix/profiles/per-container/${n}/system";
+
+      user = "root";
+    };
+  }) config.my.containers.instances);
 in
 {
   options.my.deploy = with lib.types; {
@@ -18,6 +31,7 @@ in
 
     generate = {
       system.enable = mkBoolOpt' true "Whether to generate a deploy-rs profile for this system's config.";
+      containers.enable = mkBoolOpt' true "Whether to generate deploy-rs profiles for this system's containers.";
     };
   };
 
@@ -28,13 +42,14 @@ in
     (mkIf cfg.enable {
       my.deploy.node = {
         hostname = mkDefault config.networking.fqdn;
+        profilesOrder = [ "system" ] ++ (attrNames ctrProfiles);
         profiles = {
           system = mkIf cfg.generate.system.enable {
             path = pkgs.deploy-rs.lib.activate.nixos { inherit config; };
 
             user = "root";
           };
-        };
+        } // ctrProfiles;
 
         sshUser = "deploy";
         user = mkDefault "root";

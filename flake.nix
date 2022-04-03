@@ -9,7 +9,7 @@
     nixpkgs-master.url = "nixpkgs";
     nixpkgs-unstable.url = "nixpkgs/nixos-unstable";
     nixpkgs-stable.url = "nixpkgs/nixos-21.11";
-    nixpkgs-mine.url = "github:devplayer0/nixpkgs";
+    nixpkgs-mine.url = "github:devplayer0/nixpkgs/devplayer0";
 
     home-manager-unstable.url = "home-manager";
     home-manager-unstable.inputs.nixpkgs.follows = "nixpkgs-unstable";

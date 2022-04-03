@@ -1,7 +1,7 @@
 {
   nixos.systems.colony = {
     system = "x86_64-linux";
-    nixpkgs = "unstable";
+    nixpkgs = "mine";
     home-manager = "unstable";
 
     configuration = { lib, pkgs, modulesPath, config, ... }:
