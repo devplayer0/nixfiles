@@ -1,7 +1,8 @@
 { lib, pkgs, options, config, systems, ... }:
 let
-  inherit (builtins) attrNames attrValues mapAttrs all;
-  inherit (lib) groupBy' flatten mapAttrsToList optionalString optional concatMapStringsSep filterAttrs mkOption mkDefault mkIf mkMerge mkAliasDefinitions mkVMOverride mkAfter;
+  inherit (builtins) attrNames attrValues all hashString toJSON;
+  inherit (lib)
+    groupBy' mapAttrsToList optionalString optional concatMapStringsSep filterAttrs mkOption mkDefault mkIf mkMerge;
   inherit (lib.my) mkOpt' mkBoolOpt' attrsToNVList;
 
   cfg = config.my.containers;
@@ -169,6 +170,9 @@ in
         services."systemd-nspawn@${n}" = {
           # systemd.nspawn units can't set the root directory directly, but /run/machines/${n} is one of the search paths
           environment.root = "/run/machines/${n}";
+          restartTriggers = [
+            (''${n}.nspawn:${hashString "sha256" (toJSON config.systemd.nspawn."${n}")}'')
+          ];
           preStart =
           let
             sysProfile = "${ctrProfiles n}/system";
