@@ -9,8 +9,9 @@
       {
         my = {
           deploy.enable = false;
-          nix.config.cores = "6";
         };
+
+        nix.settings.cores = 6;
 
         programs = {
           ssh.enable = false;

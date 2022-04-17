@@ -15,13 +15,14 @@
             hostname = "h.nul.ie";
             sshOpts = [ "-4" "-p" "8022" ];
           };
-          nix.config.cores = "16";
         };
 
         home.packages = with pkgs; [
           rpiboot
           mame
         ];
+
+        nix.settings.cores = 16;
 
         programs = {
           ssh.matchBlocks = {

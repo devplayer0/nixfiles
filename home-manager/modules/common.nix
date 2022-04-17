@@ -19,11 +19,6 @@ in
       shell = mkOpt' str null "User's shell (so NixOS or others can set it externally).";
       fishCompletionsFrequency = mkOpt' (nullOr str) "daily" "How often to generate fish completions from manpages.";
 
-      nix = {
-        # TODO: Until https://github.com/nix-community/home-manager/issues/2324
-        config = mkOpt' (attrsOf str) { } "nix.conf options";
-      };
-
       ssh = {
         authKeys = {
           literal = mkOpt' (listOf singleLineStr) [ ] "List of OpenSSH keys to allow";
@@ -37,13 +32,20 @@ in
   };
   config = mkMerge [
     (mkIf (versionAtLeast config.home.stateVersion "22.05") {
-      nix.registry = {
-        pkgs = {
-          to = {
-            type = "path";
-            path = toString pkgs.path;
+      nix = {
+        package = pkgs.nix;
+        registry = {
+          pkgs = {
+            to = {
+              type = "path";
+              path = toString pkgs.path;
+            };
+            exact = true;
           };
-          exact = true;
+        };
+        settings = {
+          experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
+          max-jobs = mkDefault "auto";
         };
       };
     })
@@ -52,11 +54,6 @@ in
         isStandalone = !(args ? osConfig);
 
         shell = mkDefault "${config.programs.fish.package}/bin/fish";
-
-        nix.config = {
-          experimental-features = mkDefault "nix-command flakes ca-derivations";
-          max-jobs = mkDefault "auto";
-        };
       };
 
       home.file.".ssh/authorized_keys" = with config.my.ssh.authKeys;
@@ -66,10 +63,6 @@ in
             ${concatMapStrings (f: readFile f + "\n") files}
           '';
         };
-
-      xdg.configFile."nix/nix.conf" = mkIf (config.my.nix.config != { }) {
-        text = (concatStringsSep "\n" (mapAttrsToList (k: v: "${k} = ${v}") config.my.nix.config)) + "\n";
-      };
 
       programs = {
         # Even when enabled this will only be actually installed in standalone mode
