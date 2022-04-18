@@ -235,11 +235,6 @@ in
       };
 
       system.activationScripts = {
-        # impermanence will throw a fit and bail the whole activation script if this already exists (the container
-        # start script pre-creates it for some reason)
-        clearMachineId.text = "rm -f /etc/machine-id";
-        createPersistentStorageDirs.deps = [ "clearMachineId" ];
-
         # Ordinarily I think the Nix daemon does this but ofc it doesn't in the container
         createNixPerUserDirs = {
           text =
