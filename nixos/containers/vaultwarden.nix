@@ -17,6 +17,7 @@
             server.enable = true;
 
             secrets = {
+              key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMHoWhafCkLVggsO24fFWm3nmkY5t23GHbBafBVGijbQ";
               files."${vwSecrets}" = {};
             };
 

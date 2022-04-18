@@ -245,6 +245,12 @@ in
                 (u: ''install -d -o ${u.name} -g ${u.group} /nix/var/nix/{profiles,gcroots}/per-user/"${u.name}"'') users;
           deps = [ "users" "groups" ];
         };
+
+        # age requires all keys to at least exist, even if they're not going to be used
+        ensureDevKey.text =
+        ''
+          [ ! -e "${devVMKeyPath}" ] && touch "${devVMKeyPath}"
+        '';
       };
 
       networking = {
