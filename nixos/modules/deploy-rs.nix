@@ -6,12 +6,16 @@ let
 
   cfg = config.my.deploy;
 
-  ctrProfiles = optionalAttrs cfg.generate.containers.enable (mapAttrs' (n: c: {
+  ctrProfiles = optionalAttrs cfg.generate.containers.enable (mapAttrs' (n: c:
+  let
+    ctrConfig = systems."${n}".configuration.config;
+  in
+  {
     name = "container-${n}";
     value = {
-      path = pkgs.deploy-rs.lib.activate.custom systems."${n}".configuration.config.my.buildAs.container
+      path = pkgs.deploy-rs.lib.activate.custom ctrConfig.my.buildAs.container
         ''
-          systemctl restart systemd-nspawn@${n}
+          systemctl ${if c.hotReload then "reload" else "restart"} systemd-nspawn@${n}
         '';
       profilePath = "/nix/var/nix/profiles/per-container/${n}/system";
 

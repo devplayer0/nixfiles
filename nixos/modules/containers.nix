@@ -62,6 +62,8 @@ let
       system = mkOpt' path "${ctrProfiles name}/system" "Path to NixOS system configuration.";
       containerSystem = mkOpt' path "/nix/var/nix/profiles/system" "Path to NixOS system configuration from within container.";
       autoStart = mkBoolOpt' true "Whether to start the container automatically at boot.";
+      hotReload = mkBoolOpt' true
+        "Whether to apply new configuration by running `switch-to-configuration` instead of rebooting the container.";
 
       # Yoinked from nixos/modules/virtualisation/nixos-containers.nix
       bindMounts = mkOption {
@@ -167,24 +169,26 @@ in
             Bridge = c.networkZone;
           };
         };
-        services."systemd-nspawn@${n}" = {
+        services."systemd-nspawn@${n}" =
+        let
+          sysProfile = "${ctrProfiles n}/system";
+          system = if
+            config.my.build.isDevVM then
+            systems."${n}".configuration.config.my.buildAs.container else
+            c.system;
+          containerSystem = if
+            config.my.build.isDevVM then
+            system else
+            c.containerSystem;
+        in
+        {
           # systemd.nspawn units can't set the root directory directly, but /run/machines/${n} is one of the search paths
           environment.root = "/run/machines/${n}";
           restartTriggers = [
             (''${n}.nspawn:${hashString "sha256" (toJSON config.systemd.nspawn."${n}")}'')
           ];
+
           preStart =
-          let
-            sysProfile = "${ctrProfiles n}/system";
-            system = if
-              config.my.build.isDevVM then
-              systems."${n}".configuration.config.my.buildAs.container else
-              c.system;
-            containerSystem = if
-              config.my.build.isDevVM then
-              system else
-              c.containerSystem;
-          in
           ''
             mkdir -p -m 0755 \
               /nix/var/nix/{profiles,gcroots}/per-container/${n} \
@@ -202,6 +206,16 @@ in
             touch "$root"/etc/os-release
             ln -sf "${containerSystem}"/init "$root"/sbin/init
           '';
+          postStop =
+          ''
+            rm -rf "$root"
+          '';
+          reload =
+          ''
+            [ -e "${system}"/bin/switch-to-configuration ] && \
+              systemd-run --pipe --machine ${n} -- "${containerSystem}"/bin/switch-to-configuration test
+          '';
+
           wantedBy = optional c.autoStart "machines.target";
         };
         network.networks."80-container-${n}-vb" = {
