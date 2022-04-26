@@ -13,6 +13,10 @@
 
         nix.settings.cores = 6;
 
+        home.packages = with pkgs; [
+          python310
+        ];
+
         programs = {
           ssh.enable = false;
         };
