@@ -19,6 +19,10 @@
 
         programs = {
           ssh.enable = false;
+          java = {
+            enable = true;
+            package = pkgs.jdk;
+          };
         };
       };
   };
