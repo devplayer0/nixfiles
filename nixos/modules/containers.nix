@@ -3,7 +3,7 @@ let
   inherit (builtins) attrNames attrValues all hashString toJSON;
   inherit (lib)
     groupBy' mapAttrsToList optionalString optional concatMapStringsSep filterAttrs mkOption mkDefault mkIf mkMerge;
-  inherit (lib.my) mkOpt' mkBoolOpt' attrsToNVList;
+  inherit (lib.my) mkOpt' mkBoolOpt';
 
   cfg = config.my.containers;
 
@@ -51,12 +51,6 @@ let
     };
   };
 
-  netZoneOpts = with lib.types; { name, ... }: {
-    options = {
-      hostAddresses = mkOpt' (either str (listOf str)) null "Addresses for the host bridge.";
-    };
-  };
-
   containerOpts = with lib.types; { name, ... }: {
     options = {
       system = mkOpt' path "${ctrProfiles name}/system" "Path to NixOS system configuration.";
@@ -74,7 +68,9 @@ let
             An extra list of directories that is bound to the container.
           '';
       };
-      networkZone = mkOpt' str "containers" "Network zone to connect to.";
+      networking = {
+        bridge = mkOpt' (nullOr str) null "Network bridge to connect to.";
+      };
     };
   };
 in
@@ -82,11 +78,6 @@ in
   options.my.containers = with lib.types; {
     persistDir = mkOpt' str "/persist/containers" "Where to store container persistence data.";
     instances = mkOpt' (attrsOf (submodule containerOpts)) { } "Individual containers.";
-    networkZones = mkOpt' (attrsOf (submodule netZoneOpts)) {
-      "containers" = {
-        hostAddresses = "172.16.137.1/24";
-      };
-    } "systemd-nspawn network zones";
   };
 
   config = mkMerge [
@@ -96,13 +87,13 @@ in
           assertion = config.systemd.network.enable;
           message = "Containers currently require systemd-networkd!";
         }
-        {
-          assertion = all (z: cfg.networkZones ? "${z}") (mapAttrsToList (_: c: c.networkZone) cfg.instances);
-          message = "Each container must be within one of the configured network zones.";
-        }
       ];
 
-      my.firewall.trustedInterfaces = (attrNames cfg.networkZones) ++ (map (n: "vb-${n}") (attrNames cfg.instances));
+      # TODO: Better security
+      my.firewall.trustedInterfaces =
+        mapAttrsToList
+          (n: _: "ve-${n}")
+          (filterAttrs (_: c: c.networking.bridge == null) cfg.instances);
 
       systemd = mkMerge ([
         {
@@ -115,28 +106,7 @@ in
             }) (attrNames cfg.instances)))
           ];
         }
-      ] ++ (mapAttrsToList (n: z: {
-        network = {
-          netdevs."25-container-bridge-${n}".netdevConfig = {
-            Name = n;
-            Kind = "bridge";
-          };
-          # Replace the pre-installed config
-          networks."80-container-bridge-${n}" = {
-            matchConfig = {
-              Name = n;
-              Driver = "bridge";
-            };
-            networkConfig = {
-              Address = z.hostAddresses;
-              DHCPServer = true;
-              # TODO: Configuration for routed IPv6 (and maybe IPv4)
-              IPMasquerade = "both";
-              IPv6SendRA = true;
-            };
-          };
-        };
-      }) cfg.networkZones) ++ (mapAttrsToList (n: c: {
+      ] ++ (mapAttrsToList (n: c: {
         nspawn."${n}" = {
           execConfig = {
             Boot = true;
@@ -165,8 +135,10 @@ in
               "${cfg.persistDir}/${n}:/persist"
             ] ++ binds.rw or [ ];
           };
-          networkConfig = {
-            Bridge = c.networkZone;
+          networkConfig = if (c.networking.bridge != null) then {
+            Bridge = c.networking.bridge;
+          } else {
+            VirtualEthernet = true;
           };
         };
         services."systemd-nspawn@${n}" =
@@ -211,6 +183,7 @@ in
             rm -rf "$root"
           '';
           reload =
+          # `switch-to-configuration test` switches config without trying to update bootloader
           ''
             [ -e "${system}"/bin/switch-to-configuration ] && \
               systemd-run --pipe --machine ${n} -- "${containerSystem}"/bin/switch-to-configuration test
@@ -218,7 +191,7 @@ in
 
           wantedBy = optional c.autoStart "machines.target";
         };
-        network.networks."80-container-${n}-vb" = {
+        network.networks."80-container-${n}-vb" = mkIf (c.networking.bridge != null) {
           matchConfig = {
             Name = "vb-${n}";
             Driver = "veth";
@@ -229,7 +202,7 @@ in
             EmitLLDP = "customer-bridge";
             # Although nspawn will set the veth's master, systemd will clear it (systemd 250 adds a `KeepMaster`
             # to avoid this)
-            Bridge = c.networkZone;
+            Bridge = c.networking.bridge;
           };
         };
       }) cfg.instances));

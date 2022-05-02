@@ -18,7 +18,7 @@
           };
 
           firewall = {
-            trustedInterfaces = [ "blah" ];
+            trustedInterfaces = [ "virtual" ];
             nat = {
               externalInterface = "eth0";
               forwardPorts = [
@@ -33,7 +33,9 @@
           server.enable = true;
 
           containers = {
-            instances.vaultwarden = {};
+            instances.vaultwarden = {
+              networking.bridge = "virtual";
+            };
           };
         };
 
@@ -56,6 +58,26 @@
         networking = {
           interfaces = mkIf (!config.my.build.isDevVM) {
             enp1s0.useDHCP = true;
+          };
+        };
+
+        systemd.network = {
+          netdevs."25-virtual-bridge".netdevConfig = {
+            Name = "virtual";
+            Kind = "bridge";
+          };
+          networks."80-virtual-bridge" = {
+            matchConfig = {
+              Name = "virtual";
+              Driver = "bridge";
+            };
+            networkConfig = {
+              Address = "172.16.137.1/24";
+              DHCPServer = true;
+              # TODO: Configuration for routed IPv6 (and maybe IPv4)
+              IPMasquerade = "both";
+              IPv6SendRA = true;
+            };
           };
         };
 
