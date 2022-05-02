@@ -10,5 +10,6 @@
     deploy-rs = ./deploy-rs.nix;
     secrets = ./secrets.nix;
     containers = ./containers.nix;
+    vms = ./vms.nix;
   };
 }

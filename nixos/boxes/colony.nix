@@ -37,6 +37,12 @@
               networking.bridge = "virtual";
             };
           };
+          vms = {
+            instances.test = {
+              networks.virtual = {};
+              vga = "none";
+            };
+          };
         };
 
         fileSystems = {
@@ -82,6 +88,10 @@
         };
 
         #systemd.services.systemd-networkd.environment.SYSTEMD_LOG_LEVEL = "debug";
+        virtualisation = {
+          cores = 8;
+          memorySize = 8192;
+        };
       };
   };
 }

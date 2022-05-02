@@ -78,6 +78,8 @@ in
       diskImage = dummyOption;
       forwardPorts = dummyOption;
       sharedDirectories = dummyOption;
+      cores = dummyOption;
+      memorySize = dummyOption;
     };
   };
 

@@ -31,7 +31,7 @@ in
           name = mkDefault' "dev";
           isNormalUser = true;
           uid = mkDefault 1000;
-          extraGroups = mkDefault [ "wheel" ];
+          extraGroups = mkDefault [ "wheel" "kvm" ];
           password = mkDefault "hunter2"; # TODO: secrets...
           shell =
             let shell = cfg.homeConfig.my.shell;
