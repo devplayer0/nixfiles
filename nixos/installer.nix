@@ -1,7 +1,7 @@
 {
   nixos.systems.installer = {
     system = "x86_64-linux";
-    nixpkgs = "unstable";
+    nixpkgs = "mine";
     docCustom = false;
 
     configuration =
@@ -21,7 +21,7 @@
 
         config = {
           my = {
-            # Whatever installer mechanism is chosen will provied an appropriate `/`
+            # Whatever installer mechanism is chosen will provide an appropriate `/`
             tmproot.enable = false;
             firewall.nat.enable = false;
             deploy.enable = false;

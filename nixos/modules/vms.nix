@@ -22,6 +22,18 @@ let
     };
   };
 
+  driveOpts = with lib.types; {
+    options = {
+      backend = mkOpt' qemuOpts { } "Backend blockdev options.";
+
+      format = mkOpt' qemuOpts { } "Format blockdev options.";
+      formatBackendProp = mkOpt' str "file" "Property that references the backend blockdev.";
+
+      frontend = mkOpt' str "virtio-blk" "Frontend device driver.";
+      frontendOpts = mkOpt' qemuOpts { } "Frontend device options.";
+    };
+  };
+
   vmOpts = with lib.types; { name, ... }: {
     options = {
       qemuBin = mkOpt' path "${pkgs.qemu_kvm}/bin/qemu-kvm" "Path to QEMU executable.";
@@ -40,6 +52,7 @@ let
       vga = mkOpt' str "qxl" "VGA card type.";
       spice.enable = mkBoolOpt' true "Whether to enable SPICE.";
       networks = mkOpt' (attrsOf (submodule netOpts)) { } "Networks to attach VM to.";
+      drives = mkOpt' (attrsOf (submodule driveOpts)) { } "Drives to attach to VM.";
     };
   };
 
@@ -61,15 +74,20 @@ let
         "device isa-serial,chardev=tty"
       ] ++
       (optional i.enableKVM "enable-kvm") ++
+      (optionals i.enableUEFI [
+        "drive if=pflash,format=raw,unit=0,readonly=on,file=${cfg.ovmfPackage.fd}/FV/OVMF_CODE.fd"
+        "drive if=pflash,format=raw,unit=1,file=/var/lib/vms/${n}/ovmf_vars.bin"
+      ]) ++
       (optional i.spice.enable "spice unix=on,addr=/run/vms/${n}/spice.sock,disable-ticketing=on") ++
       (flatten (mapAttrsToList (nn: c: [
         "netdev bridge,id=${nn},br=${c.bridge}"
         ("device ${c.model},netdev=${nn}" + (extraQEMUOpts c.extraOptions))
       ]) i.networks)) ++
-      (optionals i.enableUEFI [
-        "drive if=pflash,format=raw,unit=0,readonly=on,file=${cfg.ovmfPackage.fd}/FV/OVMF_CODE.fd"
-        "drive if=pflash,format=raw,unit=1,file=/var/lib/vms/${n}/ovmf_vars.bin"
-      ]);
+      (flatten (mapAttrsToList (dn: c: [
+        "blockdev node-name=${dn}-backend,${c.backend}"
+        "blockdev node-name=${dn}-format,${c.formatBackendProp}=${dn}-backend,${c.format}"
+        ("device ${c.frontend},id=${dn},drive=${dn}-format" + (extraQEMUOpts c.frontendOpts))
+      ]) i.drives));
     args = map (v: "-${v}") flags;
   in
     concatStringsSep " " ([ i.qemuBin ] ++ args);

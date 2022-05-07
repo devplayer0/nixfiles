@@ -4,7 +4,7 @@
     nixpkgs = "mine";
     home-manager = "unstable";
 
-    configuration = { lib, pkgs, modulesPath, config, ... }:
+    configuration = { lib, pkgs, modulesPath, config, systems, ... }:
       let
         inherit (lib) mkIf;
       in
@@ -40,7 +40,20 @@
           vms = {
             instances.test = {
               networks.virtual = {};
-              vga = "none";
+              drives = {
+                disk = {
+                  backend = {
+                    driver = "file";
+                    filename = "${systems.installer.configuration.config.my.buildAs.iso}/iso/nixos.iso";
+                    read-only = "on";
+                  };
+                  format.driver = "raw";
+                  frontend = "ide-cd";
+                  frontendOpts = {
+                    bootindex = 0;
+                  };
+                };
+              };
             };
           };
         };
