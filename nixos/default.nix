@@ -60,9 +60,11 @@ let
           networking.hostName = mkDefault name;
           nixpkgs = {
             inherit (config') system;
-            # Make sure any previously set config / overlays (e.g. lib which will be inherited by home-manager down the
-            # line) are passed on when nixpkgs is imported.
-            inherit (pkgs) config overlays;
+            # Make sure any previously set overlays (e.g. lib which will be inherited by home-manager down the
+            # line) are passed on when nixpkgs is imported. We don't inherit config anymore because apparently it
+            # doesn't seem to merge properly... (https://github.com/NixOS/nixpkgs/blob/14a348fcc6c0d28804f640375f058d5491c2e1ee/nixos/modules/misc/nixpkgs.nix#L34)
+            # TODO: Possible this behaviour will be fixed in future?
+            inherit (pkgs) overlays;
           };
 
           # Unfortunately it seems there's no way to fully decouple home-manager's lib from NixOS's pkgs.lib. :(

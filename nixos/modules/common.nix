@@ -47,7 +47,7 @@ in
       };
 
       nix = {
-        package = pkgs'.unstable.nixVersions.stable;
+        package = pkgs'.mine.nix;
         # TODO: This has been renamed to nix.settings.trusted-users in 22.05
         trustedUsers = [ "@wheel" ];
         extraOptions =

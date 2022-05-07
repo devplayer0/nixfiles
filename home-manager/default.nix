@@ -18,8 +18,10 @@ let
     configuration = head defs;
     # Passing pkgs here doesn't set the global pkgs, just where it'll be imported from (and where the global lib is
     # derived from). We want home-manager to import pkgs itself so it'll apply config and overlays modularly. Any config
-    # and overlays previously applied will be passed on by `homeManagerConfiguration` though.
-    pkgs = pkgs'.${config'.nixpkgs}.${config'.system};
+    # and overlays previously applied will be passed on by `homeManagerConfiguration` though. In fact, because of weird
+    # config merging behaviour (or lack thereof; similar to NixOS module), we explicitly pass empty config.
+    # TODO: Check if this is fixed in future.
+    pkgs = pkgs'.${config'.nixpkgs}.${config'.system} // { config = { }; };
     extraSpecialArgs = { inherit inputs; };
     extraModules = (attrValues cfg.modules) ++ [
       {

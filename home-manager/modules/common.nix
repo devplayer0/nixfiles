@@ -232,7 +232,7 @@ in
 
       home = {
         packages = with pkgs; [
-          pkgs'.unstable.nixVersions.stable
+          pkgs'.mine.nix
         ];
       };
     })
