@@ -12,6 +12,32 @@ let
   qemuOpts = with lib.types; coercedTo (attrsOf unspecified) flattenQEMUOpts str;
   extraQEMUOpts = o: optionalString (o != "") ",${o}";
 
+  doCleanShutdown =
+  let
+    pyEnv = pkgs.python310.withPackages (ps: with ps; [ qemu ]);
+  in
+    pkgs.writeScript "qemu-clean-shutdown" ''
+      #!${pyEnv}/bin/python
+      import sys
+      import os
+
+      import qemu.qmp
+
+      if len(sys.argv) != 2:
+        print(f'usage: {sys.argv[0]} <qmp unix socket>', file=sys.stderr)
+        sys.exit(1)
+
+      if not os.path.exists(sys.argv[1]) and 'MAINPID' not in os.environ:
+          # Special case: systemd is calling us after QEMU exited on its own
+          sys.exit(0)
+
+      with qemu.qmp.QEMUMonitorProtocol(sys.argv[1]) as mon:
+        mon.connect()
+        mon.command('system_powerdown')
+        while mon.pull_event(wait=True)['event'] != 'SHUTDOWN':
+          pass
+    '';
+
   cfg = config.my.vms;
 
   netOpts = with lib.types; { name, ... }: {
@@ -39,6 +65,10 @@ let
       qemuBin = mkOpt' path "${pkgs.qemu_kvm}/bin/qemu-kvm" "Path to QEMU executable.";
       qemuFlags = mkOpt' (listOf str) [ ] "Additional flags to pass to QEMU.";
       autoStart = mkBoolOpt' true "Whether to start the VM automatically at boot.";
+      cleanShutdown = {
+        enabled = mkBoolOpt' true "Whether to attempt to cleanly shut down the guest.";
+        timeout = mkOpt' ints.unsigned 30 "Clean shutdown timeout (in seconds).";
+      };
 
       machine = mkOpt' str "q35" "QEMU machine type.";
       enableKVM = mkBoolOpt' true "Whether to enable KVM.";
@@ -68,8 +98,10 @@ let
         "m ${toString i.memory}"
         "nographic"
         "vga ${i.vga}"
+        "chardev socket,id=monitor-qmp,path=/run/vms/${n}/monitor-qmp.sock,server=on,wait=off"
+        "mon chardev=monitor-qmp,mode=control"
         "chardev socket,id=monitor,path=/run/vms/${n}/monitor.sock,server=on,wait=off"
-        "mon chardev=monitor"
+        "mon chardev=monitor,mode=readline"
         "chardev socket,id=tty,path=/run/vms/${n}/tty.sock,server=on,wait=off"
         "device isa-serial,chardev=tty"
       ] ++
@@ -108,6 +140,9 @@ in
           description = "Virtual machine '${n}'";
           serviceConfig = {
             ExecStart = mkQemuCommand n i;
+            ExecStop = mkIf i.cleanShutdown.enabled "${doCleanShutdown} /run/vms/${n}/monitor-qmp.sock";
+            TimeoutStopSec = mkIf i.cleanShutdown.enabled i.cleanShutdown.timeout;
+
             RuntimeDirectory = "vms/${n}";
             StateDirectory = "vms/${n}";
           };
@@ -120,7 +155,7 @@ in
             '';
           postStart =
             ''
-              socks=(monitor tty spice)
+              socks=(monitor-qmp monitor tty spice)
               for s in ''${socks[@]}; do
                 path="$RUNTIME_DIRECTORY"/''${s}.sock
                 until [ -e "$path" ]; do sleep 0.1; done
