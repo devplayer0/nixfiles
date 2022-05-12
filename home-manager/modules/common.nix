@@ -203,6 +203,7 @@ in
           mosh
           wget
           hyx
+          whois
         ];
 
         sessionVariables = {
