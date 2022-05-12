@@ -44,6 +44,7 @@ let
     options = {
       bridge = mkOpt' str name "Network bridge to connect to.";
       model = mkOpt' str "virtio-net" "Device type for network interface.";
+      mac = mkOpt' str null "Guest MAC address.";
       extraOptions = mkOpt' qemuOpts { } "Extra QEMU options to set for the NIC.";
     };
   };
@@ -70,6 +71,7 @@ let
         timeout = mkOpt' ints.unsigned 30 "Clean shutdown timeout (in seconds).";
       };
 
+      uuid = mkOpt' str null "QEMU machine UUID.";
       machine = mkOpt' str "q35" "QEMU machine type.";
       enableKVM = mkBoolOpt' true "Whether to enable KVM.";
       enableUEFI = mkBoolOpt' true "Whether to enable UEFI.";
@@ -92,6 +94,7 @@ let
       i.qemuFlags ++
       [
         "name ${n}"
+        "uuid ${i.uuid}"
         "machine ${i.machine}"
         "cpu ${i.cpu}"
         "smp cpus=${toString i.smp.cpus},threads=${toString i.smp.threads}"
@@ -113,7 +116,7 @@ let
       (optional i.spice.enable "spice unix=on,addr=/run/vms/${n}/spice.sock,disable-ticketing=on") ++
       (flatten (mapAttrsToList (nn: c: [
         "netdev bridge,id=${nn},br=${c.bridge}"
-        ("device ${c.model},netdev=${nn}" + (extraQEMUOpts c.extraOptions))
+        ("device ${c.model},netdev=${nn},mac=${c.mac}" + (extraQEMUOpts c.extraOptions))
       ]) i.networks)) ++
       (flatten (mapAttrsToList (dn: c: [
         "blockdev node-name=${dn}-backend,${c.backend}"

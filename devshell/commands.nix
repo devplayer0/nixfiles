@@ -42,6 +42,12 @@ in
       help = pkgs.agenix.meta.description;
       command = ''exec ${pkgs.agenix}/bin/agenix --identity "$PRJ_ROOT/.keys/dev.key" "$@"'';
     }
+    {
+      name = "qemu-genmac";
+      category = "utilities";
+      help = "Generate MAC address suitable for QEMU";
+      command = ''printf "52:54:00:ab:%02x:%02x\n" $((RANDOM%256)) $((RANDOM%256))'';
+    }
 
     {
       name = "fmt";

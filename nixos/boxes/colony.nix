@@ -39,7 +39,8 @@
           };
           vms = {
             instances.test = {
-              networks.virtual = {};
+              uuid = "59f51efb-7e6d-477b-a263-ed9620dbc87b";
+              networks.virtual.mac = "52:54:00:ab:f1:52";
               drives = {
                 disk = {
                   backend = {
