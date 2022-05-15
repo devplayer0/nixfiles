@@ -3,7 +3,7 @@ let
   inherit (lib.my) attrsToNVList;
 in
 {
-  imports = [ ./commands.nix ./install.nix ];
+  imports = [ ./commands.nix ./install.nix ./vm-tasks.nix ];
 
   env = attrsToNVList {
     # starship will show this
@@ -13,6 +13,8 @@ in
       ''
         experimental-features = nix-command flakes ca-derivations
       '');
+
+    INSTALLER_SSH_OPTS = "-i .keys/deploy.key";
   };
 
   packages = with pkgs; [

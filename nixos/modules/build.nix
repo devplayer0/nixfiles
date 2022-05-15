@@ -80,6 +80,7 @@ in
       sharedDirectories = dummyOption;
       cores = dummyOption;
       memorySize = dummyOption;
+      qemu.options = dummyOption;
     };
   };
 

@@ -6,43 +6,112 @@
 
     configuration = { lib, pkgs, modulesPath, config, systems, ... }:
       let
-        inherit (lib) mkIf;
+        inherit (lib) mkIf mapAttrs;
+
+        wanBDF =
+          if config.my.build.isDevVM then "00:02.0" else "01:00.0";
       in
       {
         imports = [ "${modulesPath}/profiles/qemu-guest.nix" ];
 
+        boot.kernelParams = [ "intel_iommu=on" ];
+        boot.loader.systemd-boot.configurationLimit = 20;
+        fileSystems = {
+          "/boot" = {
+            device = "/dev/disk/by-label/ESP";
+            fsType = "vfat";
+          };
+          "/nix" = {
+            device = "/dev/ssds/colony-nix";
+            fsType = "ext4";
+          };
+          "/persist" = {
+            device = "/dev/ssds/colony-persist";
+            fsType = "ext4";
+            neededForBoot = true;
+          };
+        };
+        services = {
+          lvm = {
+            boot.thin.enable = true;
+            dmeventd.enable = true;
+          };
+        };
+
+        environment.systemPackages = with pkgs; [
+          pciutils
+        ];
+
+        networking = {
+          interfaces = mkIf (!config.my.build.isDevVM) {
+            enp10s0.useDHCP = true;
+          };
+        };
+
+        systemd = {
+          network = {
+            netdevs."25-base-bridge".netdevConfig = {
+              Name = "base";
+              Kind = "bridge";
+            };
+            networks."80-base-bridge" = {
+              matchConfig = {
+                Name = "base";
+                Driver = "bridge";
+              };
+              DHCP = "ipv4";
+              networkConfig = {
+                IPv6AcceptRA = true;
+              };
+            };
+          };
+          services."vm@estuary" = rec {
+            # Bind to the interface, networkd wait-online would deadlock...
+            requires = [ "sys-subsystem-net-devices-base.device" ];
+            bindsTo = requires;
+          };
+        };
+
+        #environment.etc."udev/udev.conf".text = "udev_log=debug";
+        #systemd.services.systemd-networkd.environment.SYSTEMD_LOG_LEVEL = "debug";
+        virtualisation = {
+          cores = 8;
+          memorySize = 8192;
+          qemu.options = [
+            "-machine q35"
+            "-accel kvm,kernel-irqchip=split"
+            "-device intel-iommu,intremap=on,caching-mode=on"
+          ];
+        };
+
         my = {
+          #deploy.generate.system.mode = "boot";
           secrets = {
-            key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINkqdN5t3UKwrNOOPKlbnG1WYhnkV5H9luAzMotr8SbT";
+            key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKp5WDdDr/1NS3SJIDOKwcCNZDFOxqPAD7cbZWAP7EkX";
             files."test.txt" = {};
           };
 
-          firewall = {
-            trustedInterfaces = [ "virtual" ];
-            nat = {
-              externalInterface = "eth0";
-              forwardPorts = [
-                {
-                  proto = "tcp";
-                  sourcePort = 2222;
-                  destination = "127.0.0.1:22";
-                }
-              ];
-            };
-          };
           server.enable = true;
 
-          containers = {
-            instances.vaultwarden = {
-              networking.bridge = "virtual";
-            };
+          network = {
+            ipv6 = "2a0e:97c0:4d1:0::2";
+            ipv4 = "10.110.0.2";
           };
+          firewall = {
+            trustedInterfaces = [ "base" ];
+          };
+
+          #containers = {
+          #  instances.vaultwarden = {
+          #    networking.bridge = "virtual";
+          #  };
+          #};
           vms = {
-            instances.test = {
+            instances.estuary = {
               uuid = "59f51efb-7e6d-477b-a263-ed9620dbc87b";
-              networks.virtual.mac = "52:54:00:ab:f1:52";
+              networks.base.mac = "52:54:00:ab:f1:52";
               drives = {
-                disk = {
+                installer = {
                   backend = {
                     driver = "file";
                     filename = "${systems.installer.configuration.config.my.buildAs.iso}/iso/nixos.iso";
@@ -51,60 +120,29 @@
                   format.driver = "raw";
                   frontend = "ide-cd";
                   frontendOpts = {
+                    bootindex = 1;
+                  };
+                };
+                disk = {
+                  backend = {
+                    driver = "host_device";
+                    filename = "/dev/ssds/vm-estuary";
+                    # It appears this needs to be set on the backend _and_ the format
+                    discard = "unmap";
+                  };
+                  format = {
+                    driver = "raw";
+                    discard = "unmap";
+                  };
+                  frontend = "virtio-blk";
+                  frontendOpts = {
                     bootindex = 0;
                   };
                 };
               };
+              hostDevices."${wanBDF}" = { };
             };
           };
-        };
-
-        fileSystems = {
-          "/boot" = {
-            device = "/dev/disk/by-label/ESP";
-            fsType = "vfat";
-          };
-          "/nix" = {
-            device = "/dev/disk/by-label/nix";
-            fsType = "ext4";
-          };
-          "/persist" = {
-            device = "/dev/disk/by-label/persist";
-            fsType = "ext4";
-            neededForBoot = true;
-          };
-        };
-
-        networking = {
-          interfaces = mkIf (!config.my.build.isDevVM) {
-            enp1s0.useDHCP = true;
-          };
-        };
-
-        systemd.network = {
-          netdevs."25-virtual-bridge".netdevConfig = {
-            Name = "virtual";
-            Kind = "bridge";
-          };
-          networks."80-virtual-bridge" = {
-            matchConfig = {
-              Name = "virtual";
-              Driver = "bridge";
-            };
-            networkConfig = {
-              Address = "172.16.137.1/24";
-              DHCPServer = true;
-              # TODO: Configuration for routed IPv6 (and maybe IPv4)
-              IPMasquerade = "both";
-              IPv6SendRA = true;
-            };
-          };
-        };
-
-        #systemd.services.systemd-networkd.environment.SYSTEMD_LOG_LEVEL = "debug";
-        virtualisation = {
-          cores = 8;
-          memorySize = 8192;
         };
       };
   };

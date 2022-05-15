@@ -1,7 +1,7 @@
 { lib, pkgs, config, ... }:
 let
-  inherit (lib) mapAttrsToList concatMapStringsSep;
-  inherit (lib.my) mkOpt' attrsToNVList;
+  inherit (lib) mapAttrsToList;
+  inherit (lib.my) mkOpt';
 
   parseArgs = opts:
     ''
@@ -45,10 +45,10 @@ let
           log "[\e[36;1minfo\e[0m]: \e[36m$*\e[0m"
         }
         warn() {
-          log "[\e[33;1minfo\e[0m]: \e[33m$*\e[0m"
+          log "[\e[33;1mwarn\e[0m]: \e[33m$*\e[0m"
         }
         error() {
-          log "[\e[31;1minfo\e[0m]: \e[31m$*\e[0m"
+          log "[\e[31;1merror\e[0m]: \e[31m$*\e[0m"
         }
         die() {
           error "$@"

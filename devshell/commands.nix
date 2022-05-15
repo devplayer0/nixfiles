@@ -46,7 +46,13 @@ in
       name = "qemu-genmac";
       category = "utilities";
       help = "Generate MAC address suitable for QEMU";
-      command = ''printf "52:54:00:ab:%02x:%02x\n" $((RANDOM%256)) $((RANDOM%256))'';
+      command = ''printf "52:54:00:%02x:%02x:%02x\n" $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256))'';
+    }
+    {
+      name = "ssh-get-ed25519";
+      category = "utilities";
+      help = "Print the ed25519 pubkey for a host";
+      command = "${pkgs.openssh}/bin/ssh-keyscan -t ed25519 \"$1\" 2> /dev/null | awk '{ print $2 \" \" $3 }'";
     }
 
     {

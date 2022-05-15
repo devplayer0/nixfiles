@@ -22,15 +22,14 @@ in
         # agenix sets this as a default but adding any custom extras will _replace_ the list (different priority)
         identityPaths =
           mkIf config.services.openssh.enable
-          (map (e: e.path) (lib.filter (e: e.type == "rsa" || e.type == "ed25519") config.services.openssh.hostKeys));
+          (map
+            # Use the persit dir to grab the keys instead, otherwise they might not be ready. We can't really make
+            # agenix depend on impermanence, since users depends on agenix (to decrypt passwords) and impermanence
+            # depends on users
+            (e: let pDir = config.my.tmproot.persistence.dir; in if pDir != null then "${pDir}/${e.path}" else e.path)
+            (lib.filter (e: e.type == "rsa" || e.type == "ed25519") config.services.openssh.hostKeys));
       };
     }
-    (mkIf (config.age.secrets != { }) {
-        system.activationScripts.agenixMountSecrets.deps = mkIf (config.my.tmproot.persistence.dir != null) [
-          # The key used to decrypt is not going to exist!
-          "persist-files"
-        ];
-    })
     (mkIf config.my.build.isDevVM {
       age.identityPaths = [ cfg.vmKeyPath ];
     })

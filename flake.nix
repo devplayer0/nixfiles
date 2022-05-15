@@ -95,6 +95,7 @@
         nixos/installer.nix
 
         nixos/boxes/colony.nix
+        nixos/vms/estuary.nix
         nixos/containers/vaultwarden.nix
 
         # Homes
@@ -138,7 +139,7 @@
     } //
     (eachDefaultSystem (system:
     let
-      pkgs = pkgs'.unstable.${system};
+      pkgs = pkgs'.mine.${system};
       lib = pkgs.lib;
     in
     # Stuff for each platform

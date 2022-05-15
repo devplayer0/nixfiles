@@ -1,10 +1,23 @@
 { lib, pkgs, config, systems, ... }:
 let
   inherit (builtins) head attrNames;
-  inherit (lib) mkMerge mkIf mkDefault optionalAttrs mapAttrs';
+  inherit (lib) mkMerge mkIf mkDefault optionalAttrs mapAttrs' optionalString;
   inherit (lib.my) mkOpt' mkBoolOpt';
 
   cfg = config.my.deploy;
+
+  # Based on https://github.com/serokell/deploy-rs/blob/master/flake.nix
+  nixosActivate = mode: base: (pkgs.deploy-rs.lib.activate.custom // { dryActivate = "$PROFILE/bin/switch-to-configuration dry-activate"; }) base.config.system.build.toplevel ''
+    # work around https://github.com/NixOS/nixpkgs/issues/73404
+    cd /tmp
+
+    $PROFILE/bin/switch-to-configuration ${mode}
+
+    # https://github.com/serokell/deploy-rs/issues/31
+    ${with base.config.boot.loader;
+    optionalString ((mode == "switch" || mode == "boot") && systemd-boot.enable)
+    "sed -i '/^default /d' ${efi.efiSysMountPoint}/loader/loader.conf"}
+  '';
 
   ctrProfiles = optionalAttrs cfg.generate.containers.enable (mapAttrs' (n: c:
   let
@@ -34,7 +47,10 @@ in
     inherit (lib.my.deploy-rs) node;
 
     generate = {
-      system.enable = mkBoolOpt' true "Whether to generate a deploy-rs profile for this system's config.";
+      system = {
+        enable = mkBoolOpt' true "Whether to generate a deploy-rs profile for this system's config.";
+        mode = mkOpt' str "switch" "switch-to-configuration mode.";
+      };
       containers.enable = mkBoolOpt' true "Whether to generate deploy-rs profiles for this system's containers.";
     };
   };
@@ -49,7 +65,7 @@ in
         profilesOrder = [ "system" ] ++ (attrNames ctrProfiles);
         profiles = {
           system = mkIf cfg.generate.system.enable {
-            path = pkgs.deploy-rs.lib.activate.nixos { inherit config; };
+            path = nixosActivate cfg.generate.system.mode { inherit config; };
 
             user = "root";
           };

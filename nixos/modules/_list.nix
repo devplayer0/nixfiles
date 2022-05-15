@@ -11,5 +11,6 @@
     secrets = ./secrets.nix;
     containers = ./containers.nix;
     vms = ./vms.nix;
+    network = ./network.nix;
   };
 }

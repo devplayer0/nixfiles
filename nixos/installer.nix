@@ -13,14 +13,14 @@
       in
       {
         imports = [
-          # Lots of kernel modules and firmware
-          "${modulesPath}/profiles/all-hardware.nix"
           # Useful tools to have
           "${modulesPath}/profiles/base.nix"
         ];
 
         config = {
           my = {
+            # Lots of kernel modules and firmware
+            build.allHardware = true;
             # Whatever installer mechanism is chosen will provide an appropriate `/`
             tmproot.enable = false;
             firewall.nat.enable = false;
@@ -72,9 +72,6 @@
             '';
 
           environment.systemPackages = with pkgs; [
-            # We disable networking.useDHCP, so bring these in for the user
-            # dhcpcd probably has more features, but dhclient actually seems a bit more simple
-            (pkgs.writeShellScriptBin "dhclient" ''exec ${pkgs.dhcp}/bin/dhclient -v "$@"'')
             dhcpcd
           ];
 
@@ -99,6 +96,7 @@
           # download-using-manifests.pl from forking even if there is
           # plenty of free memory.
           boot.kernel.sysctl."vm.overcommit_memory" = "1";
+          services.lvm.boot.thin.enable = true;
         };
       };
   };

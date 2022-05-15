@@ -1,6 +1,9 @@
 { lib, pkgs, config, ... }:
 let
-  inherit (lib) optional optionals optionalString flatten concatStringsSep mapAttrsToList mapAttrs' mkIf mkDefault;
+  inherit (builtins) filter any attrNames attrValues fetchGit;
+  inherit (lib)
+    unique optional optionals optionalString flatten concatStringsSep
+    concatMapStringsSep mapAttrsToList mapAttrs' mkIf mkDefault;
   inherit (lib.my) mkOpt' mkBoolOpt';
 
   flattenQEMUOpts = attrs:
@@ -38,6 +41,29 @@ let
           pass
     '';
 
+  # TODO: Upstream or something...
+  vfio-pci-bind = pkgs.stdenv.mkDerivation rec {
+    pname = "vfio-pci-bind";
+    version = "b41e4545b21de434fc51a34a9bf1d72e3ac66cc8";
+
+    src = fetchGit {
+      url = "https://github.com/andre-richter/vfio-pci-bind";
+      rev = version;
+    };
+
+    prePatch = ''
+      substituteInPlace vfio-pci-bind.sh \
+        --replace modprobe ${pkgs.kmod}/bin/modprobe
+      substituteInPlace 25-vfio-pci-bind.rules \
+        --replace vfio-pci-bind.sh "$out"/bin/vfio-pci-bind.sh
+    '';
+    installPhase = ''
+      mkdir -p "$out"/bin/ "$out"/lib/udev/rules.d
+      cp vfio-pci-bind.sh "$out"/bin/
+      cp 25-vfio-pci-bind.rules "$out"/lib/udev/rules.d/
+    '';
+  };
+
   cfg = config.my.vms;
 
   netOpts = with lib.types; { name, ... }: {
@@ -58,6 +84,12 @@ let
 
       frontend = mkOpt' str "virtio-blk" "Frontend device driver.";
       frontendOpts = mkOpt' qemuOpts { } "Frontend device options.";
+    };
+  };
+
+  hostDevOpts = with lib.types; {
+    options = {
+      bindVFIO = mkBoolOpt' true "Whether to automatically bind the device to vfio-pci.";
     };
   };
 
@@ -85,8 +117,15 @@ let
       spice.enable = mkBoolOpt' true "Whether to enable SPICE.";
       networks = mkOpt' (attrsOf (submodule netOpts)) { } "Networks to attach VM to.";
       drives = mkOpt' (attrsOf (submodule driveOpts)) { } "Drives to attach to VM.";
+      hostDevices = mkOpt' (attrsOf (submodule hostDevOpts)) { } "Host PCI devices to pass to the VM.";
     };
   };
+
+  allHostDevs =
+    flatten
+      (map
+        (i: mapAttrsToList (bdf: c: { inherit bdf; inherit (c) bindVFIO; }) i.hostDevices)
+        (attrValues cfg.instances));
 
   mkQemuCommand = n: i:
   let
@@ -122,7 +161,8 @@ let
         "blockdev node-name=${dn}-backend,${c.backend}"
         "blockdev node-name=${dn}-format,${c.formatBackendProp}=${dn}-backend,${c.format}"
         ("device ${c.frontend},id=${dn},drive=${dn}-format" + (extraQEMUOpts c.frontendOpts))
-      ]) i.drives));
+      ]) i.drives)) ++
+      (map (bdf: "device vfio-pci,host=${bdf}") (attrNames i.hostDevices));
     args = map (v: "-${v}") flags;
   in
     concatStringsSep " " ([ i.qemuBin ] ++ args);
@@ -134,6 +174,30 @@ in
   };
 
   config = mkIf (cfg.instances != { }) {
+    assertions = [
+      {
+        assertion = let bdfs = map (d: d.bdf) allHostDevs; in (unique bdfs) == bdfs;
+        message = "VMs cannot share host devices!";
+      }
+    ];
+
+    services.udev = {
+      packages =
+        optionals
+          (any (d: d.bindVFIO) allHostDevs)
+          [
+            vfio-pci-bind
+            (pkgs.writeTextDir
+              "etc/udev/rules.d/20-vfio-tags.rules"
+              (concatMapStringsSep
+                "\n"
+                (d: ''ACTION=="add", SUBSYSTEM=="pci", KERNEL=="0000:${d.bdf}", TAG="vfio-pci-bind"'')
+                (filter (d: d.bindVFIO) allHostDevs)))
+          ];
+    };
+
+    my.tmproot.persistence.config.directories = [ "/var/lib/vms" ];
+
     # qemu-bridge-helper will fail otherwise
     environment.etc."qemu/bridge.conf".text = "allow all";
     systemd = {
