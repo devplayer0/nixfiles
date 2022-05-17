@@ -4,9 +4,20 @@
     nixpkgs = "mine";
     home-manager = "unstable";
 
-    configuration = { lib, pkgs, modulesPath, config, systems, ... }:
+    assignments.internal = {
+      name = "estuary.vm";
+      altNames = [ "fw" ];
+      ipv4 = {
+        address = "10.100.0.1";
+        gateway = null;
+      };
+      ipv6.address = "2a0e:97c0:4d1:0::1";
+    };
+
+    configuration = { lib, pkgs, modulesPath, config, systems, assignments, ... }:
       let
         inherit (lib) mkIf mkMerge;
+        inherit (lib.my) networkdAssignment;
       in
       {
         imports = [ "${modulesPath}/profiles/qemu-guest.nix" ];
@@ -59,14 +70,18 @@
                   matchConfig.Name = "wan";
                   DHCP = "ipv4";
                 };
-                "80-base" = {
-                  matchConfig.Name = "base";
-                  address = with config.my.network; [ "${ipv4}/24" "${ipv6}/64" ];
+                "80-base" = (networkdAssignment "base" assignments.internal) // {
                   networkConfig = {
-                    DHCPServer = true;
+                    IPv6AcceptRA = false;
                     IPv6SendRA = true;
                     IPMasquerade = "both";
                   };
+                  ipv6SendRAConfig.DNS = [ assignments.internal.ipv6.address ];
+                  ipv6Prefixes = [
+                    {
+                      ipv6PrefixConfig.Prefix = "2a0e:97c0:4d1:0::/64";
+                    }
+                  ];
                 };
               };
             };
@@ -74,10 +89,6 @@
             my = {
               server.enable = true;
 
-              network = {
-                ipv6 = "2a0e:97c0:4d1:0::1";
-                ipv4 = "10.110.0.1";
-              };
               firewall = {
                 trustedInterfaces = [ "base" ];
                 nat = {

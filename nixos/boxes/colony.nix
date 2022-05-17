@@ -4,9 +4,17 @@
     nixpkgs = "mine";
     home-manager = "unstable";
 
-    configuration = { lib, pkgs, modulesPath, config, systems, ... }:
+    assignments.internal = {
+      name = "colony";
+      altNames = [ "vm" ];
+      ipv4.address = "10.100.0.2";
+      ipv6.address = "2a0e:97c0:4d1:0::2";
+    };
+
+    configuration = { lib, pkgs, modulesPath, config, systems, assignments, ... }:
       let
         inherit (lib) mkIf mapAttrs;
+        inherit (lib.my) networkdAssignment;
 
         wanBDF =
           if config.my.build.isDevVM then "00:02.0" else "01:00.0";
@@ -50,20 +58,11 @@
 
         systemd = {
           network = {
-            netdevs."25-base-bridge".netdevConfig = {
+            netdevs."25-base".netdevConfig = {
               Name = "base";
               Kind = "bridge";
             };
-            networks."80-base-bridge" = {
-              matchConfig = {
-                Name = "base";
-                Driver = "bridge";
-              };
-              DHCP = "ipv4";
-              networkConfig = {
-                IPv6AcceptRA = true;
-              };
-            };
+            networks."80-base" = networkdAssignment "base" assignments.internal;
           };
           services."vm@estuary" = rec {
             # Bind to the interface, networkd wait-online would deadlock...
@@ -93,10 +92,6 @@
 
           server.enable = true;
 
-          network = {
-            ipv6 = "2a0e:97c0:4d1:0::2";
-            ipv4 = "10.110.0.2";
-          };
           firewall = {
             trustedInterfaces = [ "base" ];
           };

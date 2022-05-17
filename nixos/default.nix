@@ -2,9 +2,11 @@
 let
   inherit (builtins) attrValues mapAttrs;
   inherit (lib) substring flatten optional optionals mkDefault mkOption mkOptionType;
-  inherit (lib.my) homeStateVersion mkOpt' mkBoolOpt' commonOpts inlineModule';
+  inherit (lib.my) naiveIPv4Gateway homeStateVersion mkOpt' mkBoolOpt' commonOpts inlineModule';
 
   cfg = config.nixos;
+
+  allAssignments = mapAttrs (_: c: c.assignments) cfg.systems;
 
   mkSystem =
     {
@@ -37,7 +39,7 @@ let
       lib = pkgs.lib;
 
       # Put the inputs in specialArgs to avoid infinite recursion when modules try to do imports
-      specialArgs = { inherit inputs; inherit (cfg) systems; };
+      specialArgs = { inherit inputs allAssignments; inherit (cfg) systems; };
 
       # `baseModules` informs the manual which modules to document
       baseModules =
@@ -53,6 +55,7 @@ let
 
           _module.args = {
             inherit (cfg) secretsPath;
+            inherit (config') assignments;
             pkgs' = allPkgs;
           };
 
@@ -96,6 +99,24 @@ let
       ] ++ defs;
     };
 
+  assignmentOpts = with lib.types; { name, config, ... }: {
+    options = {
+      name = mkOpt' str name "Name of assignment.";
+      altNames = mkOpt' (listOf str) [ ] "Extra names to assign.";
+      visible = mkBoolOpt' true "Whether or not this assignment should be visible.";
+      ipv4 = {
+        address = mkOpt' str null "IPv4 address.";
+        mask = mkOpt' ints.u8 24 "Network mask.";
+        gateway = mkOpt' (nullOr str) (naiveIPv4Gateway config.ipv4.address) "IPv4 gateway.";
+      };
+      ipv6 = {
+        address = mkOpt' str null "IPv6 address.";
+        mask = mkOpt' ints.u8 64 "Network mask.";
+        gateway = mkOpt' (nullOr str) null "IPv6 gateway.";
+      };
+    };
+  };
+
   systemOpts = with lib.types; { name, config, ... }: {
     options = {
       inherit (commonOpts) system nixpkgs home-manager;
@@ -103,6 +124,10 @@ let
       # This causes a (very slow) docs rebuild on every change to a module's options it seems
       # TODO: Currently broken with infinite recursion...
       docCustom = mkBoolOpt' false "Whether to document nixfiles' custom NixOS modules.";
+
+      assignments = mkOpt' (attrsOf (submoduleWith {
+        modules = [ assignmentOpts { _module.args.name = name; } ];
+      })) { } "Network assignments.";
 
       configuration = mkOption {
         description = "NixOS configuration module.";

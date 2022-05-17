@@ -1,19 +1,19 @@
 { lib }:
 let
-  inherit (builtins) replaceStrings elemAt mapAttrs;
+  inherit (builtins) length match replaceStrings elemAt mapAttrs head split;
   inherit (lib)
     genAttrs mapAttrs' mapAttrsToList filterAttrsRecursive nameValuePair types
-    mkOption mkOverride mkForce mergeEqualOption;
+    mkOption mkOverride mkForce mergeEqualOption optional;
   inherit (lib.flake) defaultSystems;
 in
 rec {
   # Yoinked from nixpkgs/nixos/modules/services/networking/nat.nix
-  isIPv6 = ip: builtins.length (lib.splitString ":" ip) > 2;
+  isIPv6 = ip: length (lib.splitString ":" ip) > 2;
   parseIPPort = ipp:
     let
       v6 = isIPv6 ipp;
       matchIP = if v6 then "[[]([0-9a-fA-F:]+)[]]" else "([0-9.]+)";
-      m = builtins.match "${matchIP}:([0-9-]+)" ipp;
+      m = match "${matchIP}:([0-9-]+)" ipp;
       checked = v: if m == null then throw "bad ip:ports `${ipp}'" else v;
     in
     {
@@ -21,6 +21,7 @@ rec {
       ip = checked (elemAt m 0);
       ports = checked (replaceStrings ["-"] [":"] (elemAt m 1));
     };
+  naiveIPv4Gateway = ip: "${head (elemAt (split ''([0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+'' ip) 1)}.1";
   attrsToNVList = mapAttrsToList nameValuePair;
 
   mkDefaultSystemsPkgs = path: args': genAttrs defaultSystems (system: import path ((args' system) // { inherit system; }));
@@ -82,6 +83,15 @@ rec {
     system = mkOpt' (enum defaultSystems) null "Nix-style system string.";
     nixpkgs = mkOpt' (enum [ "master" "unstable" "stable" "mine" ]) "unstable" "Branch of nixpkgs to use.";
     home-manager = mkOpt' (enum [ "unstable" "stable" ]) "unstable" "Branch of home-manager to use.";
+  };
+
+  networkdAssignment = iface: a: {
+    matchConfig.Name = iface;
+    address = [ "${a.ipv4.address}/${toString a.ipv4.mask}" "${a.ipv6.address}/${toString a.ipv6.mask}" ];
+    gateway =
+      (optional (a.ipv4.gateway != null) a.ipv4.gateway) ++
+      (optional (a.ipv6.gateway != null) a.ipv6.gateway);
+    networkConfig.IPv6AcceptRA = a.ipv6.gateway == null;
   };
 
   deploy-rs =

@@ -1,18 +1,8 @@
 { lib, config, ... }:
 let
   inherit (lib) flatten optional mkIf mkDefault mkMerge;
-  inherit (lib.my) mkOpt' mkBoolOpt';
-
-  cfg = config.my.network;
 in
 {
-  options = with lib.types; {
-    my.network = {
-      ipv4 = mkOpt' str null "Internal network IPv4 address.";
-      ipv6 = mkOpt' str null "Internal network IPv6 address.";
-    };
-  };
-
   config = mkMerge [
     {
       networking = {
