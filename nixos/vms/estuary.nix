@@ -16,7 +16,7 @@
 
     configuration = { lib, pkgs, modulesPath, config, systems, assignments, ... }:
       let
-        inherit (lib) mkIf mkMerge;
+        inherit (lib) mkIf mkMerge mkForce;
         inherit (lib.my) networkdAssignment;
       in
       {
@@ -70,19 +70,22 @@
                   matchConfig.Name = "wan";
                   DHCP = "ipv4";
                 };
-                "80-base" = (networkdAssignment "base" assignments.internal) // {
-                  networkConfig = {
-                    IPv6AcceptRA = false;
-                    IPv6SendRA = true;
-                    IPMasquerade = "both";
-                  };
-                  ipv6SendRAConfig.DNS = [ assignments.internal.ipv6.address ];
-                  ipv6Prefixes = [
-                    {
-                      ipv6PrefixConfig.Prefix = "2a0e:97c0:4d1:0::/64";
-                    }
-                  ];
-                };
+                "80-base" = mkMerge [
+                  (networkdAssignment "base" assignments.internal)
+                  {
+                    networkConfig = {
+                      IPv6AcceptRA = mkForce false;
+                      IPv6SendRA = true;
+                      IPMasquerade = "both";
+                    };
+                    ipv6SendRAConfig.DNS = [ assignments.internal.ipv6.address ];
+                    ipv6Prefixes = [
+                      {
+                        ipv6PrefixConfig.Prefix = "2a0e:97c0:4d1:0::/64";
+                      }
+                    ];
+                  }
+                ];
               };
             };
 

@@ -180,11 +180,11 @@
     },
     "nixpkgs-mine": {
       "locked": {
-        "lastModified": 1651945192,
-        "narHash": "sha256-3pnzK9RpuWzqnqd1U7zt/z3gvn/UNY41CJuS6Ow/Vwo=",
+        "lastModified": 1652907688,
+        "narHash": "sha256-esMEnvt45KUlT27Qqouwe5Yp5kCmMq1HBmp65zpwBF4=",
         "owner": "devplayer0",
         "repo": "nixpkgs",
-        "rev": "95bce541ae41d144b8edb6c47b3b7987295b006f",
+        "rev": "0231cfd37dd08514d4d49f2b5b0fa6451dacb6f4",
         "type": "github"
       },
       "original": {

@@ -91,7 +91,12 @@ rec {
     gateway =
       (optional (a.ipv4.gateway != null) a.ipv4.gateway) ++
       (optional (a.ipv6.gateway != null) a.ipv6.gateway);
-    networkConfig.IPv6AcceptRA = a.ipv6.gateway == null;
+    networkConfig = {
+      IPv6AcceptRA = a.ipv6.gateway == null;
+      # NOTE: LLDP emission / reception is ignored on bridge interfaces
+      LLDP = true;
+      EmitLLDP = "customer-bridge";
+    };
   };
 
   deploy-rs =

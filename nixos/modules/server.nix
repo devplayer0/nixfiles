@@ -12,6 +12,7 @@ in
     services = {
       getty.autologinUser = mkDefault uname;
       kmscon.autologinUser = mkDefault uname;
+      resolved.llmnr = mkDefault "false";
     };
 
     my.user.homeConfig = {

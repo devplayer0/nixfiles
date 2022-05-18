@@ -62,7 +62,22 @@
               Name = "base";
               Kind = "bridge";
             };
-            networks."80-base" = networkdAssignment "base" assignments.internal;
+            networks = {
+              "80-base" = networkdAssignment "base" assignments.internal;
+              "80-vm-tap" = {
+                matchConfig = {
+                  # Don't think we have control over the name of the TAP from qemu-bridge-helper (or how to easily pick
+                  # which interface is which)
+                  Name = "tap*";
+                  Driver = "tun";
+                };
+                networkConfig = {
+                  KeepMaster = true;
+                  LLDP = true;
+                  EmitLLDP = "customer-bridge";
+                };
+              };
+            };
           };
 
           services."vm@estuary" = {
