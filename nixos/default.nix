@@ -60,7 +60,7 @@ let
           };
 
           system.name = name;
-          networking.hostName = mkDefault name;
+          networking.hostName = mkDefault (config'.assignments.internal.name or name);
           nixpkgs = {
             inherit (config') system;
             # Make sure any previously set overlays (e.g. lib which will be inherited by home-manager down the

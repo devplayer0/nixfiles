@@ -5,7 +5,7 @@
     home-manager = "unstable";
 
     assignments.internal = {
-      name = "estuary.vm";
+      name = "estuary-vm";
       altNames = [ "fw" ];
       ipv4 = {
         address = "10.100.0.1";
@@ -24,6 +24,8 @@
 
         config = mkMerge [
           {
+            networking.domain = "nl1.int.nul.ie";
+
             boot.kernelParams = [ "console=ttyS0,115200n8" ];
             fileSystems = {
               "/boot" = {

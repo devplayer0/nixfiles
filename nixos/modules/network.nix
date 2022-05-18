@@ -11,6 +11,8 @@ in
         enableIPv6 = mkDefault true;
         useNetworkd = mkDefault true;
       };
+
+      services.resolved.domains = [ config.networking.domain ];
     }
 
     (mkIf config.my.build.isDevVM {

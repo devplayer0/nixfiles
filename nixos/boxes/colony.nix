@@ -22,6 +22,8 @@
       {
         imports = [ "${modulesPath}/profiles/qemu-guest.nix" ];
 
+        networking.domain = "nl1.int.nul.ie";
+
         boot.kernelParams = [ "intel_iommu=on" ];
         boot.loader.systemd-boot.configurationLimit = 20;
         fileSystems = {
@@ -50,20 +52,24 @@
           pciutils
         ];
 
-        networking = {
-          interfaces = mkIf (!config.my.build.isDevVM) {
-            enp10s0.useDHCP = true;
-          };
-        };
-
         systemd = {
           network = {
+            links = {
+              "10-base-ext" = {
+                matchConfig.MACAddress = "52:54:00:81:bd:a1";
+                linkConfig.Name = "base-ext";
+              };
+            };
             netdevs."25-base".netdevConfig = {
               Name = "base";
               Kind = "bridge";
             };
             networks = {
               "80-base" = networkdAssignment "base" assignments.internal;
+              "80-base-ext" = {
+                matchConfig.Name = "base-ext";
+                networkConfig.Bridge = "base";
+              };
               "80-vm-tap" = {
                 matchConfig = {
                   # Don't think we have control over the name of the TAP from qemu-bridge-helper (or how to easily pick
