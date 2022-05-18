@@ -30,7 +30,7 @@ let
         print(f'usage: {sys.argv[0]} <qmp unix socket>', file=sys.stderr)
         sys.exit(1)
 
-      if not os.path.exists(sys.argv[1]) and 'MAINPID' not in os.environ:
+      if 'MAINPID' not in os.environ:
           # Special case: systemd is calling us after QEMU exited on its own
           sys.exit(0)
 

@@ -64,10 +64,20 @@
             };
             networks."80-base" = networkdAssignment "base" assignments.internal;
           };
-          services."vm@estuary" = rec {
-            # Bind to the interface, networkd wait-online would deadlock...
+
+          services."vm@estuary" = {
+            # Depend the interface, networkd wait-online would deadlock...
             requires = [ "sys-subsystem-net-devices-base.device" ];
-            bindsTo = requires;
+            preStart = ''
+              count=0
+              while ! ${pkgs.iproute2}/bin/ip link show dev base > /dev/null 2>&1; do
+                  count=$((count+1))
+                  if [ $count -ge 5 ]; then
+                    echo "Timed out waiting for bridge interface"
+                  fi
+                  sleep 0.5
+              done
+            '';
           };
         };
 
