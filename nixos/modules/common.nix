@@ -77,6 +77,11 @@ in
       boot = {
         # Use latest LTS release by default
         kernelPackages = mkDefault pkgs.linuxKernel.packages.linux_5_15;
+        kernel = {
+          sysctl = {
+            "net.ipv6.route.max_size" = mkDefault 16384;
+          };
+        };
         loader = {
           efi = {
             efiSysMountPoint = mkDefault "/boot";

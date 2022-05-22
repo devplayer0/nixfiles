@@ -12,7 +12,13 @@ in
         useNetworkd = mkDefault true;
       };
 
-      services.resolved.domains = [ config.networking.domain ];
+      services.resolved = {
+        domains = [ config.networking.domain ];
+        # Explicitly unset fallback DNS (Nix module will not allow for a blank config)
+        extraConfig = ''
+          FallbackDNS=
+        '';
+      };
     }
 
     (mkIf config.my.build.isDevVM {

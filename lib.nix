@@ -97,6 +97,10 @@ rec {
       LLDP = true;
       EmitLLDP = "customer-bridge";
     };
+    ipv6AcceptRAConfig = {
+      UseDNS = true;
+      UseDomains = true;
+    };
   };
 
   deploy-rs =
@@ -147,6 +151,15 @@ rec {
     filterOpts = filterAttrsRecursive (_: v: v != null);
   };
 
+  colonyDomain = "fra1.int.nul.ie";
+  # Shouldn't need this hopefully (IPv6 RA)
+  colonyDNS = {
+    domains = [ colonyDomain ];
+    dns = [
+      "10.100.0.1"
+      "2a0e:97c0:4d1:0::1"
+    ];
+  };
   sshKeyFiles = {
     me = .keys/me.pub;
     deploy = .keys/deploy.pub;

@@ -24,7 +24,7 @@
 
         config = mkMerge [
           {
-            networking.domain = "fra1.int.nul.ie";
+            networking.domain = lib.my.colonyDomain;
 
             boot.kernelParams = [ "console=ttyS0,115200n8" ];
             fileSystems = {
@@ -72,16 +72,25 @@
                 "80-wan" = {
                   matchConfig.Name = "wan";
                   DHCP = "ipv4";
+                  dhcpV4Config = {
+                    UseDNS = false;
+                    UseHostname = false;
+                  };
                 };
                 "80-base" = mkMerge [
                   (networkdAssignment "base" assignments.internal)
                   {
+                    dns = [ "127.0.0.1" "::1" ];
+                    domains = [ config.networking.domain ];
                     networkConfig = {
                       IPv6AcceptRA = mkForce false;
                       IPv6SendRA = true;
                       IPMasquerade = "both";
                     };
-                    ipv6SendRAConfig.DNS = [ assignments.internal.ipv6.address ];
+                    ipv6SendRAConfig = {
+                      DNS = [ assignments.internal.ipv6.address ];
+                      Domains = [ config.networking.domain ];
+                    };
                     ipv6Prefixes = [
                       {
                         ipv6PrefixConfig.Prefix = "2a0e:97c0:4d1:0::/64";
