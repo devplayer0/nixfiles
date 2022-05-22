@@ -12,5 +12,6 @@
     containers = ./containers.nix;
     vms = ./vms.nix;
     network = ./network.nix;
+    pdns = ./pdns.nix;
   };
 }

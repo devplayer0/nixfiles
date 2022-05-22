@@ -95,7 +95,7 @@
         nixos/installer.nix
 
         nixos/boxes/colony.nix
-        nixos/vms/estuary.nix
+        nixos/vms/estuary
         nixos/containers/vaultwarden.nix
 
         # Homes

@@ -22,7 +22,7 @@
       {
         imports = [ "${modulesPath}/profiles/qemu-guest.nix" ];
 
-        networking.domain = "nl1.int.nul.ie";
+        networking.domain = "fra1.int.nul.ie";
 
         boot.kernelParams = [ "intel_iommu=on" ];
         boot.loader.systemd-boot.configurationLimit = 20;

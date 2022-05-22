@@ -14,17 +14,17 @@
       ipv6.address = "2a0e:97c0:4d1:0::1";
     };
 
-    configuration = { lib, pkgs, modulesPath, config, systems, assignments, ... }:
+    configuration = { lib, pkgs, modulesPath, config, assignments, allAssignments, ... }:
       let
         inherit (lib) mkIf mkMerge mkForce;
         inherit (lib.my) networkdAssignment;
       in
       {
-        imports = [ "${modulesPath}/profiles/qemu-guest.nix" ];
+        imports = [ "${modulesPath}/profiles/qemu-guest.nix" ./dns.nix ];
 
         config = mkMerge [
           {
-            networking.domain = "nl1.int.nul.ie";
+            networking.domain = "fra1.int.nul.ie";
 
             boot.kernelParams = [ "console=ttyS0,115200n8" ];
             fileSystems = {
@@ -42,6 +42,7 @@
                 neededForBoot = true;
               };
             };
+
             services = {
               lvm = {
                 dmeventd.enable = true;
