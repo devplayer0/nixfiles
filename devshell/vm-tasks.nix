@@ -1,6 +1,6 @@
 { lib, pkgs, config, ... }:
 let
-  inherit (lib) mapAttrsToList;
+  inherit (lib) mkIf mapAttrsToList;
   inherit (lib.my) mkOpt;
 
   parseArgs = opts:
@@ -96,7 +96,7 @@ in
             closeSocks
           '';
       };
-      vm-viewer = {
+      vm-viewer = mkIf (!pkgs.stdenv.isDarwin) {
         help = "Access remote VM's display with virt-viewer";
         packages = with pkgs; [ virt-viewer ];
         script =
