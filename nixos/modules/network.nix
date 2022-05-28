@@ -17,6 +17,7 @@ in
         # Explicitly unset fallback DNS (Nix module will not allow for a blank config)
         extraConfig = ''
           FallbackDNS=
+          Cache=no-negative
         '';
       };
     }

@@ -10,7 +10,7 @@ in
 {
   options.my.dynamic-motd = with lib.types; {
     enable = mkBoolOpt' true "Whether to enable the dynamic message of the day PAM module.";
-    services = mkOpt' (listOf str) [ "login" "ssh" ] "PAM services to enable the dynamic message of the day module for.";
+    services = mkOpt' (listOf str) [ "login" "sshd" ] "PAM services to enable the dynamic message of the day module for.";
     script = mkOpt' (nullOr lines) null "Script that generates message of the day.";
   };
 

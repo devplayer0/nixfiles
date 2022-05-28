@@ -109,6 +109,10 @@ in
           # These are set in environment.etc by the sshd module, but because their mode needs to be changed,
           # setup-etc will copy them instead of symlinking
           "/etc/ssh/authorized_keys.d"
+
+          # Auto-generated (on activation?)
+          "/root/.nix-channels"
+          "/root/.nix-defexpr"
         ];
         persistence.config = {
           # In impermanence the key in `environment.persistence.*` (aka name passed the attrsOf submodule) sets the

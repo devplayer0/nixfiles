@@ -44,27 +44,37 @@ in
           _module.args.name = lib.mkForce user'.name;
         };
       };
-      tmproot.persistence.config =
-      let
-        perms = {
-          mode = "0700";
-          user = user.name;
-          group = user.group;
+      tmproot = {
+        unsaved.ignore = [
+          # Auto-generated (on activation?)
+          "/home/${user'.name}/.nix-profile"
+          "/home/${user'.name}/.nix-defexpr"
+
+          "/home/${user'.name}/.config/fish/fish_variables"
+        ];
+        persistence.config =
+        let
+          perms = {
+            mode = "0700";
+            user = user.name;
+            group = user.group;
+          };
+        in
+        {
+          files = map (file: {
+            inherit file;
+            parentDirectory = perms;
+          }) [
+            "/home/${user'.name}/.bash_history"
+          ];
+          directories = map (directory: {
+            inherit directory;
+          } // perms) [
+            # Persist all of fish; it's not easy to persist just the history fish won't let you move it to a different
+            # directory. Also it does some funny stuff and can't really be a symlink it seems.
+            "/home/${user'.name}/.local/share/fish"
+          ];
         };
-      in {
-        files = map (file: {
-          inherit file;
-          parentDirectory = perms;
-        }) [
-          "/home/${user'.name}/.bash_history"
-        ];
-        directories = map (directory: {
-          inherit directory;
-        } // perms) [
-          # Persist all of fish; it's not easy to persist just the history fish won't let you move it to a different
-          # directory. Also it does some funny stuff and can't really be a symlink it seems.
-          "/home/${user'.name}/.local/share/fish"
-        ];
       };
     };
 
