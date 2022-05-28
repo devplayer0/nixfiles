@@ -11,7 +11,7 @@ let
 
   toBool    = val: if val then "yes" else "no";
   serialize = val: with lib.types;
-          if str.check       val then val
+         if str.check       val then val
     else if int.check       val then toString val
     else if path.check      val then toString val
     else if bool.check      val then toBool val

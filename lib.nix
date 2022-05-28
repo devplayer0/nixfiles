@@ -153,7 +153,7 @@ rec {
     filterOpts = filterAttrsRecursive (_: v: v != null);
   };
 
-  colonyDomain = "fra1.int.nul.ie";
+  colonyDomain = "test.int.nul.ie";
   # Shouldn't need this hopefully (IPv6 RA)
   colonyDNS = {
     domains = [ colonyDomain ];

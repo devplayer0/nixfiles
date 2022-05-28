@@ -3,10 +3,43 @@ let
   inherit (lib) optionalString concatStringsSep concatMapStringsSep optionalAttrs mkIf mkDefault mkMerge mkOverride;
   inherit (lib.my) parseIPPort mkOpt' mkBoolOpt';
 
+  allowICMP = ''
+    icmp type {
+      destination-unreachable,
+      router-solicitation,
+      router-advertisement,
+      time-exceeded,
+      parameter-problem,
+      echo-request
+    } accept
+  '';
+  allowICMP6 = ''
+    icmpv6 type {
+      destination-unreachable,
+      packet-too-big,
+      time-exceeded,
+      parameter-problem,
+      mld-listener-query,
+      mld-listener-report,
+      mld-listener-reduction,
+      nd-router-solicit,
+      nd-router-advert,
+      nd-neighbor-solicit,
+      nd-neighbor-advert,
+      ind-neighbor-solicit,
+      ind-neighbor-advert,
+      mld2-listener-report,
+      echo-request
+    } accept
+  '';
+  allowUDPTraceroute = ''
+    udp dport 33434-33625 accept
+  '';
+
   forwardOpts = with lib.types; {
     options = {
       proto = mkOpt' (enum [ "tcp" "udp" ]) "tcp" "Protocol.";
-      port = mkOpt' (either port str) null "Incoming port";
+      port = mkOpt' (either port str) null "Incoming port.";
       dst = mkOpt' str null "Destination (ip:port).";
     };
   };
@@ -23,6 +56,7 @@ in
     };
     udp = {
       allowed = mkOpt' (listOf (either port str)) [ ] "UDP ports to open.";
+      allowTraceroute = mkBoolOpt' true "Whethor or not to add a rule to accept UDP traceroute packets.";
     };
     extraRules = mkOpt' lines "" "Arbitrary additional nftables rules.";
 
@@ -55,37 +89,15 @@ in
                 }
 
                 chain wan {
-                  ip protocol icmp icmp type {
-                    destination-unreachable,
-                    router-solicitation,
-                    router-advertisement,
-                    time-exceeded,
-                    parameter-problem,
-                    echo-request
-                  } accept
+                  ${allowICMP}
                   ip protocol igmp accept
-                  ip protocol tcp tcp flags & (fin|syn|rst|ack) == syn ct state new jump wan-tcp
-                  ip protocol udp ct state new jump wan-udp
+                  ${allowICMP6}
+                  ${allowUDPTraceroute}
 
-                  ip6 nexthdr icmpv6 icmpv6 type {
-                    destination-unreachable,
-                    packet-too-big,
-                    time-exceeded,
-                    parameter-problem,
-                    mld-listener-query,
-                    mld-listener-report,
-                    mld-listener-reduction,
-                    nd-router-solicit,
-                    nd-router-advert,
-                    nd-neighbor-solicit,
-                    nd-neighbor-advert,
-                    ind-neighbor-solicit,
-                    ind-neighbor-advert,
-                    mld2-listener-report,
-                    echo-request
-                  } accept
-                  ip6 nexthdr tcp tcp flags & (fin|syn|rst|ack) == syn ct state new jump wan-tcp
-                  ip6 nexthdr udp ct state new jump wan-udp
+                  tcp flags & (fin|syn|rst|ack) == syn ct state new jump wan-tcp
+                  meta l4proto udp ct state new jump wan-udp
+
+                  return
                 }
 
                 chain input {
@@ -102,6 +114,10 @@ in
                   type filter hook forward priority 0; policy drop;
                   ${optionalString (cfg.trustedInterfaces != []) "\n    iifname ${trusted'} accept\n"}
                   ct state related,established accept
+
+                  ${allowICMP}
+                  ${allowICMP6}
+                  ${allowUDPTraceroute}
                 }
                 chain output {
                   type filter hook output priority 0; policy accept;

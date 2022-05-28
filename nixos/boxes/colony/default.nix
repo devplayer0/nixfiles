@@ -8,14 +8,16 @@
       internal = {
         altNames = [ "vm" ];
         ipv4.address = "10.100.0.2";
-        ipv6.address = "2a0e:97c0:4d1:0::2";
+        #ipv6.address = "2a0e:97c0:4d1:0::2";
+        ipv6.address = "2a0e:97c0:4d0:bbb0::2";
       };
       vms = {
         ipv4 = {
           address = "10.100.1.1";
           gateway = null;
         };
-        ipv6.address = "2a0e:97c0:4d1:1::1";
+        #ipv6.address = "2a0e:97c0:4d1:1::1";
+        ipv6.address = "2a0e:97c0:4d0:bbb1::1";
       };
     };
 
@@ -27,7 +29,7 @@
       {
         imports = [ "${modulesPath}/profiles/qemu-guest.nix" ./vms.nix ];
 
-        networking.domain = "fra1.int.nul.ie";
+        networking.domain = lib.my.colonyDomain;
 
         boot.kernelParams = [ "intel_iommu=on" ];
         boot.loader.systemd-boot.configurationLimit = 20;
@@ -96,7 +98,8 @@
                   };
                   ipv6Prefixes = [
                     {
-                      ipv6PrefixConfig.Prefix = "2a0e:97c0:4d1:1::/64";
+                      #ipv6PrefixConfig.Prefix = "2a0e:97c0:4d1:1::/64";
+                      ipv6PrefixConfig.Prefix = "2a0e:97c0:4d0:bbb1::/64";
                     }
                   ];
                 }

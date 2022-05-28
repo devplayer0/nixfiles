@@ -5,8 +5,8 @@ let
 
   ptrDots = 2;
   reverseZone = "100.10.in-addr.arpa";
-  ptrDots6 = 20;
-  reverseZone6 = "1.d.4.0.0.c.7.9.e.0.a.2.ip6.arpa";
+  ptrDots6 = 17;
+  reverseZone6 = "b.b.b.0.d.4.0.0.c.7.9.e.0.a.2.ip6.arpa";
 
   authZones = attrNames config.my.pdns.auth.bind.zones;
 in
@@ -22,6 +22,8 @@ in
         allowFrom = [
           "127.0.0.0/8" "::1/128"
           "10.100.0.0/16" "2a0e:97c0:4d1::/48"
+          # TODO: Remove when moving to proper net!
+          "2a0e:97c0:4d0::/48"
         ];
       };
       forwardZones = genAttrs authZones (_: "127.0.0.1:5353");
@@ -46,8 +48,8 @@ in
         resolver = "127.0.0.1";
         expand-alias = true;
         local-address = [
-          "127.0.0.1:5353" "[::]:5353"
-        ] ++ (optional (!config.my.build.isDevVM) "192.168.122.126");
+          "0.0.0.0:5353" "[::]:5353"
+        ];
         also-notify = [ "127.0.0.1" ];
       };
 
@@ -85,7 +87,8 @@ in
               )
 
             @ IN NS ns
-            ns IN ALIAS ${config.networking.fqdn}.
+            ns IN A 188.141.14.6
+            ns IN AAAA 2a0e:97c0:4d0:bbbf::1
 
             @ IN ALIAS ${config.networking.fqdn}.
 
