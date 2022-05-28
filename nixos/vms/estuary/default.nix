@@ -85,7 +85,6 @@
                     networkConfig = {
                       IPv6AcceptRA = mkForce false;
                       IPv6SendRA = true;
-                      IPMasquerade = "both";
                     };
                     ipv6SendRAConfig = {
                       DNS = [ assignments.internal.ipv6.address ];
@@ -110,6 +109,13 @@
                   enable = true;
                   externalInterface = "wan";
                 };
+                extraRules = ''
+                  table nat {
+                    chain postrouting {
+                      ip saddr 10.100.0.0/16 masquerade
+                    }
+                  }
+                '';
               };
             };
           }

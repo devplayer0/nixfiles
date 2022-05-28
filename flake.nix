@@ -94,7 +94,7 @@
         # Systems
         nixos/installer.nix
 
-        nixos/boxes/colony.nix
+        nixos/boxes/colony
         nixos/vms/estuary
         nixos/containers/vaultwarden.nix
 

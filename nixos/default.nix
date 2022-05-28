@@ -1,7 +1,7 @@
 { lib, pkgsFlakes, hmFlakes, inputs, pkgs', config, ... }:
 let
   inherit (builtins) attrValues mapAttrs;
-  inherit (lib) substring flatten optional optionals mkDefault mkOption mkOptionType;
+  inherit (lib) substring flatten optional optionals mkDefault mkForce mkOption mkOptionType;
   inherit (lib.my) naiveIPv4Gateway homeStateVersion mkOpt' mkBoolOpt' commonOpts inlineModule';
 
   cfg = config.nixos;
@@ -126,7 +126,7 @@ let
       docCustom = mkBoolOpt' false "Whether to document nixfiles' custom NixOS modules.";
 
       assignments = mkOpt' (attrsOf (submoduleWith {
-        modules = [ assignmentOpts { _module.args.name = name; } ];
+        modules = [ assignmentOpts { _module.args.name = mkForce name; } ];
       })) { } "Network assignments.";
 
       configuration = mkOption {

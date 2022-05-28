@@ -204,6 +204,9 @@ in
           wget
           hyx
           whois
+          ldns
+          minicom
+          traceroute
         ];
 
         sessionVariables = {

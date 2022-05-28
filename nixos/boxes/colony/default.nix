@@ -4,23 +4,28 @@
     nixpkgs = "mine";
     home-manager = "unstable";
 
-    assignments.internal = {
-      name = "colony";
-      altNames = [ "vm" ];
-      ipv4.address = "10.100.0.2";
-      ipv6.address = "2a0e:97c0:4d1:0::2";
+    assignments = {
+      internal = {
+        altNames = [ "vm" ];
+        ipv4.address = "10.100.0.2";
+        ipv6.address = "2a0e:97c0:4d1:0::2";
+      };
+      vms = {
+        ipv4 = {
+          address = "10.100.1.1";
+          gateway = null;
+        };
+        ipv6.address = "2a0e:97c0:4d1:1::1";
+      };
     };
 
-    configuration = { lib, pkgs, modulesPath, config, systems, assignments, ... }:
+    configuration = { lib, pkgs, modulesPath, config, systems, assignments, allAssignments, ... }:
       let
-        inherit (lib) mkIf mapAttrs;
+        inherit (lib) mkIf mkMerge mkForce mapAttrs;
         inherit (lib.my) networkdAssignment;
-
-        wanBDF =
-          if config.my.build.isDevVM then "00:02.0" else "01:00.0";
       in
       {
-        imports = [ "${modulesPath}/profiles/qemu-guest.nix" ];
+        imports = [ "${modulesPath}/profiles/qemu-guest.nix" ./vms.nix ];
 
         networking.domain = "fra1.int.nul.ie";
 
@@ -60,16 +65,43 @@
                 linkConfig.Name = "base-ext";
               };
             };
-            netdevs."25-base".netdevConfig = {
-              Name = "base";
-              Kind = "bridge";
+            netdevs = {
+              "25-base".netdevConfig = {
+                Name = "base";
+                Kind = "bridge";
+              };
+              "25-vms".netdevConfig = {
+                Name = "vms";
+                Kind = "bridge";
+              };
             };
+
             networks = {
               "80-base" = networkdAssignment "base" assignments.internal;
               "80-base-ext" = {
                 matchConfig.Name = "base-ext";
                 networkConfig.Bridge = "base";
               };
+
+              "80-vms" = mkMerge [
+                (networkdAssignment "base" assignments.vms)
+                {
+                  networkConfig = {
+                    IPv6AcceptRA = mkForce false;
+                    IPv6SendRA = true;
+                  };
+                  ipv6SendRAConfig = {
+                    DNS = [ allAssignments.estuary.internal.ipv6.address ];
+                    Domains = [ config.networking.domain ];
+                  };
+                  ipv6Prefixes = [
+                    {
+                      ipv6PrefixConfig.Prefix = "2a0e:97c0:4d1:1::/64";
+                    }
+                  ];
+                }
+              ];
+
               "80-vm-tap" = {
                 matchConfig = {
                   # Don't think we have control over the name of the TAP from qemu-bridge-helper (or how to easily pick
@@ -84,21 +116,6 @@
                 };
               };
             };
-          };
-
-          services."vm@estuary" = {
-            # Depend the interface, networkd wait-online would deadlock...
-            requires = [ "sys-subsystem-net-devices-base.device" ];
-            preStart = ''
-              count=0
-              while ! ${pkgs.iproute2}/bin/ip link show dev base > /dev/null 2>&1; do
-                  count=$((count+1))
-                  if [ $count -ge 5 ]; then
-                    echo "Timed out waiting for bridge interface"
-                  fi
-                  sleep 0.5
-              done
-            '';
           };
         };
 
@@ -132,43 +149,6 @@
           #    networking.bridge = "virtual";
           #  };
           #};
-          vms = {
-            instances.estuary = {
-              uuid = "59f51efb-7e6d-477b-a263-ed9620dbc87b";
-              networks.base.mac = "52:54:00:ab:f1:52";
-              drives = {
-                installer = {
-                  backend = {
-                    driver = "file";
-                    filename = "${systems.installer.configuration.config.my.buildAs.iso}/iso/nixos.iso";
-                    read-only = "on";
-                  };
-                  format.driver = "raw";
-                  frontend = "ide-cd";
-                  frontendOpts = {
-                    bootindex = 1;
-                  };
-                };
-                disk = {
-                  backend = {
-                    driver = "host_device";
-                    filename = "/dev/ssds/vm-estuary";
-                    # It appears this needs to be set on the backend _and_ the format
-                    discard = "unmap";
-                  };
-                  format = {
-                    driver = "raw";
-                    discard = "unmap";
-                  };
-                  frontend = "virtio-blk";
-                  frontendOpts = {
-                    bootindex = 0;
-                  };
-                };
-              };
-              hostDevices."${wanBDF}" = { };
-            };
-          };
         };
       };
   };

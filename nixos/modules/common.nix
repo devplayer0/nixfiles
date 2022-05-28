@@ -103,8 +103,6 @@ in
       environment.systemPackages = with pkgs; [
         bash-completion
         vim
-        ldns
-        minicom
       ];
 
       programs = {
