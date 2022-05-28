@@ -3,6 +3,14 @@ let
   inherit (lib) optionalString concatStringsSep concatMapStringsSep optionalAttrs mkIf mkDefault mkMerge mkOverride;
   inherit (lib.my) parseIPPort mkOpt' mkBoolOpt';
 
+  forwardOpts = with lib.types; {
+    options = {
+      proto = mkOpt' (enum [ "tcp" "udp" ]) "tcp" "Protocol.";
+      port = mkOpt' (either port str) null "Incoming port";
+      dst = mkOpt' str null "Destination (ip:port).";
+    };
+  };
+
   cfg = config.my.firewall;
   iptCfg = config.networking.firewall;
 in
@@ -20,7 +28,8 @@ in
 
     nat = with options.networking.nat; {
       enable = mkBoolOpt' true "Whether to enable IP forwarding and NAT.";
-      inherit externalInterface forwardPorts;
+      inherit externalInterface;
+      forwardPorts = mkOpt' (listOf (submodule forwardOpts)) [ ] "List of port forwards.";
     };
   };
 
@@ -46,6 +55,18 @@ in
                 }
 
                 chain wan {
+                  ip protocol icmp icmp type {
+                    destination-unreachable,
+                    router-solicitation,
+                    router-advertisement,
+                    time-exceeded,
+                    parameter-problem,
+                    echo-request
+                  } accept
+                  ip protocol igmp accept
+                  ip protocol tcp tcp flags & (fin|syn|rst|ack) == syn ct state new jump wan-tcp
+                  ip protocol udp ct state new jump wan-udp
+
                   ip6 nexthdr icmpv6 icmpv6 type {
                     destination-unreachable,
                     packet-too-big,
@@ -63,18 +84,8 @@ in
                     mld2-listener-report,
                     echo-request
                   } accept
-                  ip protocol icmp icmp type {
-                    destination-unreachable,
-                    router-solicitation,
-                    router-advertisement,
-                    time-exceeded,
-                    parameter-problem,
-                    echo-request
-                  } accept
-                  ip protocol igmp accept
-
-                  ip protocol tcp tcp flags & (fin|syn|rst|ack) == syn ct state new jump wan-tcp
-                  ip protocol udp ct state new jump wan-udp
+                  ip6 nexthdr tcp tcp flags & (fin|syn|rst|ack) == syn ct state new jump wan-tcp
+                  ip6 nexthdr udp ct state new jump wan-udp
                 }
 
                 chain input {
@@ -97,7 +108,7 @@ in
                 }
               }
 
-              table nat {
+              table inet nat {
                 chain prerouting {
                   type nat hook prerouting priority 0;
                 }
@@ -141,15 +152,20 @@ in
         let
           makeFilter = f:
             let
-              ipp = parseIPPort f.destination;
+              ipp = parseIPPort f.dst;
             in
-            "ip${optionalString ipp.v6 "6"} daddr ${ipp.ip} ${f.proto} dport ${toString f.sourcePort} accept";
-          makeForward = f: "${f.proto} dport ${toString f.sourcePort} dnat to ${f.destination}";
+            "ip${optionalString ipp.v6 "6"} daddr ${ipp.ip} ${f.proto} dport ${toString f.port} accept";
+          makeForward = f:
+            let
+              ipp = parseIPPort f.dst;
+            in
+              "${f.proto} dport ${toString f.port} dnat ip${optionalString ipp.v6 "6"} to ${f.dst}";
         in
         ''
           table inet filter {
             chain filter-port-forwards {
               ${concatMapStringsSep "\n    " makeFilter cfg.nat.forwardPorts}
+              return
             }
             chain forward {
               ${optionalString
@@ -158,9 +174,10 @@ in
             }
           }
 
-          table nat {
+          table inet nat {
             chain port-forward {
               ${concatMapStringsSep "\n    " makeForward cfg.nat.forwardPorts}
+              return
             }
             chain prerouting {
               ${optionalString
