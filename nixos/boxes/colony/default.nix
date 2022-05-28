@@ -1,4 +1,6 @@
 {
+  imports = [ ./vms ];
+
   nixos.systems.colony = {
     system = "x86_64-linux";
     nixpkgs = "mine-stable";
@@ -27,7 +29,7 @@
         inherit (lib.my) networkdAssignment;
       in
       {
-        imports = [ "${modulesPath}/profiles/qemu-guest.nix" ./vms.nix ];
+        imports = [ "${modulesPath}/profiles/qemu-guest.nix" ];
 
         networking.domain = lib.my.colonyDomain;
 

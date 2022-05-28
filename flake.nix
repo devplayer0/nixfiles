@@ -97,10 +97,7 @@
       configs = [
         # Systems
         nixos/installer.nix
-
         nixos/boxes/colony
-        nixos/vms/estuary
-        nixos/containers/vaultwarden.nix
 
         # Homes
         home-manager/configs/castle.nix
