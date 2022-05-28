@@ -135,7 +135,6 @@
           #deploy.generate.system.mode = "boot";
           secrets = {
             key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKp5WDdDr/1NS3SJIDOKwcCNZDFOxqPAD7cbZWAP7EkX";
-            files."test.txt" = {};
           };
 
           server.enable = true;

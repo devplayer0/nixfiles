@@ -101,6 +101,7 @@
             };
 
             my = {
+              secrets.key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPhxM5mnguExkcLue47QKk1vA72OoPc3HOqqoHqHHfa1";
               server.enable = true;
 
               firewall = {
