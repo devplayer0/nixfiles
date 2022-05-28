@@ -25,7 +25,7 @@ in
   config = mkMerge [
     {
       system = {
-        stateVersion = "21.11";
+        stateVersion = "22.05";
         configurationRevision = with inputs; mkIf (self ? rev) self.rev;
       };
 
@@ -48,12 +48,10 @@ in
 
       nix = {
         package = pkgs'.mine.nix;
-        # TODO: This has been renamed to nix.settings.trusted-users in 22.05
-        trustedUsers = [ "@wheel" ];
-        extraOptions =
-          ''
-            experimental-features = nix-command flakes ca-derivations
-          '';
+        settings = {
+          trusted-users = [ "@wheel" ];
+          experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
+        };
       };
       nixpkgs = {
         overlays = [

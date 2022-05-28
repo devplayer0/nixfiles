@@ -1,7 +1,7 @@
 {
   nixos.systems.installer = {
     system = "x86_64-linux";
-    nixpkgs = "mine";
+    nixpkgs = "unstable";
     docCustom = false;
 
     configuration =

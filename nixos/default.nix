@@ -15,25 +15,15 @@ let
       defs,
     }:
     let
-      # The flake contains `nixosSystem`, so we do need it (if we didn't have the TODO hacked version anyway)
+      # The flake contains `nixosSystem`, so we do need it
       pkgsFlake = pkgsFlakes.${config'.nixpkgs};
-      # TODO: This is mostly yoinked from nixpkgs/flake.nix master (as of 2022/02/11) since 21.11's version has hacky
-      # vm build stuff that breaks our impl. REMOVE WHEN 22.05 IS OUT!
-      nixosSystem' = args:
-        import "${pkgsFlake}/nixos/lib/eval-config.nix" (args // {
-          modules = args.modules ++ [{
-            system.nixos.versionSuffix =
-              ".${substring 0 8 pkgsFlake.lastModifiedDate}.${pkgsFlake.shortRev}";
-            system.nixos.revision = pkgsFlake.rev;
-          }];
-        });
 
       pkgs = pkgs'.${config'.nixpkgs}.${config'.system};
       allPkgs = mapAttrs (_: p: p.${config'.system}) pkgs';
 
       modules' = [ hmFlakes.${config'.home-manager}.nixosModule ] ++ (attrValues cfg.modules);
     in
-    nixosSystem' {
+    pkgsFlake.lib.nixosSystem {
       # Gotta override lib here unforunately, eval-config.nix likes to import its own (unextended) lib. We explicitly
       # don't pass pkgs so that it'll be imported with modularly applied config and overlays.
       lib = pkgs.lib;
@@ -75,7 +65,7 @@ let
           home-manager = {
             extraSpecialArgs = { inherit inputs; };
             # Optimise if system and home-manager nixpkgs are the same
-            useGlobalPkgs = mkDefault (config'.nixpkgs == config'.home-manager);
+            useGlobalPkgs = mkDefault (config'.nixpkgs == config'.hmNixpkgs);
             sharedModules = (attrValues config.home-manager.modules) ++ [
               {
                 warnings = flatten [
@@ -141,6 +131,11 @@ let
           };
         };
       };
+    };
+
+    config = {
+      home-manager = mkDefault config.nixpkgs;
+      hmNixpkgs = mkDefault config.nixpkgs;
     };
   };
 in

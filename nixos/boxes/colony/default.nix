@@ -1,8 +1,8 @@
 {
   nixos.systems.colony = {
     system = "x86_64-linux";
-    nixpkgs = "mine";
-    home-manager = "unstable";
+    nixpkgs = "mine-stable";
+    home-manager = "mine-stable";
 
     assignments = {
       internal = {

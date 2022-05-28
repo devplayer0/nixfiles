@@ -220,6 +220,9 @@ in
         my.tmproot.persistence.config.files =
           concatMap (k: [ k.path "${k.path}.pub" ]) config.services.openssh.hostKeys;
       })
+      (mkIf config.services.logrotate.enable {
+        my.tmproot.persistence.config.files = [ "/var/lib/logrotate.status" ];
+      })
       (mkIf config.my.build.isDevVM {
         fileSystems = mkVMOverride {
           # Hijack the "root" device for persistence in the VM

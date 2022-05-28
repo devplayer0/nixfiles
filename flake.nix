@@ -6,14 +6,14 @@
     devshell.url = "github:numtide/devshell";
     devshell.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
-    nixpkgs-master.url = "nixpkgs";
     nixpkgs-unstable.url = "nixpkgs/nixos-unstable";
-    nixpkgs-stable.url = "nixpkgs/nixos-21.11";
+    nixpkgs-stable.url = "nixpkgs/nixos-22.05";
     nixpkgs-mine.url = "github:devplayer0/nixpkgs/devplayer0";
+    nixpkgs-mine-stable.url = "github:devplayer0/nixpkgs/devplayer0-stable";
 
     home-manager-unstable.url = "home-manager";
     home-manager-unstable.inputs.nixpkgs.follows = "nixpkgs-unstable";
-    home-manager-stable.url = "home-manager/release-21.11";
+    home-manager-stable.url = "home-manager/release-22.05";
     home-manager-stable.inputs.nixpkgs.follows = "nixpkgs-stable";
 
     # Stuff used by the flake for build / deployment
@@ -33,7 +33,7 @@
 
       flake-utils,
 
-      nixpkgs-master, nixpkgs-unstable, nixpkgs-stable, nixpkgs-mine,
+      nixpkgs-unstable, nixpkgs-stable, nixpkgs-mine, nixpkgs-mine-stable,
       home-manager-unstable, home-manager-stable,
 
       ...
@@ -54,14 +54,18 @@
 
       # Override the flake-level lib since we're going to use it for non-config specific stuff
       pkgsFlakes = mapAttrs (_: pkgsFlake: pkgsFlake // { lib = pkgsFlake.lib.extend libOverlay; }) {
-        master = nixpkgs-master;
         unstable = nixpkgs-unstable;
         stable = nixpkgs-stable;
         mine = nixpkgs-mine;
+        mine-stable = nixpkgs-mine-stable;
       };
-      hmFlakes = {
+      hmFlakes = rec {
         unstable = home-manager-unstable;
         stable = home-manager-stable;
+
+        # Don't actually have a fork right now...
+        mine = unstable;
+        mine-stable = stable;
       };
 
       # Should only be used for platform-independent flake stuff! This should never leak into a NixOS or home-manager

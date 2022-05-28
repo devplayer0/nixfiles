@@ -6,16 +6,12 @@ let
   cfg = config.my.build;
 
   asDevVM = extendModules {
-    # TODO: Hack because this is kinda broken on 21.11 (https://github.com/NixOS/nixpkgs/issues/148343)
-    specialArgs = { inherit baseModules; };
     modules = [
       "${modulesPath}/virtualisation/qemu-vm.nix"
       { my.build.isDevVM = true; }
     ];
   };
   asISO = extendModules {
-    # TODO: see previous
-    specialArgs = { inherit baseModules; };
     modules = lib.flatten [
       "${modulesPath}/installer/cd-dvd/iso-image.nix"
       (lib.optional config.my.build.allHardware { imports = [ "${modulesPath}/profiles/all-hardware.nix" ]; })
@@ -32,8 +28,6 @@ let
     ];
   };
   asContainer = extendModules {
-    # TODO: see previous
-    specialArgs = { inherit baseModules; };
     modules = [
       {
         boot.isContainer = true;

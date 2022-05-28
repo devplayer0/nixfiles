@@ -26,12 +26,25 @@ in
         };
       };
     };
-
-    # Only present in >=22.05, so forward declare
-    nix.registry = dummyOption;
   };
   config = mkMerge [
-    (mkIf (versionAtLeast config.home.stateVersion "22.05") {
+    {
+      my = {
+        isStandalone = !(args ? osConfig);
+
+        shell = mkDefault "${config.programs.fish.package}/bin/fish";
+      };
+
+      home = {
+        file.".ssh/authorized_keys" = with config.my.ssh.authKeys;
+          mkIf (config.programs.ssh.enable && (literal != [ ] || files != [ ])) {
+            text = ''
+              ${concatStringsSep "\n" literal}
+              ${concatMapStrings (f: readFile f + "\n") files}
+            '';
+          };
+      };
+
       nix = {
         package = pkgs.nix;
         registry = {
@@ -48,21 +61,6 @@ in
           max-jobs = mkDefault "auto";
         };
       };
-    })
-    {
-      my = {
-        isStandalone = !(args ? osConfig);
-
-        shell = mkDefault "${config.programs.fish.package}/bin/fish";
-      };
-
-      home.file.".ssh/authorized_keys" = with config.my.ssh.authKeys;
-        mkIf (config.programs.ssh.enable && (literal != [ ] || files != [ ])) {
-          text = ''
-            ${concatStringsSep "\n" literal}
-            ${concatMapStrings (f: readFile f + "\n") files}
-          '';
-        };
 
       programs = {
         # Even when enabled this will only be actually installed in standalone mode

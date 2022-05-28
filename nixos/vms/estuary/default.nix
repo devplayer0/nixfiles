@@ -2,7 +2,7 @@
   nixos.systems.estuary = {
     system = "x86_64-linux";
     nixpkgs = "mine";
-    home-manager = "unstable";
+    home-manager = "mine";
 
     assignments.internal = {
       name = "estuary-vm";

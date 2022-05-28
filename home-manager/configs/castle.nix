@@ -1,6 +1,7 @@
 {
   home-manager.homes."dev@castle" = {
     system = "x86_64-linux";
+    home-manager = "mine";
     nixpkgs = "mine";
     homeDirectory = "/home/dev";
     username = "dev";

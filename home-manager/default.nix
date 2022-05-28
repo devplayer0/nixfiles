@@ -1,7 +1,7 @@
 { lib, hmFlakes, inputs, pkgs', config, ... }:
 let
   inherit (builtins) head tail mapAttrs attrValues;
-  inherit (lib) flatten optional mkOption mkOptionType;
+  inherit (lib) flatten optional mkOption mkDefault mkOptionType;
   inherit (lib.my) homeStateVersion mkOpt' commonOpts inlineModule';
 
   cfg = config.home-manager;
@@ -59,6 +59,10 @@ let
           };
         };
       };
+    };
+
+    config = {
+      nixpkgs = mkDefault config.home-manager;
     };
   };
 in

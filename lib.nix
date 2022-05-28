@@ -71,7 +71,9 @@ rec {
 
   homeStateVersion = hmBranch: {
     # The flake passes a default setting, but we don't care about that
-    home.stateVersion = mkForce (if hmBranch == "unstable" then "22.05" else "21.11");
+    # Currently don't need any logic here, but we might need to use a newer version later
+    #home.stateVersion = mkForce (if (hmBranch == "stable" || hmBranch == "mine-stable") then "22.05" else "22.11");
+    home.stateVersion = mkForce "22.05";
   };
 
   commonOpts = with types; {
@@ -81,8 +83,8 @@ rec {
     };
 
     system = mkOpt' (enum defaultSystems) null "Nix-style system string.";
-    nixpkgs = mkOpt' (enum [ "master" "unstable" "stable" "mine" ]) "unstable" "Branch of nixpkgs to use.";
-    home-manager = mkOpt' (enum [ "unstable" "stable" ]) "unstable" "Branch of home-manager to use.";
+    nixpkgs = mkOpt' (enum [ "unstable" "stable" "mine" "mine-stable" ]) "unstable" "Branch of nixpkgs to use.";
+    home-manager = mkOpt' (enum [ "unstable" "stable" "mine" "mine-stable" ]) "unstable" "Branch of home-manager to use.";
   };
 
   networkdAssignment = iface: a: {
