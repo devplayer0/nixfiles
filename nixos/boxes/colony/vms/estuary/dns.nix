@@ -21,9 +21,7 @@ in
         ];
         allowFrom = [
           "127.0.0.0/8" "::1/128"
-          "10.100.0.0/16" "2a0e:97c0:4d1::/48"
-          # TODO: Remove when moving to proper net!
-          "2a0e:97c0:4d0::/48"
+          lib.my.colony.prefixes.all.v4 lib.my.colony.prefixes.all.v6
         ];
       };
       forwardZones = genAttrs authZones (_: "127.0.0.1:5353");

@@ -11,7 +11,10 @@
         altNames = [ "vm" ];
         ipv4.address = "10.100.0.2";
         #ipv6.address = "2a0e:97c0:4d1:0::2";
-        ipv6.address = "2a0e:97c0:4d0:bbb0::2";
+        ipv6 = rec {
+          iid = "::2";
+          address = "2a0e:97c0:4d0:bbb0${iid}";
+        };
       };
       vms = {
         ipv4 = {
@@ -31,7 +34,7 @@
       {
         imports = [ "${modulesPath}/profiles/qemu-guest.nix" ];
 
-        networking.domain = lib.my.colonyDomain;
+        networking.domain = lib.my.colony.domain;
 
         boot.kernelParams = [ "intel_iommu=on" ];
         boot.loader.systemd-boot.configurationLimit = 20;
@@ -88,7 +91,7 @@
               };
 
               "80-vms" = mkMerge [
-                (networkdAssignment "base" assignments.vms)
+                (networkdAssignment "vms" assignments.vms)
                 {
                   networkConfig = {
                     IPv6AcceptRA = mkForce false;
@@ -101,7 +104,17 @@
                   ipv6Prefixes = [
                     {
                       #ipv6PrefixConfig.Prefix = "2a0e:97c0:4d1:1::/64";
-                      ipv6PrefixConfig.Prefix = "2a0e:97c0:4d0:bbb1::/64";
+                      ipv6PrefixConfig.Prefix = lib.my.colony.prefixes.vms.v6;
+                    }
+                  ];
+                  routes = map (r: { routeConfig = r; }) [
+                    {
+                      Gateway = allAssignments.shill.internal.ipv4.address;
+                      Destination = lib.my.colony.prefixes.ctrs.v4;
+                    }
+                    {
+                      Gateway = allAssignments.shill.internal.ipv6.address;
+                      Destination = lib.my.colony.prefixes.ctrs.v6;
                     }
                   ];
                 }
@@ -145,14 +158,8 @@
           server.enable = true;
 
           firewall = {
-            trustedInterfaces = [ "base" ];
+            trustedInterfaces = [ "base" "vms" ];
           };
-
-          #containers = {
-          #  instances.vaultwarden = {
-          #    networking.bridge = "virtual";
-          #  };
-          #};
         };
       };
   };

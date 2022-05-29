@@ -113,7 +113,7 @@ let
         threads = mkOpt' ints.unsigned 1 "Number of threads per core.";
       };
       memory = mkOpt' ints.unsigned 1024 "Amount of RAM (mebibytes).";
-      vga = mkOpt' str "qxl" "VGA card type.";
+      vga = mkOpt' str "virtio" "VGA card type.";
       spice.enable = mkBoolOpt' true "Whether to enable SPICE.";
       networks = mkOpt' (attrsOf (submodule netOpts)) { } "Networks to attach VM to.";
       drives = mkOpt' (attrsOf (submodule driveOpts)) { } "Drives to attach to VM.";

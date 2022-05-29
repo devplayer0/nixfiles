@@ -3,7 +3,7 @@ let
   inherit (builtins) length match replaceStrings elemAt mapAttrs head split;
   inherit (lib)
     genAttrs mapAttrs' mapAttrsToList filterAttrsRecursive nameValuePair types
-    mkOption mkOverride mkForce mergeEqualOption optional;
+    mkOption mkOverride mkForce mkIf mergeEqualOption optional hasPrefix;
   inherit (lib.flake) defaultSystems;
 in
 rec {
@@ -89,17 +89,20 @@ rec {
 
   networkdAssignment = iface: a: {
     matchConfig.Name = iface;
-    address = [ "${a.ipv4.address}/${toString a.ipv4.mask}" "${a.ipv6.address}/${toString a.ipv6.mask}" ];
+    address =
+      [ "${a.ipv4.address}/${toString a.ipv4.mask}" ] ++
+      (optional (a.ipv6.iid == null) "${a.ipv6.address}/${toString a.ipv6.mask}");
     gateway =
       (optional (a.ipv4.gateway != null) a.ipv4.gateway) ++
       (optional (a.ipv6.gateway != null) a.ipv6.gateway);
     networkConfig = {
-      IPv6AcceptRA = a.ipv6.gateway == null;
+      IPv6AcceptRA = a.ipv6.gateway == null || a.ipv6.iid != null;
       # NOTE: LLDP emission / reception is ignored on bridge interfaces
       LLDP = true;
       EmitLLDP = "customer-bridge";
     };
     ipv6AcceptRAConfig = {
+      Token = mkIf (a.ipv6.iid != null) "static:${a.ipv6.iid}";
       UseDNS = true;
       UseDomains = true;
     };
@@ -153,14 +156,31 @@ rec {
     filterOpts = filterAttrsRecursive (_: v: v != null);
   };
 
-  colonyDomain = "test.int.nul.ie";
-  # Shouldn't need this hopefully (IPv6 RA)
-  colonyDNS = {
-    domains = [ colonyDomain ];
-    dns = [
-      "10.100.0.1"
-      "2a0e:97c0:4d1:0::1"
-    ];
+  colony = rec {
+    domain = "test.int.nul.ie";
+    # Shouldn't need this hopefully (IPv6 RA)
+    dns = {
+      domains = [ domain ];
+      dns = [
+        "10.100.0.1"
+        "2a0e:97c0:4d1:0::1"
+      ];
+    };
+    prefixes = {
+      all = {
+        v4 = "10.100.0.0/16";
+        v6 = "2a0e:97c0:4d0:bbb0::/60";
+      };
+      base.v6 = "2a0e:97c0:4d0:bbb0::/64";
+      vms = {
+        v4 = "10.100.1.0/24";
+        v6 = "2a0e:97c0:4d0:bbb1::/64";
+      };
+      ctrs = {
+        v4 = "10.100.2.0/24";
+        v6 = "2a0e:97c0:4d0:bbb2::/64";
+      };
+    };
   };
   sshKeyFiles = {
     me = .keys/me.pub;

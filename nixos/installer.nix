@@ -52,8 +52,11 @@
             };
           };
 
-          # Will be set dynamically
-          networking.hostName = "";
+          networking = {
+            # Will be set dynamically
+            hostName = "";
+            useNetworkd = false;
+          };
 
           # This should be overridden by whatever boot mechanism is used
           fileSystems."/" = mkDefault {

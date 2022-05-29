@@ -102,6 +102,7 @@ let
       ipv6 = {
         address = mkOpt' str null "IPv6 address.";
         mask = mkOpt' ints.u8 64 "Network mask.";
+        iid = mkOpt' (nullOr str) null "SLAAC static address.";
         gateway = mkOpt' (nullOr str) null "IPv6 gateway.";
       };
     };

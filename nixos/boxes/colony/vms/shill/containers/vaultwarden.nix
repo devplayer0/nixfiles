@@ -1,11 +1,23 @@
 {
   nixos.systems.vaultwarden = {
     system = "x86_64-linux";
-    nixpkgs = "unstable";
+    nixpkgs = "mine";
 
-    configuration = { lib, config, ... }:
+    assignments = {
+      internal = {
+        name = "vaultwarden-ctr";
+        ipv4.address = "10.100.2.2";
+        ipv6 = rec {
+          iid = "::2";
+          address = "2a0e:97c0:4d0:bbb2${iid}";
+        };
+      };
+    };
+
+    configuration = { lib, config, assignments, ... }:
     let
       inherit (lib) mkMerge mkIf mkForce;
+      inherit (lib.my) networkdAssignment;
 
       vwData = "/var/lib/vaultwarden";
       vwSecrets = "vaultwarden.env";
@@ -17,16 +29,28 @@
             server.enable = true;
 
             secrets = {
-              key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMHoWhafCkLVggsO24fFWm3nmkY5t23GHbBafBVGijbQ";
+              key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILakffcjRp6h6lxSOADOsTK5h2MCkt8hKDv0cvchM7iw";
               files."${vwSecrets}" = {};
             };
 
             firewall = {
               tcp.allowed = [ 80 3012 ];
             };
+
+            tmproot.persistence.config.directories = [
+              {
+                directory = vwData;
+                user = config.users.users.vaultwarden.name;
+                group = config.users.groups.vaultwarden.name;
+              }
+            ];
           };
 
-          systemd.services.vaultwarden.serviceConfig.StateDirectory = mkForce "vaultwarden";
+          systemd = {
+            services.vaultwarden.serviceConfig.StateDirectory = mkForce "vaultwarden";
+            network.networks."80-container-host0" = networkdAssignment "host0" assignments.internal;
+          };
+
           services = {
             vaultwarden = {
               enable = true;
@@ -43,13 +67,6 @@
           };
         }
         (mkIf config.my.build.isDevVM {
-          my.tmproot.persistence.config.directories = [
-            {
-              directory = vwData;
-              user = config.users.users.vaultwarden.name;
-              group = config.users.groups.vaultwarden.name;
-            }
-          ];
           virtualisation = {
             forwardPorts = [
               { from = "host"; host.port = 8080; guest.port = 80; }

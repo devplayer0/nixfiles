@@ -25,7 +25,7 @@
 
         config = mkMerge [
           {
-            networking.domain = lib.my.colonyDomain;
+            networking.domain = lib.my.colony.domain;
 
             boot.kernelParams = [ "console=ttyS0,115200n8" ];
             fileSystems = {
@@ -94,7 +94,26 @@
                     ipv6Prefixes = [
                       {
                         #ipv6PrefixConfig.Prefix = "2a0e:97c0:4d1:0::/64";
-                        ipv6PrefixConfig.Prefix = "2a0e:97c0:4d0:bbb0::/64";
+                        ipv6PrefixConfig.Prefix = lib.my.colony.prefixes.base.v6;
+                      }
+                    ];
+                    routes = map (r: { routeConfig = r; }) [
+                      {
+                        Gateway = allAssignments.colony.internal.ipv4.address;
+                        Destination = lib.my.colony.prefixes.vms.v4;
+                      }
+                      {
+                        Gateway = allAssignments.colony.internal.ipv6.address;
+                        Destination = lib.my.colony.prefixes.vms.v6;
+                      }
+
+                      {
+                        Gateway = allAssignments.colony.internal.ipv4.address;
+                        Destination = lib.my.colony.prefixes.ctrs.v4;
+                      }
+                      {
+                        Gateway = allAssignments.colony.internal.ipv6.address;
+                        Destination = lib.my.colony.prefixes.ctrs.v6;
                       }
                     ];
                   }
@@ -138,7 +157,7 @@
                       iifname wan meta l4proto { udp, tcp } th dport domain redirect to :5353
                     }
                     chain postrouting {
-                      ip saddr 10.100.0.0/16 masquerade
+                      ip saddr ${lib.my.colony.prefixes.all.v4} masquerade
                     }
                   }
                 '';

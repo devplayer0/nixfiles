@@ -10,6 +10,40 @@ let
   devVMKeyPath = "/run/dev.key";
   ctrProfiles = n: "/nix/var/nix/profiles/per-container/${n}";
 
+  dummyReady = pkgs.runCommandCC "dummy-sd-ready" {
+    buildInputs = [ pkgs.systemd ];
+    passAsFile = [ "code" ];
+    code = ''
+      #include <stdio.h>
+      #include <signal.h>
+      #include <unistd.h>
+      #include <systemd/sd-daemon.h>
+
+      void handler(int signum) {
+        exit(0);
+      }
+
+      int main() {
+        // systemd sends this to PID 1 for an "orderly shutdown"
+        signal(SIGRTMIN+3, handler);
+
+        int ret =
+          sd_notifyf(0, "READY=1\n"
+            "STATUS=Dummy container, please deploy for real!\n"
+            "MAINPID=%lu",
+            (unsigned long)getpid());
+        if (ret <= 0) {
+          fprintf(stderr, "sd_notify() returned %d\n", ret);
+          return ret == 0 ? -1 : ret;
+        }
+
+        pause();
+        return 0;
+      };
+    '';
+  } ''
+    $CC -o "$out" -x c -lsystemd "$codePath"
+  '';
   dummyProfile = pkgs.writeTextFile {
     name = "dummy-init";
     executable = true;
@@ -19,10 +53,7 @@ let
       #!${pkgs.runtimeShell}
       ${pkgs.iproute2}/bin/ip link set dev host0 up
 
-      while true; do
-        echo "This is a dummy, please deploy the real container!"
-        ${pkgs.coreutils}/bin/sleep 5
-      done
+      exec ${dummyReady}
     '';
   };
 
@@ -185,6 +216,7 @@ in
           reload =
           # `switch-to-configuration test` switches config without trying to update bootloader
           ''
+            # TODO: This still breaks on first deploy over the dummy...
             [ -e "${system}"/bin/switch-to-configuration ] && \
               systemd-run --pipe --machine ${n} -- "${containerSystem}"/bin/switch-to-configuration test
           '';
@@ -250,12 +282,8 @@ in
           Virtualization = "container";
         };
         networkConfig = {
-          DHCP = "yes";
           LLDP = true;
           EmitLLDP = "customer-bridge";
-        };
-        dhcpConfig = {
-          UseTimezone = true;
         };
       };
 
