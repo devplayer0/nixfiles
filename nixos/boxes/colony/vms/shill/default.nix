@@ -75,7 +75,7 @@
                       IPv6SendRA = true;
                     };
                     ipv6SendRAConfig = {
-                      DNS = [ allAssignments.estuary.internal.ipv6.address ];
+                      DNS = [ allAssignments.estuary.base.ipv6.address ];
                       Domains = [ config.networking.domain ];
                     };
                     ipv6Prefixes = [

@@ -17,7 +17,7 @@ in
       dns = {
         address = [
           "127.0.0.1" "::1"
-          assignments.internal.ipv4.address assignments.internal.ipv6.address
+          assignments.base.ipv4.address assignments.base.ipv6.address
         ];
         allowFrom = [
           "127.0.0.0/8" "::1/128"
@@ -85,8 +85,7 @@ in
               )
 
             @ IN NS ns
-            ns IN A 188.141.14.6
-            ns IN AAAA 2a0e:97c0:4d0:bbbf::1
+            ns IN ALIAS ${config.networking.fqdn}.
 
             @ IN ALIAS ${config.networking.fqdn}.
 

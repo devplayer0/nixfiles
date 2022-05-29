@@ -4,15 +4,27 @@
     nixpkgs = "mine";
     home-manager = "mine";
 
-    assignments.internal = {
-      name = "estuary-vm";
-      altNames = [ "fw" ];
-      ipv4 = {
-        address = "10.100.0.1";
-        gateway = null;
+    assignments = {
+      internal = {
+        name = "estuary-vm";
+        altNames = [ "fw" ];
+        ipv4 = {
+          address = "188.141.14.6";
+          gateway = null;
+        };
+        ipv6 = {
+          address = "2a0e:97c0:4d0:bbbf::1";
+          gateway = "fe80::215:17ff:fe4b:494a";
+        };
       };
-      #ipv6.address = "2a0e:97c0:4d1:0::1";
-      ipv6.address = "2a0e:97c0:4d0:bbb0::1";
+      base = {
+        ipv4 = {
+          address = "10.100.0.1";
+          gateway = null;
+        };
+        #ipv6.address = "2a0e:97c0:4d1:0::1";
+        ipv6.address = "2a0e:97c0:4d0:bbb0::1";
+      };
     };
 
     configuration = { lib, pkgs, modulesPath, config, assignments, allAssignments, ... }:
@@ -71,15 +83,15 @@
                     UseHostname = false;
                   };
                   address = [
-                    "2a0e:97c0:4d0:bbbf::1/64"
+                    (with assignments.internal.ipv6; "${address}/${toString mask}")
                   ];
                   gateway = [
-                    "fe80::215:17ff:fe4b:494a"
+                    assignments.internal.ipv6.gateway
                   ];
                   networkConfig.IPv6AcceptRA = false;
                 };
                 "80-base" = mkMerge [
-                  (networkdAssignment "base" assignments.internal)
+                  (networkdAssignment "base" assignments.base)
                   {
                     dns = [ "127.0.0.1" "::1" ];
                     domains = [ config.networking.domain ];
@@ -88,7 +100,7 @@
                       IPv6SendRA = true;
                     };
                     ipv6SendRAConfig = {
-                      DNS = [ assignments.internal.ipv6.address ];
+                      DNS = [ assignments.base.ipv6.address ];
                       Domains = [ config.networking.domain ];
                     };
                     ipv6Prefixes = [
