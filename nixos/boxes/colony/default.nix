@@ -28,7 +28,7 @@
 
     configuration = { lib, pkgs, modulesPath, config, systems, assignments, allAssignments, ... }:
       let
-        inherit (lib) mkIf mkMerge mkForce mapAttrs;
+        inherit (lib) mkIf mkMerge mkForce;
         inherit (lib.my) networkdAssignment;
       in
       {
@@ -77,9 +77,14 @@
                 Name = "base";
                 Kind = "bridge";
               };
+
               "25-vms".netdevConfig = {
                 Name = "vms";
                 Kind = "bridge";
+              };
+              "30-vms-dummy".netdevConfig = {
+                Name = "vms0";
+                Kind = "dummy";
               };
             };
 
@@ -119,19 +124,11 @@
                   ];
                 }
               ];
-
-              "80-vm-tap" = {
-                matchConfig = {
-                  # Don't think we have control over the name of the TAP from qemu-bridge-helper (or how to easily pick
-                  # which interface is which)
-                  Name = "tap*";
-                  Driver = "tun";
-                };
-                networkConfig = {
-                  KeepMaster = true;
-                  LLDP = true;
-                  EmitLLDP = "customer-bridge";
-                };
+              # Just so the vms interface will come up (in networkd's eyes), allowing dependant VMs to start.
+              # Could tweak the `waitOnline` for a single VM, but this seems better overall?
+              "80-vms-dummy" = {
+                matchConfig.Name = "vms0";
+                networkConfig.Bridge = "vms";
               };
             };
           };

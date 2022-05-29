@@ -3,7 +3,8 @@ let
   inherit (builtins) filter any attrNames attrValues fetchGit;
   inherit (lib)
     unique optional optionals optionalString flatten concatStringsSep
-    concatMapStringsSep mapAttrsToList mapAttrs' mkIf mkDefault;
+    concatMapStringsSep mapAttrsToList mapAttrs' filterAttrs mkIf mkMerge
+    mkDefault mkOption;
   inherit (lib.my) mkOpt' mkBoolOpt';
 
   flattenQEMUOpts = attrs:
@@ -66,9 +67,13 @@ let
 
   cfg = config.my.vms;
 
-  netOpts = with lib.types; { name, ... }: {
+  netOpts = with lib.types; { name, iName, ... }: {
     options = {
-      bridge = mkOpt' str name "Network bridge to connect to.";
+      ifname = mkOpt' str "vm-${iName}" "TAP device to create ";
+      bridge = mkOpt' (nullOr str) name "Network bridge to connect to (null to not attach to bridge).";
+      waitOnline = mkOpt' (either bool str) true
+        "Whether to wait for networkd to consider the bridge online. Pass a string to set the OPERSTATE will wait for.";
+
       model = mkOpt' str "virtio-net" "Device type for network interface.";
       mac = mkOpt' str null "Guest MAC address.";
       extraOptions = mkOpt' qemuOpts { } "Extra QEMU options to set for the NIC.";
@@ -115,7 +120,13 @@ let
       memory = mkOpt' ints.unsigned 1024 "Amount of RAM (mebibytes).";
       vga = mkOpt' str "virtio" "VGA card type.";
       spice.enable = mkBoolOpt' true "Whether to enable SPICE.";
-      networks = mkOpt' (attrsOf (submodule netOpts)) { } "Networks to attach VM to.";
+      networks = mkOption {
+        description = "Networks to attach VM to.";
+        type = attrsOf (submoduleWith {
+          modules = [ { _module.args.iName = name; } netOpts ];
+        });
+        default = { };
+      };
       drives = mkOpt' (attrsOf (submodule driveOpts)) { } "Drives to attach to VM.";
       hostDevices = mkOpt' (attrsOf (submodule hostDevOpts)) { } "Host PCI devices to pass to the VM.";
     };
@@ -127,7 +138,7 @@ let
         (i: mapAttrsToList (bdf: c: { inherit bdf; inherit (c) bindVFIO; }) i.hostDevices)
         (attrValues cfg.instances));
 
-  mkQemuCommand = n: i:
+  mkQemuScript = n: i:
   let
     flags =
       i.qemuFlags ++
@@ -154,7 +165,7 @@ let
       ]) ++
       (optional i.spice.enable "spice unix=on,addr=/run/vms/${n}/spice.sock,disable-ticketing=on") ++
       (flatten (mapAttrsToList (nn: c: [
-        "netdev bridge,id=${nn},br=${c.bridge}"
+        "netdev tap,id=${nn},ifname=${c.ifname},script=no"
         ("device ${c.model},netdev=${nn},mac=${c.mac}" + (extraQEMUOpts c.extraOptions))
       ]) i.networks)) ++
       (flatten (mapAttrsToList (dn: c: [
@@ -165,7 +176,10 @@ let
       (map (bdf: "device vfio-pci,host=${bdf}") (attrNames i.hostDevices));
     args = map (v: "-${v}") flags;
   in
-    concatStringsSep " " ([ i.qemuBin ] ++ args);
+  ''
+    exec ${i.qemuBin} \
+      ${concatStringsSep " \\\n  " args}
+  '';
 in
 {
   options.my.vms = with lib.types; {
@@ -198,15 +212,33 @@ in
 
     my.tmproot.persistence.config.directories = [ "/var/lib/vms" ];
 
-    # qemu-bridge-helper will fail otherwise
-    environment.etc."qemu/bridge.conf".text = "allow all";
-    systemd = {
-      services = mapAttrs' (n: i: {
-        name = "vm@${n}";
-        value = {
+    systemd = mkMerge ([ ] ++
+      (mapAttrsToList (n: i: {
+        # TODO: LLDP?
+        network.networks =
+          mapAttrs'
+            (nn: net: {
+              name = "70-vm-${n}-${nn}";
+              value = {
+                matchConfig = {
+                  Name = net.ifname;
+                  Kind = "tap";
+                };
+                networkConfig.Bridge = net.bridge;
+              };
+            })
+            (filterAttrs (_: net: net.bridge != null) i.networks);
+        services."vm@${n}" = {
           description = "Virtual machine '${n}'";
+          requires =
+            map
+              (net:
+              let
+                arg = if net.waitOnline == true then net.bridge else "${net.bridge}:${net.waitOnline}";
+              in
+              "systemd-networkd-wait-online@${arg}.service")
+              (filter (net: net.bridge != null && net.waitOnline != false) (attrValues i.networks));
           serviceConfig = {
-            ExecStart = mkQemuCommand n i;
             ExecStop = mkIf i.cleanShutdown.enabled "${doCleanShutdown} /run/vms/${n}/monitor-qmp.sock";
             TimeoutStopSec = mkIf i.cleanShutdown.enabled i.cleanShutdown.timeout;
 
@@ -220,6 +252,7 @@ in
                 cp "${cfg.ovmfPackage.fd}"/FV/OVMF_VARS.fd "$STATE_DIRECTORY"/ovmf_vars.bin
               fi
             '';
+          script = mkQemuScript n i;
           postStart =
             ''
               socks=(monitor-qmp monitor tty spice)
@@ -233,7 +266,6 @@ in
           restartIfChanged = mkDefault false;
           wantedBy = optional i.autoStart "machines.target";
         };
-      }) cfg.instances;
-    };
+      }) cfg.instances));
   };
 }
