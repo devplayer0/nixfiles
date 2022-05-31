@@ -83,9 +83,11 @@ in
               table inet filter {
                 chain wan-tcp {
                   ${concatMapStringsSep "\n    " (p: "tcp dport ${toString p} accept") openTCP}
+                  return
                 }
                 chain wan-udp {
                   ${concatMapStringsSep "\n    " (p: "udp dport ${toString p} accept") openUDP}
+                  return
                 }
 
                 chain wan {

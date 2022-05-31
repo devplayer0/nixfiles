@@ -27,9 +27,15 @@ let
     name = "container-${n}";
     value = {
       path = pkgs.deploy-rs.lib.activate.custom ctrConfig.my.buildAs.container
-        ''
-          systemctl ${if c.hotReload then "reload" else "restart"} systemd-nspawn@${n}
-        '';
+        (if c.hotReload then ''
+          if systemctl show -p StatusText systemd-nspawn@${n} | grep -q "Dummy container"; then
+            action=restart
+          else
+            action=reload
+          fi
+
+          systemctl "$action" systemd-nspawn@${n}
+        '' else "systemctl restart systemd-nspawn@${n}");
       profilePath = "/nix/var/nix/profiles/per-container/${n}/system";
 
       user = "root";

@@ -26,7 +26,8 @@
 
     configuration = { lib, pkgs, modulesPath, config, assignments, allAssignments, ... }:
       let
-        inherit (lib) mkIf mkMerge mkForce;
+        inherit (builtins) mapAttrs;
+        inherit (lib) mkIf mkMerge mkForce recursiveUpdate;
         inherit (lib.my) networkdAssignment;
       in
       {
@@ -96,10 +97,11 @@
                 trustedInterfaces = [ "vms" "ctrs" ];
               };
 
-              containers = {
-                instances.vaultwarden = {
-                  networking.bridge = "ctrs";
-                };
+              containers.instances = mapAttrs (_: c: recursiveUpdate c {
+                networking.bridge = "ctrs";
+              }) {
+                middleman = {};
+                vaultwarden = {};
               };
             };
           }

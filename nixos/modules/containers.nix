@@ -216,7 +216,6 @@ in
           reload =
           # `switch-to-configuration test` switches config without trying to update bootloader
           ''
-            # TODO: This still breaks on first deploy over the dummy...
             [ -e "${system}"/bin/switch-to-configuration ] && \
               systemd-run --pipe --machine ${n} -- "${containerSystem}"/bin/switch-to-configuration test
           '';

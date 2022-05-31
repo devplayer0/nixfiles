@@ -146,14 +146,26 @@
                   enable = true;
                   externalInterface = "wan";
                 };
-                extraRules = ''
+                extraRules =
+                let
+                  aa = allAssignments;
+                  matchInet = rule: sys: ''
+                    ip daddr ${aa."${sys}".internal.ipv4.address} ${rule}
+                    ip6 daddr ${aa."${sys}".internal.ipv6.address} ${rule}
+                  '';
+                in
+                ''
                   table inet filter {
                     chain routing-tcp {
                       # Safe enough to allow all SSH
                       tcp dport ssh accept
+
+                      ${matchInet "tcp dport { http, https } accept" "middleman"}
+
+                      return
                     }
                     chain routing-udp {
-
+                      return
                     }
                     chain filter-routing {
                       tcp flags & (fin|syn|rst|ack) == syn ct state new jump routing-tcp

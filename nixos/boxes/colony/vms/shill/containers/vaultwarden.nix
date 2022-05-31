@@ -6,9 +6,9 @@
     assignments = {
       internal = {
         name = "vaultwarden-ctr";
-        ipv4.address = "10.100.2.2";
+        ipv4.address = "10.100.2.3";
         ipv6 = rec {
-          iid = "::2";
+          iid = "::3";
           address = "2a0e:97c0:4d0:bbb2${iid}";
         };
       };

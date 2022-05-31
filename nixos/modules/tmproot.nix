@@ -113,6 +113,8 @@ in
           # Auto-generated (on activation?)
           "/root/.nix-channels"
           "/root/.nix-defexpr"
+
+          "/var/lib/logrotate.status"
         ];
         persistence.config = {
           # In impermanence the key in `environment.persistence.*` (aka name passed the attrsOf submodule) sets the
@@ -165,6 +167,9 @@ in
     })
     (mkIf config.security.doas.enable {
       my.tmproot.unsaved.ignore = [ "/etc/doas.conf" ];
+    })
+    (mkIf config.services.resolved.enable {
+      my.tmproot.unsaved.ignore = [ "/etc/resolv.conf" ];
     })
     (mkIf config.my.build.isDevVM {
       my.tmproot.unsaved.ignore = [ "/nix" ];
@@ -219,9 +224,6 @@ in
       (mkIf config.services.openssh.enable {
         my.tmproot.persistence.config.files =
           concatMap (k: [ k.path "${k.path}.pub" ]) config.services.openssh.hostKeys;
-      })
-      (mkIf config.services.logrotate.enable {
-        my.tmproot.persistence.config.files = [ "/var/lib/logrotate.status" ];
       })
       (mkIf config.my.build.isDevVM {
         fileSystems = mkVMOverride {
