@@ -1,4 +1,4 @@
-{
+{ lib, ... }: {
   nixos.systems.estuary = {
     system = "x86_64-linux";
     nixpkgs = "mine";
@@ -9,7 +9,7 @@
         name = "estuary-vm";
         altNames = [ "fw" ];
         ipv4 = {
-          address = "188.141.14.6";
+          address = "80.111.124.10";
           gateway = null;
         };
         ipv6 = {
@@ -19,11 +19,10 @@
       };
       base = {
         ipv4 = {
-          address = "10.100.0.1";
+          address = "${lib.my.colony.start.base.v4}1";
           gateway = null;
         };
-        #ipv6.address = "2a0e:97c0:4d1:0::1";
-        ipv6.address = "2a0e:97c0:4d0:bbb0::1";
+        ipv6.address = "${lib.my.colony.start.base.v6}1";
       };
     };
 
@@ -105,7 +104,6 @@
                     };
                     ipv6Prefixes = [
                       {
-                        #ipv6PrefixConfig.Prefix = "2a0e:97c0:4d1:0::/64";
                         ipv6PrefixConfig.Prefix = lib.my.colony.prefixes.base.v6;
                       }
                     ];

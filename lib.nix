@@ -158,19 +158,37 @@ rec {
 
   colony = rec {
     domain = "test.int.nul.ie";
-    prefixes = {
+    start = {
       all = {
-        v4 = "10.100.0.0/16";
-        v6 = "2a0e:97c0:4d0:bbb0::/60";
+        v4 = "10.100.";
+        v6 = "2a0e:97c0:4d0:bbb";
       };
-      base.v6 = "2a0e:97c0:4d0:bbb0::/64";
+      base = {
+        v4 = "${start.all.v4}0.";
+        v6 = "${start.all.v6}0::";
+      };
       vms = {
-        v4 = "10.100.1.0/24";
-        v6 = "2a0e:97c0:4d0:bbb1::/64";
+        v4 = "${start.all.v4}1.";
+        v6 = "${start.all.v6}1::";
       };
       ctrs = {
-        v4 = "10.100.2.0/24";
-        v6 = "2a0e:97c0:4d0:bbb2::/64";
+        v4 = "${start.all.v4}2.";
+        v6 = "${start.all.v6}2::";
+      };
+    };
+    prefixes = {
+      all = {
+        v4 = "${start.base.v4}0/16";
+        v6 = "${start.base.v6}/60";
+      };
+      base.v6 = "${start.base.v6}/64";
+      vms = {
+        v4 = "${start.vms.v4}0/24";
+        v6 = "${start.vms.v6}/64";
+      };
+      ctrs = {
+        v4 = "${start.ctrs.v4}0/24";
+        v6 = "${start.ctrs.v6}/64";
       };
     };
   };

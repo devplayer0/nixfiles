@@ -1,4 +1,4 @@
-{
+{ lib, ... }: {
   imports = [ ./vms ];
 
   nixos.systems.colony = {
@@ -9,20 +9,18 @@
     assignments = {
       internal = {
         altNames = [ "vm" ];
-        ipv4.address = "10.100.0.2";
-        #ipv6.address = "2a0e:97c0:4d1:0::2";
-        ipv6 = rec {
+        ipv4.address = "${lib.my.colony.start.base.v4}2";
+        ipv6 = {
           iid = "::2";
-          address = "2a0e:97c0:4d0:bbb0${iid}";
+          address = "${lib.my.colony.start.base.v6}2";
         };
       };
       vms = {
         ipv4 = {
-          address = "10.100.1.1";
+          address = "${lib.my.colony.start.vms.v4}1";
           gateway = null;
         };
-        #ipv6.address = "2a0e:97c0:4d1:1::1";
-        ipv6.address = "2a0e:97c0:4d0:bbb1::1";
+        ipv6.address = "${lib.my.colony.start.vms.v6}1";
       };
     };
 
@@ -108,7 +106,6 @@
                   };
                   ipv6Prefixes = [
                     {
-                      #ipv6PrefixConfig.Prefix = "2a0e:97c0:4d1:1::/64";
                       ipv6PrefixConfig.Prefix = lib.my.colony.prefixes.vms.v6;
                     }
                   ];

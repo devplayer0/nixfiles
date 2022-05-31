@@ -1,4 +1,4 @@
-{
+{ lib, ...}: {
   nixos.systems.middleman = {
     system = "x86_64-linux";
     nixpkgs = "mine";
@@ -7,10 +7,10 @@
       internal = {
         name = "middleman-ctr";
         altNames = [ "http" ];
-        ipv4.address = "10.100.2.2";
-        ipv6 = rec {
+        ipv4.address = "${lib.my.colony.start.ctrs.v4}2";
+        ipv6 = {
           iid = "::2";
-          address = "2a0e:97c0:4d0:bbb2${iid}";
+          address = "${lib.my.colony.start.ctrs.v6}2";
         };
       };
     };

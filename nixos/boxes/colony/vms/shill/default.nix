@@ -1,4 +1,4 @@
-{
+{ lib, ... }: {
   imports = [ ./containers ];
 
   nixos.systems.shill = {
@@ -9,18 +9,18 @@
       internal = {
         name = "shill-vm";
         altNames = [ "ctr" ];
-        ipv4.address = "10.100.1.2";
-        ipv6 = rec {
+        ipv4.address = "${lib.my.colony.start.vms.v4}2";
+        ipv6 = {
           iid = "::2";
-          address = "2a0e:97c0:4d0:bbb1${iid}";
+          address = "${lib.my.colony.start.vms.v6}2";
         };
       };
       ctrs = {
         ipv4 = {
-          address = "10.100.2.1";
+          address = "${lib.my.colony.start.ctrs.v4}1";
           gateway = null;
         };
-        ipv6.address = "2a0e:97c0:4d0:bbb2::1";
+        ipv6.address = "${lib.my.colony.start.ctrs.v6}1";
       };
     };
 

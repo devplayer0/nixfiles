@@ -1,4 +1,4 @@
-{
+{ lib, ...}: {
   nixos.systems.vaultwarden = {
     system = "x86_64-linux";
     nixpkgs = "mine";
@@ -6,10 +6,10 @@
     assignments = {
       internal = {
         name = "vaultwarden-ctr";
-        ipv4.address = "10.100.2.3";
-        ipv6 = rec {
+        ipv4.address = "${lib.my.colony.start.ctrs.v4}3";
+        ipv6 = {
           iid = "::3";
-          address = "2a0e:97c0:4d0:bbb2${iid}";
+          address = "${lib.my.colony.start.ctrs.v6}3";
         };
       };
     };
