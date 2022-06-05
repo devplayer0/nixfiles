@@ -10,6 +10,58 @@ let
   reverseZone6 = "b.b.b.0.d.4.0.0.c.7.9.e.0.a.2.ip6.arpa";
 
   authZones = attrNames config.my.pdns.auth.bind.zones;
+
+  pdns-file-record = pkgs.writeShellApplication {
+    name = "pdns-file-record";
+    runtimeInputs = [ pkgs.gnused ];
+    text = ''
+      die() {
+        echo "$@" >&2
+        exit 1
+      }
+      usage() {
+        die "usage: $0 <add|del> <fqdn> [content]"
+      }
+
+      add() {
+        if [ $# -ne 2 ]; then
+          usage
+        fi
+
+        echo "$2" >> "$dir"/"$1"txt
+      }
+      del() {
+        if [ $# -lt 1 ]; then
+          usage
+        fi
+
+        file="$dir"/"$1"txt
+        if [ $# -eq 1 ]; then
+          rm "$file"
+        else
+          sed -i "/^""$2""$/!{q1}; /^""$2""$/d" "$file"
+          exit $?
+        fi
+      }
+
+      dir=/run/pdns/file-records
+      mkdir -p "$dir"
+
+      if [ $# -lt 1 ]; then
+        usage
+      fi
+      cmd="$1"
+      shift
+      case "$cmd" in
+      add)
+        add "$@";;
+      del)
+        del "$@";;
+      *)
+        usage;;
+      esac
+    '';
+  };
 in
 {
   config = {
@@ -38,6 +90,7 @@ in
     # For rec_control
     environment.systemPackages = with pkgs; [
       pdns-recursor
+      pdns-file-record
     ];
 
     my.pdns.auth = {
@@ -109,6 +162,20 @@ in
         wildcardPtr6' = n: root: ''*.${wildcardPtr6Zeroes n}${root} ${wildcardPtr6Def}'';
         wildcardPtr6 = n: root: concatStringsSep "\n" (genList (i: wildcardPtr6' i root) (n - 1));
         wildcardPtr6Z = wildcardPtr6 ptrDots6;
+
+        fileRecScript = pkgs.writeText "file-record.lua" ''
+          local path = "/run/pdns/file-records/" .. qname:toStringNoDot() .. ".txt"
+          if not os.execute("test -e " .. path) then
+            return {}
+          end
+
+          local values = {}
+          for line in io.lines(path) do
+            table.insert(values, line)
+          end
+          return values
+        '';
+        fileRecVal = ''"dofile('${fileRecScript}')"'';
       in
       {
         "${config.networking.domain}" = {
@@ -127,6 +194,8 @@ in
             ns IN ALIAS ${config.networking.fqdn}.
 
             @ IN ALIAS ${config.networking.fqdn}.
+
+            _acme-challenge IN LUA TXT ${fileRecVal}
 
             ${intRecords}
           '';
@@ -171,7 +240,7 @@ in
             ${intPtr6Records}
 
             * ${wildcardPtr6Def}
-            ; Have to add a specific wildard for each of the explicitly set subnets... this is disgusting for IPv6
+            ; Have to add a specific wildcard for each of the explicitly set subnets... this is disgusting for IPv6
             ${wildcardPtr6Z "0"}
             ${wildcardPtr6Z "1"}
             ${wildcardPtr6Z "2"}
