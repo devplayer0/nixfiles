@@ -11,6 +11,7 @@
         ipv4 = {
           address = "80.111.124.10";
           gateway = null;
+          genPTR = false;
         };
         ipv6 = {
           address = "2a0e:97c0:4d0:bbbf::1";

@@ -1,7 +1,8 @@
 { lib, pkgs, config, assignments, allAssignments, ... }:
 let
-  inherit (builtins) attrNames;
-  inherit (lib) concatStringsSep concatMapStringsSep mapAttrsToList filterAttrs genAttrs optional;
+  inherit (builtins) attrNames stringLength genList filter;
+  inherit (lib)
+    concatStrings concatStringsSep concatMapStringsSep mapAttrsToList filterAttrs genAttrs optional optionalString;
 
   ptrDots = 2;
   reverseZone = "100.10.in-addr.arpa";
@@ -49,6 +50,10 @@ in
           "0.0.0.0:5353" "[::]:5353"
         ];
         also-notify = [ "127.0.0.1" ];
+        enable-lua-records = true;
+        #loglevel = 7;
+        #log-dns-queries = true;
+        #log-dns-details = true;
       };
 
       bind.zones =
@@ -56,9 +61,10 @@ in
         genRecords = f:
           concatStringsSep
             "\n"
-            (mapAttrsToList
-              (_: as: f as.internal)
-              (filterAttrs (_: as: as ? "internal" && as.internal.visible) allAssignments));
+            (filter (s: s != "")
+              (mapAttrsToList
+                (_: as: f as.internal)
+                (filterAttrs (_: as: as ? "internal" && as.internal.visible) allAssignments)));
 
         intRecords =
           genRecords (a: ''
@@ -67,9 +73,42 @@ in
             ${concatMapStringsSep "\n" (alt: "${alt} IN CNAME ${a.name}") a.altNames}
           '');
         intPtrRecords =
-          genRecords (a: ''@@PTR:${a.ipv4.address}:${toString ptrDots}@@ IN PTR ${a.name}.${config.networking.domain}.'');
+          genRecords
+            (a:
+              optionalString
+                a.ipv4.genPTR
+                ''@@PTR:${a.ipv4.address}:${toString ptrDots}@@ IN PTR ${a.name}.${config.networking.domain}.'');
         intPtr6Records =
-          genRecords (a: ''@@PTR:${a.ipv6.address}:${toString ptrDots6}@@ IN PTR ${a.name}.${config.networking.domain}.'');
+          genRecords
+            (a:
+              optionalString
+                a.ipv4.genPTR
+                ''@@PTR:${a.ipv6.address}:${toString ptrDots6}@@ IN PTR ${a.name}.${config.networking.domain}.'');
+
+        wildcardPtrDef = ''IN LUA PTR "createReverse('ip-%3%-%4%.${config.networking.domain}')"'';
+
+        reverse6Script =
+        let
+         len = toString (stringLength lib.my.colony.start.base.v6);
+        in
+        pkgs.writeText "reverse6.lua" ''
+          local root = newDN("ip6.arpa.")
+          local ptr = qname:makeRelative(root):toStringNoDot()
+          local nibbles = string.gsub(string.reverse(ptr), "%.", "")
+
+          local ip6 = string.sub(nibbles, 1, 4)
+          for i = 1, 7 do
+            ip6 = ip6 .. ":" .. string.sub(nibbles, (i*4)+1, (i+1)*4)
+          end
+
+          local addr = newCA(ip6)
+          return "ip6-" .. string.sub(string.gsub(addr:toString(), ":", "-"), ${len}) .. ".${config.networking.domain}."
+        '';
+        wildcardPtr6Def = ''IN LUA PTR "dofile('${reverse6Script}')"'';
+        wildcardPtr6Zeroes = n: concatStrings (genList (_: "0.") n);
+        wildcardPtr6' = n: root: ''*.${wildcardPtr6Zeroes n}${root} ${wildcardPtr6Def}'';
+        wildcardPtr6 = n: root: concatStringsSep "\n" (genList (i: wildcardPtr6' i root) (n - 1));
+        wildcardPtr6Z = wildcardPtr6 ptrDots6;
       in
       {
         "${config.networking.domain}" = {
@@ -96,7 +135,7 @@ in
           type = "master";
           text = ''
             $TTL 60
-            @ IN SOA ns.${config.networking.domain}. dev.nul.ie (
+            @ IN SOA ns.${config.networking.domain}. dev.nul.ie. (
                 @@SERIAL@@ ; serial
                 3h ; refresh
                 1h ; retry
@@ -107,13 +146,19 @@ in
             @ IN NS ns.${config.networking.domain}.
 
             ${intPtrRecords}
+
+            * ${wildcardPtrDef}
+            ; Have to add a specific wildcard for each of the explicitly set subnets...
+            *.0 ${wildcardPtrDef}
+            *.1 ${wildcardPtrDef}
+            *.2 ${wildcardPtrDef}
           '';
         };
         "${reverseZone6}" = {
           type = "master";
           text = ''
             $TTL 60
-            @ IN SOA ns.${config.networking.domain}. dev.nul.ie (
+            @ IN SOA ns.${config.networking.domain}. dev.nul.ie. (
                 @@SERIAL@@ ; serial
                 3h ; refresh
                 1h ; retry
@@ -124,6 +169,12 @@ in
             @ IN NS ns.${config.networking.domain}.
 
             ${intPtr6Records}
+
+            * ${wildcardPtr6Def}
+            ; Have to add a specific wildard for each of the explicitly set subnets... this is disgusting for IPv6
+            ${wildcardPtr6Z "0"}
+            ${wildcardPtr6Z "1"}
+            ${wildcardPtr6Z "2"}
           '';
         };
       };

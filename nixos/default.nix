@@ -98,12 +98,14 @@ let
         address = mkOpt' str null "IPv4 address.";
         mask = mkOpt' ints.u8 24 "Network mask.";
         gateway = mkOpt' (nullOr str) (naiveIPv4Gateway config.ipv4.address) "IPv4 gateway.";
+        genPTR = mkBoolOpt' true "Whether to generate a PTR record.";
       };
       ipv6 = {
         address = mkOpt' str null "IPv6 address.";
         mask = mkOpt' ints.u8 64 "Network mask.";
         iid = mkOpt' (nullOr str) null "SLAAC static address.";
         gateway = mkOpt' (nullOr str) null "IPv6 gateway.";
+        genPTR = mkBoolOpt' true "Whether to generate a PTR record.";
       };
     };
   };
