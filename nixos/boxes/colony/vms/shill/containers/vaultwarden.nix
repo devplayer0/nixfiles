@@ -1,4 +1,4 @@
-{ lib, ...}: {
+{ lib, ... }: {
   nixos.systems.vaultwarden = {
     system = "x86_64-linux";
     nixpkgs = "mine";
