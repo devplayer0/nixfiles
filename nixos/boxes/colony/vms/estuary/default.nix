@@ -8,6 +8,7 @@
       internal = {
         name = "estuary-vm";
         altNames = [ "fw" ];
+        domain = lib.my.colony.domain;
         ipv4 = {
           address = "80.111.124.10";
           gateway = null;
@@ -37,8 +38,6 @@
 
         config = mkMerge [
           {
-            networking.domain = lib.my.colony.domain;
-
             boot.kernelParams = [ "console=ttyS0,115200n8" ];
             fileSystems = {
               "/boot" = {

@@ -1,8 +1,8 @@
 { lib, pkgsFlakes, hmFlakes, inputs, pkgs', config, ... }:
 let
   inherit (builtins) attrValues mapAttrs;
-  inherit (lib) substring flatten optional optionals mkDefault mkForce mkOption mkOptionType;
-  inherit (lib.my) naiveIPv4Gateway homeStateVersion mkOpt' mkBoolOpt' commonOpts inlineModule';
+  inherit (lib) substring flatten optional optionals mkIf mkDefault mkForce mkOption mkOptionType;
+  inherit (lib.my) naiveIPv4Gateway homeStateVersion mkOpt' mkBoolOpt' mkDefault' commonOpts inlineModule';
 
   cfg = config.nixos;
 
@@ -50,7 +50,10 @@ let
           };
 
           system.name = name;
-          networking.hostName = mkDefault (config'.assignments.internal.name or name);
+          networking = {
+            domain = let d = config'.assignments.internal.domain; in mkIf (d != null) (mkDefault' d);
+            hostName = mkDefault (config'.assignments.internal.name or name);
+          };
           nixpkgs = {
             inherit (config') system;
             # Make sure any previously set overlays (e.g. lib which will be inherited by home-manager down the
@@ -94,6 +97,7 @@ let
       name = mkOpt' str name "Name of assignment.";
       altNames = mkOpt' (listOf str) [ ] "Extra names to assign.";
       visible = mkBoolOpt' true "Whether or not this assignment should be visible.";
+      domain = mkOpt' (nullOr str) null "Domain for this assignment.";
       ipv4 = {
         address = mkOpt' str null "IPv4 address.";
         mask = mkOpt' ints.u8 24 "Network mask.";

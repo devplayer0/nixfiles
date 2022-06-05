@@ -9,6 +9,7 @@
       internal = {
         name = "shill-vm";
         altNames = [ "ctr" ];
+        domain = lib.my.colony.domain;
         ipv4.address = "${lib.my.colony.start.vms.v4}2";
         ipv6 = {
           iid = "::2";
@@ -35,8 +36,6 @@
 
         config = mkMerge [
           {
-            networking.domain = lib.my.colony.domain;
-
             boot.kernelParams = [ "console=ttyS0,115200n8" ];
             fileSystems = {
               "/boot" = {

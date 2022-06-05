@@ -6,6 +6,7 @@
     assignments = {
       internal = {
         name = "vaultwarden-ctr";
+        domain = lib.my.colony.domain;
         ipv4.address = "${lib.my.colony.start.ctrs.v4}3";
         ipv6 = {
           iid = "::3";

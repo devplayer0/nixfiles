@@ -7,6 +7,7 @@
       internal = {
         name = "middleman-ctr";
         altNames = [ "http" ];
+        domain = lib.my.colony.domain;
         ipv4.address = "${lib.my.colony.start.ctrs.v4}2";
         ipv6 = {
           iid = "::2";

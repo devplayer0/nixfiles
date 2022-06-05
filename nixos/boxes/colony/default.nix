@@ -9,6 +9,7 @@
     assignments = {
       internal = {
         altNames = [ "vm" ];
+        domain = lib.my.colony.domain;
         ipv4.address = "${lib.my.colony.start.base.v4}2";
         ipv6 = {
           iid = "::2";
@@ -31,8 +32,6 @@
       in
       {
         imports = [ "${modulesPath}/profiles/qemu-guest.nix" ];
-
-        networking.domain = lib.my.colony.domain;
 
         boot.kernelParams = [ "intel_iommu=on" ];
         boot.loader.systemd-boot.configurationLimit = 20;
