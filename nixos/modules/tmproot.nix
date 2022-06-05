@@ -225,6 +225,16 @@ in
         my.tmproot.persistence.config.files =
           concatMap (k: [ k.path "${k.path}.pub" ]) config.services.openssh.hostKeys;
       })
+      (mkIf (config.security.acme.certs != { }) {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = "/var/lib/acme";
+            mode = "0750";
+            user = "acme";
+            group = "acme";
+          }
+        ];
+      })
       (mkIf config.my.build.isDevVM {
         fileSystems = mkVMOverride {
           # Hijack the "root" device for persistence in the VM

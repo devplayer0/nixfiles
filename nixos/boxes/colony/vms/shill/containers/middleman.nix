@@ -16,7 +16,7 @@
       };
     };
 
-    configuration = { lib, config, assignments, allAssignments, ... }:
+    configuration = { lib, pkgs, config, assignments, allAssignments, ... }:
     let
       inherit (lib) mkMerge mkIf;
       inherit (lib.my) networkdAssignment;
@@ -29,7 +29,13 @@
 
             secrets = {
               key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAuvP9DEsffop53Fsh7xIdeVyQSF6tSKrOUs2faq6rip";
-              files."dhparams.pem" = {};
+              files = {
+                "dhparams.pem" = {};
+                "pdns-file-records.key" = {
+                  owner = "acme";
+                  group = "acme";
+                };
+              };
             };
 
             firewall = {
@@ -42,6 +48,51 @@
 
           systemd = {
             network.networks."80-container-host0" = networkdAssignment "host0" assignments.internal;
+          };
+
+          security = {
+            acme = {
+              acceptTerms = true;
+              defaults = {
+                email = "dev@nul.ie";
+                server = "https://acme-staging-v02.api.letsencrypt.org/directory";
+                reloadServices = [ "nginx" ];
+                dnsResolver = "8.8.8.8";
+              };
+
+              certs = {
+                "${config.networking.domain}" = {
+                  extraDomainNames = [
+                    "*.${config.networking.domain}"
+                  ];
+                  dnsProvider = "exec";
+                  credentialsFile =
+                  let
+                    script = pkgs.writeShellScript "lego-update-int.sh" ''
+                      case "$1" in
+                      present)
+                        cmd=add;;
+                      cleanup)
+                        cmd=del;;
+                      *)
+                        exit 1;;
+                      esac
+
+                      echo "$@"
+                      exec ${pkgs.openssh}/bin/ssh \
+                        -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no \
+                        -i ${config.age.secrets."pdns-file-records.key".path} \
+                        pdns-file-records@estuary-vm "${config.networking.domain}" "$cmd" "$2" "$3"
+                    '';
+                  in
+                  pkgs.writeText "lego-exec-vars.conf" ''
+                    EXEC_PROPAGATION_TIMEOUT=60
+                    EXEC_POLLING_INTERVAL=2
+                    EXEC_PATH=${script}
+                  '';
+                };
+              };
+            };
           };
 
           services = {

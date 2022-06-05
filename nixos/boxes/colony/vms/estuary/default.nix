@@ -176,7 +176,7 @@
                   }
                   table inet nat {
                     chain prerouting {
-                      iifname wan meta l4proto { udp, tcp } th dport domain redirect to :5353
+                      ${matchInet "meta l4proto { udp, tcp } th dport domain redirect to :5353" "estuary"}
                     }
                     chain postrouting {
                       ip saddr ${lib.my.colony.prefixes.all.v4} masquerade

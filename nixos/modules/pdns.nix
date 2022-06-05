@@ -156,6 +156,9 @@ in
           mkdir -p /var/lib/pdns/bind-zones
           loadZones start
         '';
+        postStart = ''
+          chmod -R g+w /run/pdns /var/lib/pdns
+        '';
 
         # pdns reloads existing zones, so the only trigger will be if the zone files themselves change. If any new zones
         # are added or removed, named.conf will change, in turn changing the overall pdns settings and causing pdns to

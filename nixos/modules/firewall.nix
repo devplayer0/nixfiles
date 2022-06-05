@@ -128,11 +128,10 @@ in
 
               table inet nat {
                 chain prerouting {
-                  type nat hook prerouting priority 0;
+                  type nat hook prerouting priority dstnat;
                 }
-
                 chain postrouting {
-                  type nat hook postrouting priority 100;
+                  type nat hook postrouting priority srcnat;
                 }
               }
 

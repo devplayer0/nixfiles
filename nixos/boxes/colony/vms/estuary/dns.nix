@@ -13,14 +13,14 @@ let
 
   pdns-file-record = pkgs.writeShellApplication {
     name = "pdns-file-record";
-    runtimeInputs = [ pkgs.gnused ];
+    runtimeInputs = with pkgs; [ gnused pdns ];
     text = ''
       die() {
         echo "$@" >&2
         exit 1
       }
       usage() {
-        die "usage: $0 <add|del> <fqdn> [content]"
+        die "usage: $0 <zone> <add|del> <fqdn> [content]"
       }
 
       add() {
@@ -47,11 +47,14 @@ let
       dir=/run/pdns/file-records
       mkdir -p "$dir"
 
-      if [ $# -lt 1 ]; then
+      if [ $# -lt 2 ]; then
         usage
       fi
+      zone="$1"
+      shift
       cmd="$1"
       shift
+
       case "$cmd" in
       add)
         add "$@";;
@@ -60,11 +63,48 @@ let
       *)
         usage;;
       esac
+
+      # TODO: This feels pretty hacky?
+      zDat=/var/lib/pdns/bind-zones/"$zone".dat
+      # shellcheck disable=SC1090
+      source "$zDat"
+      ((serial++))
+      sed -i "s/^serial=.*$/serial=$serial/g" "$zDat"
+      sed "s/@@SERIAL@@/$serial/g" < /etc/pdns/bind-zones/"$zone".zone > /run/pdns/bind-zones/"$zone".zone
+      pdns_control bind-reload-now "$zone"
     '';
   };
 in
 {
   config = {
+    users = {
+      users = {
+        "pdns-file-records" =
+        let
+          script = pkgs.writeShellScript "pdns-file-records-ssh.sh" ''
+            read -r -a args <<< "$SSH_ORIGINAL_COMMAND"
+            exec ${pdns-file-record}/bin/pdns-file-record "''${args[@]}"
+          '';
+        in
+        {
+          group = "pdns";
+          isSystemUser = true;
+          shell = pkgs.bashInteractive;
+          openssh.authorizedKeys.keys = [
+            ''command="${script}" ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBSvcgbEesOgvKJLt3FLXPaLOcCIuOUYtZXXtEv6k4Yd''
+          ];
+        };
+      };
+    };
+
+    systemd = {
+      services = {
+        pdns.preStart = ''
+          install -d -m 775 /run/pdns/file-records
+        '';
+      };
+    };
+
     services.pdns-recursor = {
       enable = true;
       dns = {
@@ -164,7 +204,7 @@ in
         wildcardPtr6Z = wildcardPtr6 ptrDots6;
 
         fileRecScript = pkgs.writeText "file-record.lua" ''
-          local path = "/run/pdns/file-records/" .. qname:toStringNoDot() .. ".txt"
+          local path = "/run/pdns/file-records/" .. string.lower(qname:toStringNoDot()) .. ".txt"
           if not os.execute("test -e " .. path) then
             return {}
           end
@@ -195,8 +235,10 @@ in
 
             @ IN ALIAS ${config.networking.fqdn}.
 
+            $TTL 3
             _acme-challenge IN LUA TXT ${fileRecVal}
 
+            $TTL 60
             ${intRecords}
           '';
         };
