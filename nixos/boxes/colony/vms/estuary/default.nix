@@ -10,7 +10,7 @@
         altNames = [ "fw" ];
         domain = lib.my.colony.domain;
         ipv4 = {
-          address = "80.111.124.10";
+          address = "188.141.14.75";
           gateway = null;
           genPTR = false;
         };
