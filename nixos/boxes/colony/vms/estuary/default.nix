@@ -143,6 +143,16 @@
                 nat = {
                   enable = true;
                   externalInterface = "wan";
+                  forwardPorts = [
+                    {
+                      port = "http";
+                      dst = allAssignments.middleman.internal.ipv4.address + ":http";
+                    }
+                    {
+                      port = "https";
+                      dst = allAssignments.middleman.internal.ipv4.address + ":https";
+                    }
+                  ];
                 };
                 extraRules =
                 let

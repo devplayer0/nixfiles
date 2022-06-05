@@ -234,6 +234,8 @@ in
             ns IN ALIAS ${config.networking.fqdn}.
 
             @ IN ALIAS ${config.networking.fqdn}.
+            http IN A ${assignments.internal.ipv4.address}
+            http IN AAAA ${allAssignments.middleman.internal.ipv6.address}
 
             $TTL 3
             _acme-challenge IN LUA TXT ${fileRecVal}

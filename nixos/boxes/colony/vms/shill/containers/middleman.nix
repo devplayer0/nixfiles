@@ -6,7 +6,6 @@
     assignments = {
       internal = {
         name = "middleman-ctr";
-        altNames = [ "http" ];
         domain = lib.my.colony.domain;
         ipv4.address = "${lib.my.colony.start.ctrs.v4}2";
         ipv6 = {
@@ -18,7 +17,8 @@
 
     configuration = { lib, pkgs, config, assignments, allAssignments, ... }:
     let
-      inherit (lib) mkMerge mkIf;
+      inherit (builtins) mapAttrs;
+      inherit (lib) mkMerge mkIf mkDefault;
       inherit (lib.my) networkdAssignment;
     in
     {
@@ -30,7 +30,11 @@
             secrets = {
               key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAuvP9DEsffop53Fsh7xIdeVyQSF6tSKrOUs2faq6rip";
               files = {
-                "dhparams.pem" = {};
+                "dhparams.pem" = {
+                  owner = "acme";
+                  group = "acme";
+                  mode = "440";
+                };
                 "pdns-file-records.key" = {
                   owner = "acme";
                   group = "acme";
@@ -44,6 +48,12 @@
 
             tmproot.persistence.config.directories = [
             ];
+          };
+
+          users = {
+            users = {
+              nginx.extraGroups = [ "acme" ];
+            };
           };
 
           systemd = {
@@ -156,6 +166,26 @@
                 proxy_set_header X-Forwarded-Protocol $scheme;
                 proxy_set_header X-Scheme $scheme;
               '';
+
+              virtualHosts =
+              let
+                hosts = {
+                  "_" = {
+                    default = true;
+                    forceSSL = true;
+                    onlySSL = false;
+                  };
+                };
+              in
+              mkMerge [
+                hosts
+                (mapAttrs (n: _: {
+                  onlySSL = mkDefault true;
+                  useACMEHost = mkDefault "${config.networking.domain}";
+                  kTLS = mkDefault true;
+                  http2 = mkDefault true;
+                }) hosts)
+              ];
             };
           };
         }
