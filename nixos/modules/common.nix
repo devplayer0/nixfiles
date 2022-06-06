@@ -12,9 +12,6 @@ in
           "before accepting login.");
       };
     };
-
-    # Only present in >=22.05, so forward declare
-    documentation.nixos.options.warningsAreErrors = dummyOption;
   };
 
   imports = [
