@@ -183,6 +183,21 @@
                     forceSSL = true;
                     onlySSL = false;
                   };
+                  "pass.nul.ie" =
+                  let
+                    upstream = "http://vaultwarden-ctr.${config.networking.domain}";
+                  in
+                  {
+                    locations = {
+                      "/".proxyPass = upstream;
+                      "/notifications/hub" = {
+                        proxyPass = upstream;
+                        proxyWebsockets = true;
+                      };
+                      "/notifications/hub/negotiate".proxyPass = upstream;
+                    };
+                    useACMEHost = lib.my.pubDomain;
+                  };
                 };
               in
               mkMerge [
