@@ -101,6 +101,7 @@
               }) {
                 middleman = {};
                 vaultwarden = {};
+                colony-psql = {};
               };
             };
           }

@@ -235,6 +235,16 @@ in
           }
         ];
       })
+      (mkIf config.services.postgresql.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = "/var/lib/postgresql";
+            mode = "0750";
+            user = "postgres";
+            group = "postgres";
+          }
+        ];
+      })
       (mkIf config.my.build.isDevVM {
         fileSystems = mkVMOverride {
           # Hijack the "root" device for persistence in the VM
