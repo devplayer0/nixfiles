@@ -205,6 +205,7 @@ in
           ldns
           minicom
           traceroute
+          ncdu
         ];
 
         sessionVariables = {
