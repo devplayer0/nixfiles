@@ -17,11 +17,12 @@
 
     configuration = { lib, pkgs, config, assignments, allAssignments, ... }:
     let
-      inherit (builtins) mapAttrs;
-      inherit (lib) mkMerge mkIf mkDefault;
+      inherit (lib) mkMerge mkIf;
       inherit (lib.my) networkdAssignment;
     in
     {
+      imports = [ ./vhosts.nix ];
+
       config = mkMerge [
         {
           my = {
@@ -175,41 +176,6 @@
                 proxy_set_header X-Forwarded-Protocol $scheme;
                 proxy_set_header X-Scheme $scheme;
               '';
-
-              virtualHosts =
-              let
-                hosts = {
-                  "_" = {
-                    default = true;
-                    forceSSL = true;
-                    onlySSL = false;
-                  };
-                  "pass.nul.ie" =
-                  let
-                    upstream = "http://vaultwarden-ctr.${config.networking.domain}";
-                  in
-                  {
-                    locations = {
-                      "/".proxyPass = upstream;
-                      "/notifications/hub" = {
-                        proxyPass = upstream;
-                        proxyWebsockets = true;
-                      };
-                      "/notifications/hub/negotiate".proxyPass = upstream;
-                    };
-                    useACMEHost = lib.my.pubDomain;
-                  };
-                };
-              in
-              mkMerge [
-                hosts
-                (mapAttrs (n: _: {
-                  onlySSL = mkDefault true;
-                  useACMEHost = mkDefault "${config.networking.domain}";
-                  kTLS = mkDefault true;
-                  http2 = mkDefault true;
-                }) hosts)
-              ];
             };
           };
         }

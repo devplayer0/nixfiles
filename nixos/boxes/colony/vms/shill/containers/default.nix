@@ -1,6 +1,6 @@
 {
   imports = [
-    ./middleman.nix
+    ./middleman
     ./vaultwarden.nix
   ];
 }
