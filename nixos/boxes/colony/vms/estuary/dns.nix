@@ -13,7 +13,7 @@ let
 
   pdns-file-record = pkgs.writeShellApplication {
     name = "pdns-file-record";
-    runtimeInputs = with pkgs; [ gnused pdns ];
+    runtimeInputs = with pkgs; [ gnused moreutils pdns ];
     text = ''
       die() {
         echo "$@" >&2
@@ -69,7 +69,8 @@ let
       # shellcheck disable=SC1090
       source "$zDat"
       ((serial++))
-      sed -i "s/^serial=.*$/serial=$serial/g" "$zDat"
+      # Use sponge instead of `sed -i` because that actually uses a temporary file and clobbers ownership...
+      sed "s/^serial=.*$/serial=$serial/g" "$zDat" | sponge "$zDat"
       sed "s/@@SERIAL@@/$serial/g" < /etc/pdns/bind-zones/"$zone".zone > /run/pdns/bind-zones/"$zone".zone
       pdns_control bind-reload-now "$zone"
     '';
