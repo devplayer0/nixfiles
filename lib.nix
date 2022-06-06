@@ -156,6 +156,7 @@ rec {
     filterOpts = filterAttrsRecursive (_: v: v != null);
   };
 
+  pubDomain = "nul.ie";
   colony = rec {
     domain = "test.int.nul.ie";
     start = {

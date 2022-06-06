@@ -39,15 +39,16 @@
                   owner = "acme";
                   group = "acme";
                 };
+                "cloudflare-credentials.conf" = {
+                  owner = "acme";
+                  group = "acme";
+                };
               };
             };
 
             firewall = {
               tcp.allowed = [ "http" "https" ];
             };
-
-            tmproot.persistence.config.directories = [
-            ];
           };
 
           users = {
@@ -100,6 +101,13 @@
                     EXEC_POLLING_INTERVAL=2
                     EXEC_PATH=${script}
                   '';
+                };
+                "${lib.my.pubDomain}" = {
+                  extraDomainNames = [
+                    "*.${lib.my.pubDomain}"
+                  ];
+                  dnsProvider = "cloudflare";
+                  credentialsFile = config.age.secrets."cloudflare-credentials.conf".path;
                 };
               };
             };
