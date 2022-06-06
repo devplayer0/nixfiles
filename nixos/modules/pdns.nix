@@ -91,11 +91,13 @@ let
       }
 
       add() {
-        if [ $# -ne 2 ]; then
+        if [ $# -lt 2 ]; then
           usage
         fi
 
-        echo "$2" >> "$dir"/"$1"txt
+        file="$dir"/"$1"txt
+        shift
+        echo "$@" >> "$file"
       }
       del() {
         if [ $# -lt 1 ]; then
@@ -106,7 +108,8 @@ let
         if [ $# -eq 1 ]; then
           rm "$file"
         else
-          sed -i "/^""$2""$/!{q1}; /^""$2""$/d" "$file"
+          shift
+          sed -i "/^""$*""$/!{q1}; /^""$*""$/d" "$file"
           exit $?
         fi
       }
