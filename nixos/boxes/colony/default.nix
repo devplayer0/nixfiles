@@ -37,7 +37,7 @@
         boot.loader.systemd-boot.configurationLimit = 20;
         fileSystems = {
           "/boot" = {
-            device = "/dev/disk/by-label/ESP";
+            device = "/dev/disk/by-uuid/83CA-3BCF";
             fsType = "vfat";
           };
           "/nix" = {
@@ -59,6 +59,7 @@
 
         environment.systemPackages = with pkgs; [
           pciutils
+          partclone
         ];
 
         systemd = {

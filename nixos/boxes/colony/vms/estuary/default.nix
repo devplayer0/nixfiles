@@ -45,11 +45,11 @@
                 fsType = "vfat";
               };
               "/nix" = {
-                device = "/dev/main/nix";
+                device = "/dev/disk/by-label/nix";
                 fsType = "ext4";
               };
               "/persist" = {
-                device = "/dev/main/persist";
+                device = "/dev/disk/by-label/persist";
                 fsType = "ext4";
                 neededForBoot = true;
               };

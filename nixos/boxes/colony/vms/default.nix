@@ -38,22 +38,12 @@
               waitOnline = "no-carrier";
               mac = "52:54:00:ab:f1:52";
             };
-            drives = {
-              # TODO: Split into separate LVs
-              disk = mkIf (!config.my.build.isDevVM) {
-                backend = {
-                  driver = "host_device";
-                  filename = "/dev/ssds/vm-estuary";
-                  # It appears this needs to be set on the backend _and_ the format
-                  discard = "unmap";
-                };
-                format = {
-                  driver = "raw";
-                  discard = "unmap";
-                };
-                frontend = "virtio-blk";
-              };
-            };
+            drives = mkMerge ([ ] ++ (optionals (!config.my.build.isDevVM) [
+              (vmLVM "estuary" "esp")
+              (vmLVM "estuary" "nix")
+              (vmLVM "estuary" "persist")
+              { esp.frontendOpts.bootindex = 0; }
+            ]));
             hostDevices."${wanBDF}" = { };
           };
           shill = {
