@@ -25,6 +25,7 @@
       config = mkMerge [
         {
           my = {
+            deploy.enable = false;
             server.enable = true;
 
             secrets = {

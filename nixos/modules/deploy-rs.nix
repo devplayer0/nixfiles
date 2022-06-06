@@ -80,7 +80,7 @@ in
 
   config = mkMerge [
     {
-      my.deploy.enable = mkIf config.my.build.isDevVM false;
+      my.deploy.enable = mkIf (config.my.build.isDevVM || config.boot.isContainer) false;
     }
     (mkIf cfg.enable {
       my.deploy.node = {

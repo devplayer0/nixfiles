@@ -51,7 +51,7 @@ let
 
           system.name = name;
           networking = {
-            domain = let d = config'.assignments.internal.domain; in mkIf (d != null) (mkDefault' d);
+            domain = let d = config'.assignments.internal.domain or null; in mkIf (d != null) (mkDefault' d);
             hostName = mkDefault (config'.assignments.internal.name or name);
           };
           nixpkgs = {
