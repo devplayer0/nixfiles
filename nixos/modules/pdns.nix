@@ -78,6 +78,85 @@ let
     }
   '';
 
+  pdns-file-record = pkgs.writeShellApplication {
+    name = "pdns-file-record";
+    runtimeInputs = with pkgs; [ gnused moreutils pdns ];
+    text = ''
+      die() {
+        echo "$@" >&2
+        exit 1
+      }
+      usage() {
+        die "usage: $0 <zone> <add|del> <fqdn> [content]"
+      }
+
+      add() {
+        if [ $# -ne 2 ]; then
+          usage
+        fi
+
+        echo "$2" >> "$dir"/"$1"txt
+      }
+      del() {
+        if [ $# -lt 1 ]; then
+          usage
+        fi
+
+        file="$dir"/"$1"txt
+        if [ $# -eq 1 ]; then
+          rm "$file"
+        else
+          sed -i "/^""$2""$/!{q1}; /^""$2""$/d" "$file"
+          exit $?
+        fi
+      }
+
+      dir=/run/pdns/file-records
+      mkdir -p "$dir"
+
+      if [ $# -lt 2 ]; then
+        usage
+      fi
+      zone="$1"
+      shift
+      cmd="$1"
+      shift
+
+      case "$cmd" in
+      add)
+        add "$@";;
+      del)
+        del "$@";;
+      *)
+        usage;;
+      esac
+
+      # TODO: This feels pretty hacky?
+      zDat=/var/lib/pdns/bind-zones/"$zone".dat
+      # shellcheck disable=SC1090
+      source "$zDat"
+      ((serial++))
+
+      # Use sponge instead of `sed -i` because that actually uses a temporary file and clobbers ownership...
+      sed "s/^serial=.*$/serial=$serial/g" "$zDat" | sponge "$zDat"
+      sed "s/@@SERIAL@@/$serial/g" < /etc/pdns/bind-zones/"$zone".zone > /run/pdns/bind-zones/"$zone".zone
+      pdns_control bind-reload-now "$zone"
+    '';
+  };
+
+  fileRecScript = pkgs.writeText "file-record.lua" ''
+    local path = "/run/pdns/file-records/" .. string.lower(qname:toStringNoDot()) .. ".txt"
+    if not os.execute("test -e " .. path) then
+      return {}
+    end
+
+    local values = {}
+    for line in io.lines(path) do
+      table.insert(values, line)
+    end
+    return values
+  '';
+
   cfg = config.my.pdns;
 
   namedConf = pkgs.writeText "pdns-named.conf" ''
@@ -99,10 +178,13 @@ let
       def ptr(m):
         ip = ipaddress.ip_address(m.group(1))
         return '.'.join(ip.reverse_pointer.split('.')[:int(m.group(2))])
-      ex = re.compile(r'@@PTR:(.+):(\d+)@@')
+      ex_ptr = re.compile(r'@@PTR:(.+):(\d+)@@')
+
+      fr = '"dofile(\'${fileRecScript}\')"'
+      ex_fr = re.compile(r'@@FILE@@')
 
       for line in sys.stdin:
-        print(ex.sub(ptr, line), end=''')
+        print(ex_fr.sub(fr, ex_ptr.sub(ptr, line)), end=''')
     '';
   } ''
     ${pkgs.python310}/bin/python "$scriptPath" < "${s}" > "$out"
@@ -111,6 +193,8 @@ let
     name = "${n}.zone";
     path = if o.template then templateZone n o.path else o.path;
   }) cfg.auth.bind.zones);
+
+  enableFileRecSSH = cfg.auth.bind.file-records.sshKey != null;
 in
 {
   options.my.pdns = with lib.types; {
@@ -123,6 +207,9 @@ in
           also-notify = bindAlsoNotify;
         };
         zones = mkOpt' (attrsOf (submodule bindZoneOpts)) { } "BIND-style zones definitions.";
+        file-records = {
+          sshKey = mkOpt' (nullOr str) null "SSH public key for file record update user.";
+        };
       };
     };
   };
@@ -139,10 +226,27 @@ in
         };
       };
 
+      users.users."pdns-file-records" =
+      let
+        script = pkgs.writeShellScript "pdns-file-records-ssh.sh" ''
+          read -r -a args <<< "$SSH_ORIGINAL_COMMAND"
+          exec ${pdns-file-record}/bin/pdns-file-record "''${args[@]}"
+        '';
+      in
+      (mkIf enableFileRecSSH {
+        group = "pdns";
+        isSystemUser = true;
+        shell = pkgs.bashInteractive;
+        openssh.authorizedKeys.keys = [
+          ''command="${script}" ${cfg.auth.bind.file-records.sshKey}''
+        ];
+      });
+
       environment = {
         # For pdns_control etc
         systemPackages = with pkgs; [
           pdns
+          pdns-file-record
         ];
 
         etc."pdns/bind-zones".source = "${zones}/*";
@@ -152,7 +256,7 @@ in
         preStart = ''
           source ${loadZonesCommon}
 
-          mkdir /run/pdns/bind-zones
+          mkdir /run/pdns/{bind-zones,file-records}
           mkdir -p /var/lib/pdns/bind-zones
           loadZones start
         '';
