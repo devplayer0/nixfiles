@@ -52,6 +52,10 @@ in
           trusted-users = [ "@wheel" ];
           experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
         };
+        gc = {
+          options = mkDefault "--max-freed $((8 * 1024**3))";
+          automatic = mkDefault true;
+        };
       };
       nixpkgs = {
         overlays = [
