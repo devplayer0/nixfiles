@@ -6,17 +6,25 @@ let
 
   cfg = config.my.deploy;
 
+  keepGensOpt = with lib.types; mkOpt' ints.unsigned 10
+    "Number of generations to keep when cleaning up old deployments (0 to disable deletion on deployment).";
+  keepGensSnippet = p: n: optionalString (n > 0) ''
+    ${pkgs.nix}/bin/nix-env -p "${p}" --delete-generations +${toString n}
+  '';
+
   # Based on https://github.com/serokell/deploy-rs/blob/master/flake.nix
-  nixosActivate = mode: base: (pkgs.deploy-rs.lib.activate.custom // { dryActivate = "$PROFILE/bin/switch-to-configuration dry-activate"; }) base.config.system.build.toplevel ''
+  nixosActivate = cfg': base: (pkgs.deploy-rs.lib.activate.custom // { dryActivate = "$PROFILE/bin/switch-to-configuration dry-activate"; }) base.config.system.build.toplevel ''
     # work around https://github.com/NixOS/nixpkgs/issues/73404
     cd /tmp
 
-    $PROFILE/bin/switch-to-configuration ${mode}
+    "$PROFILE"/bin/switch-to-configuration ${cfg'.mode}
 
     # https://github.com/serokell/deploy-rs/issues/31
     ${with base.config.boot.loader;
-    optionalString ((mode == "switch" || mode == "boot") && systemd-boot.enable)
+    optionalString ((cfg'.mode == "switch" || cfg'.mode == "boot") && systemd-boot.enable)
     "sed -i '/^default /d' ${efi.efiSysMountPoint}/loader/loader.conf"}
+
+    ${keepGensSnippet "$PROFILE" cfg'.keepGenerations}
   '';
 
   ctrProfiles = optionalAttrs cfg.generate.containers.enable (mapAttrs' (n: c:
@@ -26,8 +34,8 @@ let
   {
     name = "container-${n}";
     value = {
-      path = pkgs.deploy-rs.lib.activate.custom ctrConfig.my.buildAs.container
-        (if c.hotReload then ''
+      path = pkgs.deploy-rs.lib.activate.custom ctrConfig.my.buildAs.container ''
+        ${if c.hotReload then ''
           if systemctl show -p StatusText systemd-nspawn@${n} | grep -q "Dummy container"; then
             action=restart
           else
@@ -35,7 +43,12 @@ let
           fi
 
           systemctl "$action" systemd-nspawn@${n}
-        '' else "systemctl restart systemd-nspawn@${n}");
+        '' else ''
+          systemctl restart systemd-nspawn@${n}
+        ''}
+
+        ${keepGensSnippet "$PROFILE" cfg.generate.containers.keepGenerations}
+      '';
       profilePath = "/nix/var/nix/profiles/per-container/${n}/system";
 
       user = "root";
@@ -56,8 +69,12 @@ in
       system = {
         enable = mkBoolOpt' true "Whether to generate a deploy-rs profile for this system's config.";
         mode = mkOpt' str "switch" "switch-to-configuration mode.";
+        keepGenerations = keepGensOpt;
       };
-      containers.enable = mkBoolOpt' true "Whether to generate deploy-rs profiles for this system's containers.";
+      containers = {
+        enable = mkBoolOpt' true "Whether to generate deploy-rs profiles for this system's containers.";
+        keepGenerations = keepGensOpt;
+      };
     };
   };
 
@@ -71,7 +88,7 @@ in
         profilesOrder = [ "system" ] ++ (attrNames ctrProfiles);
         profiles = {
           system = mkIf cfg.generate.system.enable {
-            path = nixosActivate cfg.generate.system.mode { inherit config; };
+            path = nixosActivate cfg.generate.system { inherit config; };
 
             user = "root";
           };
