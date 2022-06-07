@@ -93,7 +93,7 @@ in
 
         reverse6Script =
         let
-         len = toString (stringLength lib.my.colony.start.base.v6);
+         len = toString ((stringLength lib.my.colony.start.all.v6) + 1);
         in
         pkgs.writeText "reverse6.lua" ''
           local root = newDN("ip6.arpa.")
