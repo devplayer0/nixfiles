@@ -68,6 +68,7 @@ in
               parentDirectory = perms;
             }) [
               "/home/${user'.name}/.bash_history"
+              "/home/${user'.name}/.lesshst"
             ];
             directories = map (directory: {
               inherit directory;

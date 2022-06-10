@@ -37,6 +37,11 @@ let
             if os.access(target, os.F_OK):
               recurse(target, link=p)
               return
+
+            if ${if enablePersistence then "True" else "False"} and target.startswith('${cfg.persistence.dir}'):
+              # A symlink whose target cannot be accessed but starts with /persist... almost certaily re-generated on
+              # activation
+              return
           elif stat.S_ISDIR(st.st_mode):
             for e in os.listdir(p):
               recurse(os.path.join(p, e))
