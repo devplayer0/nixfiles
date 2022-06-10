@@ -27,6 +27,27 @@ let
     ${keepGensSnippet "$PROFILE" cfg'.keepGenerations}
   '';
 
+  systemdUtil = pkgs.writeShellApplication {
+    name = "systemd-util.sh";
+    text = ''
+      svcActionWatch() {
+        action="$1"
+        shift
+        unit="$1"
+        shift
+
+        journalctl -o cat --no-pager -n 0 -f -u "$unit" &
+        jPid=$!
+        cleanup() {
+          kill $jPid
+        }
+        trap cleanup EXIT
+
+        systemctl "$@" "$action" "$unit"
+      }
+    '';
+  };
+
   ctrProfiles = optionalAttrs cfg.generate.containers.enable (mapAttrs' (n: c:
   let
     ctrConfig = systems."${n}".configuration.config;
@@ -35,6 +56,7 @@ let
     name = "container-${n}";
     value = {
       path = pkgs.deploy-rs.lib.activate.custom ctrConfig.my.buildAs.container ''
+        source ${systemdUtil}/bin/systemd-util.sh
         ${if c.hotReload then ''
           if systemctl show -p StatusText systemd-nspawn@${n} | grep -q "Dummy container"; then
             action=restart
@@ -42,9 +64,9 @@ let
             action=reload
           fi
 
-          systemctl "$action" systemd-nspawn@${n}
+          svcActionWatch "$action" systemd-nspawn@${n}
         '' else ''
-          systemctl restart systemd-nspawn@${n}
+          svcActionWatch restart systemd-nspawn@${n}
         ''}
 
         ${keepGensSnippet "$PROFILE" cfg.generate.containers.keepGenerations}
