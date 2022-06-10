@@ -20,6 +20,8 @@
         };
       };
       base = {
+        name = "estuary-vm-base";
+        domain = lib.my.colony.domain;
         ipv4 = {
           address = "${lib.my.colony.start.base.v4}1";
           gateway = null;

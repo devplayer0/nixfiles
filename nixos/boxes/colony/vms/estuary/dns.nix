@@ -2,7 +2,7 @@
 let
   inherit (builtins) attrNames stringLength genList filter;
   inherit (lib)
-    concatStrings concatStringsSep concatMapStringsSep mapAttrsToList filterAttrs genAttrs optionalString;
+    concatStrings concatStringsSep concatMapStringsSep mapAttrsToList filterAttrs genAttrs optionalString flatten;
 
   ptrDots = 2;
   reverseZone = "100.10.in-addr.arpa";
@@ -62,28 +62,37 @@ in
 
       bind.zones =
       let
-        genRecords = f:
+        genRecords = assignments: f:
           concatStringsSep
             "\n"
-            (filter (s: s != "")
-              (mapAttrsToList
-                (_: as: f as.internal)
-                (filterAttrs (_: as: as ? "internal" && as.internal.visible) allAssignments)));
+            (filter
+              (s: s != "")
+              (flatten
+                (map
+                  (assignment: (mapAttrsToList
+                    (_: as: f as."${assignment}")
+                    (filterAttrs
+                      (_: as: as ? "${assignment}" && as."${assignment}".visible)
+                      allAssignments)))
+                  assignments)));
 
+        genFor = [ "internal" "base" "vms" "ctrs" ];
         intRecords =
-          genRecords (a: ''
+          genRecords genFor (a: ''
             ${a.name} IN A ${a.ipv4.address}
             ${a.name} IN AAAA ${a.ipv6.address}
             ${concatMapStringsSep "\n" (alt: "${alt} IN CNAME ${a.name}") a.altNames}
           '');
         intPtrRecords =
           genRecords
+            genFor
             (a:
               optionalString
                 a.ipv4.genPTR
                 ''@@PTR:${a.ipv4.address}:${toString ptrDots}@@ IN PTR ${a.name}.${config.networking.domain}.'');
         intPtr6Records =
           genRecords
+            genFor
             (a:
               optionalString
                 a.ipv4.genPTR

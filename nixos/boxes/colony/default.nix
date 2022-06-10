@@ -17,6 +17,8 @@
         };
       };
       vms = {
+        name = "colony-vms";
+        domain = lib.my.colony.domain;
         ipv4 = {
           address = "${lib.my.colony.start.vms.v4}1";
           gateway = null;

@@ -17,6 +17,8 @@
         };
       };
       ctrs = {
+        name = "shill-vm-ctrs";
+        domain = lib.my.colony.domain;
         ipv4 = {
           address = "${lib.my.colony.start.ctrs.v4}1";
           gateway = null;
