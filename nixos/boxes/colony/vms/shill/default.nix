@@ -104,6 +104,7 @@
                 middleman = {};
                 vaultwarden = {};
                 colony-psql = {};
+                chatterbox = {};
               };
             };
           }

@@ -245,6 +245,15 @@ in
           }
         ];
       })
+      (mkIf config.services.matrix-synapse.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = config.services.matrix-synapse.dataDir;
+            user = "matrix-synapse";
+            group = "matrix-synapse";
+          }
+        ];
+      })
       (mkIf config.my.build.isDevVM {
         fileSystems = mkVMOverride {
           # Hijack the "root" device for persistence in the VM

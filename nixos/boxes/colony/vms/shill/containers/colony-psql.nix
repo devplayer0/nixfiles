@@ -6,6 +6,7 @@
     assignments = {
       internal = {
         name = "colony-psql-ctr";
+        altNames = [ "colony-psql" ];
         domain = lib.my.colony.domain;
         ipv4.address = "${lib.my.colony.start.ctrs.v4}4";
         ipv6 = {
@@ -45,6 +46,11 @@
               package = pkgs.postgresql_14;
               enable = true;
               enableTCPIP = true;
+
+              authentication = with lib.my.colony.prefixes; ''
+                host all all ${all.v4} md5
+                host all all ${all.v6} md5
+              '';
               ensureUsers = [
                 {
                   name = "root";
