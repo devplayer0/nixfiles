@@ -47,7 +47,7 @@
       # Extend a lib with extras that _must not_ internally reference private nixpkgs. flake-utils doesn't, but many
       # other flakes (e.g. home-manager) probably do internally.
       libOverlay = final: prev: {
-        my = import ./lib.nix { lib = final; };
+        my = import ./lib { lib = final; };
         flake = flake-utils.lib;
       };
       pkgsLibOverlay = final: prev: { lib = prev.lib.extend libOverlay; };

@@ -213,7 +213,7 @@ rec {
     };
   };
   sshKeyFiles = {
-    me = .keys/me.pub;
-    deploy = .keys/deploy.pub;
+    me = ../.keys/me.pub;
+    deploy = ../.keys/deploy.pub;
   };
 }
