@@ -206,6 +206,8 @@ in
           minicom
           traceroute
           ncdu
+          jq
+          yq-go
         ];
 
         sessionVariables = {
