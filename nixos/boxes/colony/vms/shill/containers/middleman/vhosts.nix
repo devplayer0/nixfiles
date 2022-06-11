@@ -1,7 +1,37 @@
 { lib, pkgs, config, ... }:
 let
-  inherit (builtins) mapAttrs;
-  inherit (lib) mkMerge mkDefault genAttrs;
+  inherit (builtins) mapAttrs toJSON;
+  inherit (lib) mkMerge mkDefault genAttrs flatten;
+
+  dualStackListen' = l: map (addr: l // { inherit addr; }) [ "0.0.0.0" "[::]" ];
+  dualStackListen = ll: flatten (map dualStackListen' ll);
+
+  mkWellKnown = type: content: pkgs.writeTextFile {
+    name = "well-known-${type}";
+    destination = "/${type}";
+    text = content;
+  };
+  wellKnownRoot = pkgs.symlinkJoin {
+    name = "http-wellknown";
+    paths = [
+      # For federation
+      (mkWellKnown "matrix/server" (toJSON {
+        "m.server" = "matrix.nul.ie:443";
+      }))
+      # For clients
+      (mkWellKnown "matrix/client" (toJSON {
+        "m.homeserver".base_url = "https://matrix.nul.ie";
+      }))
+    ];
+  };
+  wellKnown = {
+    "/.well-known/" = {
+      alias = "${wellKnownRoot}/";
+      extraConfig = ''
+        autoindex on;
+      '';
+    };
+  };
 in
 {
   services.nginx.virtualHosts =
@@ -11,6 +41,10 @@ in
         default = true;
         forceSSL = true;
         onlySSL = false;
+        locations = mkMerge [
+          { }
+          wellKnown
+        ];
       };
 
       "pass.nul.ie" =
@@ -30,9 +64,28 @@ in
       };
 
       "matrix.nul.ie" = {
-        globalRedirect = "element.nul.ie";
+        listen = dualStackListen [
+          {
+            port = 443;
+            ssl = true;
+          }
+          {
+            # Matrix federation
+            port = 8448;
+            ssl = true;
+            extraParameters = [ "default_server" ];
+          }
+        ];
+        locations = mkMerge [
+          {
+            "/".proxyPass = "http://chatterbox-ctr.${config.networking.domain}:8008";
+            "= /".return = "301 https://element.nul.ie";
+          }
+          wellKnown
+        ];
         useACMEHost = lib.my.pubDomain;
       };
+
       "element.nul.ie" =
       let
         headers = ''

@@ -154,6 +154,10 @@
                       port = "https";
                       dst = allAssignments.middleman.internal.ipv4.address + ":https";
                     }
+                    {
+                      port = 8448;
+                      dst = allAssignments.middleman.internal.ipv4.address + ":8448";
+                    }
                   ];
                 };
                 extraRules =
@@ -170,7 +174,7 @@
                       # Safe enough to allow all SSH
                       tcp dport ssh accept
 
-                      ${matchInet "tcp dport { http, https } accept" "middleman"}
+                      ${matchInet "tcp dport { http, https, 8448 } accept" "middleman"}
 
                       return
                     }

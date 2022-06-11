@@ -49,7 +49,7 @@
             };
 
             firewall = {
-              tcp.allowed = [ "http" "https" ];
+              tcp.allowed = [ "http" "https" 8448 ];
             };
           };
 

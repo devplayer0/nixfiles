@@ -58,6 +58,8 @@
 
                 listeners = [
                   {
+                    # Covers both IPv4 and IPv6
+                    bind_addresses = [ "::" ];
                     port = 8008;
                     type = "http";
                     tls = false;
@@ -70,8 +72,8 @@
                     ];
                   }
                   {
-                    port = 9000;
                     bind_addresses = [ "127.0.0.1" "::1" ];
+                    port = 9000;
                     type = "manhole";
 
                     # The NixOS module has defaults for these that we need to override since they don't make sense here
