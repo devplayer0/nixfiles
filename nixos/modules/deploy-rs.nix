@@ -58,7 +58,8 @@ let
       path = pkgs.deploy-rs.lib.activate.custom ctrConfig.my.buildAs.container ''
         source ${systemdUtil}/bin/systemd-util.sh
         ${if c.hotReload then ''
-          if systemctl show -p StatusText systemd-nspawn@${n} | grep -q "Dummy container"; then
+          if (! systemctl show -p ActiveState systemd-nspawn@${n} | grep -q "ActiveState=active") || \
+            systemctl show -p StatusText systemd-nspawn@${n} | grep -q "Dummy container"; then
             action=restart
           else
             action=reload
