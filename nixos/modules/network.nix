@@ -35,7 +35,7 @@ in
   config = mkMerge [
     {
       networking = {
-        domain = mkDefault "int.nul.ie";
+        domain = mkDefault "int.${lib.my.pubDomain}";
         useDHCP = false;
         enableIPv6 = mkDefault true;
         useNetworkd = mkDefault true;

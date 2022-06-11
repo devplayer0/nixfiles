@@ -6,6 +6,17 @@ let
   dualStackListen' = l: map (addr: l // { inherit addr; }) [ "0.0.0.0" "[::]" ];
   dualStackListen = ll: flatten (map dualStackListen' ll);
 
+  ssoServer = i: {
+    extraConfig = ''
+      include /etc/nginx/includes/sso/server-${i}.conf;
+    '';
+  };
+  ssoLoc = i: {
+    extraConfig = ''
+      include /etc/nginx/includes/sso/location-${i}.conf;
+    '';
+  };
+
   mkWellKnown = type: content: pkgs.writeTextFile {
     name = "well-known-${type}";
     destination = "/${type}";
@@ -34,6 +45,12 @@ let
   };
 in
 {
+  my = {
+    nginx-sso.includes.instances = {
+      generic = {};
+    };
+  };
+
   services.nginx.virtualHosts =
   let
     hosts = {
@@ -47,7 +64,12 @@ in
         ];
       };
 
-      "pass.nul.ie" =
+      "sso.${lib.my.pubDomain}" = {
+        locations."/".proxyPass = config.my.nginx-sso.includes.endpoint;
+        useACMEHost = lib.my.pubDomain;
+      };
+
+      "pass.${lib.my.pubDomain}" =
       let
         upstream = "http://vaultwarden-ctr.${config.networking.domain}";
       in
@@ -79,14 +101,14 @@ in
         locations = mkMerge [
           {
             "/".proxyPass = "http://chatterbox-ctr.${config.networking.domain}:8008";
-            "= /".return = "301 https://element.nul.ie";
+            "= /".return = "301 https://element.${lib.my.pubDomain}";
           }
           wellKnown
         ];
         useACMEHost = lib.my.pubDomain;
       };
 
-      "element.nul.ie" =
+      "element.${lib.my.pubDomain}" =
       let
         headers = ''
           add_header X-Frame-Options SAMEORIGIN;

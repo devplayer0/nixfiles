@@ -45,11 +45,59 @@
                   owner = "acme";
                   group = "acme";
                 };
+                "nginx-sso.yaml" = {
+                  owner = "nginx-sso";
+                  group = "nginx-sso";
+                };
               };
             };
 
             firewall = {
               tcp.allowed = [ "http" "https" 8448 ];
+            };
+
+            nginx-sso = {
+              enable = true;
+              extraConfigFile = config.age.secrets."nginx-sso.yaml".path;
+              configuration = {
+                listen = {
+                  addr = "[::]";
+                  port = 8082;
+                };
+                login = {
+                  title = "${lib.my.pubDomain} login";
+                  default_redirect = "https://${lib.my.pubDomain}";
+                  default_method = "google_oauth";
+                  names = {
+                    google_oauth = "Google account";
+                  };
+                };
+                cookie = {
+                  domain = ".${lib.my.pubDomain}";
+                  secure = true;
+                };
+                audit_log = {
+                  targets = [ "fd://stdout" ];
+                  events  = [
+                    "access_denied"
+                    "login_success"
+                    "login_failure"
+                    "logout"
+                    #"validate"
+                  ];
+                };
+                providers = {
+                  google_oauth = {
+                    client_id = "545475967061-cag4g1qf0pk33g3pdbom4v69562vboc8.apps.googleusercontent.com";
+                    redirect_url = "https://sso.${lib.my.pubDomain}/login";
+                    user_id_method = "user-id";
+                  };
+                };
+              };
+              includes = {
+                endpoint = "http://localhost:8082";
+                baseURL = "https://sso.${lib.my.pubDomain}";
+              };
             };
           };
 
@@ -167,7 +215,9 @@
                 proxy_http_version 1.1;
 
                 # proxy headers
+                proxy_set_header X-Origin-URI $request_uri;
                 proxy_set_header Host $host;
+                proxy_set_header X-Host $http_host;
                 proxy_set_header X-Forwarded-Host $http_host;
                 proxy_set_header X-Forwarded-Server $host;
                 proxy_set_header X-Real-IP $remote_addr;

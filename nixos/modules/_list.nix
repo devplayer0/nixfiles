@@ -13,5 +13,6 @@
     vms = ./vms.nix;
     network = ./network.nix;
     pdns = ./pdns.nix;
+    nginx-sso = ./nginx-sso.nix;
   };
 }
