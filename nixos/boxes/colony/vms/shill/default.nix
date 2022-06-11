@@ -30,7 +30,7 @@
     configuration = { lib, pkgs, modulesPath, config, assignments, allAssignments, ... }:
       let
         inherit (builtins) mapAttrs;
-        inherit (lib) mkIf mkMerge mkForce recursiveUpdate;
+        inherit (lib) mkIf mkMerge mkForce;
         inherit (lib.my) networkdAssignment;
       in
       {
@@ -52,6 +52,10 @@
                 device = "/dev/disk/by-label/persist";
                 fsType = "ext4";
                 neededForBoot = true;
+              };
+              "/mnt/media" = {
+                device = "/dev/disk/by-label/media";
+                fsType = "ext4";
               };
             };
 
@@ -98,14 +102,26 @@
                 trustedInterfaces = [ "vms" "ctrs" ];
               };
 
-              containers.instances = mapAttrs (_: c: recursiveUpdate c {
-                networking.bridge = "ctrs";
-              }) {
-                middleman = {};
-                vaultwarden = {};
-                colony-psql = {};
-                chatterbox = {};
-              };
+              containers.instances =
+              let
+                instances = {
+                  middleman = {};
+                  vaultwarden = {};
+                  colony-psql = {};
+                  chatterbox = {};
+                  jackflix = {
+                    bindMounts = {
+                      "/mnt/media".readOnly = false;
+                    };
+                  };
+                };
+              in
+              mkMerge [
+                instances
+                (mapAttrs (n: i: {
+                  networking.bridge = "ctrs";
+                }) instances)
+              ];
             };
           }
         ];

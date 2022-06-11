@@ -75,7 +75,19 @@
               (vmLVM "shill" "esp")
               (vmLVM "shill" "nix")
               (vmLVM "shill" "persist")
-              { esp.frontendOpts.bootindex = 0; }
+
+              {
+                esp.frontendOpts.bootindex = 0;
+
+                media = {
+                  backend = {
+                    driver = "host_device";
+                    filename = "/dev/hdds/media";
+                  };
+                  format.driver = "raw";
+                  frontend = "virtio-blk";
+                };
+              }
             ]));
           };
         };

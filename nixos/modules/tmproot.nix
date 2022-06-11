@@ -259,6 +259,14 @@ in
           }
         ];
       })
+      (mkIf config.services.jackett.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = "/var/lib/jackett";
+            inherit (config.services.jackett) user group;
+          }
+        ];
+      })
       (mkIf config.my.build.isDevVM {
         fileSystems = mkVMOverride {
           # Hijack the "root" device for persistence in the VM

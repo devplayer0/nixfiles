@@ -60,12 +60,13 @@ let
   bindMountOpts = with lib.types; { name, ... }: {
     options = {
       mountPoint = mkOption {
+        default = name;
         example = "/mnt/usb";
         type = str;
         description = "Mount point on the container file system.";
       };
       hostPath = mkOption {
-        default = null;
+        default = name;
         example = "/home/alice";
         type = nullOr str;
         description = "Location of the host path to be mounted.";
@@ -75,10 +76,6 @@ let
         type = bool;
         description = "Determine whether the mounted path will be accessed in read-only mode.";
       };
-    };
-
-    config = {
-      mountPoint = mkDefault name;
     };
   };
 
