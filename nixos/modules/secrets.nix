@@ -26,7 +26,7 @@ in
             # Use the persit dir to grab the keys instead, otherwise they might not be ready. We can't really make
             # agenix depend on impermanence, since users depends on agenix (to decrypt passwords) and impermanence
             # depends on users
-            (e: let pDir = config.my.tmproot.persistence.dir; in if pDir != null then "${pDir}/${e.path}" else e.path)
+            (e: let pDir = config.my.tmproot.persistence.dir; in if pDir != null then "${pDir}${e.path}" else e.path)
             (lib.filter (e: e.type == "rsa" || e.type == "ed25519") config.services.openssh.hostKeys));
       };
     }
