@@ -147,7 +147,7 @@ let
         "uuid ${i.uuid}"
         "machine ${i.machine}"
         "cpu ${i.cpu}"
-        "smp cpus=${toString i.smp.cpus},threads=${toString i.smp.threads}"
+        "smp cores=${toString i.smp.cpus},threads=${toString i.smp.threads}"
         "m ${toString i.memory}"
         "nographic"
         "vga ${i.vga}"

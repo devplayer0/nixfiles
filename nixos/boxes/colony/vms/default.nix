@@ -46,9 +46,16 @@
             ]));
             hostDevices."${wanBDF}" = { };
           };
+
           shill = {
             uuid = "e34569ec-d24e-446b-aca8-a3b27abc1f9b";
+            smp = {
+              cpus = 4;
+              threads = 2;
+            };
+            memory = 8192;
             networks.vms.mac = "52:54:00:85:b3:b1";
+            cleanShutdown.timeout = 120;
             drives = mkMerge ([
               {
                 installer = {
