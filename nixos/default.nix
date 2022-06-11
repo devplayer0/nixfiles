@@ -1,8 +1,10 @@
 { lib, pkgsFlakes, hmFlakes, inputs, pkgs', config, ... }:
 let
   inherit (builtins) attrValues mapAttrs;
-  inherit (lib) substring flatten optional optionals mkIf mkDefault mkForce mkOption mkOptionType;
-  inherit (lib.my) naiveIPv4Gateway homeStateVersion mkOpt' mkBoolOpt' mkDefault' commonOpts inlineModule';
+  inherit (lib)
+    substring flatten optional optionals mkIf mkDefault mkForce mkOption mkOptionType;
+  inherit (lib.my)
+    naiveIPv4Gateway homeStateVersion mkOpt' mkBoolOpt' mkDefault' commonOpts inlineModule' applyAssertions duplicates;
 
   cfg = config.nixos;
 
@@ -114,7 +116,11 @@ let
     };
   };
 
-  systemOpts = with lib.types; { name, config, ... }: {
+  systemOpts = with lib.types; { name, ... }@args:
+  let
+    config' = args.config;
+  in
+  {
     options = {
       inherit (commonOpts) system nixpkgs home-manager;
       hmNixpkgs = commonOpts.nixpkgs;
@@ -131,18 +137,17 @@ let
         # Based on the definition of containers.<name>.config
         type = mkOptionType {
           name = "Toplevel NixOS config";
-          merge = _: defs: mkSystem {
-            inherit name;
-            config' = config;
+          merge = _: defs: applyAssertions config (mkSystem {
+            inherit name config';
             defs = map (d: inlineModule' d.file d.value) defs;
-          };
+          });
         };
       };
     };
 
     config = {
-      home-manager = mkDefault config.nixpkgs;
-      hmNixpkgs = mkDefault config.nixpkgs;
+      home-manager = mkDefault config'.nixpkgs;
+      hmNixpkgs = mkDefault config'.nixpkgs;
     };
   };
 in
@@ -155,5 +160,26 @@ in
       modules = mkOpt' (attrsOf commonOpts.moduleType) { } "NixOS modules to be exported by nixfiles.";
       systems = mkOpt' (attrsOf (submodule systemOpts)) { } "NixOS systems to be exported by nixfiles.";
     };
+  };
+
+  config = {
+    assertions =
+    let
+      assignedIPs =
+        flatten
+          (map
+            (as:
+              map
+                (a: [ a.ipv4.address a.ipv6.address ])
+                (attrValues as))
+            (attrValues allAssignments));
+      dupIPs = duplicates assignedIPs;
+    in
+    [
+      {
+        assertion = dupIPs == [ ];
+        message = "Duplicate assignments: ${toString dupIPs}";
+      }
+    ];
   };
 }

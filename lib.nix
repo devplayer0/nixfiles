@@ -1,9 +1,10 @@
 { lib }:
 let
-  inherit (builtins) length match replaceStrings elemAt mapAttrs head split;
+  inherit (builtins) length match replaceStrings elemAt mapAttrs head split filter;
   inherit (lib)
     genAttrs mapAttrs' mapAttrsToList filterAttrsRecursive nameValuePair types
-    mkOption mkOverride mkForce mkIf mergeEqualOption optional hasPrefix;
+    mkOption mkOverride mkForce mkIf mergeEqualOption optional hasPrefix
+    showWarnings concatStringsSep flatten unique;
   inherit (lib.flake) defaultSystems;
 in
 rec {
@@ -68,6 +69,24 @@ rec {
   # Slightly higher precedence than mkDefault
   mkDefault' = mkOverride 900;
   mkVMOverride' = mkOverride 9;
+
+  # This is shocking...
+  duplicates = l:
+    flatten
+      (map
+        (e:
+          optional
+            ((length (filter (e2: e2 == e) l)) > 1)
+            e)
+        (unique l));
+
+  applyAssertions = config: res:
+  let
+    failedAssertions = map (x: x.message) (filter (x: !x.assertion) config.assertions);
+  in
+  if failedAssertions != []
+    then throw "\nFailed assertions:\n${concatStringsSep "\n" (map (x: "- ${x}") failedAssertions)}"
+    else showWarnings config.warnings res;
 
   homeStateVersion = hmBranch: {
     # The flake passes a default setting, but we don't care about that

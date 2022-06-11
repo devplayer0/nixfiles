@@ -2,7 +2,7 @@
 let
   inherit (builtins) head tail mapAttrs attrValues;
   inherit (lib) flatten optional mkOption mkDefault mkOptionType;
-  inherit (lib.my) homeStateVersion mkOpt' commonOpts inlineModule';
+  inherit (lib.my) homeStateVersion mkOpt' commonOpts inlineModule' applyAssertions;
 
   cfg = config.home-manager;
 
@@ -40,7 +40,11 @@ let
     ] ++ (tail defs);
   };
 
-  homeOpts = with lib.types; { config, ... }: {
+  homeOpts = with lib.types; { ... }@args:
+  let
+    config' = args.config;
+  in
+  {
     options = {
       inherit (commonOpts) system nixpkgs home-manager;
       # TODO: docCustom for home-manager?
@@ -53,16 +57,16 @@ let
         description = "home-manager configuration module.";
         type = mkOptionType {
           name = "home-manager configuration";
-          merge = _: defs: mkHome {
-            config' = config;
+          merge = _: defs: applyAssertions config (mkHome {
+            inherit config';
             defs = map (d: inlineModule' d.file d.value) defs;
-          };
+          });
         };
       };
     };
 
     config = {
-      nixpkgs = mkDefault config.home-manager;
+      nixpkgs = mkDefault config'.home-manager;
     };
   };
 in
