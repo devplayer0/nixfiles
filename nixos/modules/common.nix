@@ -140,6 +140,23 @@ in
               "dbengine multihost disk space" = 256;
             };
           };
+          configDir = {
+            "go.d.conf" = mkDefault (pkgs.writeText "netdata-go.d.conf" ''
+              modules:
+                systemdunits: yes
+            '');
+
+            "go.d/systemdunits.conf" = mkDefault (pkgs.writeText "netdata-systemdunits.conf" ''
+              jobs:
+                - name: service-units
+                  include:
+                    - '*.service'
+
+                - name: socket-units
+                  include:
+                    - '*.socket'
+            '');
+          };
         };
       };
     }
