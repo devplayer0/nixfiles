@@ -43,6 +43,9 @@
 
           systemd = {
             services = {
+              jackett.bindsTo = [ "systemd-networkd-wait-online@vpn.service" ];
+              transmission.bindsTo = [ "systemd-networkd-wait-online@vpn.service" ];
+
               radarr.serviceConfig.UMask = "0002";
             };
           };
