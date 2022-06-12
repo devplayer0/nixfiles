@@ -60,6 +60,15 @@ let
     # The default mode for tmpfs is 777
     options = [ "size=${cfg.size}" "mode=755" ];
   };
+
+  persistSimpleSvc = n: mkIf config.services."${n}".enable {
+    my.tmproot.persistence.config.directories = [
+      {
+        directory = "/var/lib/${n}";
+        inherit (config.services."${n}") user group;
+      }
+    ];
+  };
 in
 {
   options = with lib.types; {
@@ -259,30 +268,10 @@ in
           }
         ];
       })
-      (mkIf config.services.jackett.enable {
-        my.tmproot.persistence.config.directories = [
-          {
-            directory = "/var/lib/jackett";
-            inherit (config.services.jackett) user group;
-          }
-        ];
-      })
-      (mkIf config.services.radarr.enable {
-        my.tmproot.persistence.config.directories = [
-          {
-            directory = "/var/lib/radarr";
-            inherit (config.services.radarr) user group;
-          }
-        ];
-      })
-      (mkIf config.services.sonarr.enable {
-        my.tmproot.persistence.config.directories = [
-          {
-            directory = "/var/lib/sonarr";
-            inherit (config.services.sonarr) user group;
-          }
-        ];
-      })
+      (persistSimpleSvc "transmission")
+      (persistSimpleSvc "jackett")
+      (persistSimpleSvc "radarr")
+      (persistSimpleSvc "sonarr")
       (mkIf config.my.build.isDevVM {
         fileSystems = mkVMOverride {
           # Hijack the "root" device for persistence in the VM

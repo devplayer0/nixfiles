@@ -38,7 +38,20 @@
 
         config = mkMerge [
           {
-            boot.kernelParams = [ "console=ttyS0,115200n8" ];
+            boot = {
+              kernelParams = [ "console=ttyS0,115200n8" ];
+              # Stolen from nixos/modules/services/torrent/transmission.nix
+              kernel.sysctl = {
+                "net.core.rmem_max" = "4194304"; # 4MB
+                "net.core.wmem_max" = "1048576"; # 1MB
+                "net.ipv4.ip_local_port_range" = "16384 65535";
+                "net.netfilter.nf_conntrack_generic_timeout" = 60;
+                "net.netfilter.nf_conntrack_tcp_timeout_established" = 600;
+                "net.netfilter.nf_conntrack_tcp_timeout_time_wait" = 1;
+                "net.netfilter.nf_conntrack_max" = 1048576;
+              };
+            };
+
             fileSystems = {
               "/boot" = {
                 device = "/dev/disk/by-label/ESP";

@@ -153,7 +153,20 @@ in
         useACMEHost = lib.my.pubDomain;
       };
 
-      "jackett.${lib.my.pubDomain}" = mkMerge [
+      "torrents-test.${lib.my.pubDomain}" = mkMerge [
+        {
+          locations."/" = mkMerge [
+            {
+              proxyPass = "http://jackflix-ctr.${config.networking.domain}:9091";
+            }
+            (ssoLoc "generic")
+          ];
+          useACMEHost = lib.my.pubDomain;
+        }
+        (ssoServer "generic")
+      ];
+
+      "jackett-test.${lib.my.pubDomain}" = mkMerge [
         {
           locations."/" = mkMerge [
             {

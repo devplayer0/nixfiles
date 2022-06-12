@@ -36,6 +36,7 @@
           users = {
             groups.media = {};
             users = {
+              transmission.extraGroups = [ "media" ];
               radarr.extraGroups = [ "media" ];
             };
           };
@@ -47,6 +48,31 @@
           };
 
           services = {
+            transmission = {
+              enable = true;
+              openPeerPorts = true;
+              openRPCPort = true;
+              downloadDirPermissions = null;
+              performanceNetParameters = true;
+              settings = {
+                download-dir = "/mnt/media/downloads/torrents";
+                incomplete-dir-enabled = true;
+                incomplete-dir = "/mnt/media/downloads/torrents/.incomplete";
+                umask = 002;
+
+                peer-port = 55471;
+                utp-enabled = true;
+                port-forwarding-enabled = false;
+
+                ratio-limit = 2.0;
+                ratio-limit-enabled = true;
+
+                rpc-bind-address = "::";
+                rpc-whitelist-enabled = false;
+                rpc-host-whitelist-enabled = false;
+              };
+            };
+
             jackett = {
               enable = true;
               openFirewall = true;
