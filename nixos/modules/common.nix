@@ -99,9 +99,12 @@ in
         };
       };
 
-      environment.systemPackages = with pkgs; [
-        bash-completion
-        vim
+      environment.systemPackages = with pkgs; mkMerge [
+        [
+          bash-completion
+          vim
+        ]
+        (mkIf config.services.netdata.enable [ netdata ])
       ];
 
       programs = {
