@@ -128,6 +128,16 @@ in
           permitRootLogin = mkDefault "no";
           passwordAuthentication = mkDefault false;
         };
+
+        netdata = {
+          config = {
+            global = {
+              "memory mode" = "dbengine";
+              "page cache size" = 32;
+              "dbengine multihost disk space" = 256;
+            };
+          };
+        };
       };
     }
     (mkIf config.services.kmscon.enable {

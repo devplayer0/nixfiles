@@ -54,6 +54,8 @@
         };
 
         services = {
+          netdata.enable = true;
+
           transmission = {
             enable = true;
             downloadDirPermissions = null;

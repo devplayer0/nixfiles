@@ -280,6 +280,18 @@ in
           }
         ];
       })
+      (mkIf config.services.netdata.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = "/var/lib/netdata";
+            inherit (config.services.netdata) user group;
+          }
+          {
+            directory = "/var/cache/netdata";
+            inherit (config.services.netdata) user group;
+          }
+        ];
+      })
       (persistSimpleSvc "transmission")
       (persistSimpleSvc "jackett")
       (persistSimpleSvc "radarr")

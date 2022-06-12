@@ -1,7 +1,7 @@
 { lib, pkgs, config, ... }:
 let
   inherit (builtins) mapAttrs toJSON;
-  inherit (lib) mkMerge mkDefault genAttrs flatten;
+  inherit (lib) mkMerge mkDefault genAttrs flatten concatStringsSep;
 
   dualStackListen' = l: map (addr: l // { inherit addr; }) [ "0.0.0.0" "[::]" ];
   dualStackListen = ll: flatten (map dualStackListen' ll);
@@ -68,6 +68,37 @@ in
         locations."/".proxyPass = config.my.nginx-sso.includes.endpoint;
         useACMEHost = lib.my.pubDomain;
       };
+
+      "netdata-colony.${lib.my.pubDomain}" =
+      let
+        hosts = [ "vm" "fw" "ctr" "jackflix-ctr" ];
+        matchHosts = concatStringsSep "|" hosts;
+      in
+      mkMerge [
+        {
+          locations = {
+            "= /".return = "301 https://$host/colony/";
+            "~ /(?<behost>${matchHosts})$".return = "301 https://$host/$behost/";
+            "~ /(?<behost>${matchHosts})/(?<ndpath>.*)" = mkMerge [
+              {
+                proxyPass = "http://$behost.${config.networking.domain}:19999/$ndpath$is_args$args";
+                extraConfig = ''
+                  proxy_pass_request_headers on;
+                  proxy_set_header Connection "keep-alive";
+                  proxy_store off;
+
+                  gzip on;
+                  gzip_proxied any;
+                  gzip_types *;
+                '';
+              }
+              (ssoLoc "generic")
+            ];
+          };
+          useACMEHost = lib.my.pubDomain;
+        }
+        (ssoServer "generic")
+      ];
 
       "pass.${lib.my.pubDomain}" =
       let

@@ -57,6 +57,7 @@
             boot.thin.enable = true;
             dmeventd.enable = true;
           };
+          netdata.enable = true;
         };
 
         environment.systemPackages = with pkgs; [

@@ -72,6 +72,10 @@
               };
             };
 
+            services = {
+              netdata.enable = true;
+            };
+
             systemd.network = {
               links = {
                 "10-vms" = {
@@ -112,6 +116,7 @@
               server.enable = true;
 
               firewall = {
+                tcp.allowed = [ 19999 ];
                 trustedInterfaces = [ "vms" "ctrs" ];
               };
 

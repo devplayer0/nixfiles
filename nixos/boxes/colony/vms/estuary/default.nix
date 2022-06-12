@@ -61,6 +61,7 @@
               lvm = {
                 dmeventd.enable = true;
               };
+              netdata.enable = true;
             };
 
             systemd.network = {
