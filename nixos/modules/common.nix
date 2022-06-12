@@ -139,6 +139,10 @@ in
               "page cache size" = 32;
               "dbengine multihost disk space" = 256;
             };
+            "plugin:cgroups" = {
+              "cgroups to match as systemd services" =
+                " /system.slice/system-*.slice/*.service !/system.slice/*/*.service /system.slice/*.service";
+            };
           };
           configDir = {
             "go.d.conf" = mkDefault (pkgs.writeText "netdata-go.d.conf" ''
