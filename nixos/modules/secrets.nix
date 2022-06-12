@@ -1,7 +1,7 @@
 { lib, pkgs, config, secretsPath, ... }:
 let
   inherit (builtins) mapAttrs;
-  inherit (lib) mkMerge mkIf;
+  inherit (lib) mkMerge mkIf mkDefault;
   inherit (lib.my) mkOpt';
 
   cfg = config.my.secrets;
@@ -16,6 +16,7 @@ in
   config = mkMerge [
     {
       age = {
+        secretsDir = mkDefault "/run/secrets";
         secrets = mapAttrs (f: opts: {
           file = "${secretsPath}/${f}.age";
         } // opts) cfg.files;
