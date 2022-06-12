@@ -191,6 +191,30 @@ in
         }
         (ssoServer "generic")
       ];
+
+      "jackflix-test.${lib.my.pubDomain}" =
+      let
+        upstream = "http://jackflix-ctr.${config.networking.domain}:8096";
+      in
+      {
+        extraConfig = ''
+          add_header X-Frame-Options "SAMEORIGIN";
+          add_header X-XSS-Protection "1; mode=block";
+          add_header X-Content-Type-Options "nosniff";
+        '';
+        locations = {
+          "/".proxyPass = upstream;
+
+          "= /".return = "302 https://$host/web/";
+          "= /web/".proxyPass = "${upstream}/web/index.html";
+
+          "/socket" = {
+            proxyPass = upstream;
+            proxyWebsockets = true;
+          };
+        };
+        useACMEHost = lib.my.pubDomain;
+      };
     };
   in
   mkMerge [

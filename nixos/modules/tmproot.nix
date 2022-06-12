@@ -268,6 +268,18 @@ in
           }
         ];
       })
+      (mkIf config.services.jellyfin.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = "/var/lib/jellyfin";
+            inherit (config.services.jellyfin) user group;
+          }
+          {
+            directory = "/var/cache/jellyfin";
+            inherit (config.services.jellyfin) user group;
+          }
+        ];
+      })
       (persistSimpleSvc "transmission")
       (persistSimpleSvc "jackett")
       (persistSimpleSvc "radarr")

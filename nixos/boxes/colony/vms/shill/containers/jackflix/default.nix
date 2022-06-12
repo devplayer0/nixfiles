@@ -74,6 +74,8 @@
 
           jackett.enable = true;
           radarr.enable = true;
+
+          jellyfin.enable = true;
         };
       };
     };
