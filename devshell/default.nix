@@ -12,7 +12,6 @@ in
     NIX_USER_CONF_FILES = toString (pkgs.writeText "nix.conf"
       ''
         experimental-features = nix-command flakes ca-derivations
-        http-connections = 4
       '');
 
     INSTALLER_SSH_OPTS = "-i .keys/deploy.key";
