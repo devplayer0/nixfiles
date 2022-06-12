@@ -19,22 +19,36 @@ in
           owner = "pdns";
           group = "pdns";
         };
-        "netdata-powerdns.conf" = {
+        "colony-netdata-powerdns.conf" = {
           owner = "netdata";
           group = "netdata";
         };
+
+        "colony-pdns-recursor.conf" = {
+          owner = "pdns-recursor";
+          group = "pdns-recursor";
+        };
+        "colony-netdata-powerdns_recursor.conf" = {
+          owner = "netdata";
+          group = "netdata";
+        };
+      };
+
+      pdns.recursor = {
+        enable = true;
+        extraSettingsFile = config.age.secrets."colony-pdns-recursor.conf".path;
       };
     };
 
     services = {
       netdata = {
         configDir = {
-          "go.d/powerdns.conf" = config.age.secrets."netdata-powerdns.conf".path;
+          "go.d/powerdns.conf" = config.age.secrets."colony-netdata-powerdns.conf".path;
+          "go.d/powerdns_recursor.conf" = config.age.secrets."colony-netdata-powerdns_recursor.conf".path;
         };
       };
 
       pdns-recursor = {
-        enable = true;
         dns = {
           address = [
             "127.0.0.1" "::1"
@@ -53,6 +67,10 @@ in
           # DNS NOTIFY messages override TTL
           allow-notify-for = authZones;
           allow-notify-from = [ "127.0.0.0/8" "::1/128" ];
+
+          webserver = true;
+          webserver-address = "::";
+          webserver-allow-from = [ "127.0.0.1" "::1" ];
         };
       };
     };

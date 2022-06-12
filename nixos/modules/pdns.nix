@@ -162,7 +162,17 @@ let
 
   cfg = config.my.pdns;
 
+  extraSettingsOpt = with lib.types; mkOpt' (nullOr str) null "Path to extra settings (e.g. for secrets).";
   baseAuthSettings = pkgs.writeText "pdns.conf" (settingsToLines cfg.auth.settings);
+  baseRecursorSettings = pkgs.writeText "pdns-recursor.conf" (settingsToLines config.services.pdns-recursor.settings);
+  generateSettings = type: base: dst: if (cfg."${type}".extraSettingsFile != null) then ''
+    oldUmask="$(umask)"
+    umask 006
+    cat "${base}" "${cfg."${type}".extraSettingsFile}" > "${dst}"
+    umask "$oldUmask"
+  '' else ''
+    cp "${base}" "${dst}"
+  '';
 
   namedConf = pkgs.writeText "pdns-named.conf" ''
     options {
@@ -206,7 +216,7 @@ in
     auth = {
       enable = mkBoolOpt' false "Whether to enable PowerDNS authoritative nameserver.";
       settings = mkOpt' configType { } "Authoritative server settings.";
-      extraSettingsFile = mkOpt' (nullOr str) null "Path to extra settings (e.g. for secrets).";
+      extraSettingsFile = extraSettingsOpt;
 
       bind = {
         options = {
@@ -217,6 +227,11 @@ in
           sshKey = mkOpt' (nullOr str) null "SSH public key for file record update user.";
         };
       };
+    };
+
+    recursor = {
+      enable = mkBoolOpt' false "Whether to enable PowerDNS recursive nameserver.";
+      extraSettingsFile = extraSettingsOpt;
     };
   };
 
@@ -260,14 +275,7 @@ in
 
       systemd.services.pdns = {
         preStart = ''
-          ${if (cfg.auth.extraSettingsFile != null) then ''
-            oldUmask="$(umask)"
-            umask 006
-            cat ${baseAuthSettings} ${cfg.auth.extraSettingsFile} > /run/pdns/pdns.conf
-            umask "$oldUmask"
-          '' else ''
-            cp ${baseAuthSettings} /run/pdns/pdns.conf
-          ''}
+          ${generateSettings "auth" baseAuthSettings "/run/pdns/pdns.conf"}
 
           source ${loadZonesCommon}
 
@@ -297,6 +305,18 @@ in
       };
 
       services.powerdns = {
+        enable = true;
+      };
+    })
+    (mkIf cfg.recursor.enable {
+      systemd.services.pdns-recursor = {
+        preStart = ''
+          ${generateSettings "recursor" baseRecursorSettings "/run/pdns-recursor/recursor.conf"}
+        '';
+        serviceConfig.ExecStart = [ "" "${pkgs.pdns-recursor}/bin/pdns_recursor --config-dir=/run/pdns-recursor" ];
+      };
+
+      services.pdns-recursor = {
         enable = true;
       };
     })
