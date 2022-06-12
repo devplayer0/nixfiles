@@ -35,8 +35,11 @@
         users = {
           groups.media.gid = 2000;
           users = {
+            "${config.my.user.config.name}".extraGroups = [ "media" ];
+
             transmission.extraGroups = [ "media" ];
             radarr.extraGroups = [ "media" ];
+            sonarr.extraGroups = [ "media" ];
           };
         };
 
@@ -46,6 +49,7 @@
             transmission.bindsTo = [ "systemd-networkd-wait-online@vpn.service" ];
 
             radarr.serviceConfig.UMask = "0002";
+            sonarr.serviceConfig.UMask = "0002";
           };
         };
 
@@ -74,6 +78,7 @@
 
           jackett.enable = true;
           radarr.enable = true;
+          sonarr.enable = true;
 
           jellyfin.enable = true;
         };

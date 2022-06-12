@@ -191,6 +191,19 @@ in
         }
         (ssoServer "generic")
       ];
+      "sonarr-test.${lib.my.pubDomain}" = mkMerge [
+        {
+          locations."/" = mkMerge [
+            {
+              proxyPass = "http://jackflix-ctr.${config.networking.domain}:8989";
+              proxyWebsockets = true;
+            }
+            (ssoLoc "generic")
+          ];
+          useACMEHost = lib.my.pubDomain;
+        }
+        (ssoServer "generic")
+      ];
 
       "jackflix-test.${lib.my.pubDomain}" =
       let

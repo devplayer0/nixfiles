@@ -33,7 +33,7 @@ in
             name = mkDefault' "dev";
             isNormalUser = true;
             uid = mkDefault 1000;
-            extraGroups = mkDefault [ "wheel" "kvm" ];
+            extraGroups = [ "wheel" "kvm" ];
             password = mkIf (cfg.passwordSecret == null) (mkDefault "hunter2");
             shell =
               let shell = cfg.homeConfig.my.shell;
