@@ -13,28 +13,50 @@ let
 in
 {
   config = {
-    services.pdns-recursor = {
-      enable = true;
-      dns = {
-        address = [
-          "127.0.0.1" "::1"
-          assignments.base.ipv4.address assignments.base.ipv6.address
-        ];
-        allowFrom = [
-          "127.0.0.0/8" "::1/128"
-          lib.my.colony.prefixes.all.v4 lib.my.colony.prefixes.all.v6
-        ];
-      };
-      forwardZones = genAttrs authZones (_: "127.0.0.1:5353");
-
-      settings = {
-        query-local-address = [ "0.0.0.0" "::" ];
-
-        # DNS NOTIFY messages override TTL
-        allow-notify-for = authZones;
-        allow-notify-from = [ "127.0.0.0/8" "::1/128" ];
+    my = {
+      secrets.files = {
+        "pdns.conf" = {
+          owner = "pdns";
+          group = "pdns";
+        };
+        "netdata-powerdns.conf" = {
+          owner = "netdata";
+          group = "netdata";
+        };
       };
     };
+
+    services = {
+      netdata = {
+        configDir = {
+          "go.d/powerdns.conf" = config.age.secrets."netdata-powerdns.conf".path;
+        };
+      };
+
+      pdns-recursor = {
+        enable = true;
+        dns = {
+          address = [
+            "127.0.0.1" "::1"
+            assignments.base.ipv4.address assignments.base.ipv6.address
+          ];
+          allowFrom = [
+            "127.0.0.0/8" "::1/128"
+            lib.my.colony.prefixes.all.v4 lib.my.colony.prefixes.all.v6
+          ];
+        };
+        forwardZones = genAttrs authZones (_: "127.0.0.1:5353");
+
+        settings = {
+          query-local-address = [ "0.0.0.0" "::" ];
+
+          # DNS NOTIFY messages override TTL
+          allow-notify-for = authZones;
+          allow-notify-from = [ "127.0.0.0/8" "::1/128" ];
+        };
+      };
+    };
+
     # For rec_control
     environment.systemPackages = with pkgs; [
       pdns-recursor
@@ -42,6 +64,7 @@ in
 
     my.pdns.auth = {
       enable = true;
+      extraSettingsFile = config.age.secrets."pdns.conf".path;
       settings = {
         primary = true;
         resolver = "127.0.0.1";
@@ -54,6 +77,11 @@ in
         #loglevel = 7;
         #log-dns-queries = true;
         #log-dns-details = true;
+
+        api = true;
+        webserver = true;
+        webserver-address = "::";
+        webserver-allow-from = [ "127.0.0.1" "::1" ];
       };
 
       bind = {

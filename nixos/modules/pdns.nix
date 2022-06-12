@@ -17,7 +17,7 @@ let
     else if bool.check      val then toBool val
     else if isList          val then (concatMapStringsSep "," serialize val)
     else "";
-  settingsToLines = s: concatStringsSep "\n" (mapAttrsToList (k: v: "${k}=${serialize v}") s);
+  settingsToLines = s: (concatStringsSep "\n" (mapAttrsToList (k: v: "${k}=${serialize v}") s)) + "\n";
 
   bindList = l: "{ ${concatStringsSep "; " l} }";
   bindAlsoNotify = with lib.types; mkOpt' (listOf str) [ ] "List of additional address to send DNS NOTIFY messages to.";
@@ -162,6 +162,8 @@ let
 
   cfg = config.my.pdns;
 
+  baseAuthSettings = pkgs.writeText "pdns.conf" (settingsToLines cfg.auth.settings);
+
   namedConf = pkgs.writeText "pdns-named.conf" ''
     options {
       directory "/run/pdns/bind-zones";
@@ -204,6 +206,7 @@ in
     auth = {
       enable = mkBoolOpt' false "Whether to enable PowerDNS authoritative nameserver.";
       settings = mkOpt' configType { } "Authoritative server settings.";
+      extraSettingsFile = mkOpt' (nullOr str) null "Path to extra settings (e.g. for secrets).";
 
       bind = {
         options = {
@@ -257,6 +260,15 @@ in
 
       systemd.services.pdns = {
         preStart = ''
+          ${if (cfg.auth.extraSettingsFile != null) then ''
+            oldUmask="$(umask)"
+            umask 006
+            cat ${baseAuthSettings} ${cfg.auth.extraSettingsFile} > /run/pdns/pdns.conf
+            umask "$oldUmask"
+          '' else ''
+            cp ${baseAuthSettings} /run/pdns/pdns.conf
+          ''}
+
           source ${loadZonesCommon}
 
           mkdir /run/pdns/{bind-zones,file-records}
@@ -278,6 +290,7 @@ in
 
         reloadTriggers = [ zones ];
         serviceConfig = {
+          ExecStart = [ "" "${pkgs.pdns}/bin/pdns_server --config-dir=/run/pdns --guardian=no --daemon=no --disable-syslog --log-timestamp=no --write-pid=no" ];
           RuntimeDirectory = "pdns";
           StateDirectory = "pdns";
         };
@@ -285,7 +298,6 @@ in
 
       services.powerdns = {
         enable = true;
-        extraConfig = settingsToLines cfg.auth.settings;
       };
     })
   ];
