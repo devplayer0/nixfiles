@@ -246,10 +246,22 @@ in
       ];
 
       my = {
-        tmproot.enable = true;
+        tmproot = {
+          enable = true;
+          persistence.dir = "/persist";
+        };
       };
 
       system.activationScripts = {
+        # So that update-users-groups.pl can see the saved info. Normally stage-1-init.sh would do these mounts early.
+        earlyPersist.text = ''
+          if ! mountpoint -q /var/lib/nixos; then
+            mkdir -p {/persist,}/var/lib/nixos
+            mount --bind {/persist,}/var/lib/nixos
+          fi
+        '';
+        users.deps = [ "earlyPersist" ];
+
         # Ordinarily I think the Nix daemon does this but ofc it doesn't in the container
         createNixPerUserDirs = {
           text =
