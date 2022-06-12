@@ -76,6 +76,11 @@ in
       memorySize = dummyOption;
       qemu.options = dummyOption;
     };
+    isoImage = {
+      isoBaseName = dummyOption;
+      edition = dummyOption;
+      appendToMenuLabel = dummyOption;
+    };
   };
 
   config = {

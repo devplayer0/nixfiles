@@ -61,7 +61,7 @@
                 installer = {
                   backend = {
                     driver = "file";
-                    filename = "${systems.installer.configuration.config.my.buildAs.iso}/iso/nixos.iso";
+                    filename = "${systems.installer.configuration.config.my.buildAs.iso}/iso/nixos-installer-devplayer0.iso";
                     read-only = "on";
                   };
                   format.driver = "raw";

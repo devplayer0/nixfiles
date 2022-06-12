@@ -30,6 +30,12 @@
             server.enable = true;
           };
 
+          isoImage = {
+            isoBaseName = "nixos-installer-devplayer0";
+            edition = "devplayer0";
+            appendToMenuLabel = " /dev/player0 Installer";
+          };
+
           environment.sessionVariables = {
             INSTALL_ROOT = installRoot;
           };
