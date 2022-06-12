@@ -267,6 +267,22 @@ in
           }
         ];
       })
+      (mkIf config.services.radarr.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = "/var/lib/radarr";
+            inherit (config.services.radarr) user group;
+          }
+        ];
+      })
+      (mkIf config.services.sonarr.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = "/var/lib/sonarr";
+            inherit (config.services.sonarr) user group;
+          }
+        ];
+      })
       (mkIf config.my.build.isDevVM {
         fileSystems = mkVMOverride {
           # Hijack the "root" device for persistence in the VM

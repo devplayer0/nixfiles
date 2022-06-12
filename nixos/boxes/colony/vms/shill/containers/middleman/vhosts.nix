@@ -152,6 +152,32 @@ in
         ];
         useACMEHost = lib.my.pubDomain;
       };
+
+      "jackett.${lib.my.pubDomain}" = mkMerge [
+        {
+          locations."/" = mkMerge [
+            {
+              proxyPass = "http://jackflix-ctr.${config.networking.domain}:9117";
+            }
+            (ssoLoc "generic")
+          ];
+          useACMEHost = lib.my.pubDomain;
+        }
+        (ssoServer "generic")
+      ];
+      "radarr-test.${lib.my.pubDomain}" = mkMerge [
+        {
+          locations."/" = mkMerge [
+            {
+              proxyPass = "http://jackflix-ctr.${config.networking.domain}:7878";
+              proxyWebsockets = true;
+            }
+            (ssoLoc "generic")
+          ];
+          useACMEHost = lib.my.pubDomain;
+        }
+        (ssoServer "generic")
+      ];
     };
   in
   mkMerge [
