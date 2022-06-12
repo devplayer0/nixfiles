@@ -34,7 +34,7 @@
           };
 
           users = {
-            groups.media = {};
+            groups.media.gid = 2000;
             users = {
               transmission.extraGroups = [ "media" ];
               radarr.extraGroups = [ "media" ];
