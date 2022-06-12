@@ -24,7 +24,7 @@ let
 in
 {
   options.my.nginx-sso = with lib.types; {
-    enable = mkBoolOpt' true "Whether to enable custom nginx-sso.";
+    enable = mkBoolOpt' false "Whether to enable custom nginx-sso.";
     package = mkOpt' package pkgs.nginx-sso "nginx-sso package to use.";
     configuration = mkOpt' (attrsOf unspecified) { } "nginx-sso configuration.";
     extraConfigFile = mkOpt' (nullOr str) null "Path to configuration (e.g. for secrets).";
