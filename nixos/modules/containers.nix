@@ -198,7 +198,7 @@ in
             ''
               if [ ! -e "${sysProfile}" ]; then
                 echo "Creating dummy profile"
-                ${pkgs.nix}/bin/nix-env -p ${sysProfile} --set ${dummyProfile}
+                ${config.nix.package}/bin/nix-env -p ${sysProfile} --set ${dummyProfile}
               fi
             ''}
 

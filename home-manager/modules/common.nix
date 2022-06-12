@@ -239,6 +239,12 @@ in
         packages = with pkgs; [
           pkgs'.mine.nix
         ];
+
+        # Without this, we are at the mercy of whatever version of nix is in $PATH...
+        # TODO: Is this the right thing to do?
+        extraActivationPath = [
+          config.nix.package
+        ];
       };
     })
     (mkIf pkgs.stdenv.isLinux (mkMerge [
@@ -272,7 +278,7 @@ in
         # No targets.genericLinux equivalent apparently
         sessionVariablesExtra =
           ''
-            . "${pkgs.nix}/etc/profile.d/nix.sh"
+            . "${config.nix.package}/etc/profile.d/nix.sh"
           '';
         packages = with pkgs; [
           cacert

@@ -9,7 +9,7 @@ let
   keepGensOpt = with lib.types; mkOpt' ints.unsigned 10
     "Number of generations to keep when cleaning up old deployments (0 to disable deletion on deployment).";
   keepGensSnippet = p: n: optionalString (n > 0) ''
-    ${pkgs.nix}/bin/nix-env -p "${p}" --delete-generations +${toString n}
+    ${config.nix.package}/bin/nix-env -p "${p}" --delete-generations +${toString n}
   '';
 
   # Based on https://github.com/serokell/deploy-rs/blob/master/flake.nix
