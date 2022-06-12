@@ -117,7 +117,15 @@
 
               firewall = {
                 tcp.allowed = [ 19999 ];
-                trustedInterfaces = [ "vms" "ctrs" ];
+                trustedInterfaces = [ "ctrs" ];
+                extraRules = ''
+                  table inet filter {
+                    chain forward {
+                      # Trust that the outer firewall has done the filtering!
+                      iifname vms oifname ctrs accept
+                    }
+                  }
+                '';
               };
 
               containers.instances =

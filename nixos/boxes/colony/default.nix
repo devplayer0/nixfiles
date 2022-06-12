@@ -155,7 +155,15 @@
           server.enable = true;
 
           firewall = {
-            trustedInterfaces = [ "base" "vms" ];
+            trustedInterfaces = [ "vms" ];
+            extraRules = ''
+              table inet filter {
+                chain forward {
+                  # Trust that the outer firewall has done the filtering!
+                  iifname base oifname vms accept
+                }
+              }
+            '';
           };
         };
       };
