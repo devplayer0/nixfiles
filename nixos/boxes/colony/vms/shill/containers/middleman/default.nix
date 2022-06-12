@@ -70,6 +70,7 @@
                   default_method = "google_oauth";
                   names = {
                     google_oauth = "Google account";
+                    simple = "Username / password";
                   };
                 };
                 cookie = {
@@ -87,6 +88,11 @@
                   ];
                 };
                 providers = {
+                  simple = {
+                    groups = {
+                      admin = [ "dev" ];
+                    };
+                  };
                   google_oauth = {
                     client_id = "545475967061-cag4g1qf0pk33g3pdbom4v69562vboc8.apps.googleusercontent.com";
                     redirect_url = "https://sso.${lib.my.pubDomain}/login";
