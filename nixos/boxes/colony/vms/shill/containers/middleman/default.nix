@@ -170,9 +170,23 @@
           };
 
           services = {
+            netdata = {
+              enable = true;
+              configDir = {
+                "go.d/nginxvts.conf" = pkgs.writeText "netdata-nginxvts.conf" ''
+                  jobs:
+                    - name: local
+                      url: http://localhost/status/format/json
+                '';
+              };
+            };
+
             nginx = {
               enable = true;
               enableReload = true;
+              additionalModules = with pkgs.nginxModules; [
+                vts
+              ];
 
               recommendedTlsSettings = true;
               clientMaxBodySize = "0";
@@ -231,6 +245,8 @@
                 proxy_set_header X-Forwarded-Proto $scheme;
                 proxy_set_header X-Forwarded-Protocol $scheme;
                 proxy_set_header X-Scheme $scheme;
+
+                vhost_traffic_status_zone;
               '';
             };
           };

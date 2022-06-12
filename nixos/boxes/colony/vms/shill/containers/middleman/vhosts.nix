@@ -63,6 +63,21 @@ in
           wellKnown
         ];
       };
+      "localhost" = {
+        forceSSL = false;
+        onlySSL = false;
+        locations = {
+          "/status".extraConfig = ''
+            access_log off;
+            allow 127.0.0.1;
+            allow ::1;
+            deny all;
+
+            vhost_traffic_status_display;
+            vhost_traffic_status_display_format html;
+          '';
+        };
+      };
 
       "sso.${lib.my.pubDomain}" = {
         locations."/".proxyPass = config.my.nginx-sso.includes.endpoint;
@@ -71,7 +86,7 @@ in
 
       "netdata-colony.${lib.my.pubDomain}" =
       let
-        hosts = [ "vm" "fw" "ctr" "jackflix-ctr" ];
+        hosts = [ "vm" "fw" "ctr" "http" "jackflix-ctr" ];
         matchHosts = concatStringsSep "|" hosts;
       in
       mkMerge [
