@@ -36,7 +36,7 @@
             };
 
             firewall = {
-              tcp.allowed = [ 8008 ];
+              tcp.allowed = [ 19999 8008 ];
             };
           };
 
@@ -45,6 +45,7 @@
           };
 
           services = {
+            netdata.enable = true;
             matrix-synapse = {
               enable = true;
               withJemalloc = true;

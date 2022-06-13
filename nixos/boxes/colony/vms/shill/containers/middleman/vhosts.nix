@@ -86,13 +86,13 @@ in
 
       "netdata-colony.${lib.my.pubDomain}" =
       let
-        hosts = [ "vm" "fw" "ctr" "http" "jackflix-ctr" ];
+        hosts = [ "vm" "fw" "ctr" "http" "jackflix-ctr" "chatterbox-ctr" ];
         matchHosts = concatStringsSep "|" hosts;
       in
       mkMerge [
         {
           locations = {
-            "= /".return = "301 https://$host/colony/";
+            "= /".return = "301 https://$host/vm/";
             "~ /(?<behost>${matchHosts})$".return = "301 https://$host/$behost/";
             "~ /(?<behost>${matchHosts})/(?<ndpath>.*)" = mkMerge [
               {
