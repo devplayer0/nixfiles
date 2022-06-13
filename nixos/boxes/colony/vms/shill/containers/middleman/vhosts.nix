@@ -86,7 +86,11 @@ in
 
       "netdata-colony.${lib.my.pubDomain}" =
       let
-        hosts = [ "vm" "fw" "ctr" "http" "jackflix-ctr" "chatterbox-ctr" ];
+        hosts = [
+          "vm"
+          "fw" "ctr"
+          "http" "jackflix-ctr" "chatterbox-ctr" "colony-psql-ctr"
+        ];
         matchHosts = concatStringsSep "|" hosts;
       in
       mkMerge [

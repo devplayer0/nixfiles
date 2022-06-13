@@ -33,7 +33,7 @@
             };
 
             firewall = {
-              tcp.allowed = [ 5432 ];
+              tcp.allowed = [ 19999 5432 ];
             };
           };
 
@@ -42,23 +42,37 @@
           };
 
           services = {
+            netdata = {
+              enable = true;
+              python = {
+                enable = true;
+                extraPackages = ps: with ps; [ psycopg2 ];
+              };
+              configDir = {
+                "python.d/postgres.conf" = pkgs.writeText "netdata-postgres.conf" ''
+                  local:
+                    user: postgres
+                '';
+              };
+            };
+
             postgresql = {
               package = pkgs.postgresql_14;
               enable = true;
               enableTCPIP = true;
 
               authentication = with lib.my.colony.prefixes; ''
+                local all postgres peer map=local
+
                 host all all ${all.v4} md5
                 host all all ${all.v6} md5
               '';
-              ensureUsers = [
-                {
-                  name = "root";
-                  ensurePermissions = {
-                    "ALL TABLES IN SCHEMA public" = "ALL PRIVILEGES";
-                  };
-                }
-              ];
+              identMap = ''
+                local postgres postgres
+                local root     postgres
+                local netdata  postgres
+                local dev      postgres
+              '';
             };
           };
         }
