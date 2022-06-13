@@ -163,6 +163,15 @@ in
           };
         };
       };
+
+      systemd = {
+        services = {
+          netdata = mkIf config.services.netdata.enable {
+            # python.d plugin script does #!/usr/bin/env bash
+            path = with pkgs; [ bash ];
+          };
+        };
+      };
     }
     (mkIf config.services.kmscon.enable {
       fonts.fonts = with pkgs; [
