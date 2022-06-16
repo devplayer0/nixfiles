@@ -177,11 +177,11 @@ rec {
 
   pubDomain = "nul.ie";
   colony = rec {
-    domain = "test.int.nul.ie";
+    domain = "fra1.int.${pubDomain}";
     start = {
       all = {
         v4 = "10.100.";
-        v6 = "2a0e:97c0:4d0:bbb";
+        v6 = "2a0e:97c0:4d0:ccc";
       };
       base = {
         v4 = "${start.all.v4}0.";

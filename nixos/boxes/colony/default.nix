@@ -33,13 +33,16 @@
         inherit (lib.my) networkdAssignment;
       in
       {
-        imports = [ "${modulesPath}/profiles/qemu-guest.nix" ];
-
-        boot.kernelParams = [ "intel_iommu=on" ];
-        boot.loader.systemd-boot.configurationLimit = 20;
+        boot = {
+          kernelModules = [ "kvm-amd" ];
+          kernelParams = [ "amd_iommu=on" ];
+          initrd = {
+            availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" "sr_mod" ];
+          };
+        };
         fileSystems = {
           "/boot" = {
-            device = "/dev/disk/by-uuid/83CA-3BCF";
+            device = "/dev/disk/by-uuid/C1C9-9CBC";
             fsType = "vfat";
           };
           "/nix" = {
@@ -63,14 +66,19 @@
         environment.systemPackages = with pkgs; [
           pciutils
           partclone
+          lm_sensors
         ];
 
         systemd = {
           network = {
             links = {
-              "10-base-ext" = {
-                matchConfig.MACAddress = "52:54:00:81:bd:a1";
-                linkConfig.Name = "base-ext";
+              "10-wan0" = {
+                matchConfig.MACAddress = "d0:50:99:fa:a7:99";
+                linkConfig.Name = "wan0";
+              };
+              "10-wan1" = {
+                matchConfig.MACAddress = "d0:50:99:fa:a7:9a";
+                linkConfig.Name = "wan1";
               };
             };
             netdevs = {
@@ -149,7 +157,7 @@
         my = {
           #deploy.generate.system.mode = "boot";
           secrets = {
-            key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKp5WDdDr/1NS3SJIDOKwcCNZDFOxqPAD7cbZWAP7EkX";
+            key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPIijqzAWF6OxKr4aeCa1TAc5xGn4rdIjVTt0wAPU6uY";
           };
 
           server.enable = true;

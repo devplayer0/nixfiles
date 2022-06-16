@@ -10,7 +10,7 @@
     inherit (lib) mkIf mkMerge optionals;
 
     wanBDF =
-      if config.my.build.isDevVM then "00:02.0" else "01:00.0";
+      if config.my.build.isDevVM then "00:02.0" else "27:00.0";
 
     vmLVM = vm: lv: {
       "${lv}" = {
@@ -27,18 +27,40 @@
         frontend = "virtio-blk";
       };
     };
+
+    installerDisk = {
+      installer = {
+        backend = {
+          driver = "file";
+          filename = "${systems.installer.configuration.config.my.buildAs.iso}/iso/nixos-installer-devplayer0.iso";
+          read-only = "on";
+        };
+        format.driver = "raw";
+        frontend = "ide-cd";
+        frontendOpts = {
+          bootindex = 1;
+        };
+      };
+    };
   in
   {
     my = {
       vms = {
         instances = {
           estuary = {
-            uuid = "59f51efb-7e6d-477b-a263-ed9620dbc87b";
+            uuid = "27796a09-c013-4031-9595-44791d6126b9";
+            smp = {
+              cpus = 2;
+              threads = 2;
+            };
+            memory = 3072;
             networks.base = {
               waitOnline = "no-carrier";
-              mac = "52:54:00:ab:f1:52";
+              mac = "52:54:00:15:1a:53";
             };
-            drives = mkMerge ([ ] ++ (optionals (!config.my.build.isDevVM) [
+            drives = mkMerge ([
+              installerDisk
+            ] ++ (optionals (!config.my.build.isDevVM) [
               (vmLVM "estuary" "esp")
               (vmLVM "estuary" "nix")
               (vmLVM "estuary" "persist")
@@ -48,34 +70,20 @@
           };
 
           shill = {
-            uuid = "e34569ec-d24e-446b-aca8-a3b27abc1f9b";
+            uuid = "fc02d8c8-6f60-4b69-838a-e7aed6ee7617";
             smp = {
-              cpus = 4;
+              cpus = 12;
               threads = 2;
             };
-            memory = 8192;
-            networks.vms.mac = "52:54:00:85:b3:b1";
+            memory = 65536;
+            networks.vms.mac = "52:54:00:27:3d:5c";
             cleanShutdown.timeout = 120;
             drives = mkMerge ([
-              {
-                installer = {
-                  backend = {
-                    driver = "file";
-                    filename = "${systems.installer.configuration.config.my.buildAs.iso}/iso/nixos-installer-devplayer0.iso";
-                    read-only = "on";
-                  };
-                  format.driver = "raw";
-                  frontend = "ide-cd";
-                  frontendOpts = {
-                    bootindex = 1;
-                  };
-                };
-              }
+              installerDisk
             ] ++ (optionals (!config.my.build.isDevVM) [
               (vmLVM "shill" "esp")
               (vmLVM "shill" "nix")
               (vmLVM "shill" "persist")
-
               {
                 esp.frontendOpts.bootindex = 0;
 
@@ -83,8 +91,12 @@
                   backend = {
                     driver = "host_device";
                     filename = "/dev/hdds/media";
+                    discard = "unmap";
                   };
-                  format.driver = "raw";
+                  format = {
+                    driver = "raw";
+                    discard = "unmap";
+                  };
                   frontend = "virtio-blk";
                 };
               }
