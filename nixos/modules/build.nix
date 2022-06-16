@@ -1,9 +1,11 @@
-{ lib, extendModules, modulesPath, baseModules, options, config, ... }:
+{ lib, pkgs, extendModules, modulesPath, baseModules, options, config, ... }:
 let
-  inherit (lib) recursiveUpdate mkOption mkDefault mkIf mkMerge;
+  inherit (lib) recursiveUpdate mkOption mkDefault mkIf mkMerge flatten optional;
   inherit (lib.my) mkBoolOpt' dummyOption;
 
   cfg = config.my.build;
+
+  allHardware = (optional config.my.build.allHardware { imports = [ "${modulesPath}/profiles/all-hardware.nix" ]; });
 
   asDevVM = extendModules {
     modules = [
@@ -12,9 +14,9 @@ let
     ];
   };
   asISO = extendModules {
-    modules = lib.flatten [
+    modules = flatten [
       "${modulesPath}/installer/cd-dvd/iso-image.nix"
-      (lib.optional config.my.build.allHardware { imports = [ "${modulesPath}/profiles/all-hardware.nix" ]; })
+      allHardware
       {
         isoImage = {
           makeEfiBootable = true;
@@ -34,6 +36,19 @@ let
       }
     ];
   };
+  asKexecTree = extendModules {
+    modules = flatten [
+      "${modulesPath}/installer/netboot/netboot.nix"
+      allHardware
+    ];
+  };
+
+  mkAsOpt = ext: desc: mkOption {
+    inherit (ext) type;
+    default = { };
+    visible = "shallow";
+    description = "Configuration as ${desc}.";
+  };
 in
 {
   options = with lib.types; {
@@ -45,24 +60,10 @@ in
           "Only applies to some build targets.");
       };
 
-      asDevVM = mkOption {
-        inherit (asDevVM) type;
-        default = { };
-        visible = "shallow";
-        description = "Configuration as a development VM.";
-      };
-      asISO = mkOption {
-        inherit (asISO) type;
-        default = { };
-        visible = "shallow";
-        description = "Configuration as a bootable .iso image.";
-      };
-      asContainer = mkOption {
-        inherit (asContainer) type;
-        default = { };
-        visible = "shallow";
-        description = "Configuration as a container.";
-      };
+      asDevVM = mkAsOpt asDevVM "a development VM";
+      asISO = mkAsOpt asISO "a bootable .iso image";
+      asContainer = mkAsOpt asContainer "a container";
+      asKexecTree = mkAsOpt asKexecTree "a kexec-able kernel and initrd";
 
       buildAs = options.system.build;
     };
@@ -94,6 +95,7 @@ in
         devVM = recursiveUpdate config.my.asDevVM.system.build.vm { meta.mainProgram = "run-${config.system.name}-vm"; };
         iso = config.my.asISO.system.build.isoImage;
         container = config.my.asContainer.system.build.toplevel;
+        kexecTree = config.my.asKexecTree.system.build.kexecTree;
       };
     };
   };
