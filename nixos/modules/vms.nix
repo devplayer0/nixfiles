@@ -195,6 +195,13 @@ in
       }
     ];
 
+    environment.systemPackages = [
+      (pkgs.writeShellScriptBin "vm-tty" ''
+        [ $# -eq 1 ] || (echo "usage: $0 <vm>" >&2; exit 1)
+        exec ${pkgs.minicom}/bin/minicom -D unix#/run/vms/"$1"/tty.sock
+      '')
+    ];
+
     services.udev = {
       packages =
         optionals
