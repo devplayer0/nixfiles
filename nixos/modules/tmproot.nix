@@ -143,6 +143,8 @@ in
             # Also the script runs before impermanence does.
             "/var/lib/nixos"
             "/var/lib/systemd"
+
+            { directory = "/root/.cache/nix"; mode = "0700"; }
           ];
           files = [
             "/etc/machine-id"

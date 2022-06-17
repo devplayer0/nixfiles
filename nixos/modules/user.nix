@@ -76,6 +76,8 @@ in
               # Persist all of fish; it's not easy to persist just the history fish won't let you move it to a different
               # directory. Also it does some funny stuff and can't really be a symlink it seems.
               "/home/${user'.name}/.local/share/fish"
+
+              "/home/${user'.name}/.cache/nix"
             ];
           };
         };
