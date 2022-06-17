@@ -82,6 +82,8 @@
 
           environment.systemPackages = with pkgs; [
             dhcpcd
+            lm_sensors
+            ethtool
           ];
 
           # Much of this onwards is yoinked from modules/profiles/installation-device.nix
