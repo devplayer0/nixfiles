@@ -49,6 +49,15 @@ in
           trusted-users = [ "@wheel" ];
           experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
         };
+        registry = {
+          pkgs = {
+            to = {
+              type = "path";
+              path = "${pkgs.path}";
+            };
+            exact = true;
+          };
+        };
         gc = {
           options = mkDefault "--max-freed $((8 * 1024**3))";
           automatic = mkDefault true;

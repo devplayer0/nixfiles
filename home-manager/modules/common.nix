@@ -47,15 +47,6 @@ in
 
       nix = {
         package = pkgs.nix;
-        registry = {
-          pkgs = {
-            to = {
-              type = "path";
-              path = toString pkgs.path;
-            };
-            exact = true;
-          };
-        };
         settings = {
           experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
           max-jobs = mkDefault "auto";
@@ -225,6 +216,17 @@ in
         ];
         config = {
           allowUnfree = true;
+        };
+      };
+      nix = {
+        registry = {
+          pkgs = {
+            to = {
+              type = "path";
+              path = "${pkgs.path}";
+            };
+            exact = true;
+          };
         };
       };
     })
