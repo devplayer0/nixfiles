@@ -10,12 +10,12 @@
         altNames = [ "fw" ];
         domain = lib.my.colony.domain;
         ipv4 = {
-          address = "188.141.14.75";
+          address = "188.141.14.136";
           gateway = null;
           genPTR = false;
         };
         ipv6 = {
-          address = "2a0e:97c0:4d0:bbbf::1";
+          address = "2a0e:97c0:4d0:cccf::1";
           gateway = "fe80::215:17ff:fe4b:494a";
         };
       };
@@ -67,11 +67,11 @@
             systemd.network = {
               links = {
                 "10-wan" = {
-                  matchConfig.MACAddress = "52:54:00:a1:b2:5f";
+                  matchConfig.MACAddress = "d0:50:99:fa:a7:99";
                   linkConfig.Name = "wan";
                 };
                 "10-base" = {
-                  matchConfig.MACAddress = "52:54:00:ab:f1:52";
+                  matchConfig.MACAddress = "52:54:00:15:1a:53";
                   linkConfig.Name = "base";
                 };
               };
@@ -136,7 +136,7 @@
 
             my = {
               #deploy.generate.system.mode = "boot";
-              secrets.key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPhxM5mnguExkcLue47QKk1vA72OoPc3HOqqoHqHHfa1";
+              secrets.key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF9up7pXu6M/OWCKufTOfSiGcxMUk4VqUe7fLuatNFFA";
               server.enable = true;
 
               firewall = {

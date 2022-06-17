@@ -7,7 +7,7 @@ let
   ptrDots = 2;
   reverseZone = "100.10.in-addr.arpa";
   ptrDots6 = 17;
-  reverseZone6 = "b.b.b.0.d.4.0.0.c.7.9.e.0.a.2.ip6.arpa";
+  reverseZone6 = "c.c.c.0.d.4.0.0.c.7.9.e.0.a.2.ip6.arpa";
 
   authZones = attrNames config.my.pdns.auth.bind.zones;
 in

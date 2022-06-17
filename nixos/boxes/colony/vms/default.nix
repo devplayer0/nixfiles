@@ -58,9 +58,7 @@
               waitOnline = "no-carrier";
               mac = "52:54:00:15:1a:53";
             };
-            drives = mkMerge ([
-              installerDisk
-            ] ++ (optionals (!config.my.build.isDevVM) [
+            drives = mkMerge ([ ] ++ (optionals (!config.my.build.isDevVM) [
               (vmLVM "estuary" "esp")
               (vmLVM "estuary" "nix")
               (vmLVM "estuary" "persist")
