@@ -33,6 +33,13 @@
         inherit (lib.my) networkdAssignment;
       in
       {
+        hardware = {
+          enableRedistributableFirmware = true;
+          cpu = {
+            amd.updateMicrocode = true;
+          };
+        };
+
         boot = {
           kernelModules = [ "kvm-amd" ];
           kernelParams = [ "amd_iommu=on" ];
@@ -40,6 +47,7 @@
             availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" "sr_mod" ];
           };
         };
+
         fileSystems = {
           "/boot" = {
             device = "/dev/disk/by-uuid/C1C9-9CBC";
@@ -55,6 +63,7 @@
             neededForBoot = true;
           };
         };
+
         services = {
           lvm = {
             boot.thin.enable = true;
