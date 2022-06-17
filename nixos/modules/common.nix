@@ -120,6 +120,8 @@ in
         # This will enable generating completions at build time and prevent home-manager fish from generating them
         # locally
         fish.enable = mkDefault true;
+        # TODO: This is expecting to look up the channel for the database...
+        command-not-found.enable = mkDefault false;
       };
 
       services = {
