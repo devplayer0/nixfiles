@@ -41,8 +41,16 @@
         };
 
         boot = {
+          kernelPackages = pkgs.linuxKernel.packages.linux_5_15.extend (self: super: {
+            kernel = super.kernel.override {
+              structuredExtraConfig = with lib.kernel; {
+                #SOME_OPT = yes;
+                #A_MOD = module;
+              };
+            };
+          });
           kernelModules = [ "kvm-amd" ];
-          kernelParams = [ "amd_iommu=on" ];
+          kernelParams = [ "amd_iommu=on" "console=ttyS0,115200n8" "console=ttyS1,115200n8" "console=tty0" ];
           initrd = {
             availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" "sr_mod" ];
           };
@@ -70,15 +78,28 @@
             dmeventd.enable = true;
           };
           netdata.enable = true;
+
+          smartd = {
+            enable = true;
+            autodetect = true;
+          };
         };
 
         environment.systemPackages = with pkgs; [
           pciutils
+          usbutils
           partclone
           lm_sensors
+          linuxPackages.cpupower
+          smartmontools
         ];
 
         systemd = {
+          services = {
+            "serial-getty@ttyS0".enable = true;
+            "serial-getty@ttyS1".enable = true;
+          };
+
           network = {
             links = {
               "10-wan0" = {
