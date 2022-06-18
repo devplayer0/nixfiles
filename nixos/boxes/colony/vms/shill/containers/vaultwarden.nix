@@ -21,7 +21,6 @@
       inherit (lib.my) networkdAssignment;
 
       vwData = "/var/lib/vaultwarden";
-      vwSecrets = "vaultwarden.env";
     in
     {
       config = mkMerge [
@@ -31,12 +30,12 @@
             server.enable = true;
 
             secrets = {
-              key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILakffcjRp6h6lxSOADOsTK5h2MCkt8hKDv0cvchM7iw";
-              files."${vwSecrets}" = {};
+              key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFP2mF50ENpnJnr+VTnG9P+JFPjgwvoIxCLyJPzXRpVy";
+              files."vaultwarden.env" = {};
             };
 
             firewall = {
-              tcp.allowed = [ 80 3012 ];
+              tcp.allowed = with config.services.vaultwarden.config; [ ROCKET_PORT WEBSOCKET_PORT ];
             };
 
             tmproot.persistence.config.directories = [
@@ -57,14 +56,30 @@
             vaultwarden = {
               enable = true;
               config = {
-                dataFolder = vwData;
-                webVaultEnabled = true;
+                DATA_FOLDER = vwData;
 
-                rocketPort = 80;
-                websocketEnabled = true;
-                websocketPort = 3012;
+                WEB_VAULT_ENABLED = true;
+
+                WEBSOCKET_ENABLED = true;
+                WEBSOCKET_ADDRESS = "::";
+                WEBSOCKET_PORT = 3012;
+
+                SIGNUPS_ALLOWED = false;
+
+                DOMAIN = "https://pass.${lib.my.pubDomain}";
+
+                ROCKET_ADDRESS = "::";
+                ROCKET_PORT = 80;
+
+                SMTP_HOST = "mail.nul.ie";
+                SMTP_FROM = "pass@nul.ie";
+                SMTP_FROM_NAME = "Vaultwarden";
+                SMTP_SECURITY = "starttls";
+                SMTP_PORT = 587;
+                SMTP_USERNAME = "pass@nul.ie";
+                SMTP_TIMEOUT = 15;
               };
-              environmentFile = config.age.secrets."${vwSecrets}".path;
+              environmentFile = config.age.secrets."vaultwarden.env".path;
             };
           };
         }
