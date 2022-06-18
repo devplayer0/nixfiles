@@ -79,7 +79,7 @@
             systemd.network = {
               links = {
                 "10-vms" = {
-                  matchConfig.MACAddress = "52:54:00:85:b3:b1";
+                  matchConfig.MACAddress = "52:54:00:27:3d:5c";
                   linkConfig.Name = "vms";
                 };
               };
@@ -112,7 +112,7 @@
             };
 
             my = {
-              secrets.key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMWi6iEcpKdWPiHPgQEeVVKfB3yWNXQbXbr8IXYL+6Cw";
+              secrets.key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ6bc1pQCYalLXdB4X+7kFXtkTdFalbH5rchjuYj2ceU";
               server.enable = true;
 
               firewall = {
