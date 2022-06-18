@@ -118,6 +118,7 @@ let
         threads = mkOpt' ints.unsigned 1 "Number of threads per core.";
       };
       memory = mkOpt' ints.unsigned 1024 "Amount of RAM (mebibytes).";
+      boot = mkOpt' qemuOpts { menu = "on"; splash-time = 5000; } "Boot options.";
       vga = mkOpt' str "virtio" "VGA card type.";
       spice.enable = mkBoolOpt' true "Whether to enable SPICE.";
       networks = mkOption {
@@ -149,6 +150,7 @@ let
         "cpu ${i.cpu}"
         "smp cores=${toString i.smp.cpus},threads=${toString i.smp.threads}"
         "m ${toString i.memory}"
+        "boot ${toString i.boot}"
         "nographic"
         "vga ${i.vga}"
         "chardev socket,id=monitor-qmp,path=/run/vms/${n}/monitor-qmp.sock,server=on,wait=off"
