@@ -16,7 +16,6 @@ in
     my = {
       secrets.files = {
         "estuary/pdns/auth.conf" = {
-          name = "pdns.conf";
           owner = "pdns";
           group = "pdns";
         };
@@ -26,12 +25,10 @@ in
         };
 
         "estuary/netdata/powerdns.conf" = {
-          name = "netdata-powerdns.conf";
           owner = "netdata";
           group = "netdata";
         };
         "estuary/netdata/powerdns_recursor.conf" = {
-          name = "netdata-powerdns_recursor.conf";
           owner = "netdata";
           group = "netdata";
         };
