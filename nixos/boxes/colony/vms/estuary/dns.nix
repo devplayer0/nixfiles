@@ -15,20 +15,23 @@ in
   config = {
     my = {
       secrets.files = {
-        "pdns.conf" = {
+        "estuary/pdns/auth.conf" = {
+          name = "pdns.conf";
           owner = "pdns";
           group = "pdns";
         };
-        "colony-netdata-powerdns.conf" = {
-          owner = "netdata";
-          group = "netdata";
-        };
-
-        "colony-pdns-recursor.conf" = {
+        "estuary/pdns/recursor.conf" = {
           owner = "pdns-recursor";
           group = "pdns-recursor";
         };
-        "colony-netdata-powerdns_recursor.conf" = {
+
+        "estuary/netdata/powerdns.conf" = {
+          name = "netdata-powerdns.conf";
+          owner = "netdata";
+          group = "netdata";
+        };
+        "estuary/netdata/powerdns_recursor.conf" = {
+          name = "netdata-powerdns_recursor.conf";
           owner = "netdata";
           group = "netdata";
         };
@@ -36,15 +39,15 @@ in
 
       pdns.recursor = {
         enable = true;
-        extraSettingsFile = config.age.secrets."colony-pdns-recursor.conf".path;
+        extraSettingsFile = config.age.secrets."estuary/pdns/recursor.conf".path;
       };
     };
 
     services = {
       netdata = {
         configDir = {
-          "go.d/powerdns.conf" = config.age.secrets."colony-netdata-powerdns.conf".path;
-          "go.d/powerdns_recursor.conf" = config.age.secrets."colony-netdata-powerdns_recursor.conf".path;
+          "go.d/powerdns.conf" = config.age.secrets."estuary/netdata/powerdns.conf".path;
+          "go.d/powerdns_recursor.conf" = config.age.secrets."estuary/netdata/powerdns_recursor.conf".path;
         };
       };
 
@@ -82,7 +85,7 @@ in
 
     my.pdns.auth = {
       enable = true;
-      extraSettingsFile = config.age.secrets."pdns.conf".path;
+      extraSettingsFile = config.age.secrets."estuary/pdns/auth.conf".path;
       settings = {
         primary = true;
         resolver = "127.0.0.1";
