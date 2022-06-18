@@ -82,6 +82,7 @@ let
 
   driveOpts = with lib.types; {
     options = {
+      name = mkOpt' str null "Drive name.";
       backend = mkOpt' qemuOpts { } "Backend blockdev options.";
 
       format = mkOpt' qemuOpts { } "Format blockdev options.";
@@ -128,7 +129,7 @@ let
         });
         default = { };
       };
-      drives = mkOpt' (attrsOf (submodule driveOpts)) { } "Drives to attach to VM.";
+      drives = mkOpt' (listOf (submodule driveOpts)) { } "Drives to attach to VM.";
       hostDevices = mkOpt' (attrsOf (submodule hostDevOpts)) { } "Host PCI devices to pass to the VM.";
     };
   };
@@ -170,10 +171,10 @@ let
         "netdev tap,id=${nn},ifname=${c.ifname},script=no"
         ("device ${c.model},netdev=${nn},mac=${c.mac}" + (extraQEMUOpts c.extraOptions))
       ]) i.networks)) ++
-      (flatten (mapAttrsToList (dn: c: [
-        "blockdev node-name=${dn}-backend,${c.backend}"
-        "blockdev node-name=${dn}-format,${c.formatBackendProp}=${dn}-backend,${c.format}"
-        ("device ${c.frontend},id=${dn},drive=${dn}-format" + (extraQEMUOpts c.frontendOpts))
+      (flatten (map (d: [
+        "blockdev node-name=${d.name}-backend,${d.backend}"
+        "blockdev node-name=${d.name}-format,${d.formatBackendProp}=${d.name}-backend,${d.format}"
+        ("device ${d.frontend},id=${d.name},drive=${d.name}-format" + (extraQEMUOpts d.frontendOpts))
       ]) i.drives)) ++
       (map (bdf: "device vfio-pci,host=${bdf}") (attrNames i.hostDevices));
     args = map (v: "-${v}") flags;
