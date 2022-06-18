@@ -82,6 +82,7 @@
           smartd = {
             enable = true;
             autodetect = true;
+            extraOptions = [ "-A /var/log/smartd/" "--interval=600" ];
           };
         };
 
@@ -99,6 +100,10 @@
             "serial-getty@ttyS0".enable = true;
             "serial-getty@ttyS1".enable = true;
           };
+
+          tmpfiles.rules = [
+            "d /var/log/smartd 0755 root root"
+          ];
 
           network = {
             links = {
