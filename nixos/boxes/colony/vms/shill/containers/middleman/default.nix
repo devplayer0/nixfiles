@@ -30,7 +30,7 @@
             server.enable = true;
 
             secrets = {
-              key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAuvP9DEsffop53Fsh7xIdeVyQSF6tSKrOUs2faq6rip";
+              key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAQM9U1e/XcUCyMJITrpAHjAGahpqkZCmtX6pJkYzuks";
               files = {
                 "dhparams.pem" = {
                   owner = "acme";
@@ -41,11 +41,11 @@
                   owner = "acme";
                   group = "acme";
                 };
-                "cloudflare-credentials.conf" = {
+                "middleman/cloudflare-credentials.conf" = {
                   owner = "acme";
                   group = "acme";
                 };
-                "nginx-sso.yaml" = {
+                "middleman/nginx-sso.yaml" = {
                   owner = "nginx-sso";
                   group = "nginx-sso";
                 };
@@ -58,7 +58,7 @@
 
             nginx-sso = {
               enable = true;
-              extraConfigFile = config.age.secrets."nginx-sso.yaml".path;
+              extraConfigFile = config.age.secrets."middleman/nginx-sso.yaml".path;
               configuration = {
                 listen = {
                   addr = "[::]";
@@ -122,7 +122,8 @@
               acceptTerms = true;
               defaults = {
                 email = "dev@nul.ie";
-                server = "https://acme-staging-v02.api.letsencrypt.org/directory";
+                #server = "https://acme-staging-v02.api.letsencrypt.org/directory";
+                server = "https://acme-v02.api.letsencrypt.org/directory";
                 reloadServices = [ "nginx" ];
                 dnsResolver = "8.8.8.8";
               };
@@ -163,7 +164,7 @@
                     "*.${lib.my.pubDomain}"
                   ];
                   dnsProvider = "cloudflare";
-                  credentialsFile = config.age.secrets."cloudflare-credentials.conf".path;
+                  credentialsFile = config.age.secrets."middleman/cloudflare-credentials.conf".path;
                 };
               };
             };
