@@ -168,7 +168,7 @@ let
       ]) ++
       (optional i.spice.enable "spice unix=on,addr=/run/vms/${n}/spice.sock,disable-ticketing=on") ++
       (flatten (mapAttrsToList (nn: c: [
-        "netdev tap,id=${nn},ifname=${c.ifname},script=no"
+        "netdev tap,id=${nn},ifname=${c.ifname},script=no,downscript=no"
         ("device ${c.model},netdev=${nn},mac=${c.mac}" + (extraQEMUOpts c.extraOptions))
       ]) i.networks)) ++
       (flatten (map (d: [
