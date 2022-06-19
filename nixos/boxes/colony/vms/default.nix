@@ -47,6 +47,7 @@
         instances = {
           estuary = {
             uuid = "27796a09-c013-4031-9595-44791d6126b9";
+            cpu = "host,topoext";
             smp = {
               cpus = 2;
               threads = 2;
@@ -66,6 +67,7 @@
 
           shill = {
             uuid = "fc02d8c8-6f60-4b69-838a-e7aed6ee7617";
+            cpu = "host,topoext";
             smp = {
               cpus = 12;
               threads = 2;
