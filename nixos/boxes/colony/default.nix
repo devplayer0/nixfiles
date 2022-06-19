@@ -77,7 +77,14 @@
             boot.thin.enable = true;
             dmeventd.enable = true;
           };
-          netdata.enable = true;
+
+          netdata = {
+            enable = true;
+            config = {
+              # Ignore the VCCM sensor (RAM voltage is 1.35V with XMP enabled)
+              "plugin:freeipmi"."command options" = "ignore 5";
+            };
+          };
 
           smartd = {
             enable = true;
