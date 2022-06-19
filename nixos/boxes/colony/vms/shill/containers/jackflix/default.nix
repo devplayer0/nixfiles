@@ -28,7 +28,7 @@
           server.enable = true;
 
           secrets = {
-            key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKzzAqa4821NlYfALYOlvR7YlOgxNuulTWo9Vm5L1mNU";
+            key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPUv1ntVrZv5ripsKpcOAnyDQX2PHjowzyhqWK10Ml53";
           };
         };
 

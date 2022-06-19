@@ -4,7 +4,7 @@ let
   inherit (lib.my) networkdAssignment;
 
   wg = {
-    keyFile = "jackflix-wg-privkey.txt";
+    keyFile = "jackflix/mullvad-privkey";
     fwMark = 42;
     routeTable = 51820;
   };
