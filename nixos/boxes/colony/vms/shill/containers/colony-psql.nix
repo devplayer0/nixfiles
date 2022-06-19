@@ -29,7 +29,7 @@
             server.enable = true;
 
             secrets = {
-              key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICkly/tnPmoX05lDjEpQOkllPqYA0PY92pOKqvx8Po02";
+              key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINjxrgtTqLfKzmg14ZajkgViNXaM4cuTMvuJqETvj4Iv";
             };
 
             firewall = {
