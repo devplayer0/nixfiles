@@ -137,6 +137,13 @@
       homeConfigurations = mapAttrs (_: s: s.configuration) nixfiles.config.home-manager.homes;
 
       deploy = nixfiles.config.deploy-rs.rendered;
+      herculesCI = {
+        onPush = {
+          default.outputs = {
+            installer = nixfiles.config.nixos.systems.installer.configuration.config.my.buildAs.iso;
+          };
+        };
+      };
     } //
     (eachDefaultSystem (system:
     let
