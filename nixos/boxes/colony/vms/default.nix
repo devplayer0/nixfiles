@@ -9,9 +9,6 @@
     inherit (builtins) listToAttrs;
     inherit (lib) mkIf mkMerge optionals;
 
-    wanBDF =
-      if config.my.build.isDevVM then "00:02.0" else "27:00.0";
-
     vmLVM = vm: lv: {
       name = lv;
       backend = {
@@ -62,7 +59,12 @@
               (vmLVM "estuary" "nix")
               (vmLVM "estuary" "persist")
             ]);
-            hostDevices."${wanBDF}" = { };
+            hostDevices = {
+              net-wan0 = {
+                index = 0;
+                hostBDF = if config.my.build.isDevVM then "00:02.0" else "27:00.0";
+              };
+            };
           };
 
           shill = {

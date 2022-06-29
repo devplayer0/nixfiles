@@ -95,7 +95,10 @@ let
 
   hostDevOpts = with lib.types; {
     options = {
+      index = mkOpt' ints.unsigned null "Index of device in guest (for root port chassis and slot).";
+      hostBDF = mkOpt' str null "PCI BDF of host device.";
       bindVFIO = mkBoolOpt' true "Whether to automatically bind the device to vfio-pci.";
+      extraOptions = mkOpt' qemuOpts { } "Extra QEMU options for the vfio-pci QEMU device.";
     };
   };
 
@@ -137,7 +140,7 @@ let
   allHostDevs =
     flatten
       (map
-        (i: mapAttrsToList (bdf: c: { inherit bdf; inherit (c) bindVFIO; }) i.hostDevices)
+        (i: mapAttrsToList (name: c: c // { inherit name; }) i.hostDevices)
         (attrValues cfg.instances));
 
   mkQemuScript = n: i:
@@ -176,7 +179,10 @@ let
         "blockdev node-name=${d.name}-format,${d.formatBackendProp}=${d.name}-backend,${d.format}"
         ("device ${d.frontend},id=${d.name},drive=${d.name}-format" + (extraQEMUOpts d.frontendOpts))
       ]) i.drives)) ++
-      (map (bdf: "device vfio-pci,host=${bdf}") (attrNames i.hostDevices));
+      (flatten (mapAttrsToList (id: c: [
+        "device pcie-root-port,id=${id}-port,chassis=${toString c.index},port=${toString c.index}"
+        ("device vfio-pci,bus=${id}-port,host=${c.hostBDF}" + (extraQEMUOpts c.extraOptions))
+      ]) i.hostDevices));
     args = map (v: "-${v}") flags;
   in
   ''
@@ -193,7 +199,7 @@ in
   config = mkIf (cfg.instances != { }) {
     assertions = [
       {
-        assertion = let bdfs = map (d: d.bdf) allHostDevs; in (unique bdfs) == bdfs;
+        assertion = let bdfs = map (d: d.hostBDF) allHostDevs; in (unique bdfs) == bdfs;
         message = "VMs cannot share host devices!";
       }
     ];
@@ -215,7 +221,7 @@ in
               "etc/udev/rules.d/20-vfio-tags.rules"
               (concatMapStringsSep
                 "\n"
-                (d: ''ACTION=="add", SUBSYSTEM=="pci", KERNEL=="0000:${d.bdf}", TAG="vfio-pci-bind"'')
+                (d: ''ACTION=="add", SUBSYSTEM=="pci", KERNEL=="0000:${d.hostBDF}", TAG="vfio-pci-bind"'')
                 (filter (d: d.bindVFIO) allHostDevs)))
           ];
     };
