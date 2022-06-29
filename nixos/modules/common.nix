@@ -93,6 +93,7 @@ in
         loader = {
           efi = {
             efiSysMountPoint = mkDefault "/boot";
+            # Should generally be enough with just /EFI/BOOT/BOOTX64.EFI in place
             canTouchEfiVariables = mkDefault false;
           };
           grub = {

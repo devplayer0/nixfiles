@@ -126,6 +126,8 @@ in
         help = "Install a system configuration into a prepared installer that can be reached at $INSTALLER";
         script =
           ''
+            usage="usage: $0 [--no-bootloader] [--no-substitute] <system>"
+
             noBootloader=
             noSubstitute=
             ${parseArgs
@@ -138,9 +140,13 @@ in
                 noSubstitute=true
                 shift
                 ;;
+              --help)
+                log "$usage"
+                exit 0
+                ;;
             ''}
             system="''${1:-}"
-            [ -z "$system" ] && die "usage: $0 [--no-bootloader] [--no-substitute] <system>"
+            [ -z "$system" ] && die "$usage"
 
             : "''${INSTALLER_BUILD_OPTS:=}"
             IFS=" " read -ra BUILD_OPTS <<< "$INSTALLER_BUILD_OPTS"
