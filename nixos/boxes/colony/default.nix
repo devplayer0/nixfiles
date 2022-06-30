@@ -128,6 +128,10 @@
                 Name = "base";
                 Kind = "bridge";
               };
+              "30-base-dummy".netdevConfig = {
+                Name = "base0";
+                Kind = "dummy";
+              };
 
               "25-vms".netdevConfig = {
                 Name = "vms";
@@ -141,6 +145,10 @@
 
             networks = {
               "80-base" = networkdAssignment "base" assignments.internal;
+              "80-base-dummy" = {
+                matchConfig.Name = "base0";
+                networkConfig.Bridge = "base";
+              };
               "80-base-ext" = {
                 matchConfig.Name = "base-ext";
                 networkConfig.Bridge = "base";

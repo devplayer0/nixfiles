@@ -69,10 +69,11 @@ let
 
   netOpts = with lib.types; { name, iName, ... }: {
     options = {
-      ifname = mkOpt' str "vm-${iName}" "TAP device to create ";
+      ifname = mkOpt' str "vm-${iName}" "TAP device to create / use.";
       bridge = mkOpt' (nullOr str) name "Network bridge to connect to (null to not attach to bridge).";
       waitOnline = mkOpt' (either bool str) true
-        "Whether to wait for networkd to consider the bridge online. Pass a string to set the OPERSTATE will wait for.";
+        "Whether to wait for networkd to consider the bridge / existing TAP device online. Pass a string to set the OPERSTATE will wait for.";
+      tapFD = mkOpt' (nullOr ints.unsigned) null "FD to use to pass existing TAP device.";
 
       model = mkOpt' str "virtio-net" "Device type for network interface.";
       mac = mkOpt' str null "Guest MAC address.";
@@ -171,7 +172,10 @@ let
       ]) ++
       (optional i.spice.enable "spice unix=on,addr=/run/vms/${n}/spice.sock,disable-ticketing=on") ++
       (flatten (mapAttrsToList (nn: c: [
-        "netdev tap,id=${nn},ifname=${c.ifname},script=no,downscript=no"
+        ("netdev tap,id=${nn}," + (
+          if (c.tapFD != null)
+            then "fd=${toString c.tapFD} ${toString c.tapFD}<>/dev/tap$(cat /sys/class/net/${c.ifname}/ifindex)"
+            else "ifname=${c.ifname},script=no,downscript=no"))
         ("device ${c.model},netdev=${nn},mac=${c.mac}" + (extraQEMUOpts c.extraOptions))
       ]) i.networks)) ++
       (flatten (map (d: [
@@ -244,16 +248,22 @@ in
               };
             })
             (filterAttrs (_: net: net.bridge != null) i.networks);
-        services."vm@${n}" = {
-          description = "Virtual machine '${n}'";
-          requires =
+        services."vm@${n}" =
+        let
+          dependencies =
             map
               (net:
               let
-                arg = if net.waitOnline == true then net.bridge else "${net.bridge}:${net.waitOnline}";
+                ifname = if net.bridge != null then net.bridge else net.ifname;
+                arg = if net.waitOnline == true then ifname else "${ifname}:${net.waitOnline}";
               in
               "systemd-networkd-wait-online@${arg}.service")
-              (filter (net: net.bridge != null && net.waitOnline != false) (attrValues i.networks));
+              (filter (net: (net.bridge != null || net.tapFD != null) && net.waitOnline != false) (attrValues i.networks));
+        in
+        {
+          description = "Virtual machine '${n}'";
+          requires = dependencies;
+          after = dependencies;
           serviceConfig = {
             ExecStop = mkIf i.cleanShutdown.enabled "${doCleanShutdown} /run/vms/${n}/monitor-qmp.sock";
             TimeoutStopSec = mkIf i.cleanShutdown.enabled i.cleanShutdown.timeout;
