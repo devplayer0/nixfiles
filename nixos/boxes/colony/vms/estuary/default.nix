@@ -10,13 +10,16 @@
         altNames = [ "fw" ];
         domain = lib.my.colony.domain;
         ipv4 = {
-          address = "188.141.14.136";
-          gateway = null;
+          address = "212.83.51.97";
+          mask = 24;
+          gateway = "212.83.51.1";
           genPTR = false;
         };
         ipv6 = {
-          address = "2a0e:97c0:4d0:cccf::1";
-          gateway = "fe80::215:17ff:fe4b:494a";
+          address = "2a00:f48:103:2::10";
+          mask = 64;
+          gateway = "2a00:f48:103:2::1";
+          genPTR = false;
         };
       };
       base = {
@@ -71,10 +74,15 @@
 
             systemd.network = {
               links = {
-                "10-wan" = {
+                "10-phy1g0" = {
                   matchConfig.MACAddress = "d0:50:99:fa:a7:99";
+                  linkConfig.Name = "phy1g0";
+                };
+                "10-wan" = {
+                  matchConfig.MACAddress = "00:02:c9:56:24:6e";
                   linkConfig.Name = "wan";
                 };
+
                 "10-base" = {
                   matchConfig.MACAddress = "52:54:00:15:1a:53";
                   linkConfig.Name = "base";
@@ -84,16 +92,14 @@
               networks = {
                 "80-wan" = {
                   matchConfig.Name = "wan";
-                  DHCP = "ipv4";
-                  dhcpV4Config = {
-                    UseDNS = false;
-                    UseHostname = false;
-                  };
-                  address = [
-                    (with assignments.internal.ipv6; "${address}/${toString mask}")
+                  DHCP = "no";
+                  address = with assignments.internal; [
+                    (with ipv4; "${address}/${toString mask}")
+                    (with ipv6; "${address}/${toString mask}")
                   ];
-                  gateway = [
-                    assignments.internal.ipv6.gateway
+                  gateway = with assignments.internal; [
+                    ipv4.gateway
+                    ipv6.gateway
                   ];
                   networkConfig.IPv6AcceptRA = false;
                 };
