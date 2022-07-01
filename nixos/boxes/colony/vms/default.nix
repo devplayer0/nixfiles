@@ -67,8 +67,19 @@
           };
           "75-vm-wan10g" = {
             matchConfig.Name = "vm-wan10g";
-            linkConfig.RequiredForOnline = "carrier";
+            linkConfig.RequiredForOnline = "no";
           };
+        };
+      };
+
+      services = {
+        "vm@estuary" =
+        let
+          vtapUnit = "sys-subsystem-net-devices-vm\\x2dwan10g.device";
+        in
+        {
+          requires = [ vtapUnit ];
+          after = [ vtapUnit ];
         };
       };
     };
@@ -91,6 +102,7 @@
                 tapFD = 100;
                 # Real hardware MAC
                 mac = "00:02:c9:56:24:6e";
+                waitOnline = false;
               };
               base = {
                 waitOnline = "carrier";
