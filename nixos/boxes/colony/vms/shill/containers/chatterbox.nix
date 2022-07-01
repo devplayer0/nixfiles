@@ -28,7 +28,7 @@
             server.enable = true;
 
             secrets = {
-              key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP1ajgIF5V14bf9Zol567k2ieeg1zEd1vJ6gXkydE5UT";
+              key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGGx50oGzm5TsaB5R6f/daFPc5QNkmM15uc9/kiBxKaY";
               files."synapse.yaml" = {
                 owner = "matrix-synapse";
                 group = "matrix-synapse";
@@ -42,6 +42,7 @@
 
           systemd = {
             network.networks."80-container-host0" = networkdAssignment "host0" assignments.internal;
+            services.matrix-synapse.enable = false;
           };
 
           services = {
