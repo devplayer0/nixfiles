@@ -59,10 +59,10 @@ in
             lib.my.colony.prefixes.all.v4 lib.my.colony.prefixes.all.v6
           ];
         };
-        forwardZones = genAttrs authZones (_: "127.0.0.1:5353");
 
         settings = {
           query-local-address = [ "0.0.0.0" "::" ];
+          forward-zones = map (z: "${z}=127.0.0.1:5353") authZones;
 
           # DNS NOTIFY messages override TTL
           allow-notify-for = authZones;
