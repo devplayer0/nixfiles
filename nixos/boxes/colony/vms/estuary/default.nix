@@ -101,7 +101,12 @@
                     ipv4.gateway
                     ipv6.gateway
                   ];
-                  networkConfig.IPv6AcceptRA = false;
+                  networkConfig = {
+                    # We're using an explicit gateway and Linux uses link local address for neighbour discovery, so we
+                    # get lost to the router...
+                    LinkLocalAddressing = "no";
+                    IPv6AcceptRA = false;
+                  };
                 };
                 "80-base" = mkMerge [
                   (networkdAssignment "base" assignments.base)
