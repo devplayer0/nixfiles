@@ -69,6 +69,10 @@
               utp-enabled = true;
               port-forwarding-enabled = false;
 
+              speed-limit-down = 28160;
+              speed-limit-down-enabled = true;
+              speed-limit-up = 28160;
+              speed-limit-up-enabled = true;
               ratio-limit = 2.0;
               ratio-limit-enabled = true;
 
