@@ -72,6 +72,23 @@
               };
             };
 
+            systemd = {
+              services = {
+                # Use this as a way to make sure the router always knows we're here (NDP seems kindy funky)
+                ipv6-neigh-keepalive =
+                let
+                  waitOnline = "systemd-networkd-wait-online@wan.service";
+                in
+                {
+                  enable = true;
+                  requires = [ waitOnline ];
+                  after = [ waitOnline ];
+                  serviceConfig.ExecStart = "${pkgs.iputils}/bin/ping -n -i 10 2600::";
+                  wantedBy = [ "multi-user.target" ];
+                };
+              };
+            };
+
             systemd.network = {
               links = {
                 "10-phy1g0" = {
