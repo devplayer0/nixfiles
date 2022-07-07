@@ -92,6 +92,9 @@ in
           "0.0.0.0:5353" "[::]:5353"
         ];
         also-notify = [ "127.0.0.1" ];
+        allow-axfr-ips = [
+          "216.218.133.2" "2001:470:600::2"
+        ];
         enable-lua-records = true;
         #loglevel = 7;
         #log-dns-queries = true;
@@ -233,6 +236,7 @@ in
               )
 
             @ IN NS ns.${config.networking.domain}.
+            @ IN NS ns1.he.net.
 
             ${intPtr6Records}
 
