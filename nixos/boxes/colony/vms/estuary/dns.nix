@@ -6,8 +6,9 @@ let
 
   ptrDots = 2;
   reverseZone = "100.10.in-addr.arpa";
-  ptrDots6 = 17;
-  reverseZone6 = "1.0.0.1.d.4.0.0.c.7.9.e.0.a.2.ip6.arpa";
+  ptrDots6 = 20;
+  reverseZone6 = "1.d.4.0.0.c.7.9.e.0.a.2.ip6.arpa";
+  ptr6ValTrim = (stringLength "2a0e:97c0:4d1:") + 1;
 
   authZones = attrNames config.my.pdns.auth.bind.zones;
 in
@@ -148,7 +149,7 @@ in
 
         reverse6Script =
         let
-         len = toString ((stringLength lib.my.colony.start.all.v6) + 1);
+         len = toString ptr6ValTrim;
         in
         pkgs.writeText "reverse6.lua" ''
           local root = newDN("ip6.arpa.")
@@ -237,9 +238,13 @@ in
 
             * ${wildcardPtr6Def}
             ; Have to add a specific wildcard for each of the explicitly set subnets... this is disgusting for IPv6
-            ${wildcardPtr6Z "0"}
-            ${wildcardPtr6Z "1"}
-            ${wildcardPtr6Z "2"}
+            *.0 ${wildcardPtr6Def}
+            *.0.0 ${wildcardPtr6Def}
+            *.1.0.0 ${wildcardPtr6Def}
+
+            ${wildcardPtr6Z "0.1.0.0"}
+            ${wildcardPtr6Z "1.1.0.0"}
+            ${wildcardPtr6Z "2.1.0.0"}
           '';
         };
       };
