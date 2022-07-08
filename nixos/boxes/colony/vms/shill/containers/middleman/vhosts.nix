@@ -255,7 +255,7 @@ in
         (ssoServer "generic")
       ];
 
-      "jackflix-test.${lib.my.pubDomain}" =
+      "jackflix.${lib.my.pubDomain}" =
       let
         upstream = "http://jackflix-ctr.${config.networking.domain}:8096";
       in
