@@ -83,7 +83,12 @@
                   enable = true;
                   requires = [ waitOnline ];
                   after = [ waitOnline ];
-                  serviceConfig.ExecStart = "${pkgs.iputils}/bin/ping -n -i 10 2600::";
+                  script = ''
+                    while true; do
+                      ${pkgs.ndisc6}/bin/ndisc6 ${assignments.internal.ipv6.gateway} wan
+                      sleep 10
+                    done
+                  '';
                   wantedBy = [ "multi-user.target" ];
                 };
               };
