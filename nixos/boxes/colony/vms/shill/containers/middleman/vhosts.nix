@@ -62,6 +62,7 @@ in
           { }
           wellKnown
         ];
+        useACMEHost = lib.my.pubDomain;
       };
       "localhost" = {
         forceSSL = false;

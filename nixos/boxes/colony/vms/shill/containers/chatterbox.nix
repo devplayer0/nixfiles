@@ -29,9 +29,15 @@
 
             secrets = {
               key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGGx50oGzm5TsaB5R6f/daFPc5QNkmM15uc9/kiBxKaY";
-              files."synapse.yaml" = {
-                owner = "matrix-synapse";
-                group = "matrix-synapse";
+              files = {
+                "chatterbox/synapse.yaml" = {
+                  owner = "matrix-synapse";
+                  group = "matrix-synapse";
+                };
+                "chatterbox/nul.ie.signing.key" = {
+                  owner = "matrix-synapse";
+                  group = "matrix-synapse";
+                };
               };
             };
 
@@ -42,7 +48,6 @@
 
           systemd = {
             network.networks."80-container-host0" = networkdAssignment "host0" assignments.internal;
-            services.matrix-synapse.enable = false;
           };
 
           services = {
@@ -51,7 +56,7 @@
               enable = true;
               withJemalloc = true;
 
-              extraConfigFiles = [ config.age.secrets."synapse.yaml".path ];
+              extraConfigFiles = [ config.age.secrets."chatterbox/synapse.yaml".path ];
               settings = {
                 server_name = "nul.ie";
                 public_baseurl = "https://matrix.nul.ie";
@@ -108,6 +113,7 @@
                   "198.51.100.0/24"
                   "203.0.113.0/24"
                   "224.0.0.0/4"
+
                   "::1/128"
                   "fe80::/10"
                   "fc00::/7"
@@ -121,6 +127,8 @@
 
                 enable_registration = false;
                 allow_guest_access = false;
+
+                signing_key_path = config.age.secrets."chatterbox/nul.ie.signing.key".path;
               };
             };
           };
