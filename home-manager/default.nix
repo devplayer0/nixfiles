@@ -1,8 +1,8 @@
 { lib, hmFlakes, inputs, pkgs', config, ... }:
 let
   inherit (builtins) head tail mapAttrs attrValues;
-  inherit (lib) flatten optional mkOption mkDefault mkOptionType;
-  inherit (lib.my) homeStateVersion mkOpt' commonOpts inlineModule' applyAssertions;
+  inherit (lib) flatten optional optionalAttrs mkOption mkDefault mkOptionType mkIf;
+  inherit (lib.my) homeStateVersion' homeStateVersion mkOpt' commonOpts inlineModule' applyAssertions;
 
   cfg = config.home-manager;
 
@@ -10,12 +10,14 @@ let
     config',
     defs,
   }:
+  let
+    # TODO: Remove this backwards compatibility when 22.11 becomes stable
+    # https://github.com/nix-community/home-manager/blob/master/docs/release-notes/rl-2211.adoc
+    newCfgFn = (homeStateVersion' config'.home-manager) == "22.11";
+    modArg = if newCfgFn then "modules" else "extraModules";
+  in
   # homeManagerConfiguration doesn't allow us to set lib directly (inherits from passed pkgs)
-  hmFlakes.${config'.home-manager}.lib.homeManagerConfiguration {
-    inherit (config') system homeDirectory username;
-    # Pull the first def as `configuration` and add any others to `extraModules` (they should end up in the same list
-    # of modules to evaluate anyway)
-    configuration = head defs;
+  hmFlakes.${config'.home-manager}.lib.homeManagerConfiguration ({
     # Passing pkgs here doesn't set the global pkgs, just where it'll be imported from (and where the global lib is
     # derived from). We want home-manager to import pkgs itself so it'll apply config and overlays modularly. Any config
     # and overlays previously applied will be passed on by `homeManagerConfiguration` though. In fact, because of weird
@@ -23,7 +25,7 @@ let
     # TODO: Check if this is fixed in future.
     pkgs = pkgs'.${config'.nixpkgs}.${config'.system} // { config = { }; };
     extraSpecialArgs = { inherit inputs; };
-    extraModules = (attrValues cfg.modules) ++ [
+    "${modArg}" = (attrValues cfg.modules) ++ [
       {
         warnings = flatten [
           (optional (config'.nixpkgs != config'.home-manager)
@@ -35,10 +37,20 @@ let
         _module.args = {
           pkgs' = mapAttrs (_: p: p.${config'.system}) pkgs';
         };
+
+        home = mkIf newCfgFn {
+          inherit (config') homeDirectory username;
+        };
       }
       (homeStateVersion config'.home-manager)
-    ] ++ (tail defs);
-  };
+    ] ++ (if newCfgFn then defs else tail defs);
+  } // (optionalAttrs (!newCfgFn) {
+    inherit (config') system homeDirectory username;
+
+    # Pull the first def as `configuration` and add any others to `extraModules` for the old style config (they should
+    # end up in the same list of modules to evaluate anyway)
+    configuration = head defs;
+  }));
 
   homeOpts = with lib.types; { ... }@args:
   let
