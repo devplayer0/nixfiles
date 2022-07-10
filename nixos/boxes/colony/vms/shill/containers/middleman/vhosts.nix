@@ -203,7 +203,7 @@ in
         useACMEHost = lib.my.pubDomain;
       };
 
-      "torrents-test.${lib.my.pubDomain}" = mkMerge [
+      "torrents.${lib.my.pubDomain}" = mkMerge [
         {
           locations."/" = mkMerge [
             {
@@ -216,7 +216,7 @@ in
         (ssoServer "generic")
       ];
 
-      "jackett-test.${lib.my.pubDomain}" = mkMerge [
+      "jackett.${lib.my.pubDomain}" = mkMerge [
         {
           locations."/" = mkMerge [
             {
@@ -228,7 +228,7 @@ in
         }
         (ssoServer "generic")
       ];
-      "radarr-test.${lib.my.pubDomain}" = mkMerge [
+      "radarr.${lib.my.pubDomain}" = mkMerge [
         {
           locations."/" = mkMerge [
             {
@@ -241,7 +241,7 @@ in
         }
         (ssoServer "generic")
       ];
-      "sonarr-test.${lib.my.pubDomain}" = mkMerge [
+      "sonarr.${lib.my.pubDomain}" = mkMerge [
         {
           locations."/" = mkMerge [
             {
