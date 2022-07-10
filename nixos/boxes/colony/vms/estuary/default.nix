@@ -80,6 +80,7 @@
                   waitOnline = "systemd-networkd-wait-online@wan.service";
                 in
                 {
+                  description = "Frequent ICMP6 neighbour solicitations";
                   enable = true;
                   requires = [ waitOnline ];
                   after = [ waitOnline ];
@@ -88,6 +89,29 @@
                       ${pkgs.ndisc6}/bin/ndisc6 ${assignments.internal.ipv6.gateway} wan
                       sleep 10
                     done
+                  '';
+                  wantedBy = [ "multi-user.target" ];
+                };
+
+                # systemd-networkd doesn't support tc filtering
+                wan-filter-to-ifb =
+                let
+                  waitOnline = [
+                    "systemd-networkd-wait-online@wan.service"
+                    "systemd-networkd-wait-online@ifb-wan.service"
+                  ];
+                in
+                {
+                  description = "Install tc filter to pass WAN traffic to IFB";
+                  enable = true;
+                  bindsTo = waitOnline;
+                  after = waitOnline;
+                  serviceConfig = {
+                    Type = "oneshot";
+                    RemainAfterExit = true;
+                  };
+                  script = ''
+                    ${pkgs.iproute2}/bin/tc filter add dev wan parent ffff: u32 match u32 0 0 action mirred egress redirect dev ifb-wan
                   '';
                   wantedBy = [ "multi-user.target" ];
                 };
@@ -111,6 +135,13 @@
                 };
               };
 
+              netdevs = {
+                "25-ifb-wan".netdevConfig = {
+                  Name = "ifb-wan";
+                  Kind = "ifb";
+                };
+              };
+
               networks = {
                 "80-wan" = {
                   matchConfig.Name = "wan";
@@ -129,7 +160,33 @@
                     LinkLocalAddressing = "no";
                     IPv6AcceptRA = false;
                   };
+                  extraConfig = ''
+                    [QDisc]
+                    Parent=ingress
+                    Handle=ffff
+
+                    # Outbound traffic limiting
+                    [TokenBucketFilter]
+                    Parent=root
+                    LatencySec=0.3
+                    BurstBytes=512K
+                    # *bits
+                    Rate=245M
+                  '';
                 };
+                "80-ifb-wan" = {
+                  matchConfig.Name = "ifb-wan";
+                  extraConfig = ''
+                    # Inbound traffic limiting
+                    [TokenBucketFilter]
+                    Parent=root
+                    LatencySec=0.3
+                    BurstBytes=512K
+                    # *bits
+                    Rate=245M
+                  '';
+                };
+
                 "80-base" = mkMerge [
                   (networkdAssignment "base" assignments.base)
                   {
