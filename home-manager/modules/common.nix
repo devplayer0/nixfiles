@@ -228,6 +228,15 @@ in
             exact = true;
           };
         };
+        settings = {
+          substituters = [
+            "https://nix-cache.nul.ie"
+            "https://cache.nixos.org"
+          ];
+          trusted-public-keys = [
+            lib.my.nix.cacheKey
+          ];
+        };
       };
     })
     (mkIf config.my.isStandalone {
