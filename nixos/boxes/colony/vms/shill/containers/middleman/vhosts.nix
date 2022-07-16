@@ -104,6 +104,7 @@ in
                 proxyPass = "http://$behost.${config.networking.domain}:19999/$ndpath$is_args$args";
                 extraConfig = ''
                   proxy_pass_request_headers on;
+                  ${lib.my.nginx.proxyHeaders}
                   proxy_set_header Connection "keep-alive";
                   proxy_store off;
 
@@ -130,6 +131,7 @@ in
           "/notifications/hub" = {
             proxyPass = upstream;
             proxyWebsockets = true;
+            extraConfig = lib.my.nginx.proxyHeaders;
           };
           "/notifications/hub/negotiate".proxyPass = upstream;
         };
@@ -235,6 +237,7 @@ in
             {
               proxyPass = "http://jackflix-ctr.${config.networking.domain}:7878";
               proxyWebsockets = true;
+              extraConfig = lib.my.nginx.proxyHeaders;
             }
             (ssoLoc "generic")
           ];
@@ -248,6 +251,7 @@ in
             {
               proxyPass = "http://jackflix-ctr.${config.networking.domain}:8989";
               proxyWebsockets = true;
+              extraConfig = lib.my.nginx.proxyHeaders;
             }
             (ssoLoc "generic")
           ];
@@ -275,39 +279,80 @@ in
           "/socket" = {
             proxyPass = upstream;
             proxyWebsockets = true;
+            extraConfig = lib.my.nginx.proxyHeaders;
           };
         };
         useACMEHost = lib.my.pubDomain;
       };
+    };
 
+    minio =
+    let
+      host = "object-ctr.${config.networking.domain}";
+      s3Upstream = "http://${host}:9000";
+      extraConfig = ''
+        chunked_transfer_encoding off;
+        ignore_invalid_headers off;
+      '';
+
+      nixCacheableRegex = ''^\/(\S+\.narinfo|nar\/\S+\.nar\.\S+)$'';
+      nixCacheHeaders = ''
+        proxy_hide_header "X-Amz-Request-Id";
+        add_header Cache-Control $nix_cache_control;
+        add_header Expires $nix_expires;
+      '';
+    in
+    {
       "minio.${lib.my.pubDomain}" = {
-        extraConfig = ''
-          chunked_transfer_encoding off;
-        '';
+        inherit extraConfig;
         locations = {
-          "/".proxyPass = "http://object-ctr.${config.networking.domain}:9001";
+          "/" = {
+            proxyPass = "http://${host}:9001";
+          };
+          "/ws" = {
+            proxyPass = "http://${host}:9001";
+            proxyWebsockets = true;
+            extraConfig = lib.my.nginx.proxyHeaders;
+          };
         };
         useACMEHost = lib.my.pubDomain;
       };
       "s3.${lib.my.pubDomain}" = {
         serverAliases = [ "*.s3.${lib.my.pubDomain}" ];
-        extraConfig = ''
-          chunked_transfer_encoding off;
-        '';
-        locations = {
-          "/".proxyPass = "http://object-ctr.${config.networking.domain}:9000";
-        };
+        inherit extraConfig;
+        locations."/".proxyPass = s3Upstream;
         useACMEHost = lib.my.pubDomain;
       };
+
+      "nix-cache.${lib.my.pubDomain}" = {
+        extraConfig = ''
+          ${extraConfig}
+          proxy_set_header Host "nix-cache.s3.nul.ie";
+        '';
+        locations = {
+          "/".proxyPass = s3Upstream;
+          "~ ${nixCacheableRegex}" = {
+            proxyPass = s3Upstream;
+            extraConfig = nixCacheHeaders;
+          };
+        };
+        useACMEHost = lib.my.pubDomain;
+        onlySSL = false;
+      };
     };
-  in
-  mkMerge [
-    hosts
-    (mapAttrs (n: _: {
+
+    defaultsFor = mapAttrs (n: _: {
       onlySSL = mkDefault true;
       useACMEHost = mkDefault "${config.networking.domain}";
       kTLS = mkDefault true;
       http2 = mkDefault true;
-    }) hosts)
+    });
+  in
+  mkMerge [
+    hosts
+    (defaultsFor hosts)
+
+    minio
+    (defaultsFor minio)
   ];
 }

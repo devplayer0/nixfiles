@@ -203,7 +203,9 @@
               # Based on recommended*Settings, but probably better to be explicit about these
               appendHttpConfig = ''
                 # NixOS provides a logrotate config that auto-compresses :)
-                access_log /var/log/nginx/access.log combined;
+                log_format main
+                  '$remote_addr - $remote_user [$time_local] $scheme "$host" "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent"';
+                access_log /var/log/nginx/access.log main;
 
                 # optimisation
                 sendfile on;
@@ -236,19 +238,16 @@
                 proxy_send_timeout 60s;
                 proxy_http_version 1.1;
 
-                # proxy headers
-                proxy_set_header X-Origin-URI $request_uri;
-                proxy_set_header Host $host;
-                proxy_set_header X-Host $http_host;
-                proxy_set_header X-Forwarded-Host $http_host;
-                proxy_set_header X-Forwarded-Server $host;
-                proxy_set_header X-Real-IP $remote_addr;
-                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                proxy_set_header X-Forwarded-Proto $scheme;
-                proxy_set_header X-Forwarded-Protocol $scheme;
-                proxy_set_header X-Scheme $scheme;
+                ${lib.my.nginx.proxyHeaders}
 
                 vhost_traffic_status_zone;
+
+                map $upstream_status $nix_cache_control {
+                  "~20(0|6)" "public, max-age=315360000, immutable";
+                }
+                map $upstream_status $nix_expires {
+                  "~20(0|6)" "Thu, 31 Dec 2037 23:55:55 GMT";
+                }
               '';
             };
           };

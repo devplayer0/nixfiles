@@ -34,7 +34,7 @@
         inherit (lib.my) networkdAssignment;
       in
       {
-        imports = [ "${modulesPath}/profiles/qemu-guest.nix" ];
+        imports = [ "${modulesPath}/profiles/qemu-guest.nix" ./hercules.nix ];
 
         config = mkMerge [
           {

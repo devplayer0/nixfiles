@@ -294,6 +294,16 @@ in
           }
         ];
       })
+      (mkIf config.services.hercules-ci-agent.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = config.services.hercules-ci-agent.settings.baseDirectory;
+            mode = "0750";
+            user = "hercules-ci-agent";
+            group = "hercules-ci-agent";
+          }
+        ];
+      })
       (persistSimpleSvc "transmission")
       (persistSimpleSvc "jackett")
       (persistSimpleSvc "radarr")

@@ -57,6 +57,7 @@
               region = "eu-central-1";
               browser = true;
               rootCredentialsFile = config.age.secrets."minio.env".path;
+              dataDir = [ "/mnt/minio" ];
             };
           };
         }

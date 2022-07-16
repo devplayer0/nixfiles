@@ -174,6 +174,26 @@ rec {
     filterOpts = filterAttrsRecursive (_: v: v != null);
   };
 
+  nginx = {
+    proxyHeaders = ''
+      # Setting any proxy_header in a child (e.g. location) will nuke the parents...
+      proxy_set_header X-Origin-URI $request_uri;
+      proxy_set_header Host $host;
+      proxy_set_header X-Host $http_host;
+      proxy_set_header X-Forwarded-Host $http_host;
+      proxy_set_header X-Forwarded-Server $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header X-Forwarded-Protocol $scheme;
+      proxy_set_header X-Scheme $scheme;
+    '';
+  };
+
+  nix = {
+    cacheKey = "nix-cache.nul.ie-1:XofkqdHQSGFoPjB6aRohQbCU2ILKFqhNjWfoOdQgF5Y=";
+  };
+
   pubDomain = "nul.ie";
   colony = rec {
     domain = "fra1.int.${pubDomain}";
