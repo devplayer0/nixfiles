@@ -279,6 +279,26 @@ in
         };
         useACMEHost = lib.my.pubDomain;
       };
+
+      "minio.${lib.my.pubDomain}" = {
+        extraConfig = ''
+          chunked_transfer_encoding off;
+        '';
+        locations = {
+          "/".proxyPass = "http://object-ctr.${config.networking.domain}:9001";
+        };
+        useACMEHost = lib.my.pubDomain;
+      };
+      "s3.${lib.my.pubDomain}" = {
+        serverAliases = [ "*.s3.${lib.my.pubDomain}" ];
+        extraConfig = ''
+          chunked_transfer_encoding off;
+        '';
+        locations = {
+          "/".proxyPass = "http://object-ctr.${config.networking.domain}:9000";
+        };
+        useACMEHost = lib.my.pubDomain;
+      };
     };
   in
   mkMerge [

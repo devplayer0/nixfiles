@@ -5,5 +5,6 @@
     ./colony-psql.nix
     ./chatterbox.nix
     ./jackflix
+    ./object.nix
   ];
 }

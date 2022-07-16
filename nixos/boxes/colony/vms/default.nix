@@ -149,6 +149,19 @@
                 };
                 frontend = "virtio-blk";
               }
+              {
+                name = "minio";
+                backend = {
+                  driver = "host_device";
+                  filename = "/dev/ssds/minio";
+                  discard = "unmap";
+                };
+                format = {
+                  driver = "raw";
+                  discard = "unmap";
+                };
+                frontend = "virtio-blk";
+              }
             ]);
           };
         };

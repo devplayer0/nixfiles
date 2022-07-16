@@ -70,9 +70,14 @@
                 device = "/dev/disk/by-label/media";
                 fsType = "ext4";
               };
+              "/mnt/minio" = {
+                device = "/dev/disk/by-label/minio";
+                fsType = "xfs";
+              };
             };
 
             services = {
+              fstrim.enable = true;
               netdata.enable = true;
             };
 
@@ -138,6 +143,11 @@
                   jackflix = {
                     bindMounts = {
                       "/mnt/media".readOnly = false;
+                    };
+                  };
+                  object = {
+                    bindMounts = {
+                      "/mnt/minio".readOnly = false;
                     };
                   };
                 };

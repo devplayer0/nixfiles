@@ -162,6 +162,7 @@
                 "${lib.my.pubDomain}" = {
                   extraDomainNames = [
                     "*.${lib.my.pubDomain}"
+                    "*.s3.${lib.my.pubDomain}"
                   ];
                   dnsProvider = "cloudflare";
                   credentialsFile = config.age.secrets."middleman/cloudflare-credentials.conf".path;

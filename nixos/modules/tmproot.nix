@@ -298,6 +298,15 @@ in
       (persistSimpleSvc "jackett")
       (persistSimpleSvc "radarr")
       (persistSimpleSvc "sonarr")
+      (mkIf config.services.minio.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = config.services.minio.configDir;
+            user = "minio";
+            group = "minio";
+          }
+        ];
+      })
       (mkIf config.my.build.isDevVM {
         fileSystems = mkVMOverride {
           # Hijack the "root" device for persistence in the VM
