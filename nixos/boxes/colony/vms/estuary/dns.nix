@@ -72,6 +72,19 @@ in
           webserver = true;
           webserver-address = "::";
           webserver-allow-from = [ "127.0.0.1" "::1" ];
+
+          lua-dns-script = pkgs.writeText "pdns-script.lua" ''
+            function preresolve(dq)
+              if dq.qname:equal("nix-cache.nul.ie") then
+                dq:addAnswer(pdns.CNAME, "http.fra1.int.nul.ie.")
+                dq.rcode = 0
+                dq.followupFunction = "followCNAMERecords"
+                return true
+              end
+
+              return false
+            end
+          '';
         };
       };
     };
