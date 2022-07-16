@@ -76,6 +76,11 @@
               };
             };
 
+            nix.settings = {
+              # Exclude S3 cache that we're right next to
+              substituters = mkForce [ "https://cache.nixos.org" ];
+            };
+
             services = {
               fstrim.enable = true;
               netdata.enable = true;
