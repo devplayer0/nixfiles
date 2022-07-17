@@ -147,9 +147,6 @@
       in
       {
         onPush = {
-          default.outputs = {
-            installer = self.nixosConfigurations.installer.config.my.buildAs.iso;
-          };
           systems.outputs = {
             colony = system "colony";
             vms = genAttrs [ "estuary" "shill" ] system;
