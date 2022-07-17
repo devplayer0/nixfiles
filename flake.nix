@@ -147,6 +147,9 @@
       in
       {
         onPush = {
+          default.outputs = {
+            shell = self.devShells.x86_64-linux.default;
+          };
           systems.outputs = {
             colony = system "colony";
             vms = genAttrs [ "estuary" "shill" ] system;
@@ -162,6 +165,8 @@
     let
       pkgs = pkgs'.mine.${system};
       lib = pkgs.lib;
+
+      shell = pkgs.devshell.mkShell ./devshell;
     in
     # Stuff for each platform
     {
@@ -171,6 +176,7 @@
         deploy = recurseIntoAttrs (pkgs.deploy-rs.lib.deployChecks self.deploy);
       };
 
-      devShell = pkgs.devshell.mkShell ./devshell;
+      devShells.default = shell;
+      devShell = shell;
     }));
 }
