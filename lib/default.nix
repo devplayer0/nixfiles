@@ -191,7 +191,10 @@ rec {
   };
 
   nix = {
-    cacheKey = "nix-cache.nul.ie-1:XofkqdHQSGFoPjB6aRohQbCU2ILKFqhNjWfoOdQgF5Y=";
+    cacheKeys = [
+      "nix-cache.nul.ie-1:XofkqdHQSGFoPjB6aRohQbCU2ILKFqhNjWfoOdQgF5Y="
+      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+    ];
   };
 
   pubDomain = "nul.ie";
