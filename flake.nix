@@ -40,7 +40,7 @@
     }:
     let
       inherit (builtins) mapAttrs;
-      inherit (lib) recurseIntoAttrs evalModules;
+      inherit (lib) genAttrs recurseIntoAttrs evalModules;
       inherit (lib.flake) flattenTree eachDefaultSystem;
       inherit (lib.my) mkDefaultSystemsPkgs flakePackageOverlay;
 
@@ -137,10 +137,26 @@
       homeConfigurations = mapAttrs (_: s: s.configuration) nixfiles.config.home-manager.homes;
 
       deploy = nixfiles.config.deploy-rs.rendered;
-      herculesCI = {
+
+      # TODO: Modularise?
+      herculesCI =
+      let
+        system = n: self.nixosConfigurations."${n}".config.system.build.toplevel;
+        container = n: self.nixosConfigurations."${n}".config.my.buildAs.container;
+        home = n: self.homeConfigurations."${n}".activationPackage;
+      in
+      {
         onPush = {
           default.outputs = {
-            installer = nixfiles.config.nixos.systems.installer.configuration.config.my.buildAs.iso;
+            installer = self.nixosConfigurations.installer.config.my.buildAs.iso;
+          };
+          systems.outputs = {
+            colony = system "colony";
+            vms = genAttrs [ "estuary" "shill" ] system;
+            containers = genAttrs [ "jackflix" "middleman" "chatterbox" ] container;
+          };
+          homes.outputs = {
+            castle = home "dev@castle";
           };
         };
       };
