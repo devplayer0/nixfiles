@@ -26,6 +26,35 @@
             ln -sf "${config.age.secrets."hercules/aws-credentials.ini".path}" "${awsCredsPath}"
           '';
         };
+
+        nix-cache-gc =
+        let
+          configFile = pkgs.writeText "nix-cache-gc.ini" ''
+            [gc]
+            threshold = 256000
+            stop = 204800
+
+            [s3]
+            endpoint = s3.nul.ie
+            bucket = nix-cache
+            access_key = nix-gc
+          '';
+        in
+        {
+          description = "Nix cache garbage collection";
+          path = [ (pkgs.python310.withPackages (ps: with ps; [ minio ])) ];
+          serviceConfig = {
+            Type = "oneshot";
+            ExecStart = [ ''${./nix_cache_gc.py} -c ${configFile} -c ${config.age.secrets."nix-cache-gc.ini".path}'' ];
+          };
+        };
+      };
+      timers = {
+        nix-cache-gc = {
+          description = "Nix cache garbage collection timer";
+          wantedBy = [ "timers.target" ];
+          timerConfig.OnCalendar = "hourly";
+        };
       };
     };
 
@@ -53,6 +82,7 @@
           "hercules/cluster-join-token.key" = ownedByAgent;
           "hercules/binary-caches.json" = ownedByAgent;
           "hercules/aws-credentials.ini" = ownedByAgent;
+          "nix-cache-gc.ini" = {};
         };
       };
     };
