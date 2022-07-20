@@ -195,7 +195,7 @@ in
           whois
           ldns
           minicom
-          traceroute
+          mtr
           ncdu
           jq
           yq-go
@@ -257,6 +257,14 @@ in
       };
     })
     (mkIf pkgs.stdenv.isLinux (mkMerge [
+      {
+        home = {
+          packages = with pkgs; [
+            iputils
+            traceroute
+          ];
+        };
+      }
       (mkIf (config.my.isStandalone && config.programs.fish.enable && config.my.fishCompletionsFrequency != null) {
         systemd.user = {
           services.fish-update-completions = {
