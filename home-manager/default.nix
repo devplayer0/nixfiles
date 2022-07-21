@@ -1,4 +1,4 @@
-{ lib, hmFlakes, inputs, pkgs', config, ... }:
+{ lib, hmFlakes, pkgsFlakes, inputs, pkgs', config, ... }:
 let
   inherit (builtins) head tail mapAttrs attrValues;
   inherit (lib) flatten optional optionalAttrs mkOption mkDefault mkOptionType mkIf;
@@ -24,7 +24,7 @@ let
     # config merging behaviour (or lack thereof; similar to NixOS module), we explicitly pass empty config.
     # TODO: Check if this is fixed in future.
     pkgs = pkgs'.${config'.nixpkgs}.${config'.system} // { config = { }; };
-    extraSpecialArgs = { inherit inputs; };
+    extraSpecialArgs = { inherit inputs pkgsFlakes; pkgsFlake = pkgsFlakes.${config'.nixpkgs}; };
     "${modArg}" = (attrValues cfg.modules) ++ [
       {
         warnings = flatten [

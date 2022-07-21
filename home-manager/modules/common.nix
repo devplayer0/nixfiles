@@ -1,4 +1,4 @@
-{ lib, pkgs, pkgs', inputs, config, ... }@args:
+{ lib, pkgsFlake, pkgs, pkgs', inputs, config, ... }@args:
 let
   inherit (builtins) listToAttrs mapAttrs readFile;
   inherit (lib)
@@ -223,7 +223,7 @@ in
           pkgs = {
             to = {
               type = "path";
-              path = "${pkgs.path}";
+              path = "${pkgsFlake}";
             };
             exact = true;
           };
