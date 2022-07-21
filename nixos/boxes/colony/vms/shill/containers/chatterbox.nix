@@ -129,6 +129,24 @@
                 allow_guest_access = false;
 
                 signing_key_path = config.age.secrets."chatterbox/nul.ie.signing.key".path;
+
+                app_service_config_files = [
+                  "/var/lib/heisenbridge/registration.yml"
+                ];
+              };
+            };
+
+            heisenbridge = {
+              enable = true;
+              homeserver = "http://localhost:8008";
+              owner = "@dev:nul.ie";
+              namespaces = {
+                users = [
+                  {
+                    exclusive = true;
+                    regex = "@irc_.*";
+                  }
+                ];
               };
             };
           };

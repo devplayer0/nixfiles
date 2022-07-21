@@ -317,6 +317,15 @@ in
           }
         ];
       })
+      (mkIf config.services.heisenbridge.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = "/var/lib/heisenbridge";
+            user = "heisenbridge";
+            group = "heisenbridge";
+          }
+        ];
+      })
       (mkIf config.my.build.isDevVM {
         fileSystems = mkVMOverride {
           # Hijack the "root" device for persistence in the VM
