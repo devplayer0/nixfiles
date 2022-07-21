@@ -1,7 +1,7 @@
 {
   home-manager.homes."jack@macsimum" = {
     system = "x86_64-darwin";
-    nixpkgs = "unstable";
+    nixpkgs = "mine";
     homeDirectory = "/Users/jack";
     username = "jack";
 
