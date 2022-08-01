@@ -89,7 +89,7 @@ in
       let
         hosts = [
           "vm"
-          "fw" "ctr"
+          "fw" "ctr" "oci"
           "http" "jackflix-ctr" "chatterbox-ctr" "colony-psql-ctr"
         ];
         matchHosts = concatStringsSep "|" hosts;

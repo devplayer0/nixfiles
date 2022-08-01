@@ -35,7 +35,7 @@
 
     configuration = { lib, pkgs, modulesPath, config, assignments, allAssignments, ... }:
       let
-        inherit (lib) mkIf mkMerge mkForce;
+        inherit (lib) flatten mkIf mkMerge mkForce;
         inherit (lib.my) networkdAssignment;
       in
       {
@@ -150,25 +150,18 @@
                         ipv6PrefixConfig.Prefix = lib.my.colony.prefixes.base.v6;
                       }
                     ];
-                    routes = map (r: { routeConfig = r; }) [
-                      {
-                        Gateway = allAssignments.colony.internal.ipv4.address;
-                        Destination = lib.my.colony.prefixes.vms.v4;
-                      }
-                      {
-                        Gateway = allAssignments.colony.internal.ipv6.address;
-                        Destination = lib.my.colony.prefixes.vms.v6;
-                      }
-
-                      {
-                        Gateway = allAssignments.colony.internal.ipv4.address;
-                        Destination = lib.my.colony.prefixes.ctrs.v4;
-                      }
-                      {
-                        Gateway = allAssignments.colony.internal.ipv6.address;
-                        Destination = lib.my.colony.prefixes.ctrs.v6;
-                      }
-                    ];
+                    routes = map (r: { routeConfig = r; }) (flatten
+                      ([  ] ++
+                      (map (pName: [
+                        {
+                          Gateway = allAssignments.colony.internal.ipv4.address;
+                          Destination = lib.my.colony.prefixes."${pName}".v4;
+                        }
+                        {
+                          Gateway = allAssignments.colony.internal.ipv6.address;
+                          Destination = lib.my.colony.prefixes."${pName}".v6;
+                        }
+                      ]) [ "vms" "ctrs" "oci" ])));
                   }
                 ];
               };

@@ -217,6 +217,10 @@ rec {
         v4 = "${start.all.v4}2.";
         v6 = "${start.all.v6}2::";
       };
+      oci = {
+        v4 = "${start.all.v4}3.";
+        v6 = "${start.all.v6}3::";
+      };
     };
     prefixes = {
       all = {
@@ -231,6 +235,10 @@ rec {
       ctrs = {
         v4 = "${start.ctrs.v4}0/24";
         v6 = "${start.ctrs.v6}/64";
+      };
+      oci = {
+        v4 = "${start.oci.v4}0/24";
+        v6 = "${start.oci.v6}/64";
       };
     };
   };

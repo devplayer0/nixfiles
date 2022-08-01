@@ -129,6 +129,8 @@ in
           "/root/.nix-defexpr"
 
           "/var/lib/logrotate.status"
+
+          "/etc/cni/net.d/cni.lock"
         ];
         persistence.config = {
           # In impermanence the key in `environment.persistence.*` (aka name passed the attrsOf submodule) sets the
@@ -324,6 +326,15 @@ in
             user = "heisenbridge";
             group = "heisenbridge";
           }
+        ];
+      })
+      (mkIf config.virtualisation.podman.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = "/var/cache/containers";
+            mode = "750";
+          }
+          "/var/lib/cni"
         ];
       })
       (mkIf config.my.build.isDevVM {

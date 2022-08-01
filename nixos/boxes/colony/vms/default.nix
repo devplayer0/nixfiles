@@ -2,6 +2,7 @@
   imports = [
     ./estuary
     ./shill
+    ./whale2
   ];
 
   nixos.systems.colony.configuration = { lib, pkgs, config, systems, ... }:
@@ -28,7 +29,8 @@
       name = "installer";
       backend = {
         driver = "file";
-        filename = "${systems.installer.configuration.config.my.buildAs.iso}/iso/nixos-installer-devplayer0.iso";
+        #filename = "${systems.installer.configuration.config.my.buildAs.iso}/iso/nixos-installer-devplayer0.iso";
+        filename = "/persist/home/dev/nixos-installer-devplayer0.iso";
         read-only = "on";
       };
       format.driver = "raw";
@@ -154,6 +156,36 @@
                 backend = {
                   driver = "host_device";
                   filename = "/dev/ssds/minio";
+                  discard = "unmap";
+                };
+                format = {
+                  driver = "raw";
+                  discard = "unmap";
+                };
+                frontend = "virtio-blk";
+              }
+            ]);
+          };
+
+          whale2 = {
+            uuid = "6d31b672-1f32-4e2b-a39f-78a5b5e949a0";
+            cpu = "host,topoext";
+            smp = {
+              cpus = 8;
+              threads = 2;
+            };
+            memory = 16384;
+            networks.vms.mac = "52:54:00:d5:d9:c6";
+            cleanShutdown.timeout = 120;
+            drives = [ ] ++ (optionals (!config.my.build.isDevVM) [
+              (mkMerge [ (vmLVM "whale2" "esp") { frontendOpts.bootindex = 0; } ])
+              (vmLVM "whale2" "nix")
+              (vmLVM "whale2" "persist")
+              {
+                name = "oci";
+                backend = {
+                  driver = "host_device";
+                  filename = "/dev/ssds/oci";
                   discard = "unmap";
                 };
                 format = {

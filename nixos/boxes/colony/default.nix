@@ -100,6 +100,7 @@
           lm_sensors
           linuxPackages.cpupower
           smartmontools
+          xfsprogs
         ];
 
         systemd = {
@@ -178,6 +179,15 @@
                     {
                       Gateway = allAssignments.shill.internal.ipv6.address;
                       Destination = lib.my.colony.prefixes.ctrs.v6;
+                    }
+
+                    {
+                      Gateway = allAssignments.whale2.internal.ipv4.address;
+                      Destination = lib.my.colony.prefixes.oci.v4;
+                    }
+                    {
+                      Gateway = allAssignments.whale2.internal.ipv6.address;
+                      Destination = lib.my.colony.prefixes.oci.v6;
                     }
                   ];
                 }
