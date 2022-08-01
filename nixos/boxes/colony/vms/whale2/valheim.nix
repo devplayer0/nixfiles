@@ -18,8 +18,8 @@ in
         environmentFiles = [ config.age.secrets."whale2/valheim.env".path ];
 
         volumes = [
-          "data:/config"
-          "server:/opt/valheim"
+          "valheim_data:/config"
+          "valhem_server:/opt/valheim"
         ];
 
         extraOptions = [
