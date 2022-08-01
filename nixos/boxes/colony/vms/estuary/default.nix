@@ -192,6 +192,17 @@
                       port = 8448;
                       dst = allAssignments.middleman.internal.ipv4.address + ":8448";
                     }
+
+                    {
+                      port = 2456;
+                      dst = allAssignments.valheim-oci.internal.ipv4.address + ":2456";
+                      proto = "udp";
+                    }
+                    {
+                      port = 2457;
+                      dst = allAssignments.valheim-oci.internal.ipv4.address + ":2457";
+                      proto = "udp";
+                    }
                   ];
                 };
                 extraRules =
@@ -209,6 +220,7 @@
                       tcp dport ssh accept
 
                       ${matchInet "tcp dport { http, https, 8448 } accept" "middleman"}
+                      ${matchInet "udp dport { 2456-2457 } accept" "valheim-oci"}
 
                       return
                     }

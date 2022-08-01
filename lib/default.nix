@@ -198,6 +198,8 @@ rec {
   };
 
   pubDomain = "nul.ie";
+  dockerNetAssignment =
+    assignments: name: with assignments."${name}".internal; "ip=${ipv4.address},ip=${ipv6.address}";
   colony = rec {
     domain = "fra1.int.${pubDomain}";
     start = {

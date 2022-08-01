@@ -2,13 +2,13 @@
 let
   inherit (builtins) attrValues mapAttrs;
   inherit (lib)
-    substring flatten optional optionals mkIf mkDefault mkForce mkOption mkOptionType;
+    substring flatten optional optionals mkIf mkDefault mkForce mkOption mkOptionType foldAttrs mapAttrsToList;
   inherit (lib.my)
     naiveIPv4Gateway homeStateVersion mkOpt' mkBoolOpt' mkDefault' commonOpts inlineModule' applyAssertions duplicates;
 
   cfg = config.nixos;
 
-  allAssignments = mapAttrs (_: c: c.assignments) cfg.systems;
+  allAssignments = (mapAttrs (_: c: c.assignments) cfg.systems) // (foldAttrs (c: all: all // c) { } (mapAttrsToList (_: c: c.extraAssignments) cfg.systems));
 
   mkSystem =
     {
@@ -131,6 +131,8 @@ let
       assignments = mkOpt' (attrsOf (submoduleWith {
         modules = [ assignmentOpts { _module.args.name = mkForce name; } ];
       })) { } "Network assignments.";
+      # TODO: Getting the default name for the extra assignment is currently fucked for the same reason as above
+      extraAssignments = mkOpt' (attrsOf (attrsOf (submodule assignmentOpts))) { } "Extra network assignments.";
 
       configuration = mkOption {
         description = "NixOS configuration module.";

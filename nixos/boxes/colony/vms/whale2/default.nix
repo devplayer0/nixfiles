@@ -1,4 +1,8 @@
-{ lib, ... }: {
+{ lib, ... }:
+let
+  inherit (builtins) mapAttrs;
+in
+{
   nixos.systems.whale2 = {
     system = "x86_64-linux";
     nixpkgs = "mine";
@@ -25,9 +29,20 @@
       };
     };
 
+    extraAssignments = mapAttrs (n: i: {
+      internal = {
+        name = n;
+        domain = lib.my.colony.domain;
+        ipv4.address = "${lib.my.colony.start.oci.v4}${toString i}";
+        ipv6.address = "${lib.my.colony.start.oci.v6}${toString i}";
+      };
+    }) {
+      valheim-oci = 2;
+    };
+
     configuration = { lib, pkgs, modulesPath, config, assignments, allAssignments, ... }:
       let
-        inherit (builtins) mapAttrs toJSON;
+        inherit (builtins) toJSON;
         inherit (lib) mkIf mkMerge mkForce;
         inherit (lib.my) networkdAssignment;
       in
@@ -35,7 +50,7 @@
         imports = [
           "${modulesPath}/profiles/qemu-guest.nix"
 
-
+          ./valheim.nix
         ];
 
         config = mkMerge [
@@ -74,6 +89,9 @@
             virtualisation = {
               podman = {
                 enable = true;
+              };
+              oci-containers = {
+                backend = "podman";
               };
             };
 
