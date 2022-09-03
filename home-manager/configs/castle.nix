@@ -20,7 +20,6 @@
 
         home.packages = with pkgs; [
           rpiboot
-          mame
         ];
 
         nix.settings.cores = 16;
