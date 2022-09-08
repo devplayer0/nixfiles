@@ -337,6 +337,9 @@ in
           "/var/lib/cni"
         ];
       })
+      (mkIf config.networking.networkmanager.enable {
+        my.tmproot.persistence.config.directories = [ "/var/lib/NetworkManager" ];
+      })
       (mkIf config.my.build.isDevVM {
         fileSystems = mkVMOverride {
           # Hijack the "root" device for persistence in the VM

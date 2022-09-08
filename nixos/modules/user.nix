@@ -11,6 +11,7 @@ in
   options.my.user = with lib.types; {
     enable = mkBoolOpt' true "Whether to create a primary user.";
     passwordSecret = mkOpt' (nullOr str) "user-passwd.txt" "Name of user password secret.";
+    tmphome = mkBoolOpt' true "Whether to persist home directory files under tmproot";
     config = mkOption {
       type = options.users.users.type.nestedTypes.elemType;
       default = { };
@@ -46,7 +47,7 @@ in
             _module.args.name = lib.mkForce user'.name;
           };
         };
-        tmproot = {
+        tmproot = mkIf cfg.tmphome {
           unsaved.ignore = [
             # Auto-generated (on activation?)
             "/home/${user'.name}/.nix-profile"

@@ -86,6 +86,7 @@ in
       };
 
       time.timeZone = mkDefault "Europe/Dublin";
+      i18n.defaultLocale = "en_IE.UTF-8";
 
       boot = {
         # Use latest LTS release by default

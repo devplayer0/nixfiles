@@ -98,6 +98,7 @@
         # Systems
         nixos/installer.nix
         nixos/boxes/colony
+        nixos/boxes/tower
 
         # Homes
         home-manager/configs/castle.nix
