@@ -99,6 +99,7 @@
           resolved = {
             enable = true;
             extraConfig = mkForce "";
+            dnssec = "false";
           };
 
           fprintd.enable = true;
