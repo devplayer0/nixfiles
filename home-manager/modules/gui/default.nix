@@ -70,6 +70,11 @@ in
         };
 
         home = {
+          packages = with pkgs; [
+            wtype
+            wl-clipboard
+          ];
+
           pointerCursor = {
             package = pkgs.vanilla-dmz;
             name = "Vanilla-DMZ";
@@ -107,7 +112,10 @@ in
                     "${mod}+x" = "exec ${cfg.menu}";
                     "${mod}+q" = "kill";
                     "${mod}+Shift+q" = "exec swaynag -t warning -m 'bruh you really wanna kill sway?' -b 'ye' 'systemctl --user stop graphical-session.target && swaymsg exit'";
-                    "${mod}+shift+s" = "exec ${pkgs.flameshot}/bin/flameshot gui";
+                    "${mod}+Shift+s" = "exec flameshot gui";
+                    "${mod}+Shift+e" = "exec rofi -show emoji";
+                    # Config for this doesn't seem to work :/
+                    "${mod}+c" = ''exec rofi -show calc -calc-command "echo -n '{result}' | ${pkgs.wl-clipboard}/bin/wl-copy"'';
                   };
 
                 menu = "rofi -show run";
@@ -145,13 +153,14 @@ in
           waybar = import ./waybar.nix { inherit lib pkgs config; };
           rofi = {
             enable = true;
-            font = "SauceCodePro Nerd Font Mono";
+            font = "SauceCodePro Nerd Font Mono 14";
             plugins = with pkgs; [
               rofi-calc
               rofi-emoji
             ];
             extraConfig = {
               modes = "window,run,ssh,filebrowser,calc,emoji";
+              emoji-mode = "copy";
             };
           };
 
