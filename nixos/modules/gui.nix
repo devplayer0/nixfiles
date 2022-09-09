@@ -25,5 +25,14 @@ in
     };
 
     programs.dconf.enable = true;
+
+    fonts.fonts = with pkgs; [
+      dejavu_fonts
+      freefont_ttf
+      gyre-fonts # TrueType substitutes for standard PostScript fonts
+      liberation_ttf
+      unifont
+      noto-fonts-emoji
+    ];
   };
 }
