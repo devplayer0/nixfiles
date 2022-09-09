@@ -74,6 +74,15 @@ in
       command = ''nix build "''${@:2}" ".#nixosConfigurations.\"$1\".config.system.build.toplevel"'';
     }
     {
+      name = "build-n-switch";
+      category = "tasks";
+      help = "Build NixOS configuration for the current host and run `switch-to-configuration`";
+      command = ''
+        path="$(nix build --no-link --print-out-paths ".#nixosConfigurations.\"$(hostname)\".config.system.build.toplevel")"
+        doas "$path"/bin/switch-to-configuration "$@"
+      '';
+    }
+    {
       name = "run-vm";
       category = "tasks";
       help = "Run NixOS configuration as a VM";
