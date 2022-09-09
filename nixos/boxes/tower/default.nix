@@ -21,7 +21,10 @@
         };
 
         boot = {
-          loader.efi.canTouchEfiVariables = true;
+          loader = {
+            efi.canTouchEfiVariables = true;
+            timeout = 10;
+          };
           kernelPackages = pkgs.linuxKernel.packages.linux_5_19;
           kernelModules = [ "kvm-intel" ];
           kernelParams = [ "intel_iommu=on" ];
