@@ -66,6 +66,14 @@
           };
         };
 
+        security = {
+          doas = {
+            # Fingerprint auth :)
+            wheelNeedsPassword = true;
+            extraRules = [ { groups = [ "wheel" ]; persist = true; } ];
+          };
+        };
+
         console.keyMap = "uk";
 
         services = {
