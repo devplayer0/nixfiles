@@ -130,6 +130,22 @@ in
           };
         };
 
+        gtk = {
+          enable = true;
+          theme = {
+            name = "Numix";
+            package = pkgs.numix-gtk-theme;
+          };
+          iconTheme = {
+            name = "Numix";
+            package = pkgs.numix-icon-theme;
+          };
+        };
+        qt = {
+          enable = true;
+          platformTheme = "gtk";
+        };
+
         services = {
           flameshot = {
             enable = true;
