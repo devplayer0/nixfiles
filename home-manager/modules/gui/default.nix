@@ -84,6 +84,7 @@ in
 
         fonts.fontconfig.enable = true;
 
+        xsession.preferStatusNotifierItems = true;
         wayland = {
           windowManager = {
             sway = {
