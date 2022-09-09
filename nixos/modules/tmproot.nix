@@ -351,6 +351,12 @@ in
           }
         ];
       })
+      (mkIf config.hardware.bluetooth.enable {
+        my.tmproot.persistence.config.directories = [ "/var/lib/bluetooth" ];
+      })
+      (mkIf config.services.blueman.enable {
+        my.tmproot.persistence.config.directories = [ "/var/lib/blueman" ];
+      })
       (mkIf config.my.build.isDevVM {
         fileSystems = mkVMOverride {
           # Hijack the "root" device for persistence in the VM

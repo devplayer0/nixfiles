@@ -17,6 +17,7 @@
           opengl.extraPackages = with pkgs; [
             intel-media-driver
           ];
+          bluetooth.enable = true;
         };
 
         boot = {

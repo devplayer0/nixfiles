@@ -23,5 +23,7 @@ in
         jack.enable = true;
       };
     };
+
+    programs.dconf.enable = true;
   };
 }
