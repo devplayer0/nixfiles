@@ -78,6 +78,7 @@ in
           pointerCursor = {
             package = pkgs.vanilla-dmz;
             name = "Vanilla-DMZ";
+            size = 16;
             gtk.enable = true;
           };
         };
