@@ -32,6 +32,28 @@ in
         };
       }
       (mkIf cfg.standalone {
+        systemd.user = {
+          services = {
+            wait-for-sway = {
+              Unit = {
+                Description = "Wait for sway to be ready";
+                Before = "graphical-session.target";
+              };
+              Service = {
+                Type = "oneshot";
+                ExecStart = toString (pkgs.writeShellScript "wait-for-sway.sh" ''
+                  until ${pkgs.sway}/bin/swaymsg -t get_version -q; do
+                    ${pkgs.coreutils}/bin/sleep 0.1
+                  done
+                  ${pkgs.coreutils}/bin/sleep 0.5
+                '');
+                RemainAfterExit = true;
+              };
+              Install.RequiredBy = [ "sway-session.target" ];
+            };
+          };
+        };
+
         xdg = {
           userDirs = {
             enable = true;
@@ -84,7 +106,7 @@ in
                     "${mod}+d" = null;
                     "${mod}+x" = "exec ${cfg.menu}";
                     "${mod}+q" = "kill";
-                    "${mod}+Shift+q" = "exec swaynag -t warning -m 'bruh you really wanna kill sway?' -b 'ye' 'swaymsg exit'";
+                    "${mod}+Shift+q" = "exec swaynag -t warning -m 'bruh you really wanna kill sway?' -b 'ye' 'systemctl --user stop graphical-session.target && swaymsg exit'";
                   };
 
                 menu = "rofi -show run";
