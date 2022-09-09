@@ -107,6 +107,7 @@ in
                     "${mod}+x" = "exec ${cfg.menu}";
                     "${mod}+q" = "kill";
                     "${mod}+Shift+q" = "exec swaynag -t warning -m 'bruh you really wanna kill sway?' -b 'ye' 'systemctl --user stop graphical-session.target && swaymsg exit'";
+                    "${mod}+shift+s" = "exec ${pkgs.flameshot}/bin/flameshot gui";
                   };
 
                 menu = "rofi -show run";
@@ -115,6 +116,19 @@ in
 
               swaynag = {
                 enable = true;
+              };
+            };
+          };
+        };
+
+        services = {
+          flameshot = {
+            enable = true;
+            settings = {
+              General = {
+                disabledTrayIcon = true;
+                savePath = "/tmp/screenshots";
+                savePathFixed = false;
               };
             };
           };

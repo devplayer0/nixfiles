@@ -15,6 +15,12 @@ in
       opengl.enable = mkDefault true;
     };
 
+    systemd = {
+      tmpfiles.rules = [
+        "d /tmp/screenshots 0777 root root"
+      ];
+    };
+
     services = {
       pipewire = {
         enable = true;
@@ -34,5 +40,28 @@ in
       unifont
       noto-fonts-emoji
     ];
+
+    nixpkgs.overlays = [
+      (self: super: {
+        xdg-desktop-portal = super.xdg-desktop-portal.overrideAttrs (old: rec {
+          # https://github.com/flatpak/xdg-desktop-portal/issues/861
+          version = "1.14.6";
+
+          src = pkgs.fetchFromGitHub {
+            owner = "flatpak";
+            repo = old.pname;
+            rev = version;
+            sha256 = "sha256-MD1zjKDWwvVTui0nYPgvVjX48DaHWcP7Q10vDrNKYz0=";
+          };
+        });
+      })
+    ];
+    xdg = {
+      portal = {
+        enable = true;
+        # For sway
+        wlr.enable = true;
+      };
+    };
   };
 }
