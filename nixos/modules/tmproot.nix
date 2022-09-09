@@ -338,7 +338,18 @@ in
         ];
       })
       (mkIf config.networking.networkmanager.enable {
-        my.tmproot.persistence.config.directories = [ "/var/lib/NetworkManager" ];
+        my.tmproot.persistence.config.directories = [
+          "/var/lib/NetworkManager"
+          "/etc/NetworkManager/system-connections"
+        ];
+      })
+      (mkIf config.services.fprintd.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = "/var/lib/fprint";
+            mode = "700";
+          }
+        ];
       })
       (mkIf config.my.build.isDevVM {
         fileSystems = mkVMOverride {

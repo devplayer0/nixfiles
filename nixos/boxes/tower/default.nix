@@ -14,6 +14,9 @@
           cpu = {
             intel.updateMicrocode = true;
           };
+          opengl.extraPackages = with pkgs; [
+            intel-media-driver
+          ];
         };
 
         boot = {
@@ -75,6 +78,9 @@
             enable = true;
             extraConfig = mkForce "";
           };
+
+          fprintd.enable = true;
+          blueman.enable = true;
         };
 
         networking = {
@@ -101,6 +107,10 @@
         ];
 
         systemd = {
+          services = {
+            systemd-networkd-wait-online.enable = false;
+          };
+
           network = {
             links = {
               "10-wifi" = {
@@ -114,6 +124,32 @@
         my = {
           user = {
             tmphome = false;
+            homeConfig = {
+              services = {
+                network-manager-applet.enable = true;
+              };
+
+              home = {
+                packages = with pkgs; [
+                  spotify
+                ];
+              };
+
+              services = {
+                blueman-applet.enable = true;
+              };
+
+              wayland.windowManager.sway = {
+                config = {
+                  input."1:1:AT_Translated_Set_2_keyboard".xkb_layout = "ie";
+                  output.eDP-1.scale = "1";
+                };
+              };
+
+              my = {
+                gui.standalone = true;
+              };
+            };
           };
 
           #deploy.generate.system.mode = "boot";
@@ -124,6 +160,8 @@
           firewall = {
             enable = true;
           };
+
+          gui.enable = true;
         };
       };
   };

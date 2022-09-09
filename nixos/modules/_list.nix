@@ -14,5 +14,6 @@
     network = ./network.nix;
     pdns = ./pdns.nix;
     nginx-sso = ./nginx-sso.nix;
+    gui = ./gui.nix;
   };
 }

@@ -1,6 +1,6 @@
 { lib, options, config, ... }:
 let
-  inherit (lib) mkIf mkDefault mkOption mkMerge mkAliasDefinitions;
+  inherit (lib) mkIf mkDefault mkOption mkMerge mkAliasDefinitions optional;
   inherit (lib.my) mkBoolOpt' mkOpt' mkDefault';
 
   cfg = config.my.user;
@@ -34,7 +34,9 @@ in
             name = mkDefault' "dev";
             isNormalUser = true;
             uid = mkDefault 1000;
-            extraGroups = [ "wheel" "kvm" ];
+            extraGroups =
+              [ "wheel" "kvm" ] ++
+              (optional config.networking.networkmanager.enable "networkmanager");
             password = mkIf (cfg.passwordSecret == null) (mkDefault "hunter2");
             shell =
               let shell = cfg.homeConfig.my.shell;
