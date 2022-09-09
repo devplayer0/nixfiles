@@ -76,11 +76,8 @@ in
     {
       name = "build-n-switch";
       category = "tasks";
-      help = "Build NixOS configuration for the current host and run `switch-to-configuration`";
-      command = ''
-        path="$(nix build --no-link --print-out-paths ".#nixosConfigurations.\"$(hostname)\".config.system.build.toplevel")"
-        doas "$path"/bin/switch-to-configuration "$@"
-      '';
+      help = "Shortcut to nixos-rebuild for this flake";
+      command = ''doas nixos-rebuild --flake . "$@"'';
     }
     {
       name = "run-vm";

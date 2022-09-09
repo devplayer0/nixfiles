@@ -119,6 +119,7 @@ in
         [
           bash-completion
           vim
+          git
         ]
         (mkIf config.services.netdata.enable [ netdata ])
       ];
