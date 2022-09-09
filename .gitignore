@@ -3,3 +3,4 @@ result*
 /.vms/*
 !/.vms/.gitkeep
 /.keys/*.key
+*.swp
