@@ -18,7 +18,6 @@ in
             (nerdfonts.override {
               fonts = [ "DroidSansMono" "SourceCodePro" ];
             })
-            pavucontrol
           ];
         };
 
@@ -31,7 +30,7 @@ in
           };
         };
       }
-      (mkIf cfg.standalone {
+      (mkIf (cfg.standalone && !pkgs.stdenv.isDarwin) {
         systemd.user = {
           services = {
             wait-for-sway = {
@@ -73,6 +72,7 @@ in
           packages = with pkgs; [
             wtype
             wl-clipboard
+            pavucontrol
           ];
 
           pointerCursor = {
