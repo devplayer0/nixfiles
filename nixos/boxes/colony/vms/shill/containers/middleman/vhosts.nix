@@ -59,7 +59,21 @@ in
         forceSSL = true;
         onlySSL = false;
         locations = mkMerge [
-          { }
+          {
+            "/".root = pkgs.linkFarm "nginx-root" [
+              {
+                name = "index.html";
+                path = ./default.html;
+              }
+              {
+                name = "cv.pdf";
+                path = builtins.fetchurl {
+                  url = "https://github.com/devplayer0/cvos/releases/download/v0.1.3/bootable.pdf";
+                  sha256 = "018wh6ps19n7323fi44njzj9yd4wqslc90dykbwfyscv7bgxhlar";
+                };
+              }
+            ];
+          }
           wellKnown
         ];
         useACMEHost = lib.my.pubDomain;
