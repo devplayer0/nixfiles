@@ -15,8 +15,11 @@ in
       resolved.llmnr = mkDefault "false";
     };
 
-    my.user.homeConfig = {
-      my.gui.enable = false;
+    my = {
+      gui.enable = false;
+      user.homeConfig = {
+        my.gui.enable = false;
+      };
     };
 
     documentation.nixos.enable = mkDefault' false;
