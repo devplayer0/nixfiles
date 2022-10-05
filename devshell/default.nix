@@ -13,7 +13,8 @@ in
     NIX_USER_CONF_FILES = toString (pkgs.writeText "nix.conf"
       ''
         experimental-features = nix-command flakes ca-derivations
-        substituters = https://nix-cache.nul.ie https://cache.nixos.org
+        #substituters = https://nix-cache.nul.ie https://cache.nixos.org
+        substituters = https://cache.nixos.org
         trusted-public-keys = ${concatStringsSep " " lib.my.nix.cacheKeys}
       '');
 

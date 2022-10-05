@@ -230,7 +230,7 @@ in
         };
         settings = {
           substituters = [
-            "https://nix-cache.nul.ie"
+            #"https://nix-cache.nul.ie"
             "https://cache.nixos.org"
           ];
           trusted-public-keys = lib.my.nix.cacheKeys;
