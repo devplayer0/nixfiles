@@ -184,7 +184,11 @@ in
       };
 
       systemd = {
+        tmpfiles.rules = [
+          "d /nix/tmp 0775 root nixbld 24h"
+        ];
         services = {
+          nix-daemon.environment.TMPDIR = "/nix/tmp";
           netdata = mkIf config.services.netdata.enable {
             # python.d plugin script does #!/usr/bin/env bash
             path = with pkgs; [ bash ];
