@@ -173,6 +173,9 @@ in
             diff-so-fancy.enable = true;
             userEmail = "jackos1998@gmail.com";
             userName = "Jack O'Sullivan";
+            extraConfig = {
+              pull.rebase = true;
+            };
           };
 
           waybar = import ./waybar.nix { inherit lib pkgs config; };
