@@ -39,7 +39,7 @@
         inherit (lib.my) networkdAssignment;
       in
       {
-        imports = [ "${modulesPath}/profiles/qemu-guest.nix" ./dns.nix ];
+        imports = [ "${modulesPath}/profiles/qemu-guest.nix" ./dns.nix ./bgp.nix ];
 
         config = mkMerge [
           {
