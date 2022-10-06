@@ -10,15 +10,15 @@
         altNames = [ "fw" ];
         domain = lib.my.colony.domain;
         ipv4 = {
-          address = "212.83.51.97";
+          address = "94.142.240.44";
           mask = 24;
-          gateway = "212.83.51.1";
+          gateway = "94.142.240.254";
           genPTR = false;
         };
         ipv6 = {
-          address = "2a00:f48:103:2::10";
+          address = "2a02:898:0:20::329:1";
           mask = 64;
-          gateway = "2a00:f48:103:2::1";
+          gateway = "2a02:898:0:20::1";
           genPTR = false;
         };
       };
@@ -39,7 +39,7 @@
         inherit (lib.my) networkdAssignment;
       in
       {
-        imports = [ "${modulesPath}/profiles/qemu-guest.nix" ./dns.nix ./bandwidth.nix ];
+        imports = [ "${modulesPath}/profiles/qemu-guest.nix" ./dns.nix ];
 
         config = mkMerge [
           {
@@ -81,7 +81,7 @@
                 in
                 {
                   description = "Frequent ICMP6 neighbour solicitations";
-                  enable = true;
+                  enable = false;
                   requires = [ waitOnline ];
                   after = [ waitOnline ];
                   script = ''
@@ -97,14 +97,15 @@
 
             systemd.network = {
               links = {
-                "10-phy1g0" = {
-                  matchConfig.MACAddress = "d0:50:99:fa:a7:99";
-                  linkConfig.Name = "phy1g0";
-                };
                 "10-wan" = {
-                  matchConfig.MACAddress = "00:02:c9:56:24:6e";
+                  matchConfig.MACAddress = "d0:50:99:fa:a7:99";
                   linkConfig.Name = "wan";
                 };
+                # Mellanox ConnectX-2
+                #"10-wan" = {
+                #  matchConfig.MACAddress = "00:02:c9:56:24:6e";
+                #  linkConfig.Name = "wan";
+                #};
 
                 "10-base" = {
                   matchConfig.MACAddress = "52:54:00:15:1a:53";
@@ -126,8 +127,8 @@
                   ];
                   networkConfig = {
                     # We're using an explicit gateway and Linux uses link local address for neighbour discovery, so we
-                    # get lost to the router...
-                    LinkLocalAddressing = "no";
+                    # get lost to the router... (this was true in 23M Frankfurt)
+                    #LinkLocalAddressing = "no";
                     IPv6AcceptRA = false;
                   };
                 };

@@ -44,33 +44,33 @@
     systemd = {
       network = {
         links = {
-          "10-wan10g" = {
-            matchConfig.Path = "pci-0000:2d:00.0";
-            linkConfig.Name = "wan10g";
-          };
+          #"10-wan10g" = {
+          #  matchConfig.Path = "pci-0000:2d:00.0";
+          #  linkConfig.Name = "wan10g";
+          #};
         };
         netdevs = {
-          "25-vm-wan10g" = {
-            netdevConfig = {
-              Name = "vm-wan10g";
-              Kind = "macvtap";
-            };
-            # TODO: Upstream this missing section
-            extraConfig = ''
-              [MACVTAP]
-              Mode=passthru
-            '';
-          };
+          #"25-vm-wan10g" = {
+          #  netdevConfig = {
+          #    Name = "vm-wan10g";
+          #    Kind = "macvtap";
+          #  };
+          #  # TODO: Upstream this missing section
+          #  extraConfig = ''
+          #    [MACVTAP]
+          #    Mode=passthru
+          #  '';
+          #};
         };
         networks = {
-          "75-wan10g" = {
-            matchConfig.Name = "wan10g";
-            networkConfig.MACVTAP = "vm-wan10g";
-          };
-          "75-vm-wan10g" = {
-            matchConfig.Name = "vm-wan10g";
-            linkConfig.RequiredForOnline = "no";
-          };
+          #"75-wan10g" = {
+          #  matchConfig.Name = "wan10g";
+          #  networkConfig.MACVTAP = "vm-wan10g";
+          #};
+          #"75-vm-wan10g" = {
+          #  matchConfig.Name = "vm-wan10g";
+          #  linkConfig.RequiredForOnline = "no";
+          #};
         };
       };
 
@@ -98,14 +98,15 @@
             };
             memory = 3072;
             networks = {
-              wan = {
-                ifname = "vm-wan10g";
-                bridge = null;
-                tapFD = 100;
-                # Real hardware MAC
-                mac = "00:02:c9:56:24:6e";
-                waitOnline = false;
-              };
+              # Mellanox ConnectX-2 hackery
+              #wan = {
+              #  ifname = "vm-wan10g";
+              #  bridge = null;
+              #  tapFD = 100;
+              #  # Real hardware MAC
+              #  mac = "00:02:c9:56:24:6e";
+              #  waitOnline = false;
+              #};
               base = {
                 waitOnline = "carrier";
                 mac = "52:54:00:15:1a:53";

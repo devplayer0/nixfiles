@@ -201,11 +201,11 @@ rec {
   dockerNetAssignment =
     assignments: name: with assignments."${name}".internal; "ip=${ipv4.address},ip=${ipv6.address}";
   colony = rec {
-    domain = "fra1.int.${pubDomain}";
+    domain = "ams1.int.${pubDomain}";
     start = {
       all = {
         v4 = "10.100.";
-        v6 = "2a0e:97c0:4d1:1";
+        v6 = "2a0e:97c0:4d2:1";
       };
       base = {
         v4 = "${start.all.v4}0.";

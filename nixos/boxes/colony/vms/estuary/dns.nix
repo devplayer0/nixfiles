@@ -7,8 +7,8 @@ let
   ptrDots = 2;
   reverseZone = "100.10.in-addr.arpa";
   ptrDots6 = 20;
-  reverseZone6 = "1.d.4.0.0.c.7.9.e.0.a.2.ip6.arpa";
-  ptr6ValTrim = (stringLength "2a0e:97c0:4d1:") + 1;
+  reverseZone6 = "2.d.4.0.0.c.7.9.e.0.a.2.ip6.arpa";
+  ptr6ValTrim = (stringLength "2a0e:97c0:4d2:") + 1;
 
   authZones = attrNames config.my.pdns.auth.bind.zones;
 in
@@ -76,7 +76,7 @@ in
           lua-dns-script = pkgs.writeText "pdns-script.lua" ''
             function preresolve(dq)
               if dq.qname:equal("nix-cache.nul.ie") then
-                dq:addAnswer(pdns.CNAME, "http.fra1.int.nul.ie.")
+                dq:addAnswer(pdns.CNAME, "http.${config.networking.domain}.")
                 dq.rcode = 0
                 dq.followupFunction = "followCNAMERecords"
                 return true
