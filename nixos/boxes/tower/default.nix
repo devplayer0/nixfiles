@@ -25,7 +25,19 @@
             efi.canTouchEfiVariables = true;
             timeout = 10;
           };
-          kernelPackages = pkgs.linuxKernel.packages.linux_5_19;
+          kernelPackages = pkgs.linuxKernel.packages.linux_5_19.extend (self: super: {
+            # Intel DRM driver is borked in 5.19.12, which is where nixos-unstable is right now
+            kernel = super.kernel.override {
+              argsOverride = rec {
+                version = "5.19.14";
+                modDirVersion = version;
+                src = pkgs.fetchurl {
+                  url = "mirror://kernel/linux/kernel/v5.x/linux-${version}.tar.xz";
+                  sha256 = "1h8srn3fw4vw61qi0xxlk9fq0fqq4wl7fbrzz7sivdd8qkhjgv8x";
+                };
+              };
+            };
+          });
           kernelModules = [ "kvm-intel" ];
           kernelParams = [ "intel_iommu=on" ];
           initrd = {
@@ -88,8 +100,10 @@
           tlp = {
             enable = true;
             settings = {
-              CPU_BOOST_ON_BAT = 0;
-              CPU_SCALING_GOVERNOR_ON_BATTERY = "powersave";
+              CPU_BOOST_ON_BAT = 1;
+              CPU_BOOST_ON_AC = 1;
+              CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
+              CPU_SCALING_GOVERNOR_ON_AC = "performance";
               START_CHARGE_THRESH_BAT0 = 90;
               STOP_CHARGE_THRESH_BAT0 = 97;
               RUNTIME_PM_ON_BAT = "auto";
@@ -129,6 +143,10 @@
           brightnessctl
         ];
 
+        nix = {
+          gc.automatic = false;
+        };
+
         systemd = {
           services = {
             systemd-networkd-wait-online.enable = false;
@@ -145,6 +163,8 @@
         };
 
         my = {
+          tmproot.size = "8G";
+
           user = {
             tmphome = false;
             homeConfig = {
