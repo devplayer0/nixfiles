@@ -75,14 +75,14 @@
       };
 
       services = {
-        "vm@estuary" =
-        let
-          vtapUnit = "sys-subsystem-net-devices-vm\\x2dwan10g.device";
-        in
-        {
-          requires = [ vtapUnit ];
-          after = [ vtapUnit ];
-        };
+        #"vm@estuary" =
+        #let
+        #  vtapUnit = "sys-subsystem-net-devices-vm\\x2dwan10g.device";
+        #in
+        #{
+        #  requires = [ vtapUnit ];
+        #  after = [ vtapUnit ];
+        #};
       };
     };
 
@@ -136,7 +136,7 @@
             networks.vms.mac = "52:54:00:27:3d:5c";
             cleanShutdown.timeout = 120;
             drives = [ ] ++ (optionals (!config.my.build.isDevVM) [
-              (vmLVM "shill" "esp")
+              (mkMerge [ (vmLVM "shill" "esp") { frontendOpts.bootindex = 0; } ])
               (vmLVM "shill" "nix")
               (vmLVM "shill" "persist")
               {
