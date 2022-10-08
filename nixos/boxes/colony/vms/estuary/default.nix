@@ -92,10 +92,25 @@
                   '';
                   wantedBy = [ "multi-user.target" ];
                 };
+
+                bird2 =
+                let
+                  waitOnline = "systemd-networkd-wait-online@wan.service";
+                in
+                {
+                  after = [ waitOnline ];
+                  requires = [ waitOnline ];
+                };
               };
             };
 
             systemd.network = {
+              config = {
+                networkConfig = {
+                  ManageForeignRoutes = false;
+                };
+              };
+
               links = {
                 "10-wan" = {
                   matchConfig.MACAddress = "d0:50:99:fa:a7:99";

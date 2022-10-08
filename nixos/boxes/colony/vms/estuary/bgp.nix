@@ -38,10 +38,11 @@ in
           router id from "wan";
 
           protocol device {}
-          #protocol direct {
-          #	interface "devplayer0";
-          #	ipv6;
-          #}
+          protocol direct {
+            interface "wan";
+            ipv4;
+            ipv6;
+          }
           protocol static {
             # Special case: We have to do the routing on behalf of this _internal_ next-hop
             #route INTNET6 via "devplayer0";
@@ -65,7 +66,6 @@ in
           }
           protocol kernel kernel6 {
             ipv6 {
-              #import filter bgp_export;
               import none;
               export filter {
                 if net ~ OWNNETSET6 then reject;
