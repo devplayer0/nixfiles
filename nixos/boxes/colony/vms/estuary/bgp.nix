@@ -1,5 +1,6 @@
 { lib, pkgs, config, assignments, allAssignments, ... }:
 let
+  securebitSpace = "2a0e:97c0:4d0::/44";
 in
 {
   config = {
@@ -9,10 +10,12 @@ in
         # TODO: Clean up and modularise
         config = ''
           define OWNAS = 211024;
+          define OWNIP4 = ${assignments.internal.ipv4.address};
+          define OWNNETSET4 = [${assignments.internal.ipv4.address}/32];
 
-          define OWNIP6 = 2a0e:97c0:4df:0:3::1;
-          define OWNNET6 = 2a0e:97c0:4d0::/44;
-          define OWNNETSET6 = [2a0e:97c0:4d0::/44+];
+          define OWNIP6 = ${assignments.base.ipv6.address};
+          define OWNNET6 = ${securebitSpace};
+          define OWNNETSET6 = [${securebitSpace}+];
           #define TRANSSET6 = [::1/128];
 
           define INTNET6 = 2a0e:97c0:4df::/48;
@@ -50,8 +53,17 @@ in
             };
           }
 
-          protocol kernel {
-            #learn;
+          protocol kernel kernel4 {
+            ipv4 {
+              import none;
+              export filter {
+                if net ~ OWNNETSET4 then reject;
+                krt_prefsrc = OWNIP4;
+                accept;
+              };
+            };
+          }
+          protocol kernel kernel6 {
             ipv6 {
               #import filter bgp_export;
               import none;
@@ -63,7 +75,27 @@ in
             };
           }
 
-          template bgp base_bgp {
+          template bgp base_bgp4 {
+            local as OWNAS;
+            direct;
+            ipv4 {
+              export none;
+            };
+          }
+
+          template bgp upstream_bgp4 from base_bgp4 {
+            ipv4 {
+              #import none;
+              import filter bgp_import;
+            };
+          }
+          template bgp peer_bgp4 from base_bgp4 {
+            ipv4 {
+              import filter bgp_import;
+            };
+          }
+
+          template bgp base_bgp6 {
             local as OWNAS;
             direct;
             ipv6 {
@@ -71,25 +103,43 @@ in
             };
           }
 
-          template bgp upstream_bgp from base_bgp {
+          template bgp upstream_bgp6 from base_bgp6 {
             ipv6 {
-              import none;
+              #import none;
+              import filter bgp_import;
             };
           }
-          template bgp peer_bgp from base_bgp {
+          template bgp peer_bgp6 from base_bgp6 {
             ipv6 {
               import filter bgp_import;
             };
           }
 
-          protocol bgp coloclue from upstream_bgp {
-            description "ColoClue";
-            neighbor 2a02:898:0:20::1 as 8283;
+          protocol bgp upstream4_coloclue_eun2 from upstream_bgp4 {
+            description "ColoClue euNetworks 2 (IPv4)";
+            neighbor 94.142.240.253 as 8283;
+          }
+          protocol bgp upstream4_coloclue_eun3 from upstream_bgp4 {
+            description "ColoClue euNetworks 3 (IPv4)";
+            neighbor 94.142.240.252 as 8283;
           }
 
-          protocol bgp peer_luje from peer_bgp {
-            description "LUJE.net";
-            neighbor 2001:7f8:d9:5b::b93e:1 as 212855;
+          protocol bgp upstream6_coloclue_eun2 from upstream_bgp6 {
+            description "ColoClue euNetworks 2 (IPv6)";
+            neighbor 2a02:898:0:20::e2 as 8283;
+          }
+          protocol bgp upstream6_coloclue_eun3 from upstream_bgp6 {
+            description "ColoClue euNetworks 3 (IPv6)";
+            neighbor 2a02:898:0:20::e1 as 8283;
+          }
+
+          protocol bgp peer4_luje from peer_bgp4 {
+            description "LUJE.net (IPv4)";
+            neighbor 94.142.240.20 as 212855;
+          }
+          protocol bgp peer6_luje from peer_bgp6 {
+            description "LUJE.net (IPv6)";
+            neighbor 2a02:898:0:20::166:1 as 212855;
           }
         '';
       };
