@@ -10,7 +10,7 @@ let
   };
 
   # Forwarded in Mullvad config
-  transmissionPeerPort = 55471;
+  transmissionPeerPort = 56528;
 in
 {
   config = mkMerge [
@@ -64,10 +64,10 @@ in
             };
             wireguardPeers = [
               {
-                # mlvd-de32
+                # mlvd-ams-wg-202
                 wireguardPeerConfig = {
-                  Endpoint = "146.70.107.194:51820";
-                  PublicKey = "uKTC5oP/zfn6SSjayiXDDR9L82X0tGYJd5LVn5kzyCc=";
+                  Endpoint = "169.150.196.15:51820";
+                  PublicKey = "BChJDLOwZu9Q1oH0UcrxcHP6xxHhyRbjrBUsE0e07Vk=";
                   AllowedIPs = [ "0.0.0.0/0" "::/0" ];
                 };
               }
@@ -83,7 +83,7 @@ in
             ];
             "90-vpn" = with wg; {
               matchConfig.Name = "vpn";
-              address = [ "10.68.19.11/32" "fc00:bbbb:bbbb:bb01::5:130a/128" ];
+              address = [ "10.67.83.59/32" "fc00:bbbb:bbbb:bb01::4:533a/128" ];
               dns = [ "10.64.0.1" ];
               routingPolicyRules = map (r: { routingPolicyRuleConfig = r; }) [
                 {
