@@ -13,7 +13,7 @@ in
           define OWNIP4 = ${assignments.internal.ipv4.address};
           define OWNNETSET4 = [${assignments.internal.ipv4.address}/32];
 
-          define OWNIP6 = ${assignments.base.ipv6.address};
+          define OWNIP6 = ${assignments.internal.ipv6.address};
           define OWNNET6 = ${securebitSpace};
           define OWNNETSET6 = [${securebitSpace}+];
           #define TRANSSET6 = [::1/128];
@@ -72,6 +72,23 @@ in
                 krt_prefsrc = OWNIP6;
                 accept;
               };
+            };
+          }
+
+          protocol bgp bgptools {
+            local as OWNAS;
+            multihop;
+            description "bgp.tools monitoring";
+            neighbor 2a0c:2f07:9459::b8 as 212232;
+            ipv4 {
+              import none;
+              export all;
+              add paths tx;
+            };
+            ipv6 {
+              import none;
+              export all;
+              add paths tx;
             };
           }
 
