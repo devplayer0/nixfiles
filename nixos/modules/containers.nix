@@ -245,6 +245,10 @@ in
         }
       ];
 
+      nix = {
+        gc.automatic = false;
+      };
+
       my = {
         tmproot = {
           enable = true;
