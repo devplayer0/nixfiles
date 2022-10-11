@@ -1,6 +1,7 @@
 { lib, pkgs, config, assignments, allAssignments, ... }:
 let
   securebitSpace = "2a0e:97c0:4d0::/44";
+  amsnet6 = "2a0e:97c0:4d2::/48";
 in
 {
   config = {
@@ -11,16 +12,15 @@ in
         config = ''
           define OWNAS = 211024;
           define OWNIP4 = ${assignments.internal.ipv4.address};
-          define OWNNETSET4 = [${assignments.internal.ipv4.address}/32];
-
-          define OWNIP6 = ${assignments.internal.ipv6.address};
-          define OWNNET6 = ${securebitSpace};
-          define OWNNETSET6 = [${securebitSpace}+];
-          #define TRANSSET6 = [::1/128];
+          define OWNNETSET4 = [ ${assignments.internal.ipv4.address}/32 ];
 
           define INTNET6 = 2a0e:97c0:4df::/48;
-          define AMSNET6 = 2a0e:97c0:4d2::/48;
+          define AMSNET6 = ${amsnet6};
           define HOMENET6 = 2a0e:97c0:4d0::/48;
+
+          define OWNIP6 = ${assignments.internal.ipv6.address};
+          define OWNNETSET6 = [ ${amsnet6} ];
+          #define TRANSSET6 = [ ::1/128 ];
 
           define DUB1IP6 = 2a0e:97c0:4df:0:2::1;
 
@@ -95,6 +95,7 @@ in
           template bgp base_bgp4 {
             local as OWNAS;
             direct;
+            allow local as;
             ipv4 {
               export none;
             };
@@ -115,6 +116,8 @@ in
           template bgp base_bgp6 {
             local as OWNAS;
             direct;
+            # So we can see routes we announce from other routers
+            allow local as;
             ipv6 {
               export filter bgp_export;
             };
