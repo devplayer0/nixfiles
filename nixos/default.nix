@@ -46,7 +46,7 @@ let
           ];
 
           _module.args = {
-            inherit (cfg) secretsPath;
+            inherit (cfg) secretsPath vpns;
             inherit (config') assignments;
             pkgs' = allPkgs;
           };
@@ -116,6 +116,24 @@ let
     };
   };
 
+  l2PeerOpts = with lib.types; {
+    options = {
+      addr = mkOpt' str null "Address.";
+    };
+  };
+  l2MeshOpts = with lib.types; { name, ... }: {
+    options = {
+      interface = mkOpt' str name "Name of VXLAN interface.";
+      firewall = mkBoolOpt' true "Whether to generate firewall rules.";
+      vni = mkOpt' ints.unsigned 1 "VXLAN VNI.";
+      peers = mkOpt' (attrsOf (submodule l2PeerOpts)) { } "Peers.";
+      security = {
+        enable = mkBoolOpt' true "Whether to enable IPsec authentication.";
+        encrypt = mkBoolOpt' false "Whether to enable IPsec encryption.";
+      };
+    };
+  };
+
   systemOpts = with lib.types; { name, ... }@args:
   let
     config' = args.config;
@@ -161,6 +179,9 @@ in
       secretsPath = mkOpt' path null "Path to encrypted secret files.";
       modules = mkOpt' (attrsOf commonOpts.moduleType) { } "NixOS modules to be exported by nixfiles.";
       systems = mkOpt' (attrsOf (submodule systemOpts)) { } "NixOS systems to be exported by nixfiles.";
+      vpns = {
+        l2 = mkOpt' (attrsOf (submodule l2MeshOpts)) { } "Layer 2 meshes.";
+      };
     };
   };
 
