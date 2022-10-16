@@ -161,6 +161,11 @@ in
             description "LUJE.net (IPv6)";
             neighbor 2a02:898:0:20::166:1 as 212855;
           }
+          protocol bgp peer6_luje_labs from peer_bgp6 {
+            description "LUJE.net labs (IPv6)";
+            neighbor 2a07:cd40:1::9 as 202413;
+            multihop 3;
+          }
         '';
       };
     };
