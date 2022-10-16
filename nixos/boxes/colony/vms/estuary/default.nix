@@ -1,4 +1,21 @@
-{ lib, ... }: {
+{ lib, ... }:
+let
+  pubV4 = "94.142.240.44";
+in
+{
+  nixos = {
+    vpns = {
+      l2 = {
+        as211024 = {
+          vni = 211024;
+          peers = {
+            estuary.addr = pubV4;
+            home.addr = "109.255.1.83";
+          };
+        };
+      };
+    };
+  };
   nixos.systems.estuary = {
     system = "x86_64-linux";
     nixpkgs = "mine";
@@ -10,7 +27,7 @@
         altNames = [ "fw" ];
         domain = lib.my.colony.domain;
         ipv4 = {
-          address = "94.142.240.44";
+          address = pubV4;
           mask = 24;
           gateway = "94.142.240.254";
           genPTR = false;
@@ -30,6 +47,13 @@
           gateway = null;
         };
         ipv6.address = "${lib.my.colony.start.base.v6}1";
+      };
+      as211024 = {
+        ipv4 = {
+          address = "10.255.3.1";
+          gateway = null;
+        };
+        ipv6.address = "2a0e:97c0:4df:0:3::1";
       };
     };
 
@@ -180,6 +204,14 @@
                       ]) [ "vms" "ctrs" "oci" ])));
                   }
                 ];
+
+                "90-l2mesh-as211024" = {
+                  address = with assignments.as211024; [
+                    (with ipv4; "${address}/${toString mask}")
+                    (with ipv6; "${address}/${toString mask}")
+                  ];
+                  networkConfig.IPv6AcceptRA = false;
+                };
               };
             };
 
@@ -189,7 +221,7 @@
               server.enable = true;
 
               firewall = {
-                trustedInterfaces = [ "base" ];
+                trustedInterfaces = [ "base" "as211024" ];
                 udp.allowed = [ 5353 ];
                 tcp.allowed = [ 5353 ];
                 nat = {
@@ -250,6 +282,7 @@
                     }
                     chain forward {
                       iifname wan oifname base jump filter-routing
+                      oifname as211024 accept
                     }
                   }
                   table inet nat {

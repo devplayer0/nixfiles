@@ -1,7 +1,9 @@
 { lib, pkgs, config, assignments, allAssignments, ... }:
 let
   securebitSpace = "2a0e:97c0:4d0::/44";
+  intnet6 = "2a0e:97c0:4df::/48";
   amsnet6 = "2a0e:97c0:4d2::/48";
+  homenet6 = "2a0e:97c0:4d0::/48";
 in
 {
   config = {
@@ -14,12 +16,12 @@ in
           define OWNIP4 = ${assignments.internal.ipv4.address};
           define OWNNETSET4 = [ ${assignments.internal.ipv4.address}/32 ];
 
-          define INTNET6 = 2a0e:97c0:4df::/48;
+          define INTNET6 = ${intnet6};
           define AMSNET6 = ${amsnet6};
-          define HOMENET6 = 2a0e:97c0:4d0::/48;
+          define HOMENET6 = ${homenet6};
 
           define OWNIP6 = ${assignments.internal.ipv6.address};
-          define OWNNETSET6 = [ ${amsnet6} ];
+          define OWNNETSET6 = [ ${intnet6}, ${amsnet6}, ${homenet6} ];
           #define TRANSSET6 = [ ::1/128 ];
 
           define DUB1IP6 = 2a0e:97c0:4df:0:2::1;
@@ -45,9 +47,9 @@ in
           }
           protocol static {
             # Special case: We have to do the routing on behalf of this _internal_ next-hop
-            #route INTNET6 via "devplayer0";
+            route INTNET6 via "as211024";
             route AMSNET6 via "base";
-            #route HOMENET6 via DUB1IP6;
+            route HOMENET6 via DUB1IP6;
             ipv6 {
               import all;
               export none;
@@ -68,6 +70,7 @@ in
             ipv6 {
               import none;
               export filter {
+                if net = HOMENET6 then accept;
                 if net ~ OWNNETSET6 then reject;
                 krt_prefsrc = OWNIP6;
                 accept;
