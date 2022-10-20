@@ -84,6 +84,12 @@ in
               };
             };
 
+            environment = {
+              systemPackages = with pkgs; [
+                ethtool
+              ];
+            };
+
             services = {
               lvm = {
                 dmeventd.enable = true;
@@ -138,7 +144,11 @@ in
               links = {
                 "10-wan" = {
                   matchConfig.MACAddress = "d0:50:99:fa:a7:99";
-                  linkConfig.Name = "wan";
+                  linkConfig = {
+                    Name = "wan";
+                    RxBufferSize = 4096;
+                    TxBufferSize = 4096;
+                  };
                 };
                 # Mellanox ConnectX-2
                 #"10-wan" = {
