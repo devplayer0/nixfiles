@@ -94,6 +94,12 @@ in
               lvm = {
                 dmeventd.enable = true;
               };
+              resolved = {
+                llmnr = "false";
+                extraConfig = ''
+                  MulticastDNS=false
+                '';
+              };
               netdata.enable = true;
 
               iperf3 = {
