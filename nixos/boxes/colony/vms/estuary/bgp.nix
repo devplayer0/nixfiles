@@ -26,6 +26,9 @@ in
 
           define DUB1IP6 = 2a0e:97c0:4df:0:2::1;
 
+          define PREFIXP = 110;
+          define PREFPEER = 120;
+
           #function should_export6() {
           #	return net ~ OWNNETSET6 || (transit && net ~ TRANSSET6);
           #}
@@ -156,18 +159,43 @@ in
             neighbor 2a02:898:0:20::e1 as 8283;
           }
 
+          protocol bgp peer4_frysix_rs1 from peer_bgp4 {
+            description "Frys-IX route server 1 (IPv4)";
+            neighbor 185.1.203.253 as 56393;
+            ipv4 { preference PREFIXP; };
+          }
+          protocol bgp peer6_frysix_rs1 from peer_bgp6 {
+            description "Frys-IX route server 1 (IPv6)";
+            neighbor 2001:7f8:10f::dc49:253 as 56393;
+            ipv6 { preference PREFIXP; };
+          }
+
+          protocol bgp peer4_frysix_rs2 from peer_bgp4 {
+            description "Frys-IX route server 2 (IPv4)";
+            neighbor 185.1.203.254 as 56393;
+            ipv4 { preference PREFIXP; };
+          }
+          protocol bgp peer6_frysix_rs2 from peer_bgp6 {
+            description "Frys-IX route server 2 (IPv6)";
+            neighbor 2001:7f8:10f::dc49:254 as 56393;
+            ipv6 { preference PREFIXP; };
+          }
+
           protocol bgp peer4_luje from peer_bgp4 {
             description "LUJE.net (IPv4)";
             neighbor 94.142.240.20 as 212855;
+            ipv4 { preference PREFPEER; };
           }
           protocol bgp peer6_luje from peer_bgp6 {
             description "LUJE.net (IPv6)";
             neighbor 2a02:898:0:20::166:1 as 212855;
+            ipv6 { preference PREFPEER; };
           }
           protocol bgp peer6_luje_labs from peer_bgp6 {
             description "LUJE.net labs (IPv6)";
-            neighbor 2a07:cd40:1::9 as 202413;
             multihop 3;
+            neighbor 2a07:cd40:1::9 as 202413;
+            ipv6 { preference PREFPEER; };
           }
         '';
       };

@@ -140,6 +140,7 @@ in
               };
             };
 
+            #systemd.services.systemd-networkd.environment.SYSTEMD_LOG_LEVEL = "debug";
             systemd.network = {
               config = {
                 networkConfig = {
@@ -147,9 +148,31 @@ in
                 };
               };
 
+              netdevs = {
+                "25-frys-ix-base" = {
+                  netdevConfig = {
+                    Name = "frys-ix-base";
+                    Kind = "vlan";
+                  };
+                  vlanConfig.Id = 409;
+                };
+                "25-frys-ix" = {
+                  netdevConfig = {
+                    Name = "frys-ix";
+                    Kind = "vlan";
+                  };
+                  vlanConfig.Id = 2605;
+                };
+              };
+
               links = {
                 "10-wan" = {
-                  matchConfig.MACAddress = "d0:50:99:fa:a7:99";
+                  matchConfig = {
+                    Driver = "igb";
+                    Path = "pci-0000:01:00.0";
+                    # Matching against MAC address seems to break VLAN interfaces (since they share the same MAC address)
+                    #MACAddress = "d0:50:99:fa:a7:99";
+                  };
                   linkConfig = {
                     Name = "wan";
                     RxBufferSize = 4096;
@@ -171,6 +194,7 @@ in
               networks = {
                 "80-wan" = {
                   matchConfig.Name = "wan";
+                  vlan = [ "frys-ix-base" ];
                   DHCP = "no";
                   address = with assignments.internal; [
                     (with ipv4; "${address}/${toString mask}")
@@ -184,6 +208,33 @@ in
                     # We're using an explicit gateway and Linux uses link local address for neighbour discovery, so we
                     # get lost to the router... (this was true in 23M Frankfurt)
                     #LinkLocalAddressing = "no";
+                    IPv6AcceptRA = false;
+                  };
+                };
+                "85-frys-ix-base" = {
+                  matchConfig = {
+                    Name = "frys-ix-base";
+                    Kind = "vlan";
+                  };
+                  vlan = [ "frys-ix" ];
+                  networkConfig = {
+                    LinkLocalAddressing = "no";
+                    DHCP = "no";
+                    LLDP = false;
+                    EmitLLDP = false;
+                    IPv6AcceptRA = false;
+                  };
+                };
+                "85-frys-ix" = {
+                  matchConfig.Name = "frys-ix";
+                  address = [
+                    "185.1.203.196/24"
+                    "2001:7f8:10f::3:3850:196/64"
+                  ];
+                  networkConfig = {
+                    DHCP = "no";
+                    LLDP = false;
+                    EmitLLDP = false;
                     IPv6AcceptRA = false;
                   };
                 };
@@ -296,9 +347,19 @@ in
                       meta l4proto udp ct state new jump routing-udp
                       return
                     }
+                    chain ixp {
+                      ether type != { ip, ip6, arp, vlan } reject
+                      return
+                    }
+
                     chain forward {
-                      iifname wan oifname base jump filter-routing
+                      iifname { wan, frys-ix } oifname base jump filter-routing
+                      oifname frys-ix jump ixp
                       oifname as211024 accept
+                    }
+                    chain output {
+                      oifname frys-ix-base ether type != vlan reject
+                      oifname frys-ix jump ixp
                     }
                   }
                   table inet nat {
