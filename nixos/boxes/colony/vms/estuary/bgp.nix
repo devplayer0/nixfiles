@@ -20,7 +20,7 @@ in
           define AMSNET6 = ${amsnet6};
           define HOMENET6 = ${homenet6};
 
-          define OWNIP6 = ${assignments.internal.ipv6.address};
+          define OWNIP6 = ${assignments.base.ipv6.address};
           define OWNNETSET6 = [ ${intnet6}, ${amsnet6}, ${homenet6} ];
           #define TRANSSET6 = [ ::1/128 ];
 
@@ -44,7 +44,7 @@ in
 
           protocol device {}
           protocol direct {
-            interface "wan";
+            interface "wan", "frys-ix";
             ipv4;
             ipv6;
           }
@@ -85,7 +85,8 @@ in
             local as OWNAS;
             multihop;
             description "bgp.tools monitoring";
-            neighbor 2a0c:2f07:9459::b8 as 212232;
+            neighbor 2a0c:2f07:9459::b10 as 212232;
+            source address OWNIP6;
             ipv4 {
               import none;
               export all;
@@ -103,6 +104,7 @@ in
             direct;
             allow local as;
             ipv4 {
+              import keep filtered;
               export none;
             };
           }
@@ -132,6 +134,7 @@ in
             # So we can see routes we announce from other routers
             allow local as;
             ipv6 {
+              import keep filtered;
               export filter bgp_export;
             };
           }
@@ -173,6 +176,25 @@ in
             neighbor 2a02:898:0:20::e1 as 8283;
           }
 
+          protocol bgp upstream6_frysix_he from upstream_bgp6 {
+            description "Hurricane Electric (on Frys-IX, IPv6)";
+            neighbor 2001:7f8:10f::1b1b:154 as 6939;
+          }
+
+          protocol bgp peer4_cc_luje from peer_bgp4 {
+            description "LUJE.net (on ColoClue, IPv4)";
+            neighbor 94.142.240.20 as 212855;
+          }
+          protocol bgp peer6_cc_luje from peer_bgp6 {
+            description "LUJE.net (on ColoClue, IPv6)";
+            neighbor 2a02:898:0:20::166:1 as 212855;
+          }
+          protocol bgp peer6_luje_labs from peer_bgp6 {
+            description "LUJE.net labs (IPv6)";
+            multihop 3;
+            neighbor 2a07:cd40:1::9 as 202413;
+          }
+
           protocol bgp ixp4_frysix_rs1 from ixp_bgp4 {
             description "Frys-IX route server 1 (IPv4)";
             neighbor 185.1.203.253 as 56393;
@@ -191,18 +213,17 @@ in
             neighbor 2001:7f8:10f::dc49:254 as 56393;
           }
 
-          protocol bgp peer4_luje from peer_bgp4 {
-            description "LUJE.net (IPv4)";
-            neighbor 94.142.240.20 as 212855;
+          protocol bgp peer4_frysix_luje from peer_bgp4 {
+            description "LUJE.net (on Frys-IX, IPv4)";
+            neighbor 185.1.203.152 as 212855;
           }
-          protocol bgp peer6_luje from peer_bgp6 {
-            description "LUJE.net (IPv6)";
-            neighbor 2a02:898:0:20::166:1 as 212855;
+          protocol bgp peer6_frysix_luje from peer_bgp6 {
+            description "LUJE.net (on Frys-IX, IPv6)";
+            neighbor 2001:7f8:10f::3:3f95:152 as 212855;
           }
-          protocol bgp peer6_luje_labs from peer_bgp6 {
-            description "LUJE.net labs (IPv6)";
-            multihop 3;
-            neighbor 2a07:cd40:1::9 as 202413;
+          protocol bgp peer4_frysix_he from peer_bgp4 {
+            description "Hurricane Electric (on Frys-IX, IPv4)";
+            neighbor 185.1.203.154 as 6939;
           }
         '';
       };

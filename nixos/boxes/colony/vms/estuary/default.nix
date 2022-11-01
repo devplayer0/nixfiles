@@ -161,7 +161,7 @@ in
                     Name = "frys-ix";
                     Kind = "vlan";
                   };
-                  vlanConfig.Id = 2605;
+                  vlanConfig.Id = 2604;
                 };
               };
 
@@ -177,6 +177,7 @@ in
                     Name = "wan";
                     RxBufferSize = 4096;
                     TxBufferSize = 4096;
+                    MTUBytes = "9000";
                   };
                 };
                 # Mellanox ConnectX-2
@@ -290,7 +291,7 @@ in
               firewall = {
                 trustedInterfaces = [ "base" "as211024" ];
                 udp.allowed = [ 5353 ];
-                tcp.allowed = [ 5353 ];
+                tcp.allowed = [ 5353 "bgp" ];
                 nat = {
                   enable = true;
                   externalInterface = "wan";
