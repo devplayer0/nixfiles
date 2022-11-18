@@ -181,7 +181,8 @@ in
           add_header X-Frame-Options SAMEORIGIN;
           add_header X-Content-Type-Options nosniff;
           add_header X-XSS-Protection "1; mode=block";
-          add_header Content-Security-Policy "frame-ancestors 'none'";
+          # This seems to break file downloads...
+          #add_header Content-Security-Policy "frame-ancestors 'none'";
         '';
       in
       {
