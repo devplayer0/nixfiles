@@ -148,22 +148,26 @@ in
                 };
               };
 
-              netdevs = {
-                "25-frys-ix-base" = {
-                  netdevConfig = {
-                    Name = "frys-ix-base";
-                    Kind = "vlan";
+              netdevs =
+              let
+                mkVLAN = name: vid: {
+                  "25-${name}" = {
+                    netdevConfig = {
+                      Name = name;
+                      Kind = "vlan";
+                    };
+                    vlanConfig.Id = vid;
                   };
-                  vlanConfig.Id = 409;
                 };
-                "25-frys-ix" = {
-                  netdevConfig = {
-                    Name = "frys-ix";
-                    Kind = "vlan";
-                  };
-                  vlanConfig.Id = 2604;
-                };
-              };
+              in
+              mkMerge [
+                (mkVLAN "ifog" 409)
+
+                (mkVLAN "frys-ix" 701)
+                (mkVLAN "nl-ix" 1845)
+                (mkVLAN "fogixp" 1147)
+                (mkVLAN "ifog-transit" 702)
+              ];
 
               links = {
                 "10-wan" = {
@@ -192,10 +196,31 @@ in
                 };
               };
 
-              networks = {
+              networks =
+              let
+                mkIXPConfig = name: ipv4: ipv6: {
+                  "85-${name}" = {
+                    matchConfig.Name = name;
+                    address = [ ipv4 ipv6 ];
+                    linkConfig.MTUBytes = "1500";
+                    networkConfig = {
+                      DHCP = "no";
+                      LLDP = false;
+                      EmitLLDP = false;
+                      IPv6AcceptRA = false;
+                    };
+                  };
+                };
+              in
+              mkMerge
+              [
+                (mkIXPConfig "frys-ix" "185.1.203.196/24" "2001:7f8:10f::3:3850:196/64")
+                (mkIXPConfig "nl-ix" "193.239.116.145/22" "2001:7f8:13::a521:1024:1/64")
+                (mkIXPConfig "fogixp" "185.1.147.159/24" "2001:7f8:ca:1::159/64")
+              {
                 "80-wan" = {
                   matchConfig.Name = "wan";
-                  vlan = [ "frys-ix-base" ];
+                  vlan = [ "ifog" ];
                   DHCP = "no";
                   address = with assignments.internal; [
                     (with ipv4; "${address}/${toString mask}")
@@ -212,12 +237,12 @@ in
                     IPv6AcceptRA = false;
                   };
                 };
-                "85-frys-ix-base" = {
+                "85-ifog" = {
                   matchConfig = {
-                    Name = "frys-ix-base";
+                    Name = "ifog";
                     Kind = "vlan";
                   };
-                  vlan = [ "frys-ix" ];
+                  vlan = [ "frys-ix" "nl-ix" "fogixp" "ifog-transit" ];
                   networkConfig = {
                     LinkLocalAddressing = "no";
                     DHCP = "no";
@@ -226,12 +251,10 @@ in
                     IPv6AcceptRA = false;
                   };
                 };
-                "85-frys-ix" = {
-                  matchConfig.Name = "frys-ix";
-                  address = [
-                    "185.1.203.196/24"
-                    "2001:7f8:10f::3:3850:196/64"
-                  ];
+                "85-ifog-transit" = {
+                  matchConfig.Name = "ifog-transit";
+                  address = [ "2a0c:9a40:100f:370::2/64" ];
+                  linkConfig.MTUBytes = "1500";
                   networkConfig = {
                     DHCP = "no";
                     LLDP = false;
@@ -280,7 +303,7 @@ in
                   ];
                   networkConfig.IPv6AcceptRA = false;
                 };
-              };
+              } ];
             };
 
             my = {
@@ -330,6 +353,8 @@ in
                   '';
                 in
                 ''
+                  define ixps = { frys-ix, nl-ix, fogixp, ifog-transit }
+
                   table inet filter {
                     chain routing-tcp {
                       # Safe enough to allow all SSH
@@ -354,13 +379,14 @@ in
                     }
 
                     chain forward {
-                      iifname { wan, frys-ix } oifname base jump filter-routing
-                      oifname frys-ix jump ixp
+                      iifname wan oifname base jump filter-routing
+                      iifname ixps oifname base jump filter-routing
+                      oifname ixps jump ixp
                       oifname as211024 accept
                     }
                     chain output {
-                      oifname frys-ix-base ether type != vlan reject
-                      oifname frys-ix jump ixp
+                      oifname ifog ether type != vlan reject
+                      oifname ixps jump ixp
                     }
                   }
                   table inet nat {

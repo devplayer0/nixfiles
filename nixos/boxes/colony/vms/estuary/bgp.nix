@@ -44,7 +44,7 @@ in
 
           protocol device {}
           protocol direct {
-            interface "wan", "frys-ix";
+            interface "wan", "frys-ix", "nl-ix", "fogixp", "ifog-transit";
             ipv4;
             ipv6;
           }
@@ -64,7 +64,7 @@ in
               import none;
               export filter {
                 if net ~ OWNNETSET4 then reject;
-                krt_prefsrc = OWNIP4;
+                #krt_prefsrc = OWNIP4;
                 accept;
               };
             };
@@ -75,7 +75,7 @@ in
               export filter {
                 if net = HOMENET6 then accept;
                 if net ~ OWNNETSET6 then reject;
-                krt_prefsrc = OWNIP6;
+                #krt_prefsrc = OWNIP6;
                 accept;
               };
             };
@@ -176,6 +176,11 @@ in
             neighbor 2a02:898:0:20::e1 as 8283;
           }
 
+          protocol bgp upstream6_ifog from upstream_bgp6 {
+            description "iFog transit (IPv6)";
+            neighbor 2a0c:9a40:100f:370::1 as 34927;
+          }
+
           protocol bgp upstream6_frysix_he from upstream_bgp6 {
             description "Hurricane Electric (on Frys-IX, IPv6)";
             neighbor 2001:7f8:10f::1b1b:154 as 6939;
@@ -224,6 +229,55 @@ in
           protocol bgp peer4_frysix_he from peer_bgp4 {
             description "Hurricane Electric (on Frys-IX, IPv4)";
             neighbor 185.1.203.154 as 6939;
+          }
+
+          protocol bgp ixp4_nlix_rs1 from ixp_bgp4 {
+            description "NL-ix route server 1 (IPv4)";
+            neighbor 193.239.116.255 as 34307;
+          }
+          protocol bgp ixp6_nlix_rs1 from ixp_bgp6 {
+            description "NL-ix route server 1 (IPv6)";
+            neighbor 2001:7f8:13::a503:4307:1 as 34307;
+          }
+
+          protocol bgp ixp4_nlix_rs2 from ixp_bgp4 {
+            description "NL-ix route server 2 (IPv4)";
+            neighbor 193.239.117.0 as 34307;
+          }
+          protocol bgp ixp6_nlix_rs2 from ixp_bgp6 {
+            description "NL-ix route server 2 (IPv6)";
+            neighbor 2001:7f8:13::a503:4307:2 as 34307;
+          }
+
+          protocol bgp peer6_nlix_cloudflare1 from peer_bgp6 {
+            description "Cloudflare NL-ix 1 (IPv6)";
+            neighbor 2001:7f8:13::a501:3335:1 as 13335;
+          }
+          protocol bgp peer6_nlix_cloudflare2 from peer_bgp6 {
+            description "Cloudflare NL-ix 2 (IPv6)";
+            neighbor 2001:7f8:13::a501:3335:2 as 13335;
+          }
+          protocol bgp peer6_nlix_cloudflare3 from peer_bgp6 {
+            description "Cloudflare NL-ix 3 (IPv6)";
+            neighbor 2001:7f8:13::a501:3335:3 as 13335;
+          }
+
+          protocol bgp ixp4_fogixp_rs1 from ixp_bgp4 {
+            description "FogIXP route server 1 (IPv4)";
+            neighbor 185.1.147.111 as 47498;
+          }
+          protocol bgp ixp6_fogixp_rs1 from ixp_bgp6 {
+            description "FogIXP route server 1 (IPv6)";
+            neighbor 2001:7f8:ca:1::111 as 47498;
+          }
+
+          protocol bgp ixp4_fogixp_rs2 from ixp_bgp4 {
+            description "FogIXP route server 2 (IPv4)";
+            neighbor 185.1.147.222 as 47498;
+          }
+          protocol bgp ixp6_fogixp_rs2 from ixp_bgp6 {
+            description "FogIXP route server 2 (IPv6)";
+            neighbor 2001:7f8:ca:1::222 as 47498;
           }
         '';
       };
