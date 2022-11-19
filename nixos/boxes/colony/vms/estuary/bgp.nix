@@ -234,32 +234,39 @@ in
           protocol bgp ixp4_nlix_rs1 from ixp_bgp4 {
             description "NL-ix route server 1 (IPv4)";
             neighbor 193.239.116.255 as 34307;
+            ipv4 { preference (PREFIXP-1); };
           }
           protocol bgp ixp6_nlix_rs1 from ixp_bgp6 {
             description "NL-ix route server 1 (IPv6)";
             neighbor 2001:7f8:13::a503:4307:1 as 34307;
+            ipv6 { preference (PREFIXP-1); };
           }
 
           protocol bgp ixp4_nlix_rs2 from ixp_bgp4 {
             description "NL-ix route server 2 (IPv4)";
             neighbor 193.239.117.0 as 34307;
+            ipv4 { preference (PREFIXP-1); };
           }
           protocol bgp ixp6_nlix_rs2 from ixp_bgp6 {
             description "NL-ix route server 2 (IPv6)";
             neighbor 2001:7f8:13::a503:4307:2 as 34307;
+            ipv6 { preference (PREFIXP-1); };
           }
 
           protocol bgp peer6_nlix_cloudflare1 from peer_bgp6 {
             description "Cloudflare NL-ix 1 (IPv6)";
             neighbor 2001:7f8:13::a501:3335:1 as 13335;
+            ipv6 { preference (PREFPEER-1); };
           }
           protocol bgp peer6_nlix_cloudflare2 from peer_bgp6 {
             description "Cloudflare NL-ix 2 (IPv6)";
             neighbor 2001:7f8:13::a501:3335:2 as 13335;
+            ipv6 { preference (PREFPEER-1); };
           }
           protocol bgp peer6_nlix_cloudflare3 from peer_bgp6 {
             description "Cloudflare NL-ix 3 (IPv6)";
             neighbor 2001:7f8:13::a501:3335:3 as 13335;
+            ipv6 { preference (PREFPEER-1); };
           }
 
           protocol bgp ixp4_fogixp_rs1 from ixp_bgp4 {
