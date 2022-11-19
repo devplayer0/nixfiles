@@ -62,7 +62,11 @@ in
         };
 
         settings = {
-          query-local-address = [ "0.0.0.0" "::" ];
+          query-local-address = [
+            assignments.internal.ipv4.address
+            assignments.internal.ipv6.address
+            assignments.base.ipv6.address
+          ];
           forward-zones = map (z: "${z}=127.0.0.1:5353") authZones;
 
           # DNS NOTIFY messages override TTL
