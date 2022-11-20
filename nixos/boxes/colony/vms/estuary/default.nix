@@ -394,7 +394,7 @@ in
                       ${matchInet "meta l4proto { udp, tcp } th dport domain redirect to :5353" "estuary"}
                     }
                     chain postrouting {
-                      ip saddr ${lib.my.colony.prefixes.all.v4} masquerade
+                      ip saddr ${lib.my.colony.prefixes.all.v4} snat to ${assignments.internal.ipv4.address}
                     }
                   }
                 '';
