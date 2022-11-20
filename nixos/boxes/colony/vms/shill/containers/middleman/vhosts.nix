@@ -42,6 +42,7 @@ let
         autoindex on;
       '';
     };
+    "/.well-known/webfinger".return = "301 https://toot.nul.ie$request_uri";
   };
 in
 {
@@ -297,6 +298,62 @@ in
             extraConfig = lib.my.nginx.proxyHeaders;
           };
         };
+        useACMEHost = lib.my.pubDomain;
+      };
+
+      "toot.nul.ie" =
+      let
+        mkAssetLoc = name: {
+          tryFiles = "$uri =404";
+          extraConfig = ''
+            add_header Cache-Control "public, max-age=2419200, must-revalidate";
+            add_header Strict-Transport-Security "max-age=63072000; includeSubDomains";
+          '';
+        };
+      in
+      {
+        root = "${pkgs.mastodon}/public";
+        locations = mkMerge [
+          (genAttrs [
+            "= /sw.js"
+            "~ ^/assets/"
+            "~ ^/avatars/"
+            "~ ^/emoji/"
+            "~ ^/headers/"
+            "~ ^/packs/"
+            "~ ^/shortcuts/"
+            "~ ^/sounds/"
+          ] mkAssetLoc)
+          {
+            "/".tryFiles = "$uri @proxy";
+
+            "^~ /api/v1/streaming" = {
+              proxyPass = "http://toot-ctr.${config.networking.domain}:55000";
+              proxyWebsockets = true;
+              extraConfig = ''
+                ${lib.my.nginx.proxyHeaders}
+                proxy_set_header Proxy "";
+
+                add_header Strict-Transport-Security "max-age=63072000; includeSubDomains";
+              '';
+            };
+            "@proxy" = {
+              proxyPass = "http://toot-ctr.${config.networking.domain}:55001";
+              proxyWebsockets = true;
+              extraConfig = ''
+                ${lib.my.nginx.proxyHeaders}
+                proxy_set_header Proxy "";
+                proxy_pass_header Server;
+
+                proxy_cache CACHE;
+                proxy_cache_valid 200 7d;
+                proxy_cache_valid 410 24h;
+                proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
+                add_header X-Cached $upstream_cache_status;
+              '';
+            };
+          }
+        ];
         useACMEHost = lib.my.pubDomain;
       };
     };

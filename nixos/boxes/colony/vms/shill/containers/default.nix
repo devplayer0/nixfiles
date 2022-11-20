@@ -6,5 +6,6 @@
     ./chatterbox.nix
     ./jackflix
     ./object.nix
+    ./toot.nix
   ];
 }

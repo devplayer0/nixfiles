@@ -189,6 +189,12 @@ in
     (mkIf config.services.resolved.enable {
       my.tmproot.unsaved.ignore = [ "/etc/resolv.conf" ];
     })
+    (mkIf config.services.nginx.enable {
+      my.tmproot.unsaved.ignore = [ "/var/cache/nginx" ];
+    })
+    (mkIf config.services.mastodon.enable {
+      my.tmproot.unsaved.ignore = [ "/var/lib/mastodon/.secrets_env" ];
+    })
     (mkIf config.my.build.isDevVM {
       my.tmproot.unsaved.ignore = [ "/nix" ];
 
@@ -365,6 +371,20 @@ in
             neededForBoot = true;
           };
         };
+      })
+      (mkIf config.services.mastodon.enable {
+        my.tmproot.persistence.config.directories = with config.services.mastodon; [
+          {
+            directory = "/var/lib/mastodon/public-system";
+            inherit user group;
+          }
+          {
+            directory = "/var/lib/redis-mastodon";
+            mode = "700";
+            user = "redis-mastodon";
+            group = "redis-mastodon";
+          }
+        ];
       })
     ]))
   ]);

@@ -240,6 +240,9 @@
 
                 ${lib.my.nginx.proxyHeaders}
 
+                # caching
+                proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=CACHE:10m inactive=7d max_size=4g;
+
                 vhost_traffic_status_zone;
 
                 map $upstream_status $nix_cache_control {

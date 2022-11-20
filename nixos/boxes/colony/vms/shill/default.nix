@@ -155,6 +155,7 @@
                       "/mnt/minio".readOnly = false;
                     };
                   };
+                  toot = {};
                 };
               in
               mkMerge [
