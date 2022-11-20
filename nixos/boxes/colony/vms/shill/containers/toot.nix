@@ -17,7 +17,7 @@
 
     configuration = { lib, pkgs, config, assignments, allAssignments, ... }:
     let
-      inherit (lib) mkMerge mkIf genAttrs;
+      inherit (lib) mkMerge mkIf genAttrs mkBefore;
       inherit (lib.my) networkdAssignment;
     in
     {
@@ -61,6 +61,9 @@
               mastodon-init-dirs.script = ''
                 echo "AWS_SECRET_ACCESS_KEY=\""$(< ${config.age.secrets."toot/s3-secret-key.txt".path})"\"" >> /var/lib/mastodon/.secrets_env
               '';
+              mastodon-init-db = {
+                after = [ "systemd-networkd-wait-online.service" ];
+              };
 
               # Can't use the extraConfig because these services expect a different format for the both family bind address...
               mastodon-streaming.environment.BIND = "::";
@@ -108,11 +111,10 @@
 
                 redis.createLocally = true;
 
-                # TODO: Re-enable when nixpkgs is updated
-                #mediaAutoRemove = {
-                #  enable = true;
-                #  olderThanDays = 30;
-                #};
+                mediaAutoRemove = {
+                  enable = true;
+                  olderThanDays = 30;
+                };
               }
               {
                 extraConfig = {

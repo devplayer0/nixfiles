@@ -46,7 +46,7 @@ in
       };
 
       nix = {
-        package = pkgs.nix;
+        package = mkIf (!(versionAtLeast config.home.stateVersion "22.11")) pkgs.nix;
         settings = {
           experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
           max-jobs = mkDefault "auto";
@@ -241,6 +241,8 @@ in
       my = {
         ssh.authKeys.files = [ lib.my.sshKeyFiles.me ];
       };
+
+      nix.package = mkIf (versionAtLeast config.home.stateVersion "22.05") pkgs.nix;
 
       fonts.fontconfig.enable = true;
 

@@ -191,8 +191,9 @@ in
           ${headers}
         '';
         root = pkgs.element-web.override {
+          # Currently it seems like single quotes aren't escaped like they should be...
           conf = {
-            brand = "/dev/player0's Matrix";
+            brand = "/dev/player0 Matrix";
             showLabsSettings = true;
             disable_guests = true;
             default_server_config = {
