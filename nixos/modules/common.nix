@@ -17,6 +17,7 @@ in
   imports = [
     inputs.impermanence.nixosModule
     inputs.agenix.nixosModules.age
+    inputs.sharry.nixosModules.default
   ];
 
   config = mkMerge [
@@ -71,6 +72,7 @@ in
       nixpkgs = {
         overlays = [
           inputs.deploy-rs.overlay
+          inputs.sharry.overlays.default
         ];
         config = {
           allowUnfree = true;

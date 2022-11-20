@@ -357,6 +357,15 @@ in
         ];
         useACMEHost = lib.my.pubDomain;
       };
+
+      "share.${lib.my.pubDomain}" = {
+        locations."/" = {
+          proxyPass = "http://object-ctr.${config.networking.domain}:9090";
+          proxyWebsockets = true;
+          extraConfig = lib.my.nginx.proxyHeaders;
+        };
+        useACMEHost = lib.my.pubDomain;
+      };
     };
 
     minio =

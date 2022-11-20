@@ -25,6 +25,10 @@
     # Stuff used by systems
     #impermanence.url = "github:nix-community/impermanence";
     impermanence.url = "github:devplayer0/impermanence/qemu-vm-dirs";
+
+    # Packages not in nixpkgs
+    sharry.url = "github:devplayer0/sharry/nix-module-improvements";
+    sharry.inputs.nixpkgs.follows = "nixpkgs-unstable";
   };
 
   outputs =

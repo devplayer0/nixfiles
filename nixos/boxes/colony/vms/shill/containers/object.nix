@@ -29,11 +29,17 @@
 
             secrets = {
               key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFdHbZErWLmTPO/aEWB1Fup/aGMf31Un5Wk66FJwTz/8";
-              files."minio.env" = {};
+              files = {
+                "object/minio.env" = {};
+                "object/sharry.conf" = {
+                  owner = "sharry";
+                  group = "sharry";
+                };
+              };
             };
 
             firewall = {
-              tcp.allowed = [ 9000 9001 ];
+              tcp.allowed = [ 9000 9001 config.services.sharry.config.bind.port ];
             };
           };
 
@@ -56,8 +62,68 @@
               enable = true;
               region = "eu-central-1";
               browser = true;
-              rootCredentialsFile = config.age.secrets."minio.env".path;
+              rootCredentialsFile = config.age.secrets."object/minio.env".path;
               dataDir = [ "/mnt/minio" ];
+            };
+
+            sharry = {
+              enable = true;
+              configOverridesFile = config.age.secrets."object/sharry.conf".path;
+
+              config = {
+                base-url = "https://share.${lib.my.pubDomain}";
+                bind.address = "[::]";
+                alias-member-enabled = true;
+                webapp = {
+                  chunk-size = "64M";
+                };
+                backend = {
+                  auth = {
+                    fixed = {
+                      enabled = true;
+                      user = "dev";
+                    };
+                    internal = {
+                      enabled = true;
+                      order = 50;
+                    };
+                  };
+                  jdbc = {
+                    url = "jdbc:postgresql://colony-psql:5432/sharry";
+                    user = "sharry";
+                  };
+                  files = {
+                    default-store = "minio";
+                    stores = {
+                      database.enabled = false;
+                      minio = {
+                        enabled = true;
+                        type = "s3";
+                        endpoint = "https://s3.nul.ie";
+                        access-key = "share";
+                        bucket = "share";
+                      };
+                    };
+                  };
+                  compute-checksum.parallel = 4;
+                  signup.mode = "invite";
+                  share = {
+                    max-size = "128G";
+                    max-validity = "3650 days";
+                  };
+                  mail = {
+                    enabled = true;
+                    smtp = {
+                      host = "mail.nul.ie";
+                      port = 587;
+                      user = "sharry@nul.ie";
+                      ssl-type = "starttls";
+                      default-from = "Sharry <sharry@nul.ie>";
+                      timeout = "30 seconds";
+                    };
+                  };
+                };
+              };
             };
           };
         }
@@ -66,6 +132,7 @@
             forwardPorts = [
               { from = "host"; host.port = 9000; guest.port = 9000; }
               { from = "host"; host.port = 9001; guest.port = 9001; }
+              { from = "host"; guest.port = config.services.sharry.config.bind.port; }
             ];
           };
         })
