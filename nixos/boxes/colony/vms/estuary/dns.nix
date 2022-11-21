@@ -143,11 +143,11 @@ in
                       allAssignments)))
                   assignments)));
 
-        genFor = [ "internal" "base" "vms" "ctrs" ];
+        genFor = [ "internal" "base" "vms" "ctrs" "routing" ];
         intRecords =
           genRecords genFor (a: ''
             ${a.name} IN A ${a.ipv4.address}
-            ${a.name} IN AAAA ${a.ipv6.address}
+            ${optionalString (a.ipv6.address != null) "${a.name} IN AAAA ${a.ipv6.address}"}
             ${concatMapStringsSep "\n" (alt: "${alt} IN CNAME ${a.name}") a.altNames}
           '');
         intPtrRecords =
@@ -162,7 +162,7 @@ in
             genFor
             (a:
               optionalString
-                a.ipv4.genPTR
+                (a.ipv6.address != null && a.ipv6.genPTR)
                 ''@@PTR:${a.ipv6.address}:${toString ptrDots6}@@ IN PTR ${a.name}.${config.networking.domain}.'');
 
         wildcardPtrDef = ''IN LUA PTR "createReverse('ip-%3%-%4%.${config.networking.domain}')"'';

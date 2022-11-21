@@ -7,10 +7,20 @@
     home-manager = "mine-stable";
 
     assignments = {
+      routing = {
+        name = "colony-routing";
+        domain = lib.my.colony.domain;
+        ipv4.address = "${lib.my.colony.start.base.v4}2";
+      };
       internal = {
         altNames = [ "vm" ];
         domain = lib.my.colony.domain;
-        ipv4.address = "${lib.my.colony.start.base.v4}2";
+        ipv4 = {
+          address = "${lib.my.colony.start.vip1}4";
+          mask = 32;
+          gateway = null;
+          genPTR = false;
+        };
         ipv6 = {
           iid = "::2";
           address = "${lib.my.colony.start.base.v6}2";
@@ -145,7 +155,10 @@
             };
 
             networks = {
-              "80-base" = networkdAssignment "base" assignments.internal;
+              "80-base" = mkMerge [
+                (networkdAssignment "base" assignments.routing)
+                (networkdAssignment "base" assignments.internal)
+              ];
               "80-base-dummy" = {
                 matchConfig.Name = "base0";
                 networkConfig.Bridge = "base";
@@ -173,21 +186,29 @@
                   ];
                   routes = map (r: { routeConfig = r; }) [
                     {
-                      Gateway = allAssignments.shill.internal.ipv4.address;
                       Destination = lib.my.colony.prefixes.ctrs.v4;
+                      Gateway = allAssignments.shill.routing.ipv4.address;
                     }
                     {
-                      Gateway = allAssignments.shill.internal.ipv6.address;
                       Destination = lib.my.colony.prefixes.ctrs.v6;
+                      Gateway = allAssignments.shill.internal.ipv6.address;
+                    }
+                    {
+                      Destination = allAssignments.shill.internal.ipv4.address;
+                      Gateway = allAssignments.shill.routing.ipv4.address;
                     }
 
                     {
-                      Gateway = allAssignments.whale2.internal.ipv4.address;
                       Destination = lib.my.colony.prefixes.oci.v4;
+                      Gateway = allAssignments.whale2.routing.ipv4.address;
                     }
                     {
-                      Gateway = allAssignments.whale2.internal.ipv6.address;
                       Destination = lib.my.colony.prefixes.oci.v6;
+                      Gateway = allAssignments.whale2.internal.ipv6.address;
+                    }
+                    {
+                      Destination = allAssignments.whale2.internal.ipv4.address;
+                      Gateway = allAssignments.whale2.routing.ipv4.address;
                     }
                   ];
                 }

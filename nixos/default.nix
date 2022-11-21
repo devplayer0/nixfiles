@@ -107,7 +107,7 @@ let
         genPTR = mkBoolOpt' true "Whether to generate a PTR record.";
       };
       ipv6 = {
-        address = mkOpt' str null "IPv6 address.";
+        address = mkOpt' (nullOr str) null "IPv6 address.";
         mask = mkOpt' ints.u8 64 "Network mask.";
         iid = mkOpt' (nullOr str) null "SLAAC static address.";
         gateway = mkOpt' (nullOr str) null "IPv6 gateway.";
@@ -193,7 +193,7 @@ in
           (map
             (as:
               map
-                (a: [ a.ipv4.address a.ipv6.address ])
+                (a: [ a.ipv4.address ] ++ (optional (a.ipv6.address != null) a.ipv6.address) )
                 (attrValues as))
             (attrValues allAssignments));
       dupIPs = duplicates assignedIPs;

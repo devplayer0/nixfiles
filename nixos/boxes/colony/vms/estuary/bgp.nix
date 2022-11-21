@@ -13,8 +13,12 @@ in
         # TODO: Clean up and modularise
         config = ''
           define OWNAS = 211024;
+
+          define CCVIP1 = ${lib.my.colony.prefixes.vip1};
+
           define OWNIP4 = ${assignments.internal.ipv4.address};
           define OWNNETSET4 = [ ${assignments.internal.ipv4.address}/32 ];
+          define CCNETSET4 = [ ${lib.my.colony.prefixes.vip1} ];
 
           define INTNET6 = ${intnet6};
           define AMSNET6 = ${amsnet6};
@@ -29,15 +33,14 @@ in
           define PREFIXP = 110;
           define PREFPEER = 120;
 
-          #function should_export6() {
-          #	return net ~ OWNNETSET6 || (transit && net ~ TRANSSET6);
-          #}
-
           filter bgp_import {
-            if net !~ OWNNETSET6 then accept; else reject;
+            if net !~ OWNNETSET4 && net !~ OWNNETSET6 then accept; else reject;
           }
           filter bgp_export {
-            if net ~ OWNNETSET6 then accept; else reject;
+            if net ~ OWNNETSET4 || net ~ OWNNETSET6 then accept; else reject;
+          }
+          filter bgp_export_cc {
+            if net ~ OWNNETSET4 || net ~ OWNNETSET6 || net ~ CCNETSET4 then accept; else reject;
           }
 
           router id from "wan";
@@ -48,11 +51,20 @@ in
             ipv4;
             ipv6;
           }
-          protocol static {
+          protocol static static4 {
+            route CCVIP1 via "base";
+
+            ipv4 {
+              import all;
+              export none;
+            };
+          }
+          protocol static static6 {
             # Special case: We have to do the routing on behalf of this _internal_ next-hop
             route INTNET6 via "as211024";
             route AMSNET6 via "base";
             route HOMENET6 via DUB1IP6;
+
             ipv6 {
               import all;
               export none;
@@ -161,10 +173,12 @@ in
           protocol bgp upstream4_coloclue_eun2 from upstream_bgp4 {
             description "ColoClue euNetworks 2 (IPv4)";
             neighbor 94.142.240.253 as 8283;
+            ipv4 { export filter bgp_export_cc; };
           }
           protocol bgp upstream4_coloclue_eun3 from upstream_bgp4 {
             description "ColoClue euNetworks 3 (IPv4)";
             neighbor 94.142.240.252 as 8283;
+            ipv4 { export filter bgp_export_cc; };
           }
 
           protocol bgp upstream6_coloclue_eun2 from upstream_bgp6 {

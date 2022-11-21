@@ -282,15 +282,20 @@ in
                       }
                     ];
                     routes = map (r: { routeConfig = r; }) (flatten
-                      ([  ] ++
+                      ([
+                        {
+                          Destination = lib.my.colony.prefixes.vip1;
+                          Gateway = allAssignments.colony.routing.ipv4.address;
+                        }
+                      ] ++
                       (map (pName: [
                         {
-                          Gateway = allAssignments.colony.internal.ipv4.address;
+                          Gateway = allAssignments.colony.routing.ipv4.address;
                           Destination = lib.my.colony.prefixes."${pName}".v4;
                         }
                         {
-                          Gateway = allAssignments.colony.internal.ipv6.address;
                           Destination = lib.my.colony.prefixes."${pName}".v6;
+                          Gateway = allAssignments.colony.internal.ipv6.address;
                         }
                       ]) [ "vms" "ctrs" "oci" ])));
                   }

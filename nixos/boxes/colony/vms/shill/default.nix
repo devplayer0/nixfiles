@@ -6,11 +6,21 @@
     nixpkgs = "mine";
 
     assignments = {
+      routing = {
+        name = "shill-vm-routing";
+        domain = lib.my.colony.domain;
+        ipv4.address = "${lib.my.colony.start.vms.v4}2";
+      };
       internal = {
         name = "shill-vm";
         altNames = [ "ctr" ];
         domain = lib.my.colony.domain;
-        ipv4.address = "${lib.my.colony.start.vms.v4}2";
+        ipv4 = {
+          address = "${lib.my.colony.start.vip1}5";
+          mask = 32;
+          gateway = null;
+          genPTR = false;
+        };
         ipv6 = {
           iid = "::2";
           address = "${lib.my.colony.start.vms.v6}2";
@@ -99,7 +109,10 @@
               };
 
               networks = {
-                "80-vms" = networkdAssignment "vms" assignments.internal;
+                "80-vms" = mkMerge [
+                  (networkdAssignment "vms" assignments.routing)
+                  (networkdAssignment "vms" assignments.internal)
+                ];
                 "80-ctrs" = mkMerge [
                   (networkdAssignment "ctrs" assignments.ctrs)
                   {

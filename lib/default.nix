@@ -109,7 +109,7 @@ rec {
     matchConfig.Name = iface;
     address =
       [ "${a.ipv4.address}/${toString a.ipv4.mask}" ] ++
-      (optional (a.ipv6.iid == null) "${a.ipv6.address}/${toString a.ipv6.mask}");
+      (optional (a.ipv6.address != null && a.ipv6.iid == null) "${a.ipv6.address}/${toString a.ipv6.mask}");
     gateway =
       (optional (a.ipv4.gateway != null) a.ipv4.gateway) ++
       (optional (a.ipv6.gateway != null) a.ipv6.gateway);
@@ -223,6 +223,7 @@ rec {
         v4 = "${start.all.v4}3.";
         v6 = "${start.all.v6}3::";
       };
+      vip1 = "94.142.241.22";
     };
     prefixes = {
       all = {
@@ -242,6 +243,7 @@ rec {
         v4 = "${start.oci.v4}0/24";
         v6 = "${start.oci.v6}/64";
       };
+      vip1 = "${start.vip1}4/30";
     };
   };
   sshKeyFiles = {

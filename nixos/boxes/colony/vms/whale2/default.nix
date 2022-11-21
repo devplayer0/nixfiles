@@ -8,11 +8,21 @@ in
     nixpkgs = "mine";
 
     assignments = {
+      routing = {
+        name = "whale-vm-routing";
+        domain = lib.my.colony.domain;
+        ipv4.address = "${lib.my.colony.start.vms.v4}3";
+      };
       internal = {
         name = "whale-vm";
         altNames = [ "oci" ];
         domain = lib.my.colony.domain;
-        ipv4.address = "${lib.my.colony.start.vms.v4}3";
+        ipv4 = {
+          address = "${lib.my.colony.start.vip1}6";
+          mask = 32;
+          gateway = null;
+          genPTR = false;
+        };
         ipv6 = {
           iid = "::3";
           address = "${lib.my.colony.start.vms.v6}3";
@@ -144,7 +154,10 @@ in
               };
 
               networks = {
-                "80-vms" = networkdAssignment "vms" assignments.internal;
+                "80-vms" = mkMerge [
+                  (networkdAssignment "vms" assignments.routing)
+                  (networkdAssignment "vms" assignments.internal)
+                ];
               };
             };
 
