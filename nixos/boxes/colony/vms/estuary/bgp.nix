@@ -244,6 +244,14 @@ in
             description "Hurricane Electric (on Frys-IX, IPv4)";
             neighbor 185.1.203.154 as 6939;
           }
+          protocol bgp peer4_frysix_jurrian from peer_bgp4 {
+            description "AS212635 aka jurrian (on Frys-IX, IPv4)";
+            neighbor 185.1.203.134 as 212635;
+          }
+          protocol bgp peer6_frysix_jurrian from peer_bgp6 {
+            description "AS212635 aka jurrian (on Frys-IX, IPv6)";
+            neighbor 2001:7f8:10f::3:3e9b:134 as 212635;
+          }
 
           protocol bgp ixp4_nlix_rs1 from ixp_bgp4 {
             description "NL-ix route server 1 (IPv4)";
@@ -282,6 +290,16 @@ in
             neighbor 2001:7f8:13::a501:3335:3 as 13335;
             ipv6 { preference (PREFPEER-1); };
           }
+          protocol bgp peer4_nlix_jurrian from peer_bgp4 {
+            description "AS212635 aka jurrian (on NL-ix, IPv4)";
+            neighbor 193.239.117.55 as 212635;
+            ipv4 { preference (PREFPEER-1); };
+          }
+          protocol bgp peer6_nlix_jurrian from peer_bgp6 {
+            description "AS212635 aka jurrian (on NL-ix, IPv6)";
+            neighbor 2001:7f8:13::a521:2635:1 as 212635;
+            ipv6 { preference (PREFPEER-1); };
+          }
 
           protocol bgp ixp4_fogixp_rs1 from ixp_bgp4 {
             description "FogIXP route server 1 (IPv4)";
@@ -299,6 +317,15 @@ in
           protocol bgp ixp6_fogixp_rs2 from ixp_bgp6 {
             description "FogIXP route server 2 (IPv6)";
             neighbor 2001:7f8:ca:1::222 as 47498;
+          }
+
+          protocol bgp peer4_fogixp_jurrian from peer_bgp4 {
+            description "AS212635 aka jurrian (on FogIXP, IPv4)";
+            neighbor 185.1.147.34 as 212635;
+          }
+          protocol bgp peer6_fogixp_jurrian from peer_bgp6 {
+            description "AS212635 aka jurrian (on FogIXP, IPv6)";
+            neighbor 2001:7f8:ca:1::34 as 212635;
           }
         '';
       };
