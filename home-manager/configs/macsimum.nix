@@ -15,6 +15,7 @@
 
         home.packages = with pkgs; [
           python310
+          monocraft
         ];
 
         programs = {

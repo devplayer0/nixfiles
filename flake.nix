@@ -55,6 +55,7 @@
         flake = flake-utils.lib;
       };
       pkgsLibOverlay = final: prev: { lib = prev.lib.extend libOverlay; };
+      myPkgsOverlay = final: prev: import ./pkgs { lib = prev.lib; pkgs = prev; };
 
       # Override the flake-level lib since we're going to use it for non-config specific stuff
       pkgsFlakes = mapAttrs (_: pkgsFlake: pkgsFlake // { lib = pkgsFlake.lib.extend libOverlay; }) {
@@ -81,6 +82,7 @@
         (_: path: mkDefaultSystemsPkgs path (system: {
           overlays = [
             pkgsLibOverlay
+            myPkgsOverlay
             inputs.devshell.overlay
             inputs.agenix.overlay
             inputs.deploy-rs.overlay
@@ -94,6 +96,7 @@
         (_: path: mkDefaultSystemsPkgs path (_: {
           overlays = [
             pkgsLibOverlay
+            myPkgsOverlay
           ];
         }))
         pkgsFlakes;
@@ -134,6 +137,8 @@
     {
       nixpkgs = pkgs';
       inherit lib nixfiles;
+
+      overlays.default = myPkgsOverlay;
 
       nixosModules = nixfiles.config.nixos.modules;
       homeModules = nixfiles.config.home-manager.modules;
@@ -180,6 +185,8 @@
           (lib.filterAttrs (_: h: h.config.nixpkgs.system == system) self.homeConfigurations));
         deploy = recurseIntoAttrs (pkgs.deploy-rs.lib.deployChecks self.deploy);
       };
+
+      packages = flattenTree (import ./pkgs { inherit lib pkgs; });
 
       devShells.default = shell;
       devShell = shell;
