@@ -6,7 +6,7 @@ in
   config = {
     virtualisation.oci-containers.containers = {
       valheim = {
-        image = "lloesche/valheim-server@sha256:8d910b15e3ab645a31c85799338d3dc043cabe891a34b43cbd574a1453837205";
+        image = "lloesche/valheim-server@sha256:e7c2c26620d4005ff506cdce1eeafc795496c02d0eba01c62f8965ac233092c7";
 
         environment = {
           SERVER_NAME = "amogus sus";
