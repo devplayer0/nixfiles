@@ -1,5 +1,6 @@
 { lib, config, allAssignments, ... }:
 let
+  inherit (lib) concatStringsSep;
   inherit (lib.my) dockerNetAssignment;
 in
 {
@@ -13,6 +14,12 @@ in
           SERVER_PUBLIC = "true";
           WORLD_NAME = "simpland2";
           ADMINLIST_IDS = "76561198049818986";
+          PERMITTEDLIST_IDS = concatStringsSep " " [
+            "76561198049818986" # /dev/player0
+            "76561198044432445" # Nuda
+            "76561198121606266" # El Pugador
+            "76561198059894566" # hynge
+          ];
           TZ = "Europe/Dublin";
         };
         environmentFiles = [ config.age.secrets."whale2/valheim.env".path ];
