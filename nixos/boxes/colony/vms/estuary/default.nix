@@ -384,14 +384,13 @@ in
                     }
 
                     chain forward {
-                      iifname wan oifname base jump filter-routing
-                      iifname ixps oifname base jump filter-routing
-                      oifname ixps jump ixp
+                      iifname { wan, $ixps } oifname base jump filter-routing
+                      oifname $ixps jump ixp
                       oifname as211024 accept
                     }
                     chain output {
                       oifname ifog ether type != vlan reject
-                      oifname ixps jump ixp
+                      oifname $ixps jump ixp
                     }
                   }
                   table inet nat {
