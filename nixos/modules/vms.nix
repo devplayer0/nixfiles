@@ -262,7 +262,9 @@ in
         in
         {
           description = "Virtual machine '${n}'";
-          requires = dependencies;
+          # Use `Wants=` instead of `Requires=`. Otherwise restarting the wait-online services will cause the VM to
+          # restart as well.
+          wants = dependencies;
           after = dependencies;
           serviceConfig = {
             ExecStop = mkIf i.cleanShutdown.enabled "${doCleanShutdown} /run/vms/${n}/monitor-qmp.sock";
