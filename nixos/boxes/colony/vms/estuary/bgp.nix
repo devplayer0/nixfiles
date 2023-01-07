@@ -244,6 +244,14 @@ in
             description "Hurricane Electric (on Frys-IX, IPv4)";
             neighbor 185.1.203.154 as 6939;
           }
+          protocol bgp peer4_frysix_cloudflare from peer_bgp4 {
+            description "Cloudflare (on Frys-IX, IPv4)";
+            neighbor 185.1.203.217 as 13335;
+          }
+          protocol bgp peer6_frysix_cloudflare from peer_bgp6 {
+            description "Cloudflare (on Frys-IX, IPv6)";
+            neighbor 2001:7f8:10f::3417:217 as 13335;
+          }
           protocol bgp peer4_frysix_jurrian from peer_bgp4 {
             description "AS212635 aka jurrian (on Frys-IX, IPv4)";
             neighbor 185.1.203.134 as 212635;
@@ -275,6 +283,21 @@ in
             ipv6 { preference (PREFIXP-1); };
           }
 
+          protocol bgp peer4_nlix_cloudflare1 from peer_bgp4 {
+            description "Cloudflare NL-ix 1 (IPv4)";
+            neighbor 193.239.117.14 as 13335;
+            ipv4 { preference (PREFPEER-1); };
+          }
+          protocol bgp peer4_nlix_cloudflare2 from peer_bgp4 {
+            description "Cloudflare NL-ix 2 (IPv4)";
+            neighbor 193.239.117.114 as 13335;
+            ipv4 { preference (PREFPEER-1); };
+          }
+          protocol bgp peer4_nlix_cloudflare3 from peer_bgp4 {
+            description "Cloudflare NL-ix 3 (IPv4)";
+            neighbor 193.239.118.138 as 13335;
+            ipv4 { preference (PREFPEER-1); };
+          }
           protocol bgp peer6_nlix_cloudflare1 from peer_bgp6 {
             description "Cloudflare NL-ix 1 (IPv6)";
             neighbor 2001:7f8:13::a501:3335:1 as 13335;
