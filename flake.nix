@@ -17,8 +17,8 @@
     home-manager-stable.inputs.nixpkgs.follows = "nixpkgs-stable";
 
     # Stuff used by the flake for build / deployment
-    agenix.url = "github:ryantm/agenix";
-    agenix.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    ragenix.url = "github:yaxitech/ragenix";
+    ragenix.inputs.nixpkgs.follows = "nixpkgs-unstable";
     deploy-rs.url = "github:serokell/deploy-rs";
     deploy-rs.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
@@ -83,7 +83,7 @@
             pkgsLibOverlay
             myPkgsOverlay
             inputs.devshell.overlay
-            inputs.agenix.overlay
+            inputs.ragenix.overlays.default
             inputs.deploy-rs.overlay
             (flakePackageOverlay inputs.home-manager-unstable system)
           ];

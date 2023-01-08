@@ -16,7 +16,7 @@ in
 
   imports = [
     inputs.impermanence.nixosModule
-    inputs.agenix.nixosModules.age
+    inputs.ragenix.nixosModules.age
     inputs.sharry.nixosModules.default
   ];
 

@@ -3,12 +3,12 @@ let
   inherit (self) lib;
 
   inherit (builtins) mapAttrs attrValues readFile getFlake;
-  inherit (lib) optional flatten zipAttrsWith nameValuePair mapAttrs';
+  inherit (lib) fileContents optional flatten zipAttrsWith nameValuePair mapAttrs';
 
   secretPath = p: "secrets/${p}.age";
 
   defaultKeys = [
-    (readFile .keys/dev.pub)
+    (fileContents .keys/dev.pub)
   ];
   secretKeys =
     zipAttrsWith

@@ -37,10 +37,10 @@ in
       command = "rm -f ${homeFlake}";
     }
     {
-      name = "agenix";
+      name = "ragenix";
       category = "utilities";
-      help = pkgs.agenix.meta.description;
-      command = ''exec ${pkgs.agenix}/bin/agenix --identity "$PRJ_ROOT/.keys/dev.key" "$@"'';
+      help = "age-encrypted secrets for NixOS";
+      command = ''exec ${pkgs.ragenix}/bin/ragenix --identity "$PRJ_ROOT/.keys/dev.key" "$@"'';
     }
     {
       name = "qemu-genmac";
