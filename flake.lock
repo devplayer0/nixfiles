@@ -167,16 +167,15 @@
     },
     "impermanence": {
       "locked": {
-        "lastModified": 1647189769,
-        "narHash": "sha256-6PJ4wqDuFMIw34gM/LxQ9qZPw8vPls4xC7UCeweSvKs=",
-        "owner": "devplayer0",
+        "lastModified": 1668668915,
+        "narHash": "sha256-QjY4ZZbs9shwO4LaLpvlU2bO9J1juYhO9NtV3nrbnYQ=",
+        "owner": "nix-community",
         "repo": "impermanence",
-        "rev": "723c1a7535b7cd194c3a2a693a2566ba1e047a89",
+        "rev": "5df9108b346f8a42021bf99e50de89c9caa251c3",
         "type": "github"
       },
       "original": {
-        "owner": "devplayer0",
-        "ref": "qemu-vm-dirs",
+        "owner": "nix-community",
         "repo": "impermanence",
         "type": "github"
       }
