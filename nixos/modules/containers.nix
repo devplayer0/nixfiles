@@ -278,7 +278,7 @@ in
         };
 
         # age requires all keys to at least exist, even if they're not going to be used
-        agenixMountSecrets.deps = [ "ensureDevKey" ];
+        agenixInstall.deps = [ "ensureDevKey" ];
         ensureDevKey.text =
         ''
           [ ! -e "${devVMKeyPath}" ] && touch "${devVMKeyPath}"
