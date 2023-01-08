@@ -25,7 +25,7 @@ let
       import sys
       import os
 
-      import qemu.qmp
+      import qemu.qmp.legacy
 
       if len(sys.argv) != 2:
         print(f'usage: {sys.argv[0]} <qmp unix socket>', file=sys.stderr)
@@ -35,7 +35,8 @@ let
           # Special case: systemd is calling us after QEMU exited on its own
           sys.exit(0)
 
-      with qemu.qmp.QEMUMonitorProtocol(sys.argv[1]) as mon:
+      # TODO: Upgrade to async QMPClient
+      with qemu.qmp.legacy.QEMUMonitorProtocol(sys.argv[1]) as mon:
         mon.connect()
         mon.command('system_powerdown')
         while mon.pull_event(wait=True)['event'] != 'SHUTDOWN':
