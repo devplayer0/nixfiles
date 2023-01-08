@@ -7,9 +7,10 @@ in
   config = {
     virtualisation.oci-containers.containers = {
       valheim = {
-        image = "lloesche/valheim-server@sha256:e7c2c26620d4005ff506cdce1eeafc795496c02d0eba01c62f8965ac233092c7";
+        image = "ghcr.io/lloesche/valheim-server@sha256:d977ccbeff02d2509646fb0157b5e353ebadb3105a3ed351b9c309a09a61701b";
 
         environment = {
+          BACKUPS_IF_IDLE = "false";
           SERVER_NAME = "amogus sus";
           SERVER_PUBLIC = "true";
           WORLD_NAME = "simpland2";
