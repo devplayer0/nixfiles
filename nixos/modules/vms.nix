@@ -242,7 +242,7 @@ in
               value = {
                 matchConfig = {
                   Name = net.ifname;
-                  Kind = "tap";
+                  Kind = "tun";
                 };
                 networkConfig.Bridge = net.bridge;
               };

@@ -13,7 +13,10 @@ let
   '';
 
   # Based on https://github.com/serokell/deploy-rs/blob/master/flake.nix
-  nixosActivate = cfg': base: (pkgs.deploy-rs.lib.activate.custom // { dryActivate = "$PROFILE/bin/switch-to-configuration dry-activate"; }) base.config.system.build.toplevel ''
+  nixosActivate = cfg': base: (pkgs.deploy-rs.lib.activate.custom // {
+    dryActivate = "$PROFILE/bin/switch-to-configuration dry-activate";
+    boot = "$PROFILE/bin/switch-to-configuration boot";
+  }) base.config.system.build.toplevel ''
     # work around https://github.com/NixOS/nixpkgs/issues/73404
     cd /tmp
 
@@ -39,7 +42,8 @@ let
         journalctl -o cat --no-pager -n 0 -f -u "$unit" &
         jPid=$!
         cleanup() {
-          kill $jPid
+          # shellcheck disable=SC2317
+          kill "$jPid"
         }
         trap cleanup EXIT
 

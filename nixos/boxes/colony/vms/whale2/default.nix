@@ -1,6 +1,7 @@
 { lib, ... }:
 let
   inherit (builtins) mapAttrs;
+  inherit (lib) mkForce;
 in
 {
   nixos.systems.whale2 = {
@@ -103,6 +104,9 @@ in
               oci-containers = {
                 backend = "podman";
               };
+              # NixOS has switched to using netavark, which is native to podman. It's currently missing an option to
+              # disable iptables rules generation, which is very annoying.
+              containers.containersConf.settings.network.network_backend = mkForce "cni";
             };
 
             environment = {

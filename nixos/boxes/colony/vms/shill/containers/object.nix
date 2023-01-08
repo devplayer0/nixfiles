@@ -15,7 +15,7 @@
       };
     };
 
-    configuration = { lib, config, assignments, ... }:
+    configuration = { lib, pkgs, config, assignments, ... }:
     let
       inherit (lib) mkMerge mkIf;
       inherit (lib.my) networkdAssignment;
@@ -64,6 +64,9 @@
               browser = true;
               rootCredentialsFile = config.age.secrets."object/minio.env".path;
               dataDir = [ "/mnt/minio" ];
+
+              # TODO: Migrate from fs to snsd backend!
+              package = pkgs.minio_legacy_fs;
             };
 
             sharry = {

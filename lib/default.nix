@@ -88,7 +88,7 @@ rec {
     then throw "\nFailed assertions:\n${concatStringsSep "\n" (map (x: "- ${x}") failedAssertions)}"
     else showWarnings config.warnings res;
 
-  homeStateVersion' = hmBranch: (if (hmBranch == "stable" || hmBranch == "mine-stable") then "22.05" else "22.11");
+  homeStateVersion' = hmBranch: (if (hmBranch == "stable" || hmBranch == "mine-stable") then "22.11" else "23.05");
   homeStateVersion = hmBranch: {
     # The flake passes a default setting, but we don't care about that
     home.stateVersion = mkForce (homeStateVersion' hmBranch);

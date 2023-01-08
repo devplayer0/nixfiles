@@ -7,13 +7,13 @@
     devshell.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
     nixpkgs-unstable.url = "nixpkgs/nixos-unstable";
-    nixpkgs-stable.url = "nixpkgs/nixos-22.05";
+    nixpkgs-stable.url = "nixpkgs/nixos-22.11";
     nixpkgs-mine.url = "github:devplayer0/nixpkgs/devplayer0";
     nixpkgs-mine-stable.url = "github:devplayer0/nixpkgs/devplayer0-stable";
 
     home-manager-unstable.url = "home-manager";
     home-manager-unstable.inputs.nixpkgs.follows = "nixpkgs-unstable";
-    home-manager-stable.url = "home-manager/release-22.05";
+    home-manager-stable.url = "home-manager/release-22.11";
     home-manager-stable.inputs.nixpkgs.follows = "nixpkgs-stable";
 
     # Stuff used by the flake for build / deployment
