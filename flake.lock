@@ -267,16 +267,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1668965316,
-        "narHash": "sha256-ZIVZBbLhn40A29iF75H/g5N8OuZo9e6OQPZLmstVLvQ=",
-        "owner": "devplayer0",
+        "lastModified": 1673132723,
+        "narHash": "sha256-czCD8igPy6KjXC7oHkdFOprrZmgACVCgsL8E3DNX0jk=",
+        "owner": "eikek",
         "repo": "sharry",
-        "rev": "a539318cebdeb82bb47100ff4288764d0e6014a8",
+        "rev": "7f84a8151d0c04404c0a41f91be5814c379019c8",
         "type": "github"
       },
       "original": {
-        "owner": "devplayer0",
-        "ref": "nix-module-improvements",
+        "owner": "eikek",
         "repo": "sharry",
         "type": "github"
       }

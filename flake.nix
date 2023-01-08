@@ -27,7 +27,7 @@
     impermanence.url = "github:devplayer0/impermanence/qemu-vm-dirs";
 
     # Packages not in nixpkgs
-    sharry.url = "github:devplayer0/sharry/nix-module-improvements";
+    sharry.url = "github:eikek/sharry";
     sharry.inputs.nixpkgs.follows = "nixpkgs-unstable";
   };
 
