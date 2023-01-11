@@ -9,6 +9,8 @@
 
     systemd = {
       services = {
+        # TODO: get working again
+        hercules-ci-agent.enable = false;
         hercules-ci-agent-pre =
         let
           deps = [ "hercules-ci-agent.service" ];

@@ -14,7 +14,7 @@
       name = lv;
       backend = {
         driver = "host_device";
-        filename = "/dev/ssds/vm-${vm}-${lv}";
+        filename = "/dev/hdds/tmp-vm-${vm}-${lv}";
         # It appears this needs to be set on the backend _and_ the format
         discard = "unmap";
       };
@@ -156,7 +156,7 @@
                 name = "minio";
                 backend = {
                   driver = "host_device";
-                  filename = "/dev/ssds/minio";
+                  filename = "/dev/hdds/tmp-minio";
                   discard = "unmap";
                 };
                 format = {
@@ -186,7 +186,7 @@
                 name = "oci";
                 backend = {
                   driver = "host_device";
-                  filename = "/dev/ssds/oci";
+                  filename = "/dev/hdds/tmp-oci";
                   discard = "unmap";
                 };
                 format = {

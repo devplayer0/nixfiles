@@ -72,11 +72,11 @@
             fsType = "vfat";
           };
           "/nix" = {
-            device = "/dev/ssds/colony-nix";
+            device = "/dev/hdds/tmp-colony-nix";
             fsType = "ext4";
           };
           "/persist" = {
-            device = "/dev/ssds/colony-persist";
+            device = "/dev/hdds/tmp-colony-persist";
             fsType = "ext4";
             neededForBoot = true;
           };
