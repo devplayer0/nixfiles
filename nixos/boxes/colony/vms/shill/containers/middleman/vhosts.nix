@@ -40,6 +40,7 @@ let
       alias = "${wellKnownRoot}/";
       extraConfig = ''
         autoindex on;
+        add_header Access-Control-Allow-Origin *;
       '';
     };
     "/.well-known/webfinger".return = "301 https://toot.nul.ie$request_uri";
@@ -179,9 +180,10 @@ in
       "element.${lib.my.pubDomain}" =
       let
         headers = ''
-          add_header X-Frame-Options SAMEORIGIN;
-          add_header X-Content-Type-Options nosniff;
-          add_header X-XSS-Protection "1; mode=block";
+          # TODO: why are these here?
+          #add_header X-Frame-Options SAMEORIGIN;
+          #add_header X-Content-Type-Options nosniff;
+          #add_header X-XSS-Protection "1; mode=block";
           # This seems to break file downloads...
           #add_header Content-Security-Policy "frame-ancestors 'none'";
         '';
