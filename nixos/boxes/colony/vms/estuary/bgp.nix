@@ -200,6 +200,15 @@ in
             neighbor 2001:7f8:10f::1b1b:154 as 6939;
           }
 
+          protocol bgp upstream4_fogixp_efero from upstream_bgp4 {
+            description "efero transit (on FogIXP, IPv4)";
+            neighbor 185.1.147.107 as 208431;
+          }
+          protocol bgp upstream6_fogixp_efero from upstream_bgp6 {
+            description "efero transit (on FogIXP, IPv6)";
+            neighbor 2001:7f8:ca:1::107 as 208431;
+          }
+
           protocol bgp peer4_cc_luje from peer_bgp4 {
             description "LUJE.net (on ColoClue, IPv4)";
             neighbor 94.142.240.20 as 212855;
@@ -259,6 +268,22 @@ in
           protocol bgp peer6_frysix_jurrian from peer_bgp6 {
             description "AS212635 aka jurrian (on Frys-IX, IPv6)";
             neighbor 2001:7f8:10f::3:3e9b:134 as 212635;
+          }
+          protocol bgp peer4_frysix_meta1 from peer_bgp4 {
+            description "Meta 1 (on Frys-IX, IPv4)";
+            neighbor 185.1.203.225 as 32934;
+          }
+          protocol bgp peer4_frysix_meta2 from peer_bgp4 {
+            description "Meta 2 (on Frys-IX, IPv4)";
+            neighbor 185.1.203.226 as 32934;
+          }
+          protocol bgp peer6_frysix_meta1 from peer_bgp6 {
+            description "Meta 1 (on Frys-IX, IPv6)";
+            neighbor 2001:7f8:10f::80a6:225 as 32934;
+          }
+          protocol bgp peer6_frysix_meta2 from peer_bgp6 {
+            description "Meta 2 (on Frys-IX, IPv6)";
+            neighbor 2001:7f8:10f::80a6:226 as 32934;
           }
 
           protocol bgp ixp4_nlix_rs1 from ixp_bgp4 {
@@ -349,6 +374,14 @@ in
           protocol bgp peer6_fogixp_jurrian from peer_bgp6 {
             description "AS212635 aka jurrian (on FogIXP, IPv6)";
             neighbor 2001:7f8:ca:1::34 as 212635;
+          }
+          protocol bgp peer4_fogixp_luje from peer_bgp4 {
+            description "LUJE.net (on FogIXP, IPv4)";
+            neighbor 185.1.147.42 as 212855;
+          }
+          protocol bgp peer6_fogixp_luje from peer_bgp6 {
+            description "LUJE.net (on FogIXP, IPv6)";
+            neighbor 2001:7f8:ca:1::42 as 212855;
           }
         '';
       };
