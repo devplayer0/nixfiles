@@ -25,19 +25,7 @@
             efi.canTouchEfiVariables = true;
             timeout = 10;
           };
-          kernelPackages = pkgs.linuxKernel.packages.linux_5_19.extend (self: super: {
-            # Intel DRM driver is borked in 5.19.12, which is where nixos-unstable is right now
-            kernel = super.kernel.override {
-              argsOverride = rec {
-                version = "5.19.14";
-                modDirVersion = version;
-                src = pkgs.fetchurl {
-                  url = "mirror://kernel/linux/kernel/v5.x/linux-${version}.tar.xz";
-                  sha256 = "1h8srn3fw4vw61qi0xxlk9fq0fqq4wl7fbrzz7sivdd8qkhjgv8x";
-                };
-              };
-            };
-          });
+          kernelPackages = pkgs.linuxKernel.packages.linux_6_1;
           kernelModules = [ "kvm-intel" ];
           kernelParams = [ "intel_iommu=on" ];
           initrd = {
