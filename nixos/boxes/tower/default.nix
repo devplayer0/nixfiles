@@ -136,11 +136,8 @@
         };
 
         systemd = {
-          services = {
-            systemd-networkd-wait-online.enable = false;
-          };
-
           network = {
+            wait-online.enable = false;
             links = {
               "10-wifi" = {
                 matchConfig.MACAddress = "8c:f8:c5:55:96:1e";
