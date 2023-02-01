@@ -10,7 +10,7 @@ in
           vni = 211024;
           peers = {
             estuary.addr = pubV4;
-            home.addr = "109.255.1.83";
+            home.addr = "188.141.75.2";
           };
         };
       };
