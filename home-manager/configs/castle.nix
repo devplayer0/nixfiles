@@ -20,6 +20,9 @@
 
         home.packages = with pkgs; [
           rpiboot
+          rdma-core
+          mstflint
+          qperf
         ];
 
         nix.settings.cores = 16;
