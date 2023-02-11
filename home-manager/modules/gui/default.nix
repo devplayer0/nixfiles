@@ -1,6 +1,6 @@
 { lib, pkgs, config, ... }:
 let
-  inherit (lib) mkIf mkDefault mkMerge mkForce;
+  inherit (lib) mkIf mkMerge mkForce;
   inherit (lib.my) mkBoolOpt';
 
   cfg = config.my.gui;
@@ -18,6 +18,10 @@ in
             (nerdfonts.override {
               fonts = [ "DroidSansMono" "SourceCodePro" ];
             })
+            noto-fonts-emoji
+
+            python310Packages.python-lsp-server
+            nil # nix language server
           ];
         };
 
@@ -33,6 +37,36 @@ in
             enable = true;
             settings = {
               font.normal.family = "SauceCodePro Nerd Font Mono";
+            };
+          };
+
+          kitty = {
+            enable = true;
+            font.name = "SauceCodePro Nerd Font Mono";
+            settings = {
+              background_opacity = "0.8";
+              tab_bar_edge = "top";
+            };
+          };
+
+          helix = {
+            enable = true;
+            settings = {
+              keys = {
+                normal = {
+                  "^" = "goto_first_nonwhitespace";
+                  "$" = "goto_line_end";
+                };
+              };
+              editor = {
+                whitespace = {
+                  render.newline = "all";
+                };
+                indent-guides = {
+                  render = true;
+                  character = "┊";
+                };
+              };
             };
           };
         };
@@ -110,11 +144,13 @@ in
                 };
 
                 modifier = "Mod4";
-                terminal = "alacritty";
+                terminal = "kitty";
                 keybindings =
                   let
                     cfg = config.wayland.windowManager.sway.config;
                     mod = cfg.modifier;
+
+                    mkSpotifyCmd = cmd: "exec ${pkgs.dbus}/bin/dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.${cmd}";
                   in
                   lib.mkOptionDefault {
                     "${mod}+d" = null;
@@ -125,6 +161,12 @@ in
                     "${mod}+Shift+e" = "exec rofi -show emoji";
                     # Config for this doesn't seem to work :/
                     "${mod}+c" = ''exec rofi -show calc -calc-command "echo -n '{result}' | ${pkgs.wl-clipboard}/bin/wl-copy"'';
+
+                    "XF86AudioRaiseVolume" = "exec ${pkgs.pamixer}/bin/pamixer -i 5";
+                    "XF86AudioLowerVolume" = "exec ${pkgs.pamixer}/bin/pamixer -d 5";
+                    "XF86AudioPlay" = mkSpotifyCmd "PlayPause";
+                    "XF86AudioNext" = mkSpotifyCmd "Next";
+                    "XF86AudioPrev" = mkSpotifyCmd "Prev";
                   };
 
                 menu = "rofi -show run";
