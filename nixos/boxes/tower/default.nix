@@ -80,6 +80,10 @@
         console.keyMap = "uk";
 
         services = {
+          hardware = {
+            bolt.enable = true;
+          };
+
           lvm = {
             boot.thin.enable = true;
             dmeventd.enable = true;
