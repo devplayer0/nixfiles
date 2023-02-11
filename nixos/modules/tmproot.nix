@@ -386,6 +386,9 @@ in
           }
         ];
       })
+      (mkIf config.services.hardware.bolt.enable {
+        my.tmproot.persistence.config.directories = [ "/var/lib/boltd" ];
+      })
     ]))
   ]);
 
