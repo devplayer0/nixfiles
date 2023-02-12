@@ -113,7 +113,10 @@ in
           packages = with pkgs; [
             wtype
             wl-clipboard
+            wev
             pavucontrol
+            libsecret
+            playerctl
           ];
 
           pointerCursor = {
@@ -149,8 +152,6 @@ in
                   let
                     cfg = config.wayland.windowManager.sway.config;
                     mod = cfg.modifier;
-
-                    mkSpotifyCmd = cmd: "exec ${pkgs.dbus}/bin/dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.${cmd}";
                   in
                   lib.mkOptionDefault {
                     "${mod}+d" = null;
@@ -164,9 +165,10 @@ in
 
                     "XF86AudioRaiseVolume" = "exec ${pkgs.pamixer}/bin/pamixer -i 5";
                     "XF86AudioLowerVolume" = "exec ${pkgs.pamixer}/bin/pamixer -d 5";
-                    "XF86AudioPlay" = mkSpotifyCmd "PlayPause";
-                    "XF86AudioNext" = mkSpotifyCmd "Next";
-                    "XF86AudioPrev" = mkSpotifyCmd "Prev";
+                    "XF86AudioPlay" = "exec ${pkgs.playerctl}/bin/playerctl play-pause";
+                    "XF86AudioPause" = "exec ${pkgs.playerctl}/bin/playerctl play-pause";
+                    "XF86AudioNext" = "exec ${pkgs.playerctl}/bin/playerctl next";
+                    "XF86AudioPrev" = "exec ${pkgs.playerctl}/bin/playerctl previous";
                   };
 
                 menu = "rofi -show run";
@@ -197,6 +199,13 @@ in
         };
 
         services = {
+          swaync = {
+            enable = true;
+            settings = {
+              widgets = [ "title" "dnd" "mpris" "notifications" ];
+            };
+          };
+
           flameshot = {
             enable = true;
             settings = {
@@ -205,6 +214,23 @@ in
                 savePath = "/tmp/screenshots";
                 savePathFixed = false;
               };
+            };
+          };
+
+          playerctld.enable = true;
+          spotifyd = {
+            enable = true;
+            package = pkgs.spotifyd.override {
+              withMpris = true;
+              withKeyring = true;
+            };
+            settings.global = {
+              username = "devplayer0";
+              use_keyring = true;
+              use_mpris = true;
+              backend = "pulseaudio";
+              bitrate = 320;
+              device_type = "computer";
             };
           };
         };

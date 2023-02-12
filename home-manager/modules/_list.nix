@@ -3,5 +3,6 @@
     common = ./common.nix;
     gui = ./gui;
     deploy-rs = ./deploy-rs.nix;
+    swaync = ./swaync.nix;
   };
 }

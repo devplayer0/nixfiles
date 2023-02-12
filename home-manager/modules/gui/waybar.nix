@@ -17,7 +17,7 @@ in
       modules-center = [ "sway/window" ];
       modules-right = [
         "idle_inhibitor" "pulseaudio" "network" "cpu" "memory" "temperature" "backlight"
-        "keyboard-state" "sway/language" "battery" "clock" "tray"
+        "keyboard-state" "sway/language" "battery" "clock" "tray" "custom/notification"
       ];
       # Modules configuration
       # "sway/workspaces": {
@@ -112,8 +112,8 @@ in
         format-source-muted = "";
         format-icons = {
           headphone = "";
-          hands-free = "";
-          headset = "";
+          hands-free = "";
+          headset = "";
           phone = "";
           portable = "";
           car = "";
@@ -122,16 +122,32 @@ in
         on-click = "${pkgs.pavucontrol}/bin/pavucontrol";
       };
       "custom/media" = {
+        # TODO: waybar has a built-in MPRIS module now
         format = "{icon} {}";
         return-type = "json";
         max-length = 40;
         format-icons = {
           spotify = "";
-          default = "🎜";
+          default = "";
         };
         escape = true;
         exec = ''${pkg}/bin/waybar-mediaplayer.py 2> /dev/null'';
         # "exec": "$HOME/.config/waybar/mediaplayer.py --player spotify 2> /dev/null" // Filter player based on name
+      };
+      "custom/notification" = {
+        tooltip = false;
+        format = "{icon}";
+        format-icons = {
+          notification = "<span foreground='red'><sup></sup></span>";
+          none = "";
+          dnd-notification = "<span foreground='red'><sup></sup></span>";
+          dnd-none = "";
+        };
+        return-type = "json";
+        exec = "${config.services.swaync.package}/bin/swaync-client -swb";
+        on-click = "${config.services.swaync.package}/bin/swaync-client -t -sw";
+        on-click-right = "${config.services.swaync.package}/bin/swaync-client -d -sw";
+        escape = true;
       };
     };
   };

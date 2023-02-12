@@ -28,6 +28,12 @@ in
         pulse.enable = true;
         jack.enable = true;
       };
+      dbus = {
+        packages = with pkgs; [ gcr ];
+      };
+      gnome = {
+        gnome-keyring.enable = true;
+      };
     };
 
     programs.dconf.enable = true;
