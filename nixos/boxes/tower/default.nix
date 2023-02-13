@@ -112,6 +112,10 @@
           blueman.enable = true;
         };
 
+        programs = {
+          steam.enable = true;
+        };
+
         networking = {
           networkmanager = {
             enable = true;
