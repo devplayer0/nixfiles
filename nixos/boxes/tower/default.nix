@@ -162,9 +162,7 @@
               };
 
               home = {
-                packages = with pkgs; [
-                  spotify
-                ];
+                packages = with pkgs; [ ];
               };
 
               services = {

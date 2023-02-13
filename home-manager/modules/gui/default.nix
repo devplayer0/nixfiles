@@ -116,7 +116,9 @@ in
             wev
             pavucontrol
             libsecret
+
             playerctl
+            spotify
           ];
 
           pointerCursor = {
@@ -219,7 +221,7 @@ in
 
           playerctld.enable = true;
           spotifyd = {
-            enable = true;
+            enable = false;
             package = pkgs.spotifyd.override {
               withMpris = true;
               withKeyring = true;
