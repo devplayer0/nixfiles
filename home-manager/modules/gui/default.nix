@@ -114,6 +114,8 @@ in
             wtype
             wl-clipboard
             wev
+            wdisplays
+
             pavucontrol
             libsecret
 
