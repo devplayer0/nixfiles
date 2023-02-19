@@ -18,6 +18,7 @@
     configuration = { lib, pkgs, config, assignments, ... }:
     let
       inherit (lib) mkMerge mkIf;
+      inherit (config.my.user.homeConfig.lib.file) mkOutOfStoreSymlink;
       inherit (lib.my) networkdAssignment;
     in
     {
@@ -35,11 +36,19 @@
                   owner = "sharry";
                   group = "sharry";
                 };
+                "object/minio-client-config.json" = {
+                  owner = config.my.user.config.name;
+                  group = config.my.user.config.group;
+                };
               };
             };
 
             firewall = {
               tcp.allowed = [ 9000 9001 config.services.sharry.config.bind.port ];
+            };
+
+            user.homeConfig = {
+              home.file.".mc/config.json".source = mkOutOfStoreSymlink config.age.secrets."object/minio-client-config.json".path;
             };
           };
 
@@ -57,6 +66,12 @@
             };
           };
 
+          environment = {
+            systemPackages = with pkgs; [
+              minio-client
+            ];
+          };
+
           services = {
             minio = {
               enable = true;
@@ -64,12 +79,10 @@
               browser = true;
               rootCredentialsFile = config.age.secrets."object/minio.env".path;
               dataDir = [ "/mnt/minio" ];
-
-              # TODO: Migrate from fs to snsd backend!
-              package = pkgs.minio_legacy_fs;
             };
 
             sharry = {
+              # TODO: wait for postgres connection to succeed
               enable = true;
               configOverridesFile = config.age.secrets."object/sharry.conf".path;
 
