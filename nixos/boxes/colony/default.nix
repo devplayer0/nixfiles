@@ -62,6 +62,7 @@
           kernelModules = [ "kvm-amd" ];
           kernelParams = [ "amd_iommu=on" "console=ttyS0,115200n8" "console=ttyS1,115200n8" "console=tty0" ];
           initrd = {
+            kernelModules = [ "dm-raid" ];
             availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" "sr_mod" ];
           };
         };
@@ -72,11 +73,11 @@
             fsType = "vfat";
           };
           "/nix" = {
-            device = "/dev/hdds/tmp-colony-nix";
+            device = "/dev/main/colony-nix";
             fsType = "ext4";
           };
           "/persist" = {
-            device = "/dev/hdds/tmp-colony-persist";
+            device = "/dev/main/colony-persist";
             fsType = "ext4";
             neededForBoot = true;
           };

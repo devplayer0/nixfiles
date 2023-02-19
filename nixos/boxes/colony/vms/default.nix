@@ -14,7 +14,7 @@
       name = lv;
       backend = {
         driver = "host_device";
-        filename = "/dev/hdds/tmp-vm-${vm}-${lv}";
+        filename = "/dev/main/vm-${vm}-${lv}";
         # It appears this needs to be set on the backend _and_ the format
         discard = "unmap";
       };
@@ -139,24 +139,24 @@
               (mkMerge [ (vmLVM "shill" "esp") { frontendOpts.bootindex = 0; } ])
               (vmLVM "shill" "nix")
               (vmLVM "shill" "persist")
-              {
-                name = "media";
-                backend = {
-                  driver = "host_device";
-                  filename = "/dev/hdds/media";
-                  discard = "unmap";
-                };
-                format = {
-                  driver = "raw";
-                  discard = "unmap";
-                };
-                frontend = "virtio-blk";
-              }
+              # {
+              #   name = "media";
+              #   backend = {
+              #     driver = "host_device";
+              #     filename = "/dev/main/media";
+              #     discard = "unmap";
+              #   };
+              #   format = {
+              #     driver = "raw";
+              #     discard = "unmap";
+              #   };
+              #   frontend = "virtio-blk";
+              # }
               {
                 name = "minio";
                 backend = {
                   driver = "host_device";
-                  filename = "/dev/hdds/tmp-minio";
+                  filename = "/dev/main/minio";
                   discard = "unmap";
                 };
                 format = {
@@ -186,7 +186,7 @@
                 name = "oci";
                 backend = {
                   driver = "host_device";
-                  filename = "/dev/hdds/tmp-oci";
+                  filename = "/dev/main/oci";
                   discard = "unmap";
                 };
                 format = {
