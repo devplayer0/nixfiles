@@ -19,7 +19,7 @@
     let
       inherit (lib) mkMerge mkIf;
       inherit (config.my.user.homeConfig.lib.file) mkOutOfStoreSymlink;
-      inherit (lib.my) networkdAssignment;
+      inherit (lib.my) networkdAssignment systemdAwaitPostgres;
     in
     {
       config = mkMerge [
@@ -63,6 +63,7 @@
                   MINIO_BROWSER_REDIRECT_URL = "https://minio.nul.ie";
                 };
               };
+              sharry = systemdAwaitPostgres pkgs.postgresql "colony-psql";
             };
           };
 
@@ -82,7 +83,6 @@
             };
 
             sharry = {
-              # TODO: wait for postgres connection to succeed
               enable = true;
               configOverridesFile = config.age.secrets."object/sharry.conf".path;
 

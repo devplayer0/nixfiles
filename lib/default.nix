@@ -126,6 +126,15 @@ rec {
     };
   };
 
+  systemdAwaitPostgres = pkg: host: {
+    after = [ "systemd-networkd-wait-online.service" ];
+    preStart = ''
+      until ${pkg}/bin/pg_isready -h ${host}; do
+        sleep 0.5
+      done
+    '';
+  };
+
   deploy-rs =
   with types;
   let

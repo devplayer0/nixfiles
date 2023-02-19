@@ -17,8 +17,8 @@
 
     configuration = { lib, pkgs, config, assignments, allAssignments, ... }:
     let
-      inherit (lib) mkMerge mkIf genAttrs mkBefore;
-      inherit (lib.my) networkdAssignment;
+      inherit (lib) mkMerge mkIf genAttrs;
+      inherit (lib.my) networkdAssignment systemdAwaitPostgres;
     in
     {
       config = mkMerge [
@@ -61,9 +61,7 @@
               mastodon-init-dirs.script = ''
                 echo "AWS_SECRET_ACCESS_KEY=\""$(< ${config.age.secrets."toot/s3-secret-key.txt".path})"\"" >> /var/lib/mastodon/.secrets_env
               '';
-              mastodon-init-db = {
-                after = [ "systemd-networkd-wait-online.service" ];
-              };
+              mastodon-init-db = systemdAwaitPostgres pkgs.postgresql "colony-psql";
 
               # Can't use the extraConfig because these services expect a different format for the both family bind address...
               mastodon-streaming.environment.BIND = "::";
