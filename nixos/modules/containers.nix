@@ -182,8 +182,12 @@ in
             c.containerSystem;
         in
         {
-          # systemd.nspawn units can't set the root directory directly, but /run/machines/${n} is one of the search paths
-          environment.root = "/run/machines/${n}";
+          environment = {
+            # systemd.nspawn units can't set the root directory directly, but /run/machines/${n} is one of the search paths
+            root = "/run/machines/${n}";
+            # Without this, systemd-nspawn will do cgroupsv1
+            SYSTEMD_NSPAWN_UNIFIED_HIERARCHY = "1";
+          };
           restartTriggers = [
             (''${n}.nspawn:${hashString "sha256" (toJSON config.systemd.nspawn."${n}")}'')
           ];
