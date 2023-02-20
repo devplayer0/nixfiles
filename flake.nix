@@ -28,6 +28,8 @@
     # Packages not in nixpkgs
     sharry.url = "github:eikek/sharry";
     sharry.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    borgthin.url = "github:devplayer0/borg";
+    borgthin.inputs.nixpkgs.follows = "nixpkgs-mine";
   };
 
   outputs =

@@ -81,6 +81,10 @@
             fsType = "ext4";
             neededForBoot = true;
           };
+          "/mnt/backup" = {
+            device = "/dev/main/tmp-backup";
+            fsType = "ext4";
+          };
         };
 
         services = {
@@ -240,6 +244,9 @@
           #deploy.generate.system.mode = "boot";
           secrets = {
             key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPIijqzAWF6OxKr4aeCa1TAc5xGn4rdIjVTt0wAPU6uY";
+            files = {
+              "colony/borg-pass.txt" = {};
+            };
           };
 
           server.enable = true;
@@ -254,6 +261,34 @@
                 }
               }
             '';
+          };
+
+          borgthin = {
+            enable = true;
+            jobs = {
+              main = {
+                repo = "/mnt/backup/main";
+                passFile = config.age.secrets."colony/borg-pass.txt".path;
+                lvs = map (lv: "main/${lv}") [
+                  "colony-persist"
+                  "vm-shill-persist"
+                  "minio"
+                  "oci"
+                  "vm-estuary-persist"
+                  "vm-whale2-persist"
+                ];
+                compression = "zstd,5";
+                extraCreateArgs = [ "--stats" ];
+                prune.keep = {
+                  last = 1;
+                  within = "1d";
+                  daily = 7;
+                  weekly = 4;
+                  monthly = 12;
+                  yearly = -1;
+                };
+              };
+            };
           };
         };
       };

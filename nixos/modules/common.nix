@@ -73,6 +73,7 @@ in
         overlays = [
           inputs.deploy-rs.overlay
           inputs.sharry.overlays.default
+          inputs.borgthin.overlays.default
         ];
         config = {
           allowUnfree = true;
