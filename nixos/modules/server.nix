@@ -14,6 +14,18 @@ in
       kmscon.autologinUser = mkDefault uname;
       resolved.llmnr = mkDefault "false";
     };
+    systemd = {
+      timers = {
+        fstrim = mkIf config.services.fstrim.enable {
+          timerConfig = {
+            # Upstream unit has these at crazy high values that probably
+            # make sense on desktops / laptops
+            AccuracySec = "1min";
+            RandomizedDelaySec = "5min";
+          };
+        };
+      };
+    };
 
     my = {
       gui.enable = false;

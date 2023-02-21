@@ -91,6 +91,7 @@ in
             };
 
             services = {
+              fstrim = lib.my.colony.fstrimConfig;
               lvm = {
                 dmeventd.enable = true;
               };

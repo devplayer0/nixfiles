@@ -93,7 +93,7 @@ in
             };
 
             services = {
-              fstrim.enable = true;
+              fstrim = lib.my.colony.fstrimConfig;
               netdata.enable = true;
             };
 

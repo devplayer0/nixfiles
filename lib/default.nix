@@ -254,6 +254,11 @@ rec {
       };
       vip1 = "${start.vip1}4/30";
     };
+    fstrimConfig = {
+      enable = true;
+      # backup happens at 05:00
+      interval = "04:45";
+    };
   };
   sshKeyFiles = {
     me = ../.keys/me.pub;

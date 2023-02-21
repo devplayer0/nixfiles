@@ -88,6 +88,7 @@
         };
 
         services = {
+          fstrim = lib.my.colony.fstrimConfig;
           lvm = {
             boot.thin.enable = true;
             dmeventd.enable = true;
