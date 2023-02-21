@@ -139,19 +139,19 @@
               (mkMerge [ (vmLVM "shill" "esp") { frontendOpts.bootindex = 0; } ])
               (vmLVM "shill" "nix")
               (vmLVM "shill" "persist")
-              # {
-              #   name = "media";
-              #   backend = {
-              #     driver = "host_device";
-              #     filename = "/dev/main/media";
-              #     discard = "unmap";
-              #   };
-              #   format = {
-              #     driver = "raw";
-              #     discard = "unmap";
-              #   };
-              #   frontend = "virtio-blk";
-              # }
+              {
+                name = "media";
+                backend = {
+                  driver = "host_device";
+                  filename = "/dev/main/media";
+                  discard = "unmap";
+                };
+                format = {
+                  driver = "raw";
+                  discard = "unmap";
+                };
+                frontend = "virtio-blk";
+              }
               {
                 name = "minio";
                 backend = {

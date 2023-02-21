@@ -76,10 +76,10 @@
                 fsType = "ext4";
                 neededForBoot = true;
               };
-              # "/mnt/media" = {
-              #   device = "/dev/disk/by-label/media";
-              #   fsType = "ext4";
-              # };
+              "/mnt/media" = {
+                device = "/dev/disk/by-label/media";
+                fsType = "ext4";
+              };
               "/mnt/minio" = {
                 device = "/dev/disk/by-label/minio";
                 fsType = "xfs";
@@ -134,7 +134,6 @@
               };
             };
 
-            systemd.services."systemd-nspawn@jackflix".enable = false;
             my = {
               secrets.key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ6bc1pQCYalLXdB4X+7kFXtkTdFalbH5rchjuYj2ceU";
               server.enable = true;
