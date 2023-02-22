@@ -82,7 +82,7 @@
             neededForBoot = true;
           };
           "/mnt/backup" = {
-            device = "/dev/main/tmp-backup";
+            device = "/dev/main/backup";
             fsType = "ext4";
           };
         };
