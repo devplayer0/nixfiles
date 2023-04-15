@@ -27,6 +27,11 @@ let
         Independent = true;
       };
     };
+    links."20-l2mesh-${name}" = {
+      matchConfig.Name = mesh.interface;
+      # TODO: ipv6? ipsec?
+      linkConfig.MTUBytes = "1450";
+    };
     networks."90-l2mesh-${name}" = {
       matchConfig.Name = mesh.interface;
       extraConfig = concatStringsSep "\n" (mapAttrsToList (n: peer: ''
