@@ -88,7 +88,7 @@
 
               config = {
                 base-url = "https://share.${lib.my.pubDomain}";
-                bind.address = "[::]";
+                bind.address = "::";
                 alias-member-enabled = true;
                 webapp = {
                   chunk-size = "64M";
