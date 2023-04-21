@@ -348,6 +348,16 @@ in
             neighbor 2001:7f8:13::a521:2635:1 as 212635;
             ipv6 { preference (PREFPEER-1); };
           }
+          protocol bgp peer4_nlix_apple from peer_bgp4 {
+            description "Apple (on NL-ix, IPv4)";
+            neighbor 193.239.117.113 as 714;
+            ipv4 { preference (PREFPEER-1); };
+          }
+          protocol bgp peer6_nlix_apple from peer_bgp6 {
+            description "Apple (on NL-ix, IPv6)";
+            neighbor 2001:7f8:13::a500:714:2 as 714;
+            ipv6 { preference (PREFPEER-1); };
+          }
 
           protocol bgp ixp4_fogixp_rs1 from ixp_bgp4 {
             description "FogIXP route server 1 (IPv4)";
