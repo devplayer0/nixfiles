@@ -62,7 +62,7 @@ in
 
     nat = with options.networking.nat; {
       enable = mkBoolOpt' true "Whether to enable IP forwarding and NAT.";
-      inherit externalInterface;
+      inherit externalInterface externalIP;
       forwardPorts = mkOpt' (listOf (submodule forwardOpts)) [ ] "List of port forwards.";
     };
   };
@@ -143,8 +143,8 @@ in
     (mkIf cfg.nat.enable {
       assertions = [
         {
-          assertion = (cfg.nat.forwardPorts != [ ]) -> (cfg.nat.externalInterface != null);
-          message = "my.firewall.nat.forwardPorts requires my.firewall.nat.externalInterface";
+          assertion = with cfg.nat; (forwardPorts != [ ]) -> (externalInterface != null && externalIP != null);
+          message = "my.firewall.nat.forwardPorts requires my.firewall.nat.external{Interface,IP}";
         }
       ];
 
@@ -198,8 +198,8 @@ in
             }
             chain prerouting {
               ${optionalString
-                (cfg.nat.externalInterface != null)
-                "iifname ${cfg.nat.externalInterface} jump port-forward"}
+                (cfg.nat.externalIP != null)
+                "ip daddr ${cfg.nat.externalIP} jump port-forward"}
             }
           }
         '';

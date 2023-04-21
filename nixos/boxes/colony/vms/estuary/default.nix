@@ -324,6 +324,7 @@ in
                 nat = {
                   enable = true;
                   externalInterface = "wan";
+                  externalIP = assignments.internal.ipv4.address;
                   forwardPorts = [
                     {
                       port = "http";
