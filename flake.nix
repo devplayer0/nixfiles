@@ -107,9 +107,10 @@
         nixos/installer.nix
         nixos/boxes/colony
         nixos/boxes/tower
+        nixos/boxes/castle
 
         # Homes
-        home-manager/configs/castle.nix
+        # home-manager/configs/castle.nix
         home-manager/configs/macsimum.nix
       ];
 

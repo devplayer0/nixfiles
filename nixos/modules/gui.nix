@@ -21,6 +21,8 @@ in
       ];
     };
 
+    security.polkit.enable = true;
+
     services = {
       pipewire = {
         enable = true;
