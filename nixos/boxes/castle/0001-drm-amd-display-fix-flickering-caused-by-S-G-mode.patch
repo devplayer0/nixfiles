@@ -1,0 +1,83 @@
+From 7de73e0bb036ab1c0aa69170eec99fdddca92634 Mon Sep 17 00:00:00 2001
+From: Hamza Mahfooz <hamza.mahfooz@amd.com>
+Date: Thu, 6 Apr 2023 12:31:06 -0400
+Subject: [PATCH] drm/amd/display: fix flickering caused by S/G mode
+
+Currently, we allow the framebuffer for a given plane to move between
+memory domains, however when that happens it causes the screen to
+flicker, it is even possible for the framebuffer to change memory
+domains on every plane update (causing a continuous flicker effect). So,
+to fix this, make it so that we always pin a plane's framebuffer to the
+same memory domain in dm_plane_helper_prepare_fb().
+
+Fixes: 81d0bcf99009 ("drm/amdgpu: make display pinning more flexible (v2)")
+Signed-off-by: Hamza Mahfooz <hamza.mahfooz@amd.com>
+---
+ .../amd/display/amdgpu_dm/amdgpu_dm_plane.c   | 31 ++++++++++++++-----
+ 1 file changed, 23 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_plane.c b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_plane.c
+index 322668973747..921b028d5b34 100644
+--- a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_plane.c
++++ b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_plane.c
+@@ -826,9 +826,8 @@ static int dm_plane_helper_prepare_fb(struct drm_plane *plane,
+ 				      struct drm_plane_state *new_state)
+ {
+ 	struct amdgpu_framebuffer *afb;
+-	struct drm_gem_object *obj;
+ 	struct amdgpu_device *adev;
+-	struct amdgpu_bo *rbo;
++	struct amdgpu_bo *abo, *rbo;
+ 	struct dm_plane_state *dm_plane_state_new, *dm_plane_state_old;
+ 	uint32_t domain;
+ 	int r;
+@@ -839,8 +838,7 @@ static int dm_plane_helper_prepare_fb(struct drm_plane *plane,
+ 	}
+ 
+ 	afb = to_amdgpu_framebuffer(new_state->fb);
+-	obj = new_state->fb->obj[0];
+-	rbo = gem_to_amdgpu_bo(obj);
++	rbo = gem_to_amdgpu_bo(new_state->fb->obj[0]);
+ 	adev = amdgpu_ttm_adev(rbo->tbo.bdev);
+ 
+ 	r = amdgpu_bo_reserve(rbo, true);
+@@ -855,15 +853,32 @@ static int dm_plane_helper_prepare_fb(struct drm_plane *plane,
+ 		goto error_unlock;
+ 	}
+ 
+-	if (plane->type != DRM_PLANE_TYPE_CURSOR)
+-		domain = amdgpu_display_supported_domains(adev, rbo->flags);
+-	else
++	if (plane->type == DRM_PLANE_TYPE_CURSOR)
+ 		domain = AMDGPU_GEM_DOMAIN_VRAM;
++	else {
++		domain = amdgpu_display_supported_domains(adev, rbo->flags);
++
++		if (!plane->state->fb || rbo->tbo.pin_count ||
++		    !(domain & AMDGPU_GEM_DOMAIN_GTT))
++			goto skip;
++
++		abo = gem_to_amdgpu_bo(plane->state->fb->obj[0]);
++
++		if (amdgpu_bo_reserve(abo, true) ||
++		    dma_resv_reserve_fences(abo->tbo.base.resv, 1))
++			goto err;
++
++		domain = amdgpu_mem_type_to_domain(abo->tbo.resource->mem_type);
++err:
++		amdgpu_bo_unreserve(abo);
++	}
+ 
++skip:
+ 	r = amdgpu_bo_pin(rbo, domain);
+ 	if (unlikely(r != 0)) {
+ 		if (r != -ERESTARTSYS)
+-			DRM_ERROR("Failed to pin framebuffer with error %d\n", r);
++			drm_err(plane->dev,
++				"failed to pin framebuffer with error %d\n", r);
+ 		goto error_unlock;
+ 	}
+ 
+-- 
+2.40.0
+

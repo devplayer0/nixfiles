@@ -28,6 +28,13 @@
           kernelPackages = pkgs.linuxKernel.packages.linux_6_2;
           kernelModules = [ "kvm-amd" ];
           kernelParams = [ "amd_iommu=on" ];
+          kernelPatches = [
+            # {
+            #   # https://gitlab.freedesktop.org/drm/amd/-/issues/2354
+            #   name = "drm-amd-display-fix-flickering-caused-by-S-G-mode";
+            #   patch = ./0001-drm-amd-display-fix-flickering-caused-by-S-G-mode.patch;
+            # }
+          ];
           initrd = {
             availableKernelModules = [ "thunderbolt" "xhci_pci" "nvme" "ahci" "usbhid" "usb_storage" "sd_mod" ];
           };
@@ -119,7 +126,7 @@
         };
 
         my = {
-          tmproot.size = "8G";
+          tmproot.size = "24G";
 
           user = {
             tmphome = false;
