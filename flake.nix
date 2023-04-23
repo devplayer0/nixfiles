@@ -24,6 +24,8 @@
 
     # Stuff used by systems
     impermanence.url = "github:nix-community/impermanence";
+    boardie.url = "github:devplayer0/boardie";
+    boardie.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
     # Packages not in nixpkgs
     sharry.url = "github:eikek/sharry";

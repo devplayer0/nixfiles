@@ -138,6 +138,8 @@
           tmproot.size = "24G";
 
           user = {
+            config.extraGroups = [ "input" ];
+
             tmphome = false;
             homeConfig = {
               services = { };
@@ -146,6 +148,9 @@
                 packages = with pkgs; [
                   jacktrip
                   qpwgraph
+                  (writeShellScriptBin "boardie" ''
+                    exec pw-jack ${pkgs.boardie}/bin/boardie "$@"
+                  '')
                 ];
               };
 

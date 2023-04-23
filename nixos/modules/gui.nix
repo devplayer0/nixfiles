@@ -23,6 +23,10 @@ in
 
     security.polkit.enable = true;
 
+    environment.systemPackages = with pkgs; [
+      # for pw-jack
+      pipewire.jack
+    ];
     services = {
       pipewire = {
         enable = true;

@@ -213,6 +213,7 @@ in
       nixpkgs = {
         overlays = [
           inputs.deploy-rs.overlay
+          inputs.boardie.overlays.default
         ];
         config = {
           allowUnfree = true;
