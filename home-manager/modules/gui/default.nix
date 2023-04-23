@@ -150,6 +150,7 @@ in
                 output = {
                   "*".bg = "${./stop-nixos.png} stretch";
                 };
+                window.titlebar = false;
 
                 modifier = "Mod4";
                 terminal = "kitty";
