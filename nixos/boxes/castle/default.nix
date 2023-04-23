@@ -29,7 +29,7 @@
           kernelModules = [ "kvm-amd" ];
           kernelParams = [ "amd_iommu=on" ];
           initrd = {
-            availableKernelModules = ["thunderbolt" "xhci_pci" "nvme" "ahci" "usbhid" "usb_storage" "sd_mod" ];
+            availableKernelModules = [ "thunderbolt" "xhci_pci" "nvme" "ahci" "usbhid" "usb_storage" "sd_mod" ];
           };
         };
 
@@ -136,8 +136,18 @@
 
               wayland.windowManager.sway = {
                 config = {
-                  # input."1:1:AT_Translated_Set_2_keyboard".xkb_layout = "ie";
-                  # output.eDP-1.scale = "1";
+                  output = {
+                    HDMI-A-1 = {
+                      transform = "270";
+                      position = "0 0";
+                    };
+                    DP-1 = {
+                      mode = "2560x1440@170Hz";
+                      subpixel = "bgr";
+                      position = "1440 560";
+                    };
+                    DP-2.position = "4000 560";
+                  };
                 };
               };
 
