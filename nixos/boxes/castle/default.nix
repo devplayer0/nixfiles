@@ -27,7 +27,7 @@
           };
           kernelPackages = pkgs.linuxKernel.packages.linux_6_2;
           kernelModules = [ "kvm-amd" ];
-          kernelParams = [ "amd_iommu=on" ];
+          kernelParams = [ "amd_iommu=on" "amd_pstate=passive" ];
           kernelPatches = [
             # {
             #   # https://gitlab.freedesktop.org/drm/amd/-/issues/2354
