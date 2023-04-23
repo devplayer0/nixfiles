@@ -25,7 +25,7 @@
             efi.canTouchEfiVariables = true;
             timeout = 10;
           };
-          kernelPackages = pkgs.linuxKernel.packages.linux_6_1;
+          kernelPackages = pkgs.linuxKernel.packages.linux_6_2;
           kernelModules = [ "kvm-intel" ];
           kernelParams = [ "intel_iommu=on" ];
           initrd = {
