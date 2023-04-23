@@ -85,6 +85,7 @@
 
         networking = {
           domain = "h.${lib.my.pubDomain}";
+          firewall.enable = false;
         };
 
         environment.systemPackages = with pkgs; [
@@ -94,6 +95,14 @@
           lm_sensors
           linuxPackages.cpupower
         ];
+        environment.etc = {
+          "pipewire/pipewire.conf.d/sample-size.conf".text = ''
+            context.properties = {
+              default.clock.quantum = 128
+              default.clock.max-quantum = 128
+            }
+          '';
+        };
 
         nix = {
           gc.automatic = false;
@@ -134,7 +143,10 @@
               services = { };
 
               home = {
-                packages = with pkgs; [ ];
+                packages = with pkgs; [
+                  jacktrip
+                  qpwgraph
+                ];
               };
 
               services = {
