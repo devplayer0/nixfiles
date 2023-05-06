@@ -118,6 +118,9 @@ in
             hm = "home-manager";
             k = "kubectl";
           };
+          shellAliases = {
+            ip = "ip --color=auto";
+          };
         };
 
         ssh = {
