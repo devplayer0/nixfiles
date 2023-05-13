@@ -124,6 +124,7 @@ in
           bash-completion
           vim
           git
+          unzip
         ]
         (mkIf config.services.netdata.enable [ netdata ])
       ];
