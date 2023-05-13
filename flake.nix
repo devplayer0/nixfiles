@@ -110,6 +110,7 @@
         nixos/boxes/colony
         nixos/boxes/tower
         nixos/boxes/castle
+        nixos/boxes/kelder
 
         # Homes
         # home-manager/configs/castle.nix

@@ -260,6 +260,9 @@ rec {
       interval = "04:45";
     };
   };
+  kelder = {
+    domain = "hentai.engineer";
+  };
   sshKeyFiles = {
     me = ../.keys/me.pub;
     deploy = ../.keys/deploy.pub;
