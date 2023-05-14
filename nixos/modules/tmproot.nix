@@ -389,6 +389,9 @@ in
       (mkIf config.services.hardware.bolt.enable {
         my.tmproot.persistence.config.directories = [ "/var/lib/boltd" ];
       })
+      (mkIf config.boot.plymouth.enable {
+        my.tmproot.persistence.config.files = [ "/var/lib/plymouth/boot-duration" ];
+      })
     ]))
   ]);
 

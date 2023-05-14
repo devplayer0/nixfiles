@@ -41,13 +41,18 @@
               fsType = "vfat";
             };
             "/nix" = {
-              device = "/dev/ssd/nix";
+              device = "/dev/disk/by-uuid/0aab0249-700f-4856-8e16-7be3695295f5";
               fsType = "ext4";
             };
             "/persist" = {
-              device = "/dev/ssd/persist";
+              device = "/dev/disk/by-uuid/8c01e6b5-bdbf-4e5c-a33b-8693959ebe8a";
               fsType = "ext4";
               neededForBoot = true;
+            };
+
+            "/mnt/storage" = {
+              device = "/dev/disk/by-partuuid/58a2e2a8-0321-ed4e-9eed-0ac7f63acb26";
+              fsType = "ext4";
             };
           };
 
