@@ -87,6 +87,7 @@ in
             environment = {
               systemPackages = with pkgs; [
                 ethtool
+                wireguard-tools
               ];
             };
 
@@ -143,6 +144,7 @@ in
 
             #systemd.services.systemd-networkd.environment.SYSTEMD_LOG_LEVEL = "debug";
             systemd.network = {
+              wait-online.enable = false;
               config = {
                 networkConfig = {
                   ManageForeignRoutes = false;
@@ -168,6 +170,28 @@ in
                 (mkVLAN "nl-ix" 1845)
                 (mkVLAN "fogixp" 1147)
                 (mkVLAN "ifog-transit" 702)
+
+                {
+                  "30-kelder" = {
+                    netdevConfig = {
+                      Name = "kelder";
+                      Kind = "wireguard";
+                    };
+                    wireguardConfig = {
+                      PrivateKeyFile = config.age.secrets."estuary/kelder-wg.key".path;
+                      ListenPort = lib.my.kelder.vpn.port;
+                    };
+                    wireguardPeers = [
+                      {
+                        wireguardPeerConfig = {
+                          PublicKey = "7N9YdQaCMWWIwAnW37vrthm9ZpbnG4Lx3gheHeRYz2E=";
+                          AllowedIPs = [ "${lib.my.kelder.vpn.start}2" ];
+                          PersistentKeepalive = 25;
+                        };
+                      }
+                    ];
+                  };
+                }
               ];
 
               links = {
@@ -303,23 +327,35 @@ in
                 ];
 
                 "90-l2mesh-as211024" = {
+                  matchConfig.Name = "as211024";
                   address = with assignments.as211024; [
                     (with ipv4; "${address}/${toString mask}")
                     (with ipv6; "${address}/${toString mask}")
                   ];
                   networkConfig.IPv6AcceptRA = false;
                 };
+                "95-kelder" = {
+                  matchConfig.Name = "kelder";
+                  address = [ "${lib.my.kelder.vpn.start}1/30" ];
+                };
               } ];
             };
 
             my = {
               #deploy.generate.system.mode = "boot";
-              secrets.key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF9up7pXu6M/OWCKufTOfSiGcxMUk4VqUe7fLuatNFFA";
+              secrets = {
+                key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF9up7pXu6M/OWCKufTOfSiGcxMUk4VqUe7fLuatNFFA";
+                files = {
+                  "estuary/kelder-wg.key" = {
+                    owner = "systemd-network";
+                  };
+                };
+              };
               server.enable = true;
 
               firewall = {
                 trustedInterfaces = [ "base" "as211024" ];
-                udp.allowed = [ 5353 ];
+                udp.allowed = [ 5353 lib.my.kelder.vpn.port ];
                 tcp.allowed = [ 5353 "bgp" ];
                 nat = {
                   enable = true;
@@ -328,26 +364,32 @@ in
                   forwardPorts = [
                     {
                       port = "http";
-                      dst = allAssignments.middleman.internal.ipv4.address + ":http";
+                      dst = allAssignments.middleman.internal.ipv4.address;
                     }
                     {
                       port = "https";
-                      dst = allAssignments.middleman.internal.ipv4.address + ":https";
+                      dst = allAssignments.middleman.internal.ipv4.address;
                     }
                     {
                       port = 8448;
-                      dst = allAssignments.middleman.internal.ipv4.address + ":8448";
+                      dst = allAssignments.middleman.internal.ipv4.address;
                     }
 
                     {
                       port = 2456;
-                      dst = allAssignments.valheim-oci.internal.ipv4.address + ":2456";
+                      dst = allAssignments.valheim-oci.internal.ipv4.address;
                       proto = "udp";
                     }
                     {
                       port = 2457;
-                      dst = allAssignments.valheim-oci.internal.ipv4.address + ":2457";
+                      dst = allAssignments.valheim-oci.internal.ipv4.address;
                       proto = "udp";
+                    }
+
+                    {
+                      port = 6922;
+                      dst = "${lib.my.kelder.vpn.start}2";
+                      dstPort = "ssh";
                     }
                   ];
                 };

@@ -260,8 +260,14 @@ rec {
       interval = "04:45";
     };
   };
-  kelder = {
+  kelder = rec {
     domain = "hentai.engineer";
+    vpn = {
+      port = 51820;
+      start = "100.69.69.";
+    };
+    start = "172.16.69.";
+    prefix = "${start}0/24";
   };
   sshKeyFiles = {
     me = ../.keys/me.pub;

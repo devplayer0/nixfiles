@@ -7,6 +7,8 @@
     configuration = { lib, pkgs, modulesPath, config, systems, assignments, allAssignments, ... }:
       let
         inherit (lib) mkIf mkMerge mkForce;
+
+        vpnTable = 51820;
       in
       {
         imports = [ ./boot.nix ];
@@ -49,6 +51,12 @@
             };
           };
 
+          environment = {
+            systemPackages = with pkgs; [
+              wireguard-tools
+            ];
+          };
+
           services = {
             fstrim.enable = true;
             lvm = {
@@ -69,6 +77,28 @@
 
           systemd = {
             network = {
+              netdevs = {
+                "30-estuary" = {
+                  netdevConfig = {
+                    Name = "estuary";
+                    Kind = "wireguard";
+                  };
+                  wireguardConfig = {
+                    PrivateKeyFile = config.age.secrets."kelder/estuary-wg.key".path;
+                    RouteTable = vpnTable;
+                  };
+                  wireguardPeers = [
+                    {
+                      wireguardPeerConfig = {
+                        PublicKey = "bP1XUNxp9i8NLOXhgPaIaRzRwi5APbam44/xjvYcyjU=";
+                        Endpoint = "estuary-vm.${lib.my.colony.domain}:${toString lib.my.kelder.vpn.port}";
+                        AllowedIPs = [ "0.0.0.0/0" ];
+                        PersistentKeepalive = 25;
+                      };
+                    }
+                  ];
+                };
+              };
               links = {
                 "10-et1g0" = {
                   matchConfig.MACAddress = "74:d4:35:e9:a1:73";
@@ -79,6 +109,17 @@
                 "50-lan" = {
                   matchConfig.Name = "et1g0";
                   DHCP = "yes";
+                };
+                "95-estuary" = {
+                  matchConfig.Name = "estuary";
+                  address = [ "${lib.my.kelder.vpn.start}2/30" ];
+                  routingPolicyRules = map (r: { routingPolicyRuleConfig = r; }) [
+                    {
+                      From = "${lib.my.kelder.vpn.start}2";
+                      Table = vpnTable;
+                      Priority = 100;
+                    }
+                  ];
                 };
               };
             };
@@ -93,6 +134,11 @@
             deploy.node.hostname = "10.16.9.21";
             secrets = {
               key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOFvUdJshXkqmchEgkZDn5rgtZ1NO9vbd6Px+S6YioWi";
+              files = {
+                "kelder/estuary-wg.key" = {
+                  owner = "systemd-network";
+                };
+              };
             };
 
             server.enable = true;

@@ -1,7 +1,7 @@
 { lib, options, config, ... }:
 let
   inherit (lib) optionalString concatStringsSep concatMapStringsSep optionalAttrs mkIf mkDefault mkMerge mkOverride;
-  inherit (lib.my) parseIPPort mkOpt' mkBoolOpt';
+  inherit (lib.my) isIPv6 mkOpt' mkBoolOpt';
 
   allowICMP = ''
     icmp type {
@@ -36,11 +36,12 @@ let
     udp dport 33434-33625 accept
   '';
 
-  forwardOpts = with lib.types; {
+  forwardOpts = with lib.types; { config, ... }: {
     options = {
       proto = mkOpt' (enum [ "tcp" "udp" ]) "tcp" "Protocol.";
       port = mkOpt' (either port str) null "Incoming port.";
-      dst = mkOpt' str null "Destination (ip:port).";
+      dst = mkOpt' str null "Destination IP.";
+      dstPort = mkOpt' (either port str) config.port "Destination port.";
     };
   };
 
@@ -168,15 +169,15 @@ in
       my.firewall.extraRules =
         let
           makeFilter = f:
-            let
-              ipp = parseIPPort f.dst;
-            in
-            "ip${optionalString ipp.v6 "6"} daddr ${ipp.ip} ${f.proto} dport ${toString f.port} accept";
+          let
+            v6 = isIPv6 f.dst;
+          in
+            "ip${optionalString v6 "6"} daddr ${f.dst} ${f.proto} dport ${toString f.dstPort} accept";
           makeForward = f:
             let
-              ipp = parseIPPort f.dst;
+              v6 = isIPv6 f.dst;
             in
-              "${f.proto} dport ${toString f.port} dnat ip${optionalString ipp.v6 "6"} to ${f.dst}";
+              "${f.proto} dport ${toString f.port} dnat ip${optionalString v6 "6"} to ${f.dst}:${toString f.dstPort}";
         in
         ''
           table inet filter {
