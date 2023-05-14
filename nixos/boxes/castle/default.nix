@@ -25,7 +25,7 @@
             efi.canTouchEfiVariables = false;
             timeout = 10;
           };
-          kernelPackages = pkgs.linuxKernel.packages.linux_6_2;
+          kernelPackages = pkgs.linuxKernel.packages.linux_6_3;
           kernelModules = [ "kvm-amd" ];
           kernelParams = [ "amd_iommu=on" "amd_pstate=passive" ];
           kernelPatches = [

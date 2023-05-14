@@ -86,7 +86,7 @@
           overlays = [
             pkgsLibOverlay
             myPkgsOverlay
-            inputs.devshell.overlay
+            inputs.devshell.overlays.default
             inputs.ragenix.overlays.default
             inputs.deploy-rs.overlay
             (flakePackageOverlay inputs.home-manager-unstable system)
