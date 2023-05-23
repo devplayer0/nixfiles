@@ -167,6 +167,14 @@
                   dnsProvider = "cloudflare";
                   credentialsFile = config.age.secrets."middleman/cloudflare-credentials.conf".path;
                 };
+
+                "${lib.my.kelder.domain}" = {
+                  extraDomainNames = [
+                    "*.${lib.my.kelder.domain}"
+                  ];
+                  dnsProvider = "cloudflare";
+                  credentialsFile = config.age.secrets."middleman/cloudflare-credentials.conf".path;
+                };
               };
             };
           };

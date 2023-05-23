@@ -1,17 +1,32 @@
 { lib, ... }: {
+  imports = [ ./containers ];
+
   nixos.systems.kelder = {
     system = "x86_64-linux";
     nixpkgs = "mine";
     home-manager = "mine";
 
+    assignments = {
+      ctrs = {
+        name = "kelder-ctrs";
+        domain = lib.my.kelder.domain;
+        ipv4 = {
+          address = "${lib.my.kelder.start.ctrs.v4}1";
+          gateway = null;
+        };
+      };
+    };
+
     configuration = { lib, pkgs, modulesPath, config, systems, assignments, allAssignments, ... }:
       let
+        inherit (builtins) mapAttrs;
         inherit (lib) mkIf mkMerge mkForce;
+        inherit (lib.my) networkdAssignment;
 
         vpnTable = 51820;
       in
       {
-        imports = [ ./boot.nix ];
+        imports = [ ./boot.nix ./nginx.nix ];
 
         config = {
           hardware = {
@@ -56,6 +71,16 @@
             };
           };
 
+          users = {
+            groups = with lib.my.kelder.groups; {
+              storage.gid = storage;
+              media.gid = media;
+            };
+            users = {
+              "${config.my.user.config.name}".extraGroups = [ "storage" "media" ];
+            };
+          };
+
           environment = {
             systemPackages = with pkgs; [
               wireguard-tools
@@ -83,6 +108,11 @@
           systemd = {
             network = {
               netdevs = {
+                "25-ctrs".netdevConfig = {
+                  Name = "ctrs";
+                  Kind = "bridge";
+                };
+
                 "30-estuary" = {
                   netdevConfig = {
                     Name = "estuary";
@@ -115,12 +145,18 @@
                   matchConfig.Name = "et1g0";
                   DHCP = "yes";
                 };
+                "80-ctrs" = mkMerge [
+                  (networkdAssignment "ctrs" assignments.ctrs)
+                  {
+                    networkConfig.IPv6AcceptRA = mkForce false;
+                  }
+                ];
                 "95-estuary" = {
                   matchConfig.Name = "estuary";
-                  address = [ "${lib.my.kelder.vpn.start}2/30" ];
+                  address = [ "${lib.my.kelder.start.vpn.v4}2/30" ];
                   routingPolicyRules = map (r: { routingPolicyRuleConfig = r; }) [
                     {
-                      From = "${lib.my.kelder.vpn.start}2";
+                      From = "${lib.my.kelder.start.vpn.v4}2";
                       Table = vpnTable;
                       Priority = 100;
                     }
@@ -128,9 +164,17 @@
                 };
               };
             };
+
+            services = {
+              "systemd-nspawn@kelder-acquisition".serviceConfig.DeviceAllow = [
+                # For hardware acceleration in Jellyfin
+                "char-drm rw"
+              ];
+            };
           };
 
           my = {
+            server.enable = true;
             user = {
               config.name = "kontent";
             };
@@ -146,7 +190,41 @@
               };
             };
 
-            server.enable = true;
+            firewall = {
+              trustedInterfaces = [ "ctrs" ];
+              nat = {
+                enable = true;
+                externalInterface = "et1g0";
+              };
+              extraRules = ''
+                table inet nat {
+                  chain postrouting {
+                    ip saddr ${lib.my.kelder.prefixes.all.v4} oifname et1g0 masquerade
+                  }
+                }
+              '';
+            };
+
+            containers.instances =
+            let
+              instances = {
+                kelder-acquisition = {
+                  bindMounts = {
+                    "/dev/dri".readOnly = false;
+                    "/mnt/media" = {
+                      hostPath = "/mnt/storage/media";
+                      readOnly = false;
+                    };
+                  };
+                };
+              };
+            in
+            mkMerge [
+              instances
+              (mapAttrs (n: i: {
+                networking.bridge = "ctrs";
+              }) instances)
+            ];
           };
         };
       };

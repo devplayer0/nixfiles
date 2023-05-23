@@ -261,13 +261,24 @@ rec {
     };
   };
   kelder = rec {
+    groups = {
+      storage = 2000;
+      media = 2010;
+    };
+
     domain = "hentai.engineer";
     vpn = {
       port = 51820;
-      start = "100.69.69.";
     };
-    start = "172.16.69.";
-    prefix = "${start}0/24";
+    start = {
+      all.v4 = "172.16.64.";
+      vpn.v4 = "172.16.69.";
+      ctrs.v4 = "172.16.64.";
+    };
+    prefixes = {
+      all.v4 = "${start.all.v4}0/20";
+      ctrs.v4 = "${start.ctrs.v4}0/24";
+    };
   };
   sshKeyFiles = {
     me = ../.keys/me.pub;

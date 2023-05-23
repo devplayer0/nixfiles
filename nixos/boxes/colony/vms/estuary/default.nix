@@ -137,7 +137,7 @@ in
                 in
                 {
                   after = [ waitOnline ];
-                  requires = [ waitOnline ];
+                  # requires = [ waitOnline ];
                 };
               };
             };
@@ -185,7 +185,7 @@ in
                       {
                         wireguardPeerConfig = {
                           PublicKey = "7N9YdQaCMWWIwAnW37vrthm9ZpbnG4Lx3gheHeRYz2E=";
-                          AllowedIPs = [ "${lib.my.kelder.vpn.start}2" ];
+                          AllowedIPs = [ "${lib.my.kelder.start.vpn.v4}2" ];
                           PersistentKeepalive = 25;
                         };
                       }
@@ -336,7 +336,7 @@ in
                 };
                 "95-kelder" = {
                   matchConfig.Name = "kelder";
-                  address = [ "${lib.my.kelder.vpn.start}1/30" ];
+                  address = [ "${lib.my.kelder.start.vpn.v4}1/30" ];
                 };
               } ];
             };
@@ -388,7 +388,7 @@ in
 
                     {
                       port = 6922;
-                      dst = "${lib.my.kelder.vpn.start}2";
+                      dst = "${lib.my.kelder.start.vpn.v4}2";
                       dstPort = "ssh";
                     }
                   ];

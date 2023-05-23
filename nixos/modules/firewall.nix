@@ -144,7 +144,7 @@ in
     (mkIf cfg.nat.enable {
       assertions = [
         {
-          assertion = with cfg.nat; (forwardPorts != [ ]) -> (externalInterface != null && externalIP != null);
+          assertion = with cfg.nat; (forwardPorts != [ ]) -> (externalInterface != null);
           message = "my.firewall.nat.forwardPorts requires my.firewall.nat.external{Interface,IP}";
         }
       ];
@@ -199,8 +199,8 @@ in
             }
             chain prerouting {
               ${optionalString
-                (cfg.nat.externalIP != null)
-                "ip daddr ${cfg.nat.externalIP} jump port-forward"}
+                (cfg.nat.externalInterface != null)
+                "${optionalString (cfg.nat.externalIP != null) "ip daddr ${cfg.nat.externalIP} "}jump port-forward"}
             }
           }
         '';
