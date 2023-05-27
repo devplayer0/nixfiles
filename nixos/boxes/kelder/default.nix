@@ -36,9 +36,10 @@ in
         inherit (lib.my) networkdAssignment;
 
         vpnTable = 51820;
+        dnatMark = 123;
       in
       {
-        imports = [ ./boot.nix ./nginx.nix ];
+        imports = [ ./boot.nix ];
 
         config = {
           hardware = {
@@ -109,6 +110,17 @@ in
               greetingLine = ''Welcome to ${config.system.nixos.distroName} ${config.system.nixos.label} (\m) - \l'';
               helpLine = "\nCall Jack for help.";
             };
+
+            ddclient = {
+              enable = true;
+              use = "if, if=et1g0";
+
+              protocol = "cloudflare";
+              zone = lib.my.kelder.domain;
+              domains = [ "kelder-local.${lib.my.kelder.domain}" ];
+              username = "token";
+              passwordFile = config.age.secrets."kelder/ddclient-cloudflare.key".path;
+            };
           };
 
           networking = {
@@ -170,7 +182,19 @@ in
                   ];
                   routingPolicyRules = map (r: { routingPolicyRuleConfig = r; }) [
                     {
+                      Family = "both";
+                      SuppressPrefixLength = 0;
+                      Table = "main";
+                      Priority = 100;
+                    }
+
+                    {
                       From = assignments.estuary.ipv4.address;
+                      Table = vpnTable;
+                      Priority = 100;
+                    }
+                    {
+                      FirewallMark = dnatMark;
                       Table = vpnTable;
                       Priority = 100;
                     }
@@ -201,6 +225,7 @@ in
                 "kelder/estuary-wg.key" = {
                   owner = "systemd-network";
                 };
+                "kelder/ddclient-cloudflare.key" = {};
               };
             };
 
@@ -208,9 +233,30 @@ in
               trustedInterfaces = [ "ctrs" ];
               nat = {
                 enable = true;
-                externalInterface = "et1g0";
+                externalInterface = "{ et1g0, estuary }";
+                forwardPorts = [
+                  {
+                    port = "http";
+                    dst = allAssignments.kelder-spoder.internal.ipv4.address;
+                  }
+                  {
+                    port = "https";
+                    dst = allAssignments.kelder-spoder.internal.ipv4.address;
+                  }
+                ];
               };
               extraRules = ''
+                table inet raw {
+                  chain prerouting {
+                    type filter hook prerouting priority mangle; policy accept;
+                    ip daddr ${assignments.estuary.ipv4.address} ct state new ct mark set ${toString dnatMark}
+                    ip saddr ${lib.my.kelder.prefixes.all.v4} ct mark != 0 meta mark set ct mark log
+                  }
+                  chain output {
+                    type filter hook output priority mangle; policy accept;
+                    ct mark != 0 meta mark set ct mark
+                  }
+                }
                 table inet nat {
                   chain postrouting {
                     ip saddr ${lib.my.kelder.prefixes.all.v4} oifname et1g0 masquerade
@@ -229,6 +275,11 @@ in
                       hostPath = "/mnt/storage/media";
                       readOnly = false;
                     };
+                  };
+                };
+                kelder-spoder = {
+                  bindMounts = {
+                    "/mnt/storage".readOnly = false;
                   };
                 };
               };

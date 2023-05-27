@@ -200,7 +200,7 @@ in
             chain prerouting {
               ${optionalString
                 (cfg.nat.externalInterface != null)
-                "${optionalString (cfg.nat.externalIP != null) "ip daddr ${cfg.nat.externalIP} "}jump port-forward"}
+                "${if (cfg.nat.externalIP != null) then "ip daddr ${cfg.nat.externalIP}" else "iifname ${cfg.nat.externalInterface}"} jump port-forward"}
             }
           }
         '';

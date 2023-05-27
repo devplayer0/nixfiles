@@ -16,11 +16,6 @@ in
           group = "acme";
           mode = "440";
         };
-        "kelder/cloudflare-credentials.conf" = {
-          owner = "acme";
-          group = "acme";
-        };
-        "kelder/ddclient-cloudflare.key" = {};
       };
 
       firewall = {
@@ -28,42 +23,7 @@ in
       };
     };
 
-    security.acme = {
-      acceptTerms = true;
-      defaults = {
-        email = "dev@nul.ie";
-        server = "https://acme-v02.api.letsencrypt.org/directory";
-        reloadServices = [ "nginx" ];
-        dnsResolver = "8.8.8.8";
-      };
-      certs = {
-        "${lib.my.kelder.domain}" = {
-          extraDomainNames = [
-            "*.${lib.my.kelder.domain}"
-          ];
-          dnsProvider = "cloudflare";
-          credentialsFile = config.age.secrets."kelder/cloudflare-credentials.conf".path;
-        };
-      };
-    };
-
-    users = {
-      users = {
-        nginx.extraGroups = [ "acme" ];
-      };
-    };
-
     services = {
-      ddclient = {
-        enable = true;
-        use = "if, if=et1g0";
-
-        protocol = "cloudflare";
-        zone = lib.my.kelder.domain;
-        domains = [ "kelder-local.${lib.my.kelder.domain}" ];
-        username = "token";
-        passwordFile = config.age.secrets."kelder/ddclient-cloudflare.key".path;
-      };
       nginx = {
         package = pkgs.openresty;
         enable = true;
