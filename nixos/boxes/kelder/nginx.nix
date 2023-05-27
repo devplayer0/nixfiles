@@ -20,6 +20,7 @@ in
           owner = "acme";
           group = "acme";
         };
+        "kelder/ddclient-cloudflare.key" = {};
       };
 
       firewall = {
@@ -53,10 +54,22 @@ in
     };
 
     services = {
+      ddclient = {
+        enable = true;
+        use = "if, if=et1g0";
+
+        protocol = "cloudflare";
+        zone = lib.my.kelder.domain;
+        domains = [ "kelder-local.${lib.my.kelder.domain}" ];
+        username = "token";
+        passwordFile = config.age.secrets."kelder/ddclient-cloudflare.key".path;
+      };
       nginx = {
+        package = pkgs.openresty;
         enable = true;
         enableReload = true;
 
+        logError = "stderr info";
         recommendedTlsSettings = true;
         clientMaxBodySize = "0";
         serverTokens = true;
@@ -104,6 +117,36 @@ in
 
           # caching
           proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=CACHE:10m inactive=7d max_size=4g;
+
+          init_worker_by_lua_block {
+            local update_ip = function(premature)
+              if premature then
+                return
+              end
+
+              local hdl, err = io.popen("${pkgs.curl}/bin/curl -s https://v4.ident.me")
+              if not hdl then
+                ngx.log(ngx.ERR, "failed to run command: ", err)
+                return
+              end
+
+              local ip, err = hdl:read("*l")
+              hdl:close()
+              if not ip then
+                ngx.log(ngx.ERR, "failed to read ip: ", err)
+                return
+              end
+
+              pub_ip = ip
+              ngx.log(ngx.INFO, "ip is now: ", pub_ip)
+            end
+
+            local hdl, err = ngx.timer.every(5 * 60, update_ip)
+            if not hdl then
+              ngx.log(ngx.ERR, "failed to create timer: ", err)
+            end
+            update_ip()
+          }
         '';
 
         virtualHosts =
@@ -115,6 +158,13 @@ in
             c
           ];
           acquisition = "http://${allAssignments.kelder-acquisition.internal.ipv4.address}";
+          localRedirect = to: ''
+            rewrite_by_lua_block {
+              if ngx.var.remote_addr == pub_ip then
+                ngx.redirect(ngx.var.scheme .. "://${to}" .. ngx.var.request_uri, ngx.HTTP_MOVED_PERMANENTLY)
+              end
+            }
+          '';
           hosts = {
             "_" = {
               default = true;
@@ -126,6 +176,8 @@ in
             };
 
             "media.${lib.my.kelder.domain}" = {
+              extraConfig = localRedirect "media-local.${lib.my.kelder.domain}";
+              serverAliases = [ "media-local.${lib.my.kelder.domain}" ];
               locations = {
                 "/".proxyPass = "${acquisition}:8096";
                 "= /".return = "302 $scheme://$host/web/";
@@ -161,7 +213,7 @@ in
 
           defaultsFor = mapAttrs (n: _: {
             onlySSL = mkDefault true;
-            useACMEHost = mkDefault "${config.networking.domain}";
+            useACMEHost = mkDefault lib.my.kelder.domain;
             kTLS = mkDefault true;
             http2 = mkDefault true;
           });
