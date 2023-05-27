@@ -121,6 +121,20 @@ in
               username = "token";
               passwordFile = config.age.secrets."kelder/ddclient-cloudflare.key".path;
             };
+            samba = {
+              enable = true;
+              enableNmbd = true;
+              shares = {
+                storage = {
+                  path = "/mnt/storage";
+                  browseable = "yes";
+                  writeable = "yes";
+                  "create mask" = "0664";
+                  "directory mask" = "0775";
+                };
+              };
+            };
+            samba-wsdd.enable = true;
           };
 
           networking = {
@@ -246,6 +260,12 @@ in
                 ];
               };
               extraRules = ''
+                table inet filter {
+                  chain input {
+                    iifname et1g0 tcp dport { 139, 445, 5357 } accept
+                    iifname et1g0 udp dport { 137, 138, 3702 } accept
+                  }
+                }
                 table inet raw {
                   chain prerouting {
                     type filter hook prerouting priority mangle; policy accept;

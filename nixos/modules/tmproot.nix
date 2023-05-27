@@ -195,6 +195,12 @@ in
     (mkIf config.services.mastodon.enable {
       my.tmproot.unsaved.ignore = [ "/var/lib/mastodon/.secrets_env" ];
     })
+    (mkIf config.services.ddclient.enable {
+      my.tmproot.unsaved.ignore = [ "/var/lib/private/ddclient" ];
+    })
+    (mkIf config.services.samba.enable {
+      my.tmproot.unsaved.ignore = [ "/var/cache/samba" ];
+    })
     (mkIf config.my.build.isDevVM {
       my.tmproot.unsaved.ignore = [ "/nix" ];
 
@@ -400,6 +406,11 @@ in
             user = "nextcloud";
             group = "nextcloud";
           }
+        ];
+      })
+      (mkIf config.services.samba.enable {
+        my.tmproot.persistence.config.directories = [
+          "/var/lib/samba"
         ];
       })
     ]))
