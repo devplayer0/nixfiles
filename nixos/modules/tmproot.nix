@@ -392,6 +392,16 @@ in
       (mkIf config.boot.plymouth.enable {
         my.tmproot.persistence.config.files = [ "/var/lib/plymouth/boot-duration" ];
       })
+      (mkIf config.services.nextcloud.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = config.services.nextcloud.home;
+            mode = "0750";
+            user = "nextcloud";
+            group = "nextcloud";
+          }
+        ];
+      })
     ]))
   ]);
 

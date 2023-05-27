@@ -169,6 +169,10 @@ in
                 extraConfig = lib.my.nginx.proxyHeaders;
               };
             };
+
+            "cloud.${lib.my.kelder.domain}" = {
+              serverAliases = [ "cloud-local.${lib.my.kelder.domain}" ];
+            };
           };
 
           defaultsFor = mapAttrs (n: _: {

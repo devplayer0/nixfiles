@@ -37,6 +37,10 @@ in
                 owner = "acme";
                 group = "acme";
               };
+              "kelder/nextcloud-root.txt" = {
+                owner = "nextcloud";
+                group = "nextcloud";
+              };
             };
           };
         };
@@ -84,6 +88,20 @@ in
 
         services = {
           resolved.extraConfig = mkForce "";
+
+          nextcloud = {
+            enable = true;
+            package = pkgs.nextcloud26;
+            datadir = "/mnt/storage/nextcloud";
+            hostName = "cloud.${lib.my.kelder.domain}";
+            https = true;
+            enableBrokenCiphersForSSE = false;
+            config = {
+              extraTrustedDomains = [ "cloud-local.${lib.my.kelder.domain}" ];
+              adminpassFile = config.age.secrets."kelder/nextcloud-root.txt".path;
+              defaultPhoneRegion = "IE";
+            };
+          };
         };
       };
     };
