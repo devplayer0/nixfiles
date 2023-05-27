@@ -1,4 +1,9 @@
-{ lib, ... }: {
+{ lib, ... }:
+let
+  inherit (lib.my) net;
+  inherit (lib.my.colony) domain prefixes;
+in
+{
   nixos.systems.vaultwarden = {
     system = "x86_64-linux";
     nixpkgs = "mine";
@@ -6,11 +11,11 @@
     assignments = {
       internal = {
         name = "vaultwarden-ctr";
-        domain = lib.my.colony.domain;
-        ipv4.address = "${lib.my.colony.start.ctrs.v4}3";
+        inherit domain;
+        ipv4.address = net.cidr.host 3 prefixes.ctrs.v4;
         ipv6 = {
           iid = "::3";
-          address = "${lib.my.colony.start.ctrs.v6}3";
+          address = net.cidr.host 3 prefixes.ctrs.v6;
         };
       };
     };

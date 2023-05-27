@@ -1,4 +1,9 @@
-{ lib, ... }: {
+{ lib, ... }:
+let
+  inherit (lib.my) net;
+  inherit (lib.my.colony) domain prefixes;
+in
+{
   nixos.systems.toot = {
     system = "x86_64-linux";
     nixpkgs = "mine";
@@ -6,11 +11,11 @@
     assignments = {
       internal = {
         name = "toot-ctr";
-        domain = lib.my.colony.domain;
-        ipv4.address = "${lib.my.colony.start.ctrs.v4}8";
+        inherit domain;
+        ipv4.address = net.cidr.host 8 prefixes.ctrs.v4;
         ipv6 = {
           iid = "::8";
-          address = "${lib.my.colony.start.ctrs.v6}8";
+          address = net.cidr.host 8 prefixes.ctrs.v6;
         };
       };
     };

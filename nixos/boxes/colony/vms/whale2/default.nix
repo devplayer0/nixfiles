@@ -1,7 +1,8 @@
 { lib, ... }:
 let
   inherit (builtins) mapAttrs;
-  inherit (lib) mkForce;
+  inherit (lib.my) net;
+  inherit (lib.my.colony) domain prefixes;
 in
 {
   nixos.systems.whale2 = {
@@ -11,41 +12,41 @@ in
     assignments = {
       routing = {
         name = "whale-vm-routing";
-        domain = lib.my.colony.domain;
-        ipv4.address = "${lib.my.colony.start.vms.v4}3";
+        inherit domain;
+        ipv4.address = net.cidr.host 3 prefixes.vms.v4;
       };
       internal = {
         name = "whale-vm";
         altNames = [ "oci" ];
-        domain = lib.my.colony.domain;
+        inherit domain;
         ipv4 = {
-          address = "${lib.my.colony.start.vip1}6";
+          address = net.cidr.host 2 prefixes.vip1;
           mask = 32;
           gateway = null;
           genPTR = false;
         };
         ipv6 = {
           iid = "::3";
-          address = "${lib.my.colony.start.vms.v6}3";
+          address = net.cidr.host 3 prefixes.vms.v6;
         };
       };
       oci = {
         name = "whale-vm-oci";
-        domain = lib.my.colony.domain;
+        inherit domain;
         ipv4 = {
-          address = "${lib.my.colony.start.oci.v4}1";
+          address = net.cidr.host 1 prefixes.oci.v4;
           gateway = null;
         };
-        ipv6.address = "${lib.my.colony.start.oci.v6}1";
+        ipv6.address = net.cidr.host 1 prefixes.oci.v6;
       };
     };
 
     extraAssignments = mapAttrs (n: i: {
       internal = {
         name = n;
-        domain = lib.my.colony.domain;
-        ipv4.address = "${lib.my.colony.start.oci.v4}${toString i}";
-        ipv6.address = "${lib.my.colony.start.oci.v6}${toString i}";
+        inherit domain;
+        ipv4.address = net.cidr.host i prefixes.oci.v4;
+        ipv6.address = net.cidr.host i prefixes.oci.v6;
       };
     }) {
       valheim-oci = 2;
@@ -130,14 +131,14 @@ in
                         ranges = [
                           [
                             {
-                              subnet = lib.my.colony.prefixes.oci.v4;
-                              gateway = lib.my.colony.start.oci.v4 + "1";
+                              subnet = prefixes.oci.v4;
+                              gateway = net.cidr.host 1 prefixes.oci.v4;
                             }
                           ]
                           [
                             {
-                              subnet = lib.my.colony.prefixes.oci.v6;
-                              gateway = lib.my.colony.start.oci.v6 + "1";
+                              subnet = prefixes.oci.v6;
+                              gateway = net.cidr.host 1 prefixes.oci.v6;
                             }
                           ]
                         ];

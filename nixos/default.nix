@@ -4,7 +4,7 @@ let
   inherit (lib)
     substring flatten optional optionals mkIf mkDefault mkForce mkOption mkOptionType foldAttrs mapAttrsToList;
   inherit (lib.my)
-    naiveIPv4Gateway homeStateVersion mkOpt' mkBoolOpt' mkDefault' commonOpts inlineModule' applyAssertions duplicates;
+    homeStateVersion mkOpt' mkBoolOpt' mkDefault' commonOpts inlineModule' applyAssertions duplicates net;
 
   cfg = config.nixos;
 
@@ -101,13 +101,14 @@ let
       visible = mkBoolOpt' true "Whether or not this assignment should be visible.";
       domain = mkOpt' (nullOr str) null "Domain for this assignment.";
       ipv4 = {
-        address = mkOpt' str null "IPv4 address.";
+        address = mkOpt' net.types.ipv4 null "IPv4 address.";
         mask = mkOpt' ints.u8 24 "Network mask.";
-        gateway = mkOpt' (nullOr str) (naiveIPv4Gateway config.ipv4.address) "IPv4 gateway.";
+        gateway =
+          mkOpt' (nullOr str) (net.cidr.host 1 "${config.ipv4.address}/${toString config.ipv4.mask}") "IPv4 gateway.";
         genPTR = mkBoolOpt' true "Whether to generate a PTR record.";
       };
       ipv6 = {
-        address = mkOpt' (nullOr str) null "IPv6 address.";
+        address = mkOpt' (nullOr net.types.ipv6) null "IPv6 address.";
         mask = mkOpt' ints.u8 64 "Network mask.";
         iid = mkOpt' (nullOr str) null "SLAAC static address.";
         gateway = mkOpt' (nullOr str) null "IPv6 gateway.";

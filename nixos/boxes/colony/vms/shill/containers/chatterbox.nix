@@ -1,4 +1,9 @@
-{ lib, ... }: {
+{ lib, ... }:
+let
+  inherit (lib.my) net;
+  inherit (lib.my.colony) domain prefixes;
+in
+{
   nixos.systems.chatterbox = {
     system = "x86_64-linux";
     nixpkgs = "mine";
@@ -6,11 +11,11 @@
     assignments = {
       internal = {
         name = "chatterbox-ctr";
-        domain = lib.my.colony.domain;
-        ipv4.address = "${lib.my.colony.start.ctrs.v4}5";
+        inherit domain;
+        ipv4.address = net.cidr.host 5 prefixes.ctrs.v4;
         ipv6 = {
           iid = "::5";
-          address = "${lib.my.colony.start.ctrs.v6}5";
+          address = net.cidr.host 5 prefixes.ctrs.v6;
         };
       };
     };

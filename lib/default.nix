@@ -8,6 +8,9 @@ let
   inherit (lib.flake) defaultSystems;
 in
 rec {
+  attrsToNVList = mapAttrsToList nameValuePair;
+
+  inherit (import ./net.nix { inherit lib; }) net;
   # Yoinked from nixpkgs/nixos/modules/services/networking/nat.nix
   isIPv6 = ip: length (lib.splitString ":" ip) > 2;
   parseIPPort = ipp:
@@ -22,8 +25,6 @@ rec {
       ip = checked (elemAt m 0);
       ports = checked (elemAt m 1);
     };
-  naiveIPv4Gateway = ip: "${head (elemAt (split ''([0-9]+\.[0-9]+\.[0-9]+)\.[0-9]+'' ip) 1)}.1";
-  attrsToNVList = mapAttrsToList nameValuePair;
 
   mkDefaultSystemsPkgs = path: args': genAttrs defaultSystems (system: import path ((args' system) // { inherit system; }));
   mkApp = program: { type = "app"; inherit program; };
@@ -209,50 +210,30 @@ rec {
   pubDomain = "nul.ie";
   dockerNetAssignment =
     assignments: name: with assignments."${name}".internal; "ip=${ipv4.address},ip=${ipv6.address}";
-  colony = rec {
+  colony = {
     domain = "ams1.int.${pubDomain}";
-    start = {
+    prefixes = with net.cidr; rec {
       all = {
-        v4 = "10.100.";
-        v6 = "2a0e:97c0:4d2:1";
+        v4 = "10.100.0.0/16";
+        v6 = "2a0e:97c0:4d2:10::/60";
       };
       base = {
-        v4 = "${start.all.v4}0.";
-        v6 = "${start.all.v6}0::";
+        v4 = subnet 8 0 all.v4;
+        v6 = subnet 4 0 all.v6;
       };
       vms = {
-        v4 = "${start.all.v4}1.";
-        v6 = "${start.all.v6}1::";
+        v4 = subnet 8 1 all.v4;
+        v6 = subnet 4 1 all.v6;
       };
       ctrs = {
-        v4 = "${start.all.v4}2.";
-        v6 = "${start.all.v6}2::";
+        v4 = subnet 8 2 all.v4;
+        v6 = subnet 4 2 all.v6;
       };
       oci = {
-        v4 = "${start.all.v4}3.";
-        v6 = "${start.all.v6}3::";
+        v4 = subnet 8 3 all.v4;
+        v6 = subnet 4 3 all.v6;
       };
-      vip1 = "94.142.241.22";
-    };
-    prefixes = {
-      all = {
-        v4 = "${start.base.v4}0/16";
-        v6 = "${start.base.v6}/60";
-      };
-      base.v6 = "${start.base.v6}/64";
-      vms = {
-        v4 = "${start.vms.v4}0/24";
-        v6 = "${start.vms.v6}/64";
-      };
-      ctrs = {
-        v4 = "${start.ctrs.v4}0/24";
-        v6 = "${start.ctrs.v6}/64";
-      };
-      oci = {
-        v4 = "${start.oci.v4}0/24";
-        v6 = "${start.oci.v6}/64";
-      };
-      vip1 = "${start.vip1}4/30";
+      vip1 = "94.142.241.224/30";
     };
     fstrimConfig = {
       enable = true;

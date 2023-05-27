@@ -1,5 +1,8 @@
 { lib, ... }:
 let
+  inherit (lib.my) net;
+  inherit (lib.my.colony) domain prefixes;
+
   pubV4 = "94.142.240.44";
 in
 {
@@ -25,7 +28,7 @@ in
       internal = {
         name = "estuary-vm";
         altNames = [ "fw" ];
-        domain = lib.my.colony.domain;
+        inherit domain;
         ipv4 = {
           address = pubV4;
           mask = 24;
@@ -41,12 +44,12 @@ in
       };
       base = {
         name = "estuary-vm-base";
-        domain = lib.my.colony.domain;
+        inherit domain;
         ipv4 = {
-          address = "${lib.my.colony.start.base.v4}1";
+          address = net.cidr.host 1 prefixes.base.v4;
           gateway = null;
         };
-        ipv6.address = "${lib.my.colony.start.base.v6}1";
+        ipv6.address = net.cidr.host 1 prefixes.base.v6;
       };
       as211024 = {
         ipv4 = {

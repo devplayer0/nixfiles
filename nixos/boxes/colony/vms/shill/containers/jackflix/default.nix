@@ -1,4 +1,9 @@
-{ lib, ... }: {
+{ lib, ... }:
+let
+  inherit (lib.my) net;
+  inherit (lib.my.colony) domain prefixes;
+in
+{
   nixos.systems.jackflix = {
     system = "x86_64-linux";
     nixpkgs = "mine";
@@ -6,11 +11,11 @@
     assignments = {
       internal = {
         name = "jackflix-ctr";
-        domain = lib.my.colony.domain;
-        ipv4.address = "${lib.my.colony.start.ctrs.v4}6";
+        inherit domain;
+        ipv4.address = net.cidr.host 6 prefixes.ctrs.v4;
         ipv6 = {
           iid = "::6";
-          address = "${lib.my.colony.start.ctrs.v6}6";
+          address = net.cidr.host 6 prefixes.ctrs.v6;
         };
       };
     };

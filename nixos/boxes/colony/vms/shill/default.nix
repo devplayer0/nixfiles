@@ -1,4 +1,9 @@
-{ lib, ... }: {
+{ lib, ... }:
+let
+  inherit (lib.my) net;
+  inherit (lib.my.colony) domain prefixes;
+in
+{
   imports = [ ./containers ];
 
   nixos.systems.shill = {
@@ -8,32 +13,32 @@
     assignments = {
       routing = {
         name = "shill-vm-routing";
-        domain = lib.my.colony.domain;
-        ipv4.address = "${lib.my.colony.start.vms.v4}2";
+        inherit domain;
+        ipv4.address = net.cidr.host 2 prefixes.vms.v4;
       };
       internal = {
         name = "shill-vm";
         altNames = [ "ctr" ];
-        domain = lib.my.colony.domain;
+        inherit domain;
         ipv4 = {
-          address = "${lib.my.colony.start.vip1}5";
+          address = net.cidr.host 1 prefixes.vip1;
           mask = 32;
           gateway = null;
           genPTR = false;
         };
         ipv6 = {
           iid = "::2";
-          address = "${lib.my.colony.start.vms.v6}2";
+          address = net.cidr.host 2 prefixes.vms.v6;
         };
       };
       ctrs = {
         name = "shill-vm-ctrs";
-        domain = lib.my.colony.domain;
+        inherit domain;
         ipv4 = {
-          address = "${lib.my.colony.start.ctrs.v4}1";
+          address = net.cidr.host 1 prefixes.ctrs.v4;
           gateway = null;
         };
-        ipv6.address = "${lib.my.colony.start.ctrs.v6}1";
+        ipv6.address = net.cidr.host 1 prefixes.ctrs.v6;
       };
     };
 

@@ -1,4 +1,9 @@
-{ lib, ... }: {
+{ lib, ... }:
+let
+  inherit (lib.my) net;
+  inherit (lib.my.colony) domain prefixes;
+in
+{
   nixos.systems.colony-psql = {
     system = "x86_64-linux";
     nixpkgs = "mine";
@@ -7,11 +12,11 @@
       internal = {
         name = "colony-psql-ctr";
         altNames = [ "colony-psql" ];
-        domain = lib.my.colony.domain;
-        ipv4.address = "${lib.my.colony.start.ctrs.v4}4";
+        inherit domain;
+        ipv4.address = net.cidr.host 4 prefixes.ctrs.v4;
         ipv6 = {
           iid = "::4";
-          address = "${lib.my.colony.start.ctrs.v6}4";
+          address = net.cidr.host 4 prefixes.ctrs.v6;
         };
       };
     };
