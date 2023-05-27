@@ -135,9 +135,9 @@ in
               };
             };
 
-            "media.${lib.my.kelder.domain}" = {
-              extraConfig = localRedirect "media-local.${lib.my.kelder.domain}";
-              serverAliases = [ "media-local.${lib.my.kelder.domain}" ];
+            "kontent.${lib.my.kelder.domain}" = {
+              extraConfig = localRedirect "kontent-local.${lib.my.kelder.domain}";
+              serverAliases = [ "kontent-local.${lib.my.kelder.domain}" ];
               locations = {
                 "/".proxyPass = "${acquisition}:8096";
                 "= /".return = "302 $scheme://$host/web/";
