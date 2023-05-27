@@ -1,4 +1,9 @@
-{ lib, ... }: {
+{ lib, ... }:
+let
+  inherit (lib.my) net;
+  inherit (lib.my.kelder) domain prefixes;
+in
+{
   imports = [ ./containers ];
 
   nixos.systems.kelder = {
@@ -7,11 +12,18 @@
     home-manager = "mine";
 
     assignments = {
+      estuary = {
+        ipv4 ={
+          address = net.cidr.host 0 lib.my.colony.prefixes.vip2;
+          mask = 32;
+          gateway = null;
+        };
+      };
       ctrs = {
         name = "kelder-ctrs";
-        domain = lib.my.kelder.domain;
+        inherit domain;
         ipv4 = {
-          address = "${lib.my.kelder.start.ctrs.v4}1";
+          address = net.cidr.host 1 prefixes.ctrs.v4;
           gateway = null;
         };
       };
@@ -153,10 +165,12 @@
                 ];
                 "95-estuary" = {
                   matchConfig.Name = "estuary";
-                  address = [ "${lib.my.kelder.start.vpn.v4}2/30" ];
+                  address = with assignments.estuary; [
+                    (with ipv4; "${address}/${toString mask}")
+                  ];
                   routingPolicyRules = map (r: { routingPolicyRuleConfig = r; }) [
                     {
-                      From = "${lib.my.kelder.start.vpn.v4}2";
+                      From = assignments.estuary.ipv4.address;
                       Table = vpnTable;
                       Priority = 100;
                     }

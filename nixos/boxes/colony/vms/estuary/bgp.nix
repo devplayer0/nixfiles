@@ -15,10 +15,11 @@ in
           define OWNAS = 211024;
 
           define CCVIP1 = ${lib.my.colony.prefixes.vip1};
+          define CCVIP2 = ${lib.my.colony.prefixes.vip2};
 
           define OWNIP4 = ${assignments.internal.ipv4.address};
           define OWNNETSET4 = [ ${assignments.internal.ipv4.address}/32 ];
-          define CCNETSET4 = [ ${lib.my.colony.prefixes.vip1} ];
+          define CCNETSET4 = [ ${lib.my.colony.prefixes.vip1}, ${lib.my.colony.prefixes.vip2} ];
 
           define INTNET6 = ${intnet6};
           define AMSNET6 = ${amsnet6};
@@ -53,6 +54,7 @@ in
           }
           protocol static static4 {
             route CCVIP1 via "base";
+            route CCVIP2 via "base";
 
             ipv4 {
               import all;

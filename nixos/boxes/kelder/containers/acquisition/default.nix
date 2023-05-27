@@ -1,4 +1,9 @@
-{ lib, ... }: {
+{ lib, ... }:
+let
+  inherit (lib.my) net;
+  inherit (lib.my.kelder) domain prefixes;
+in
+{
   nixos.systems.kelder-acquisition = {
     system = "x86_64-linux";
     nixpkgs = "mine";
@@ -6,8 +11,8 @@
     assignments = {
       internal = {
         name = "acquisition-ctr";
-        domain = lib.my.kelder.domain;
-        ipv4.address = "${lib.my.kelder.start.ctrs.v4}2";
+        inherit domain;
+        ipv4.address = net.cidr.host 2 prefixes.ctrs.v4;
       };
     };
 

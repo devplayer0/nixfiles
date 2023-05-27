@@ -214,6 +214,8 @@ in
             valheim IN A ${assignments.internal.ipv4.address}
             valheim IN AAAA ${allAssignments.valheim-oci.internal.ipv6.address}
 
+            andrey-cust IN A ${allAssignments.kelder.estuary.ipv4.address}
+
             $TTL 3
             _acme-challenge IN LUA TXT @@FILE@@
 

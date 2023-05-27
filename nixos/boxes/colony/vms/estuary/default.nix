@@ -188,7 +188,7 @@ in
                       {
                         wireguardPeerConfig = {
                           PublicKey = "7N9YdQaCMWWIwAnW37vrthm9ZpbnG4Lx3gheHeRYz2E=";
-                          AllowedIPs = [ "${lib.my.kelder.start.vpn.v4}2" ];
+                          AllowedIPs = [ allAssignments.kelder.estuary.ipv4.address ];
                           PersistentKeepalive = 25;
                         };
                       }
@@ -339,7 +339,14 @@ in
                 };
                 "95-kelder" = {
                   matchConfig.Name = "kelder";
-                  address = [ "${lib.my.kelder.start.vpn.v4}1/30" ];
+                  routes = [
+                    {
+                      routeConfig = {
+                        Destination = allAssignments.kelder.estuary.ipv4.address;
+                        Scope = "link";
+                      };
+                    }
+                  ];
                 };
               } ];
             };
@@ -388,12 +395,6 @@ in
                       dst = allAssignments.valheim-oci.internal.ipv4.address;
                       proto = "udp";
                     }
-
-                    {
-                      port = 6922;
-                      dst = "${lib.my.kelder.start.vpn.v4}2";
-                      dstPort = "ssh";
-                    }
                   ];
                 };
                 extraRules =
@@ -433,7 +434,7 @@ in
                     chain forward {
                       iifname { wan, $ixps } oifname base jump filter-routing
                       oifname $ixps jump ixp
-                      oifname as211024 accept
+                      oifname { as211024, kelder } accept
                     }
                     chain output {
                       oifname ifog ether type != vlan reject

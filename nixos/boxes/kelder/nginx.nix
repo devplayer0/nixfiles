@@ -1,6 +1,7 @@
 { lib, pkgs, config, allAssignments, ... }:
 let
-  inherit (lib) mkMerge mkIf;
+  inherit (builtins) mapAttrs;
+  inherit (lib) mkMerge mkIf mkDefault;
 in
 {
   config = {
@@ -10,10 +11,44 @@ in
           owner = "nginx";
           group = "nginx";
         };
+        "dhparams.pem" = {
+          owner = "acme";
+          group = "acme";
+          mode = "440";
+        };
+        "kelder/cloudflare-credentials.conf" = {
+          owner = "acme";
+          group = "acme";
+        };
       };
 
       firewall = {
         tcp.allowed = [ "http" "https" ];
+      };
+    };
+
+    security.acme = {
+      acceptTerms = true;
+      defaults = {
+        email = "dev@nul.ie";
+        server = "https://acme-v02.api.letsencrypt.org/directory";
+        reloadServices = [ "nginx" ];
+        dnsResolver = "8.8.8.8";
+      };
+      certs = {
+        "${lib.my.kelder.domain}" = {
+          extraDomainNames = [
+            "*.${lib.my.kelder.domain}"
+          ];
+          dnsProvider = "cloudflare";
+          credentialsFile = config.age.secrets."kelder/cloudflare-credentials.conf".path;
+        };
+      };
+    };
+
+    users = {
+      users = {
+        nginx.extraGroups = [ "acme" ];
       };
     };
 
@@ -25,6 +60,7 @@ in
         recommendedTlsSettings = true;
         clientMaxBodySize = "0";
         serverTokens = true;
+        sslDhparam = config.age.secrets."dhparams.pem".path;
 
         # Based on recommended*Settings, but probably better to be explicit about these
         appendHttpConfig = ''
@@ -79,58 +115,61 @@ in
             c
           ];
           acquisition = "http://${allAssignments.kelder-acquisition.internal.ipv4.address}";
+          hosts = {
+            "_" = {
+              default = true;
+              forceSSL = true;
+              onlySSL = false;
+              locations = {
+                "/".root = "${pkgs.nginx}/html";
+              };
+            };
+
+            "media.${lib.my.kelder.domain}" = {
+              locations = {
+                "/".proxyPass = "${acquisition}:8096";
+                "= /".return = "302 $scheme://$host/web/";
+                "= /web/".proxyPass = "${acquisition}:8096/web/index.html";
+                "/socket" = {
+                  proxyPass = "${acquisition}:8096/socket";
+                  proxyWebsockets = true;
+                  extraConfig = lib.my.nginx.proxyHeaders;
+                };
+              };
+            };
+            "torrents.${lib.my.kelder.domain}" = withAuth {
+              locations."/".proxyPass = "${acquisition}:9091";
+            };
+            "jackett.${lib.my.kelder.domain}" = withAuth {
+              locations."/".proxyPass = "${acquisition}:9117";
+            };
+            "radarr.${lib.my.kelder.domain}" = withAuth {
+              locations."/" = {
+                proxyPass = "${acquisition}:7878";
+                proxyWebsockets = true;
+                extraConfig = lib.my.nginx.proxyHeaders;
+              };
+            };
+            "sonarr.${lib.my.kelder.domain}" = withAuth {
+              locations."/" = {
+                proxyPass = "${acquisition}:8989";
+                proxyWebsockets = true;
+                extraConfig = lib.my.nginx.proxyHeaders;
+              };
+            };
+          };
+
+          defaultsFor = mapAttrs (n: _: {
+            onlySSL = mkDefault true;
+            useACMEHost = mkDefault "${config.networking.domain}";
+            kTLS = mkDefault true;
+            http2 = mkDefault true;
+          });
         in
-        {
-          "_" = {
-            default = true;
-            locations = {
-              "= /".root = "${pkgs.nginx}/html";
-
-              "~ /media/?".return = "302 $scheme://$host/web/";
-              "= /web/".proxyPass = "${acquisition}:8096/web/index.html";
-              "/socket" = {
-                proxyPass = "${acquisition}:8096/socket";
-                proxyWebsockets = true;
-                extraConfig = lib.my.nginx.proxyHeaders;
-              };
-
-              "/".proxyPass = "${acquisition}:8096";
-            };
-          };
-
-          "media.${lib.my.kelder.domain}" = {
-            locations = {
-              "/".proxyPass = "${acquisition}:8096";
-              "= /".return = "302 $scheme://$host/web/";
-              "= /web/".proxyPass = "${acquisition}:8096/web/index.html";
-              "/socket" = {
-                proxyPass = "${acquisition}:8096/socket";
-                proxyWebsockets = true;
-                extraConfig = lib.my.nginx.proxyHeaders;
-              };
-            };
-          };
-          "torrents.${lib.my.kelder.domain}" = withAuth {
-            locations."/".proxyPass = "${acquisition}:9091";
-          };
-          "jackett.${lib.my.kelder.domain}" = withAuth {
-            locations."/".proxyPass = "${acquisition}:9117";
-          };
-          "radarr.${lib.my.kelder.domain}" = withAuth {
-            locations."/" = {
-              proxyPass = "${acquisition}:7878";
-              proxyWebsockets = true;
-              extraConfig = lib.my.nginx.proxyHeaders;
-            };
-          };
-          "sonarr.${lib.my.kelder.domain}" = withAuth {
-            locations."/" = {
-              proxyPass = "${acquisition}:8989";
-              proxyWebsockets = true;
-              extraConfig = lib.my.nginx.proxyHeaders;
-            };
-          };
-        };
+        mkMerge [
+          hosts
+          (defaultsFor hosts)
+        ];
       };
     };
   };

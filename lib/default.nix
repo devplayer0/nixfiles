@@ -234,6 +234,7 @@ rec {
         v6 = subnet 4 3 all.v6;
       };
       vip1 = "94.142.241.224/30";
+      vip2 = "94.142.242.254/31";
     };
     fstrimConfig = {
       enable = true;
@@ -241,7 +242,7 @@ rec {
       interval = "04:45";
     };
   };
-  kelder = rec {
+  kelder = {
     groups = {
       storage = 2000;
       media = 2010;
@@ -251,14 +252,9 @@ rec {
     vpn = {
       port = 51820;
     };
-    start = {
-      all.v4 = "172.16.64.";
-      vpn.v4 = "172.16.69.";
-      ctrs.v4 = "172.16.64.";
-    };
-    prefixes = {
-      all.v4 = "${start.all.v4}0/20";
-      ctrs.v4 = "${start.ctrs.v4}0/24";
+    prefixes = with net.cidr; rec {
+      all.v4 = "172.16.64.0/20";
+      ctrs.v4 = subnet 4 0 all.v4;
     };
   };
   sshKeyFiles = {

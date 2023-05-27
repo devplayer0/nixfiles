@@ -45,8 +45,6 @@ let
     };
     "/.well-known/webfinger".return = "301 https://toot.nul.ie$request_uri";
   };
-
-  kelderUpstream = "http://${lib.my.kelder.start.vpn.v4}2:80";
 in
 {
   my = {
@@ -369,39 +367,6 @@ in
           extraConfig = lib.my.nginx.proxyHeaders;
         };
         useACMEHost = lib.my.pubDomain;
-      };
-
-      "torrents.${lib.my.kelder.domain}" = {
-        locations."/".proxyPass = kelderUpstream;
-        useACMEHost = lib.my.kelder.domain;
-      };
-      "jackett.${lib.my.kelder.domain}" = {
-        locations."/".proxyPass = kelderUpstream;
-        useACMEHost = lib.my.kelder.domain;
-      };
-      "radarr.${lib.my.kelder.domain}" = {
-        locations."/" = {
-          proxyPass = kelderUpstream;
-          proxyWebsockets = true;
-          extraConfig = lib.my.nginx.proxyHeaders;
-        };
-        useACMEHost = lib.my.kelder.domain;
-      };
-      "sonarr.${lib.my.kelder.domain}" = {
-        locations."/" = {
-          proxyPass = kelderUpstream;
-          proxyWebsockets = true;
-          extraConfig = lib.my.nginx.proxyHeaders;
-        };
-        useACMEHost = lib.my.kelder.domain;
-      };
-      "media.${lib.my.kelder.domain}" = {
-        locations."/" = {
-          proxyPass = kelderUpstream;
-          proxyWebsockets = true;
-          extraConfig = lib.my.nginx.proxyHeaders;
-        };
-        useACMEHost = lib.my.kelder.domain;
       };
     };
 
