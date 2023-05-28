@@ -121,6 +121,7 @@ in
               username = "token";
               passwordFile = config.age.secrets."kelder/ddclient-cloudflare.key".path;
             };
+
             samba = {
               enable = true;
               enableNmbd = true;
@@ -135,6 +136,20 @@ in
               };
             };
             samba-wsdd.enable = true;
+
+            minecraft-server = {
+              enable = true;
+              package = pkgs.minecraftServers.vanilla-1-19;
+              declarative = true;
+              eula = true;
+              whitelist = {
+                devplayer0 = "6d7d971b-ce10-435b-85c5-c99c0d8d288c";
+              };
+              serverProperties = {
+                motd = "Simpcraft";
+                white-list = true;
+              };
+            };
           };
 
           networking = {
@@ -245,6 +260,8 @@ in
 
             firewall = {
               trustedInterfaces = [ "ctrs" ];
+              tcp.allowed = [ 25565 ];
+              udp.allowed = [ 25565 ];
               nat = {
                 enable = true;
                 externalInterface = "{ et1g0, estuary }";

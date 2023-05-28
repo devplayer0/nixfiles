@@ -408,6 +408,16 @@ in
           }
         ];
       })
+      (mkIf config.services.minecraft-server.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = config.services.minecraft-server.dataDir;
+            mode = "0750";
+            user = "minecraft";
+            group = "minecraft";
+          }
+        ];
+      })
       (mkIf config.services.samba.enable {
         my.tmproot.persistence.config.directories = [
           "/var/lib/samba"
