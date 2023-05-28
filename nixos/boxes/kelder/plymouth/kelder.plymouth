@@ -1,0 +1,9 @@
+[Plymouth Theme]
+Name=kelder
+Description=kontent
+Comment=it's epic
+ModuleName=script
+
+[script]
+ImageDir=@out@/share/plymouth/themes/kelder
+ScriptFile=@out@/share/plymouth/themes/kelder/kelder.script

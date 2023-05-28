@@ -1,0 +1,31 @@
+fps = 50;
+w = Window.GetWidth();
+h = Window.GetHeight();
+
+debug_sprite = Sprite();
+fun debug(text) {
+  debug_sprite.SetImage(Image.Text(text, 0, 0, 0));
+  debug_sprite.SetPosition(0, 0, 1);
+}
+
+kelder = Image("kelder.png").Scale(w, h);
+kelder_s = Sprite(kelder);
+
+bridge = Image("bridge.png");
+bridge_s = Sprite();
+bridge_s.SetX((w / 2) - (bridge.GetWidth() / 2));
+bridge_s.SetY((h / 2) - (bridge.GetHeight() / 2));
+bridge_s.SetZ(10);
+bridge_s.SetImage(bridge);
+
+frame = 0;
+fun refresh_callback() {
+  time = frame / fps;
+
+  # loop over 1 seconds
+  t = (time % 1) / 1;
+  bridge_s.SetImage(bridge.Rotate(t * 1.5 * (2 * Math.Pi)));
+
+  frame++;
+}
+Plymouth.SetRefreshFunction(refresh_callback);
