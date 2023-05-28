@@ -137,6 +137,7 @@ in
 
             "monitor.${lib.my.kelder.domain}" = withAuth {
               serverAliases = [ "monitor-local.${lib.my.kelder.domain}" ];
+              extraConfig = localRedirect "monitor-local.${lib.my.kelder.domain}";
               locations = {
                 "/" = {
                   proxyPass = "http://${allAssignments.kelder.ctrs.ipv4.address}:19999";
@@ -155,7 +156,6 @@ in
             };
 
             "kontent.${lib.my.kelder.domain}" = {
-              extraConfig = localRedirect "kontent-local.${lib.my.kelder.domain}";
               serverAliases = [ "kontent-local.${lib.my.kelder.domain}" ];
               locations = {
                 "/".proxyPass = "${acquisition}:8096";
@@ -169,12 +169,18 @@ in
               };
             };
             "torrents.${lib.my.kelder.domain}" = withAuth {
+              serverAliases = [ "torrents-local.${lib.my.kelder.domain}" ];
+              extraConfig = localRedirect "torrents-local.${lib.my.kelder.domain}";
               locations."/".proxyPass = "${acquisition}:9091";
             };
             "jackett.${lib.my.kelder.domain}" = withAuth {
+              serverAliases = [ "jackett-local.${lib.my.kelder.domain}" ];
+              extraConfig = localRedirect "jackett-local.${lib.my.kelder.domain}";
               locations."/".proxyPass = "${acquisition}:9117";
             };
             "radarr.${lib.my.kelder.domain}" = withAuth {
+              serverAliases = [ "radarr-local.${lib.my.kelder.domain}" ];
+              extraConfig = localRedirect "radarr-local.${lib.my.kelder.domain}";
               locations."/" = {
                 proxyPass = "${acquisition}:7878";
                 proxyWebsockets = true;
@@ -182,6 +188,8 @@ in
               };
             };
             "sonarr.${lib.my.kelder.domain}" = withAuth {
+              serverAliases = [ "sonarr-local.${lib.my.kelder.domain}" ];
+              extraConfig = localRedirect "sonarr-local.${lib.my.kelder.domain}";
               locations."/" = {
                 proxyPass = "${acquisition}:8989";
                 proxyWebsockets = true;

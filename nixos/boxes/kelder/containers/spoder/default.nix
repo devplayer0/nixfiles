@@ -101,6 +101,9 @@ in
               adminpassFile = config.age.secrets."kelder/nextcloud-root.txt".path;
               defaultPhoneRegion = "IE";
             };
+            extraOptions = {
+              updatechecker = false;
+            };
           };
         };
       };
