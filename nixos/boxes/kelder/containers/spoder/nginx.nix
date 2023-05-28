@@ -135,6 +135,25 @@ in
               };
             };
 
+            "monitor.${lib.my.kelder.domain}" = withAuth {
+              serverAliases = [ "monitor-local.${lib.my.kelder.domain}" ];
+              locations = {
+                "/" = {
+                  proxyPass = "http://${allAssignments.kelder.ctrs.ipv4.address}:19999";
+                  extraConfig = ''
+                    proxy_pass_request_headers on;
+                    ${lib.my.nginx.proxyHeaders}
+                    proxy_set_header Connection "keep-alive";
+                    proxy_store off;
+
+                    gzip on;
+                    gzip_proxied any;
+                    gzip_types *;
+                  '';
+                };
+              };
+            };
+
             "kontent.${lib.my.kelder.domain}" = {
               extraConfig = localRedirect "kontent-local.${lib.my.kelder.domain}";
               serverAliases = [ "kontent-local.${lib.my.kelder.domain}" ];

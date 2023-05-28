@@ -110,6 +110,14 @@ in
               greetingLine = ''Welcome to ${config.system.nixos.distroName} ${config.system.nixos.label} (\m) - \l'';
               helpLine = "\nCall Jack for help.";
             };
+            smartd = {
+              enable = true;
+              autodetect = true;
+              extraOptions = [ "-A /var/log/smartd/" "--interval=600" ];
+            };
+            netdata = {
+              enable = true;
+            };
 
             ddclient = {
               enable = true;
@@ -159,6 +167,10 @@ in
           system.nixos.distroName = "KelderOS";
 
           systemd = {
+            tmpfiles.rules = [
+              "d /var/log/smartd 0755 root root"
+            ];
+
             network = {
               netdevs = {
                 "25-ctrs".netdevConfig = {
