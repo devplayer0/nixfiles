@@ -40,6 +40,12 @@ in
       gnome = {
         gnome-keyring.enable = true;
       };
+
+      udev = {
+        extraRules = ''
+          SUBSYSTEM=="usb", ATTR{idVendor}=="0955", MODE="0664", GROUP="wheel"
+        '';
+      };
     };
 
     programs.dconf.enable = true;
