@@ -191,6 +191,7 @@ in
         packages = with pkgs; [
           file
           tree
+          pwgen
           iperf3
           mosh
           wget
