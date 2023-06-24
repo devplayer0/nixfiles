@@ -53,9 +53,7 @@
           };
 
           services = {
-            openssh = {
-              permitRootLogin = mkImageMediaOverride "prohibit-password";
-            };
+            openssh.settings.PermitRootLogin = mkImageMediaOverride "prohibit-password";
           };
 
           networking = {

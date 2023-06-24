@@ -5,13 +5,7 @@ let
 in
 {
   options = with lib.types; {
-    my = {
-      ssh = {
-        strictModes = mkBoolOpt' true
-          ("Specifies whether sshd(8) should check file modes and ownership of the user's files and home directory "+
-          "before accepting login.");
-      };
-    };
+    my = { };
   };
 
   imports = [
@@ -94,7 +88,7 @@ in
 
       boot = {
         # Use latest LTS release by default
-        kernelPackages = mkDefault pkgs.linuxKernel.packages.linux_5_15;
+        kernelPackages = mkDefault pkgs.linuxKernel.packages.linux_6_1;
         kernel = {
           sysctl = {
             "net.ipv6.route.max_size" = mkDefault 16384;
@@ -151,9 +145,11 @@ in
 
         openssh = {
           enable = mkDefault true;
-          extraConfig = ''StrictModes ${if config.my.ssh.strictModes then "yes" else "no"}'';
-          permitRootLogin = mkDefault "no";
-          passwordAuthentication = mkDefault false;
+          settings = {
+            PermitRootLogin = mkDefault "no";
+            PasswordAuthentication = mkDefault false;
+            StrictModes = mkDefault true;
+          };
         };
 
         netdata = {
