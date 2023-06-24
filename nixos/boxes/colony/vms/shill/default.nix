@@ -159,7 +159,11 @@ in
               containers.instances =
               let
                 instances = {
-                  middleman = {};
+                  middleman = {
+                    bindMounts = {
+                      "/mnt/media" = {};
+                    };
+                  };
                   vaultwarden = {};
                   colony-psql = {};
                   chatterbox = {};

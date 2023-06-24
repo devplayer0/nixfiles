@@ -54,6 +54,10 @@ in
                   owner = "nginx-sso";
                   group = "nginx-sso";
                 };
+                "middleman/htpasswd" = {
+                  owner = "nginx";
+                  group = "nginx";
+                };
               };
             };
 
@@ -193,6 +197,7 @@ in
               enableReload = true;
               additionalModules = with pkgs.nginxModules; [
                 vts
+                fancyindex
               ];
 
               recommendedTlsSettings = true;
