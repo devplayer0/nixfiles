@@ -4,13 +4,14 @@ let
   inherit (lib.my) networkdAssignment;
 
   wg = {
-    keyFile = "jackflix/mullvad-privkey";
+    keyFile = "jackflix/airvpn-privkey";
+    pskFile = "jackflix/airvpn-psk";
     fwMark = 42;
     routeTable = 51820;
   };
 
-  # Forwarded in Mullvad config
-  transmissionPeerPort = 56528;
+  # Forwarded in AirVPN config
+  transmissionPeerPort = 47016;
 in
 {
   config = mkMerge [
@@ -18,6 +19,10 @@ in
       my = {
         secrets = {
           files."${wg.keyFile}" = {
+            group = "systemd-network";
+            mode = "440";
+          };
+          files."${wg.pskFile}" = {
             group = "systemd-network";
             mode = "440";
           };
@@ -56,6 +61,8 @@ in
             netdevConfig = {
               Name = "vpn";
               Kind = "wireguard";
+              # Specified by AirVPN
+              MTUBytes = "1320";
             };
             wireguardConfig = {
               PrivateKeyFile = config.age.secrets."${keyFile}".path;
@@ -64,10 +71,11 @@ in
             };
             wireguardPeers = [
               {
-                # mlvd-ams-wg-202
+                # AirVPN NL
                 wireguardPeerConfig = {
-                  Endpoint = "169.150.196.15:51820";
-                  PublicKey = "BChJDLOwZu9Q1oH0UcrxcHP6xxHhyRbjrBUsE0e07Vk=";
+                  Endpoint = "2a00:1678:1337:2329:e5f:35d4:4404:ef9f:1637";
+                  PublicKey = "PyLCXAQT8KkM4T+dUsOQfn+Ub3pGxfGlxkIApuig+hk=";
+                  PresharedKeyFile = config.age.secrets."${pskFile}".path;
                   AllowedIPs = [ "0.0.0.0/0" "::/0" ];
                 };
               }
@@ -83,8 +91,8 @@ in
             ];
             "90-vpn" = with wg; {
               matchConfig.Name = "vpn";
-              address = [ "10.67.83.59/32" "fc00:bbbb:bbbb:bb01::4:533a/128" ];
-              dns = [ "10.64.0.1" ];
+              address = [ "10.182.97.37/32" "fd7d:76ee:e68f:a993:735d:ef5e:6907:b122/128" ];
+              dns = [ "10.128.0.1" "fd7d:76ee:e68f:a993::1" ];
               routingPolicyRules = map (r: { routingPolicyRuleConfig = r; }) [
                 {
                   Family = "both";
