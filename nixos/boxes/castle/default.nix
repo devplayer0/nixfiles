@@ -94,6 +94,7 @@
           usbutils
           lm_sensors
           linuxPackages.cpupower
+          cifs-utils
         ];
         environment.etc = {
           "pipewire/pipewire.conf.d/sample-size.conf".text = ''
