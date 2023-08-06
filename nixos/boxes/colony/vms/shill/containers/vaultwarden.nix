@@ -36,7 +36,11 @@ in
 
             secrets = {
               key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFP2mF50ENpnJnr+VTnG9P+JFPjgwvoIxCLyJPzXRpVy";
-              files."vaultwarden.env" = {};
+              files = {
+                "vaultwarden/config.env" = {};
+                "vaultwarden/backup-pass.txt" = {};
+                "vaultwarden/backup-ssh.key" = {};
+              };
             };
 
             firewall = {
@@ -56,6 +60,10 @@ in
             services.vaultwarden.serviceConfig.StateDirectory = mkForce "vaultwarden";
             network.networks."80-container-host0" = networkdAssignment "host0" assignments.internal;
           };
+
+          programs.ssh.knownHostsFiles = [
+            lib.my.sshKeyFiles.rsyncNet
+          ];
 
           services = {
             vaultwarden = {
@@ -86,7 +94,28 @@ in
 
                 PUSH_ENABLED = true;
               };
-              environmentFile = config.age.secrets."vaultwarden.env".path;
+              environmentFile = config.age.secrets."vaultwarden/config.env".path;
+            };
+
+            borgbackup.jobs.vaultwarden = {
+              paths = [ vwData ];
+              repo = "zh2855@zh2855.rsync.net:borg/vaultwarden2";
+              doInit = true;
+              environment = {
+                BORG_REMOTE_PATH = "borg1";
+                BORG_RSH = ''ssh -i ${config.age.secrets."vaultwarden/backup-ssh.key".path}'';
+              };
+              compression = "zstd,10";
+              encryption = {
+                mode = "repokey";
+                passCommand = ''cat ${config.age.secrets."vaultwarden/backup-pass.txt".path}'';
+              };
+              prune.keep = {
+                within = "1d";
+                daily = 7;
+                weekly = 4;
+                monthly = -1;
+              };
             };
           };
         }

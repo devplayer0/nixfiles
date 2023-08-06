@@ -260,5 +260,6 @@ rec {
   sshKeyFiles = {
     me = ../.keys/me.pub;
     deploy = ../.keys/deploy.pub;
+    rsyncNet = ../.keys/zh2855.rsync.net.pub;
   };
 }
