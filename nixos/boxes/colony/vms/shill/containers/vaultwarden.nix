@@ -83,6 +83,8 @@ in
                 SMTP_PORT = 587;
                 SMTP_USERNAME = "pass@nul.ie";
                 SMTP_TIMEOUT = 15;
+
+                PUSH_ENABLED = true;
               };
               environmentFile = config.age.secrets."vaultwarden.env".path;
             };
