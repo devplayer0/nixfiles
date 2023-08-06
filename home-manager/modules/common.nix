@@ -120,6 +120,7 @@ in
           };
           shellAliases = {
             ip = "ip --color=auto";
+            s = "kitty +kitten ssh";
           };
         };
 
