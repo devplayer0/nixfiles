@@ -1,6 +1,6 @@
 { pkgs, ... }:
 let
-  homeFlake = "$HOME/.config/nixpkgs/flake.nix";
+  homeFlake = "$HOME/.config/home-manager/flake.nix";
   devKey = ".keys/dev.key";
 in
 {
