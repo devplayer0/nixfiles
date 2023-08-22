@@ -21,6 +21,10 @@ in
             })
             noto-fonts-emoji
 
+            grim
+            slurp
+            swappy
+
             python310Packages.python-lsp-server
             nil # nix language server
             zls # zig language server
@@ -153,7 +157,8 @@ in
                     "${mod}+Shift+x" = "exec rofi -show drun";
                     "${mod}+q" = "kill";
                     "${mod}+Shift+q" = "exec swaynag -t warning -m 'bruh you really wanna kill sway?' -b 'ye' 'systemctl --user stop graphical-session.target && swaymsg exit'";
-                    "${mod}+Shift+s" = "exec flameshot gui";
+                    # "${mod}+Shift+s" = "exec flameshot gui";
+                    "${mod}+Shift+s" = ''exec grim -g "$(slurp)" - | swappy -f -'';
                     "${mod}+Shift+e" = "exec rofi -show emoji";
                     # Config for this doesn't seem to work :/
                     "${mod}+c" = ''exec rofi -show calc -calc-command "echo -n '{result}' | ${pkgs.wl-clipboard}/bin/wl-copy"'';
@@ -202,7 +207,7 @@ in
           };
 
           flameshot = {
-            enable = true;
+            enable = false;
             settings = {
               General = {
                 disabledTrayIcon = true;
