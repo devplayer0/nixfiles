@@ -150,6 +150,7 @@ in
                   lib.mkOptionDefault {
                     "${mod}+d" = null;
                     "${mod}+x" = "exec ${cfg.menu}";
+                    "${mod}+Shift+x" = "exec rofi -show drun";
                     "${mod}+q" = "kill";
                     "${mod}+Shift+q" = "exec swaynag -t warning -m 'bruh you really wanna kill sway?' -b 'ye' 'systemctl --user stop graphical-session.target && swaymsg exit'";
                     "${mod}+Shift+s" = "exec flameshot gui";
