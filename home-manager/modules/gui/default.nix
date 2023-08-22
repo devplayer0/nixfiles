@@ -8,6 +8,7 @@ in
 {
   options.my.gui = {
     enable = mkBoolOpt' true "Enable settings and packages meant for graphical systems";
+    manageGraphical = mkBoolOpt' false "Configure the graphical session";
     standalone = mkBoolOpt' false "Enable settings for fully Nix managed systems";
   };
 
@@ -73,7 +74,8 @@ in
           };
         };
       }
-      (mkIf (cfg.standalone && !pkgs.stdenv.isDarwin) {
+
+      (mkIf (cfg.manageGraphical && !pkgs.stdenv.isDarwin) {
         systemd.user = {
           services = {
             wait-for-sway = {
@@ -93,21 +95,6 @@ in
               };
               Install.RequiredBy = [ "sway-session.target" ];
             };
-          };
-        };
-
-        xdg = {
-          userDirs = {
-            enable = true;
-            createDirectories = true;
-            desktop = "$HOME/desktop";
-            documents = "$HOME/documents";
-            download = "$HOME/downloads";
-            music = "$HOME/music";
-            pictures = "$HOME/pictures";
-            publicShare = "$HOME/public";
-            templates = "$HOME/templates";
-            videos = "$HOME/videos";
           };
         };
 
@@ -280,6 +267,23 @@ in
                   --set GOOGLE_DEFAULT_CLIENT_SECRET "OTJgUOQcT7lO7GsGZq2G4IlT"
               '';
             });
+          };
+        };
+      })
+
+      (mkIf (cfg.standalone && !pkgs.stdenv.isDarwin) {
+        xdg = {
+          userDirs = {
+            enable = true;
+            createDirectories = true;
+            desktop = "$HOME/desktop";
+            documents = "$HOME/documents";
+            download = "$HOME/downloads";
+            music = "$HOME/music";
+            pictures = "$HOME/pictures";
+            publicShare = "$HOME/public";
+            templates = "$HOME/templates";
+            videos = "$HOME/videos";
           };
         };
       })
