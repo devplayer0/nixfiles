@@ -153,6 +153,7 @@ in
                   in
                   lib.mkOptionDefault {
                     "${mod}+d" = null;
+                    "${mod}+l" = "exec swaylock -i ${./lock.png} -s stretch";
                     "${mod}+x" = "exec ${cfg.menu}";
                     "${mod}+Shift+x" = "exec rofi -show drun";
                     "${mod}+q" = "kill";
