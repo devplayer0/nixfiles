@@ -1,6 +1,6 @@
 { lib, pkgs, config, ... }:
 let
-  inherit (lib) mkIf mkMerge mkForce;
+  inherit (lib) genAttrs mkIf mkMerge mkForce;
   inherit (lib.my) mkBoolOpt';
 
   cfg = config.my.gui;
@@ -268,6 +268,19 @@ in
                   --set GOOGLE_DEFAULT_CLIENT_SECRET "OTJgUOQcT7lO7GsGZq2G4IlT"
               '';
             });
+          };
+        };
+
+        xdg = {
+          mimeApps = {
+            enable = true;
+            defaultApplications = genAttrs [
+              "text/html"
+              "x-scheme-handler/http"
+              "x-scheme-handler/https"
+              "x-scheme-handler/about"
+              "x-scheme-handler/unknown"
+            ] (_: "chromium-browser.desktop");
           };
         };
       })
