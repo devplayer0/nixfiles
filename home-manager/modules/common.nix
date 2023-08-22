@@ -219,6 +219,7 @@ in
         overlays = [
           inputs.deploy-rs.overlay
           inputs.boardie.overlays.default
+          inputs.nixGL.overlays.default
         ];
         config = {
           allowUnfree = true;
