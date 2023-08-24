@@ -16,8 +16,8 @@ in
       modules-left = [ "sway/workspaces" "sway/mode" "custom/media" ];
       modules-center = [ "sway/window" ];
       modules-right = [
-        "idle_inhibitor" "pulseaudio" "network" "cpu" "memory" "temperature" "backlight"
-        "keyboard-state" "sway/language" "battery" "clock" "tray" "custom/notification"
+        "idle_inhibitor" "cpu" "memory" "temperature" "backlight"
+        "battery" "pulseaudio" "clock" "network" "tray" "custom/notification"
       ];
       # Modules configuration
       # "sway/workspaces": {
