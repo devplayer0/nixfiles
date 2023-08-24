@@ -58,8 +58,10 @@ in
       };
       clock = {
         # "timezone": "America/New_York",
+        # format-alt = "{:%Y-%m-%d}";
+        interval = 1;
+        format = "{:%F %T}";
         tooltip-format = "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>";
-        format-alt = "{:%Y-%m-%d}";
       };
       cpu = {
         format = "{usage}% ";
