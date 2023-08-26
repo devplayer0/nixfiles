@@ -30,7 +30,8 @@
       backend = {
         driver = "file";
         #filename = "${systems.installer.configuration.config.my.buildAs.iso}/iso/nixos-installer-devplayer0.iso";
-        filename = "/persist/home/dev/nixos-installer-devplayer0.iso";
+        #filename = "/persist/home/dev/nixos-installer-devplayer0.iso";
+        filename = "/persist/home/dev/debian-12.1.0-amd64-netinst.iso";
         read-only = "on";
       };
       format.driver = "raw";
@@ -196,6 +197,25 @@
                 frontend = "virtio-blk";
               }
             ]);
+          };
+
+          mail = {
+            uuid = "fd95fe0f-c204-4dd5-b16f-2b808e14a43a";
+            cpu = "host,topoext";
+            smp = {
+              cpus = 3;
+              threads = 2;
+            };
+            memory = 8192;
+            networks.public = {
+              bridge = null;
+              mac = "52:54:00:a8:d1:03";
+            };
+            cleanShutdown.timeout = 120;
+            drives = [
+              (mkMerge [ (vmLVM "mail" "root") { frontendOpts.bootindex = 0; } ])
+              (vmLVM "mail" "data")
+            ];
           };
         };
       };

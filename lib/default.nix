@@ -233,6 +233,16 @@ rec {
         v4 = subnet 8 3 all.v4;
         v6 = subnet 4 3 all.v6;
       };
+
+      cust = {
+        v4 = subnet 8 100 all.v4; # single ip for routing only
+        v6 = "2a0e:97c0:4d2:2000::/56";
+      };
+      mail = {
+        v4 = "94.142.241.227/32";
+        v6 = subnet 8 0 cust.v6;
+      };
+
       vip1 = "94.142.241.224/30";
       vip2 = "94.142.242.254/31";
     };

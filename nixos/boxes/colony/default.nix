@@ -230,6 +230,29 @@ in
                 matchConfig.Name = "vms0";
                 networkConfig.Bridge = "vms";
               };
+
+              "90-vm-mail" = {
+                matchConfig.Name = "vm-mail";
+                address = [
+                  (net.cidr.subnet 8 1 prefixes.cust.v4)
+                  prefixes.mail.v6
+                ];
+                networkConfig = {
+                  IPv6AcceptRA = false;
+                  IPv6SendRA = true;
+                };
+                ipv6Prefixes = [
+                  {
+                    ipv6PrefixConfig.Prefix = prefixes.mail.v6;
+                  }
+                ];
+                routes = map (r: { routeConfig = r; }) [
+                  {
+                    Destination = prefixes.mail.v4;
+                    Scope = "link";
+                  }
+                ];
+              };
             };
           };
         };
@@ -260,10 +283,12 @@ in
           firewall = {
             trustedInterfaces = [ "vms" ];
             extraRules = ''
+              define cust = { vm-mail }
               table inet filter {
                 chain forward {
                   # Trust that the outer firewall has done the filtering!
-                  iifname base oifname vms accept
+                  iifname base oifname { vms, $cust } accept
+                  iifname $cust accept # trust for now...
                 }
               }
             '';
@@ -282,6 +307,7 @@ in
                   "oci"
                   "vm-estuary-persist"
                   "vm-whale2-persist"
+                  "vm-mail-data"
                 ];
                 compression = "zstd,5";
                 extraCreateArgs = [ "--stats" ];

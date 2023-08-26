@@ -214,6 +214,9 @@ in
             valheim IN A ${assignments.internal.ipv4.address}
             valheim IN AAAA ${allAssignments.valheim-oci.internal.ipv6.address}
 
+            mail-vm IN A ${lib.my.net.cidr.host 0 lib.my.colony.prefixes.mail.v4}
+            mail-vm IN AAAA ${lib.my.net.cidr.host 1 lib.my.colony.prefixes.mail.v6}
+
             andrey-cust IN A ${allAssignments.kelder.estuary.ipv4.address}
 
             $TTL 3

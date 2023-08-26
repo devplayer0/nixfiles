@@ -315,6 +315,10 @@ in
                           Destination = lib.my.colony.prefixes.vip1;
                           Gateway = allAssignments.colony.routing.ipv4.address;
                         }
+                        {
+                          Destination = lib.my.colony.prefixes.cust.v6;
+                          Gateway = allAssignments.colony.internal.ipv6.address;
+                        }
                       ] ++
                       (map (pName: [
                         {
@@ -364,7 +368,7 @@ in
               server.enable = true;
 
               firewall = {
-                trustedInterfaces = [ "base" "as211024" ];
+                trustedInterfaces = [ "as211024" ];
                 udp.allowed = [ 5353 lib.my.kelder.vpn.port ];
                 tcp.allowed = [ 5353 "bgp" ];
                 nat = {
@@ -409,6 +413,10 @@ in
                   define ixps = { frys-ix, nl-ix, fogixp, ifog-transit }
 
                   table inet filter {
+                    chain input {
+                      iifname base meta l4proto { udp, tcp } th dport domain accept
+                    }
+
                     chain routing-tcp {
                       # Safe enough to allow all SSH
                       tcp dport ssh accept
@@ -422,6 +430,9 @@ in
                       return
                     }
                     chain filter-routing {
+                      ip daddr ${prefixes.mail.v4} accept
+                      ip6 daddr ${prefixes.cust.v6} accept
+
                       tcp flags & (fin|syn|rst|ack) == syn ct state new jump routing-tcp
                       meta l4proto udp ct state new jump routing-udp
                       return
@@ -434,6 +445,7 @@ in
                     chain forward {
                       iifname { wan, $ixps } oifname base jump filter-routing
                       oifname $ixps jump ixp
+                      iifname base oifname { wan, $ixps } accept
                       oifname { as211024, kelder } accept
                     }
                     chain output {
