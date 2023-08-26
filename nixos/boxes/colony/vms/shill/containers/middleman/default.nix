@@ -50,6 +50,11 @@ in
                   owner = "acme";
                   group = "acme";
                 };
+                "middleman/mailcow-ssh.key" = {
+                  owner = "acme";
+                  group = "acme";
+                  mode = "400";
+                };
                 "middleman/nginx-sso.yaml" = {
                   owner = "nginx-sso";
                   group = "nginx-sso";
@@ -175,9 +180,21 @@ in
                   ];
                   dnsProvider = "cloudflare";
                   credentialsFile = config.age.secrets."middleman/cloudflare-credentials.conf".path;
+                  postRun =
+                  let
+                    sshKey = config.age.secrets."middleman/mailcow-ssh.key".path;
+                  in
+                  ''
+                    ${pkgs.openssh}/bin/scp -i ${sshKey} key.pem fullchain.pem acme@mail.nul.ie:/tmp/
+                    ${pkgs.openssh}/bin/ssh -i ${sshKey} acme@mail.nul.ie mailcow-ssl-reload
+                  '';
                 };
               };
             };
+          };
+
+          programs = {
+            ssh.knownHostsFiles = [ lib.my.sshHostKeys.mail-vm ];
           };
 
           services = {

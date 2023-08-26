@@ -271,5 +271,9 @@ rec {
     me = ../.keys/me.pub;
     deploy = ../.keys/deploy.pub;
     rsyncNet = ../.keys/zh2855.rsync.net.pub;
+    mailcowAcme = ../.keys/mailcow-acme.pub;
+  };
+  sshHostKeys = {
+    mail-vm = ../.keys/mail-vm-host.pub;
   };
 }
