@@ -166,11 +166,15 @@ in
 
                     "XF86AudioRaiseVolume" = "exec ${pkgs.pamixer}/bin/pamixer -i 5";
                     "XF86AudioLowerVolume" = "exec ${pkgs.pamixer}/bin/pamixer -d 5";
-                    "XF86AudioPlay" = "exec ${pkgs.playerctl}/bin/playerctl play-pause";
-                    "XF86AudioPause" = "exec ${pkgs.playerctl}/bin/playerctl play-pause";
+                    "XF86AudioPlay" = "exec ${pkgs.playerctl}/bin/playerctl play";
+                    "XF86AudioPause" = "exec ${pkgs.playerctl}/bin/playerctl pause";
                     "XF86AudioNext" = "exec ${pkgs.playerctl}/bin/playerctl next";
                     "XF86AudioPrev" = "exec ${pkgs.playerctl}/bin/playerctl previous";
                   };
+                keycodebindings = {
+                  # keycode for XF86AudioPlayPause (no sym for some reason)
+                  "172" = "exec ${pkgs.playerctl}/bin/playerctl play-pause";
+                };
 
                 menu = "rofi -show run";
                 bars = mkForce [ ];
