@@ -181,7 +181,10 @@
               };
 
               my = {
-                gui.standalone = true;
+                gui = {
+                  standalone = true;
+                  manageGraphical = true;
+                };
               };
             };
           };

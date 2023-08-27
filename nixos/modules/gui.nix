@@ -21,11 +21,15 @@ in
       ];
     };
 
-    security.polkit.enable = true;
+    security = {
+      polkit.enable = true;
+      pam.services.swaylock = {};
+    };
 
     environment.systemPackages = with pkgs; [
       # for pw-jack
       pipewire.jack
+      swaylock
     ];
     services = {
       pipewire = {
@@ -62,21 +66,6 @@ in
       noto-fonts-emoji
     ];
 
-    nixpkgs.overlays = [
-      (self: super: {
-        xdg-desktop-portal = super.xdg-desktop-portal.overrideAttrs (old: rec {
-          # https://github.com/flatpak/xdg-desktop-portal/issues/861
-          version = "1.14.6";
-
-          src = pkgs.fetchFromGitHub {
-            owner = "flatpak";
-            repo = old.pname;
-            rev = version;
-            sha256 = "sha256-MD1zjKDWwvVTui0nYPgvVjX48DaHWcP7Q10vDrNKYz0=";
-          };
-        });
-      })
-    ];
     xdg = {
       portal = {
         enable = true;

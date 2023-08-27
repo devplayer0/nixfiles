@@ -260,6 +260,11 @@ in
               emoji-mode = "copy";
             };
           };
+          swaylock = {
+            enable = true;
+            # need to use system swaylock for PAM reasons
+            package = pkgs.runCommandWith { name = "swaylock-dummy"; } ''mkdir $out'';
+          };
 
           chromium = {
             enable = true;
