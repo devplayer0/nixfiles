@@ -43,10 +43,11 @@ let
     };
   '';
 
+  staticZonePath = "/etc/pdns-bind-zones";
   loadZonesCommon = pkgs.writeShellScript "pdns-bind-load-common.sh" ''
     loadZones() {
-      for z in /etc/pdns/bind-zones/*.zone; do
-        zoneName="$(echo "$z" | ${pkgs.gnused}/bin/sed -rn 's|/etc/pdns/bind-zones/(.*)\.zone|\1|p')"
+      for z in ${staticZonePath}/*.zone; do
+        zoneName="$(echo "$z" | ${pkgs.gnused}/bin/sed -rn 's|${staticZonePath}/(.*)\.zone|\1|p')"
 
         zDat="/var/lib/pdns/bind-zones/"$zoneName".dat"
         newZonePath="$(readlink -f "$z")"
@@ -142,7 +143,7 @@ let
 
       # Use sponge instead of `sed -i` because that actually uses a temporary file and clobbers ownership...
       sed "s/^serial=.*$/serial=$serial/g" "$zDat" | sponge "$zDat"
-      sed "s/@@SERIAL@@/$serial/g" < /etc/pdns/bind-zones/"$zone".zone > /run/pdns/bind-zones/"$zone".zone
+      sed "s/@@SERIAL@@/$serial/g" < ${staticZonePath}/"$zone".zone > /run/pdns/bind-zones/"$zone".zone
       pdns_control bind-reload-now "$zone"
     '';
   };
@@ -270,7 +271,7 @@ in
           pdns-file-record
         ];
 
-        etc."pdns/bind-zones".source = "${zones}/*";
+        etc."pdns-bind-zones".source = "${zones}/*";
       };
 
       systemd.services.pdns = {

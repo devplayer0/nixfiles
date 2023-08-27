@@ -119,16 +119,7 @@ in
               enable = true;
             };
 
-            ddclient = {
-              enable = true;
-              use = "if, if=et1g0";
-
-              protocol = "cloudflare";
-              zone = lib.my.kelder.domain;
-              domains = [ "kelder-local.${lib.my.kelder.domain}" ];
-              username = "token";
-              passwordFile = config.age.secrets."kelder/ddclient-cloudflare.key".path;
-            };
+            # TODO: replace ddclient with script to update local IP
 
             samba = {
               enable = true;

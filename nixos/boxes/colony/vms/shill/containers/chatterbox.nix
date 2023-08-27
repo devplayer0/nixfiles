@@ -60,6 +60,9 @@ in
             matrix-synapse = {
               enable = true;
               withJemalloc = true;
+              extras = [
+                "oidc"
+              ];
 
               extraConfigFiles = [ config.age.secrets."chatterbox/synapse.yaml".path ];
               settings = {

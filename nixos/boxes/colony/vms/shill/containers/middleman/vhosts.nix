@@ -44,6 +44,8 @@ let
       '';
     };
     "/.well-known/webfinger".return = "301 https://toot.nul.ie$request_uri";
+    "/.well-known/nodeinfo".return = "301 https://toot.nul.ie$request_uri";
+    "/.well-known/host-meta".return = "301 https://toot.nul.ie$request_uri";
   };
 in
 {
