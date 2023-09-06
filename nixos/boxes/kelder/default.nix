@@ -119,8 +119,6 @@ in
               enable = true;
             };
 
-            # TODO: replace ddclient with script to update local IP
-
             samba = {
               enable = true;
               enableNmbd = true;
@@ -240,6 +238,29 @@ in
                 # For hardware acceleration in Jellyfin
                 "char-drm rw"
               ];
+              ddns-update = {
+                description = "DNS update script";
+                after = [ "network.target" ];
+                path = [
+                  (pkgs.python3.withPackages (ps: [ ps.cloudflare ]))
+                  pkgs.iproute2
+                ];
+                serviceConfig = {
+                  Type = "oneshot";
+                  ExecStart = ''${./dns_update.py} -k ${config.age.secrets."kelder/ddclient-cloudflare.key".path} hentai.engineer kelder-local.hentai.engineer et1g0'';
+                };
+                wantedBy = [ "multi-user.target" ];
+              };
+            };
+            timers = {
+              ddns-update = {
+                description = "Periodically update DNS";
+                wantedBy = [ "timers.target" ];
+                timerConfig = {
+                  OnBootSec = "10min";
+                  OnUnitInactiveSec = "10min";
+                };
+              };
             };
           };
 
@@ -250,7 +271,7 @@ in
             };
 
             #deploy.generate.system.mode = "boot";
-            deploy.node.hostname = "10.16.9.21";
+            #deploy.node.hostname = "10.16.9.21";
             secrets = {
               key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOFvUdJshXkqmchEgkZDn5rgtZ1NO9vbd6Px+S6YioWi";
               files = {
@@ -290,7 +311,7 @@ in
                   chain prerouting {
                     type filter hook prerouting priority mangle; policy accept;
                     ip daddr ${assignments.estuary.ipv4.address} ct state new ct mark set ${toString dnatMark}
-                    ip saddr ${lib.my.kelder.prefixes.all.v4} ct mark != 0 meta mark set ct mark log
+                    ip saddr ${lib.my.kelder.prefixes.all.v4} ct mark != 0 meta mark set ct mark
                   }
                   chain output {
                     type filter hook output priority mangle; policy accept;

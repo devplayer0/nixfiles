@@ -91,7 +91,7 @@ in
 
           nextcloud = {
             enable = true;
-            package = pkgs.nextcloud26;
+            package = pkgs.nextcloud27;
             datadir = "/mnt/storage/nextcloud";
             hostName = "cloud.${lib.my.kelder.domain}";
             https = true;
