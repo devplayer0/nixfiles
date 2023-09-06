@@ -4,22 +4,29 @@ let
   inherit (lib.my) networkdAssignment;
 
   wg = {
-    keyFile = "kelder/acquisition/mullvad-privkey";
+    keyFile = "kelder/acquisition/airvpn-privkey";
+    pskFile = "kelder/acquisition/airvpn-psk";
     fwMark = 42;
     routeTable = 51820;
   };
 
-  # Forwarded in Mullvad config
-  transmissionPeerPort = 56630;
+  # Forwarded in AirVPN config
+  transmissionPeerPort = 26180;
 in
 {
   config = mkMerge [
     {
       my = {
         secrets = {
-          files."${wg.keyFile}" = {
-            group = "systemd-network";
-            mode = "440";
+          files = {
+            "${wg.keyFile}" = {
+              group = "systemd-network";
+              mode = "440";
+            };
+            "${wg.pskFile}" = {
+              group = "systemd-network";
+              mode = "440";
+            };
           };
         };
 
@@ -56,6 +63,8 @@ in
             netdevConfig = {
               Name = "vpn";
               Kind = "wireguard";
+              # Specified by AirVPN
+              MTUBytes = "1320";
             };
             wireguardConfig = {
               PrivateKeyFile = config.age.secrets."${keyFile}".path;
@@ -64,10 +73,11 @@ in
             };
             wireguardPeers = [
               {
-                # mlvd-ie-dub-wg-101
+                # AirVPN IE
                 wireguardPeerConfig = {
-                  Endpoint = "146.70.189.2:51820";
-                  PublicKey = "lHrukA9+vn7Jjzx2Nb/1NQ0WiaiKppEqVxrGT5X1RFQ=";
+                  Endpoint = "146.70.94.2:1637";
+                  PublicKey = "PyLCXAQT8KkM4T+dUsOQfn+Ub3pGxfGlxkIApuig+hk=";
+                  PresharedKeyFile = config.age.secrets."${pskFile}".path;
                   AllowedIPs = [ "0.0.0.0/0" "::/0" ];
                 };
               }
@@ -83,8 +93,8 @@ in
             ];
             "90-vpn" = with wg; {
               matchConfig.Name = "vpn";
-              address = [ "10.66.242.99/32" "fc00:bbbb:bbbb:bb01::3:f262/128" ];
-              dns = [ "10.64.0.1" ];
+              address = [ "10.161.170.28/32" "fd7d:76ee:e68f:a993:b12d:6d15:c80a:9516/128" ];
+              dns = [ "10.128.0.1" "fd7d:76ee:e68f:a993::1" ];
               routingPolicyRules = map (r: { routingPolicyRuleConfig = r; }) [
                 {
                   Family = "both";
