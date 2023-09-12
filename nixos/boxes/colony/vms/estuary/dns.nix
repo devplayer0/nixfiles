@@ -264,6 +264,8 @@ in
             @ IN NS ns.${config.networking.domain}.
             @ IN NS ns1.he.net.
 
+            1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2 IN PTR mail.nul.ie.
+
             ${intPtr6Records}
 
             * ${wildcardPtr6Def}
