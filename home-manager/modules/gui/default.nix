@@ -4,6 +4,12 @@ let
   inherit (lib.my) mkBoolOpt';
 
   cfg = config.my.gui;
+
+  font = {
+    package = pkgs.monocraft;
+    name = "Monocraft";
+    size = 10;
+  };
 in
 {
   options.my.gui = {
@@ -16,6 +22,7 @@ in
       {
         home = {
           packages = with pkgs; [
+            font.package
             (nerdfonts.override {
               fonts = [ "DroidSansMono" "SourceCodePro" ];
             })
@@ -43,13 +50,13 @@ in
           alacritty = {
             enable = true;
             settings = {
-              font.normal.family = "SauceCodePro Nerd Font Mono";
+              font.normal.family = font.name;
             };
           };
 
           kitty = {
             enable = true;
-            font.name = "SauceCodePro Nerd Font Mono";
+            inherit font;
             settings = {
               background_opacity = "0.8";
               tab_bar_edge = "top";
@@ -197,6 +204,7 @@ in
             name = "Numix";
             package = pkgs.numix-icon-theme;
           };
+          font.name = font.name;
         };
         qt = {
           enable = true;
@@ -251,10 +259,10 @@ in
             };
           };
 
-          waybar = import ./waybar.nix { inherit lib pkgs config; };
+          waybar = import ./waybar.nix { inherit lib pkgs config font; };
           rofi = {
             enable = true;
-            font = "SauceCodePro Nerd Font Mono 14";
+            font = "${font.name} ${toString font.size}";
             plugins = with pkgs; [
               rofi-calc
               rofi-emoji

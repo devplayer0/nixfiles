@@ -1,4 +1,4 @@
-{ lib, pkgs, config, ... }:
+{ lib, pkgs, config, font, ... }:
 let
   inherit (lib) mkIf mkDefault mkMerge mkForce;
 
@@ -155,8 +155,8 @@ in
   };
   style = ''
     * {
-      font-size: 14px;
-      font-family: SauceCodePro Nerd Font Mono;
+      font-size: 12px;
+      font-family: ${font.name};
       /*font-family: monospace;*/
     }
 
