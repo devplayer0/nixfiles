@@ -35,6 +35,7 @@ in
             python310Packages.python-lsp-server
             nil # nix language server
             zls # zig language server
+            rust-analyzer
             neofetch
           ];
         };
