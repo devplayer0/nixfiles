@@ -18,29 +18,34 @@ let
 
   doCleanShutdown =
   let
-    pyEnv = pkgs.python310.withPackages (ps: with ps; [ qemu ]);
+    pyEnv = pkgs.python3.withPackages (ps: with ps; [ qemu ]);
   in
     pkgs.writeScript "qemu-clean-shutdown" ''
       #!${pyEnv}/bin/python
+      import asyncio
       import sys
       import os
 
-      import qemu.qmp.legacy
+      import qemu.qmp
 
-      if len(sys.argv) != 2:
-        print(f'usage: {sys.argv[0]} <qmp unix socket>', file=sys.stderr)
-        sys.exit(1)
+      async def main():
+        if len(sys.argv) != 2:
+          print(f'usage: {sys.argv[0]} <qmp unix socket>', file=sys.stderr)
+          sys.exit(1)
 
-      if 'MAINPID' not in os.environ:
-          # Special case: systemd is calling us after QEMU exited on its own
-          sys.exit(0)
+        if 'MAINPID' not in os.environ:
+            # Special case: systemd is calling us after QEMU exited on its own
+            sys.exit(0)
 
-      # TODO: Upgrade to async QMPClient
-      with qemu.qmp.legacy.QEMUMonitorProtocol(sys.argv[1]) as mon:
-        mon.connect()
-        mon.command('system_powerdown')
-        while mon.pull_event(wait=True)['event'] != 'SHUTDOWN':
-          pass
+        client = qemu.qmp.QMPClient('clean-shutdown')
+        await client.connect(sys.argv[1])
+        await client.execute('system_powerdown')
+        async for event in client.events:
+          if event['event'] == 'SHUTDOWN':
+            break
+        await client.disconnect()
+
+      asyncio.run(main())
     '';
 
   # TODO: Upstream or something...
