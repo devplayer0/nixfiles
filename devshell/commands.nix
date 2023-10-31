@@ -9,13 +9,7 @@ in
       name = "repl";
       category = "utilities";
       help = "Open a `nix repl` with this flake";
-      command =
-        ''
-          tmp="$(mktemp --tmpdir repl.nix.XXXXX)"
-          echo "builtins.getFlake \"$PRJ_ROOT\"" > "$tmp"
-          nix repl "$tmp" || true
-          rm "$tmp"
-        '';
+      command = "nix repl .#";
     }
     {
       name = "home-link";
