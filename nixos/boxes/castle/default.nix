@@ -25,7 +25,7 @@
             efi.canTouchEfiVariables = false;
             timeout = 10;
           };
-          kernelPackages = pkgs.linuxKernel.packages.linux_6_4;
+          kernelPackages = pkgs.linuxKernel.packages.linux_6_5;
           kernelModules = [ "kvm-amd" ];
           kernelParams = [ "amd_iommu=on" "amd_pstate=passive" ];
           kernelPatches = [
@@ -149,9 +149,10 @@
                 packages = with pkgs; [
                   jacktrip
                   qpwgraph
-                  (writeShellScriptBin "boardie" ''
-                    exec pw-jack ${pkgs.boardie}/bin/boardie "$@"
-                  '')
+                  # TODO: seems to be borked (infinite recursion???)
+                  # (writeShellScriptBin "boardie" ''
+                  #   exec pw-jack ${boardie}/bin/boardie "$@"
+                  # '')
                 ];
               };
 
