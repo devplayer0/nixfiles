@@ -150,6 +150,10 @@ in
           ];
           files = [
             "/etc/machine-id"
+
+            # Just to make sure we get correct default perms
+            "/var/lib/.tmproot.dummy"
+            "/var/cache/.tmproot.dummy"
           ];
         };
       };

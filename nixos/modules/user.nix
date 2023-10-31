@@ -66,12 +66,15 @@ in
             };
           in
           {
-            files = map (file: {
+            files = (map (file: {
               inherit file;
               parentDirectory = perms;
             }) [
               "/home/${user'.name}/.bash_history"
               "/home/${user'.name}/.lesshst"
+            ]) ++ [
+              # Just to make sure we get correct default perms
+              "/home/.tmproot.dummy"
             ];
             directories = map (directory: {
               inherit directory;
