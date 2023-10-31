@@ -10,7 +10,7 @@ let
 
   showUnsaved =
     ''
-      #!${pkgs.python310}/bin/python
+      #!${pkgs.python3}/bin/python
       import stat
       import sys
       import os

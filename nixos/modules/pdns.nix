@@ -203,7 +203,7 @@ let
         print(ex_fr.sub(fr, ex_ptr.sub(ptr, line)), end=''')
     '';
   } ''
-    ${pkgs.python310}/bin/python "$scriptPath" < "${s}" > "$out"
+    ${pkgs.python3}/bin/python "$scriptPath" < "${s}" > "$out"
   '';
   zones = pkgs.linkFarm "pdns-bind-zones" (mapAttrsToList (n: o: rec {
     name = "${n}.zone";
