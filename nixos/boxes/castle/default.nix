@@ -95,6 +95,11 @@
           lm_sensors
           linuxPackages.cpupower
           cifs-utils
+          rpiboot
+          rdma-core
+          mstflint
+          qperf
+          ethtool
         ];
         environment.etc = {
           "pipewire/pipewire.conf.d/sample-size.conf".text = ''
