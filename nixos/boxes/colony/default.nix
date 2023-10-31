@@ -92,6 +92,10 @@ in
           };
         };
 
+        programs.ssh.knownHostsFiles = [
+          lib.my.sshKeyFiles.rsyncNet
+        ];
+
         services = {
           fstrim = lib.my.colony.fstrimConfig;
           lvm = {
@@ -125,14 +129,32 @@ in
         ];
 
         systemd = {
-          services = {
-            "serial-getty@ttyS0".enable = true;
-            "serial-getty@ttyS1".enable = true;
-          };
-
           tmpfiles.rules = [
             "d /var/log/smartd 0755 root root"
           ];
+
+          services = {
+            "serial-getty@ttyS0".enable = true;
+            "serial-getty@ttyS1".enable = true;
+
+            borgthin-rsync = {
+              description = "rsync borgthin backups to rsync.net";
+              serviceConfig = {
+                Type = "oneshot";
+
+                # Only run when no other process is using CPU or disk
+                CPUSchedulingPolicy = "idle";
+                IOSchedulingClass = "idle";
+              };
+              script = ''
+                ${pkgs.rsync}/bin/rsync -av --delete --delete-after \
+                  -e "${pkgs.openssh}/bin/ssh -i ${config.age.secrets."colony/rsync.key".path}" \
+                  /mnt/backup/main/ zh2855@zh2855.rsync.net:borg/colony/
+              '';
+              wantedBy = [ "borgthin-job-main.service" ];
+              after = [ "borgthin-job-main.service" ];
+            };
+          };
 
           network = {
             links = {
@@ -275,6 +297,7 @@ in
             key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPIijqzAWF6OxKr4aeCa1TAc5xGn4rdIjVTt0wAPU6uY";
             files = {
               "colony/borg-pass.txt" = {};
+              "colony/rsync.key" = {};
             };
           };
 
