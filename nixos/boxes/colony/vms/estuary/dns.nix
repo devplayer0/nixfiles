@@ -1,14 +1,6 @@
 { lib, pkgs, config, assignments, allAssignments, ... }:
 let
-  inherit (builtins) attrNames stringLength genList filter;
-  inherit (lib)
-    concatStrings concatStringsSep concatMapStringsSep mapAttrsToList filterAttrs genAttrs optionalString flatten;
-
-  ptrDots = 2;
-  reverseZone = "100.10.in-addr.arpa";
-  ptrDots6 = 20;
-  reverseZone6 = "2.d.4.0.0.c.7.9.e.0.a.2.ip6.arpa";
-  ptr6ValTrim = (stringLength "2a0e:97c0:4d2:") + 1;
+  inherit (builtins) attrNames;
 
   authZones = attrNames config.my.pdns.auth.bind.zones;
 in
@@ -129,66 +121,7 @@ in
 
       bind.zones =
       let
-        genRecords = assignments: f:
-          concatStringsSep
-            "\n"
-            (filter
-              (s: s != "")
-              (flatten
-                (map
-                  (assignment: (mapAttrsToList
-                    (_: as: f as."${assignment}")
-                    (filterAttrs
-                      (_: as: as ? "${assignment}" && as."${assignment}".visible)
-                      allAssignments)))
-                  assignments)));
-
-        genFor = [ "internal" "base" "vms" "ctrs" "routing" ];
-        intRecords =
-          genRecords genFor (a: ''
-            ${a.name} IN A ${a.ipv4.address}
-            ${optionalString (a.ipv6.address != null) "${a.name} IN AAAA ${a.ipv6.address}"}
-            ${concatMapStringsSep "\n" (alt: "${alt} IN CNAME ${a.name}") a.altNames}
-          '');
-        intPtrRecords =
-          genRecords
-            genFor
-            (a:
-              optionalString
-                a.ipv4.genPTR
-                ''@@PTR:${a.ipv4.address}:${toString ptrDots}@@ IN PTR ${a.name}.${config.networking.domain}.'');
-        intPtr6Records =
-          genRecords
-            genFor
-            (a:
-              optionalString
-                (a.ipv6.address != null && a.ipv6.genPTR)
-                ''@@PTR:${a.ipv6.address}:${toString ptrDots6}@@ IN PTR ${a.name}.${config.networking.domain}.'');
-
-        wildcardPtrDef = ''IN LUA PTR "createReverse('ip-%3%-%4%.${config.networking.domain}')"'';
-
-        reverse6Script =
-        let
-         len = toString ptr6ValTrim;
-        in
-        pkgs.writeText "reverse6.lua" ''
-          local root = newDN("ip6.arpa.")
-          local ptr = qname:makeRelative(root):toStringNoDot()
-          local nibbles = string.gsub(string.reverse(ptr), "%.", "")
-
-          local ip6 = string.sub(nibbles, 1, 4)
-          for i = 1, 7 do
-            ip6 = ip6 .. ":" .. string.sub(nibbles, (i*4)+1, (i+1)*4)
-          end
-
-          local addr = newCA(ip6)
-          return "ip6-" .. string.sub(string.gsub(addr:toString(), ":", "-"), ${len}) .. ".${config.networking.domain}."
-        '';
-        wildcardPtr6Def = ''IN LUA PTR "dofile('${reverse6Script}')"'';
-        wildcardPtr6Zeroes = n: concatStrings (genList (_: "0.") n);
-        wildcardPtr6' = n: root: ''*.${wildcardPtr6Zeroes n}${root} ${wildcardPtr6Def}'';
-        wildcardPtr6 = n: root: concatStringsSep "\n" (genList (i: wildcardPtr6' i root) (n - 1));
-        wildcardPtr6Z = wildcardPtr6 ptrDots6;
+        names = [ "internal" "base" "vms" "ctrs" "routing" ];
       in
       {
         "${config.networking.domain}" = {
@@ -223,10 +156,13 @@ in
             _acme-challenge IN LUA TXT @@FILE@@
 
             $TTL 60
-            ${intRecords}
+            ${lib.my.dns.fwdRecords {
+              inherit allAssignments names;
+              domain = config.networking.domain;
+            }}
           '';
         };
-        "${reverseZone}" = {
+        "100.10.in-addr.arpa" = {
           type = "master";
           text = ''
             $TTL 60
@@ -240,16 +176,14 @@ in
 
             @ IN NS ns.${config.networking.domain}.
 
-            ${intPtrRecords}
-
-            * ${wildcardPtrDef}
-            ; Have to add a specific wildcard for each of the explicitly set subnets...
-            *.0 ${wildcardPtrDef}
-            *.1 ${wildcardPtrDef}
-            *.2 ${wildcardPtrDef}
+            ${lib.my.dns.ptrRecords {
+              inherit allAssignments names;
+              domain = config.networking.domain;
+              ndots = 2;
+            }}
           '';
         };
-        "${reverseZone6}" = {
+        "2.d.4.0.0.c.7.9.e.0.a.2.ip6.arpa" = {
           type = "master";
           text = ''
             $TTL 60
@@ -266,17 +200,11 @@ in
 
             1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2 IN PTR mail.nul.ie.
 
-            ${intPtr6Records}
-
-            * ${wildcardPtr6Def}
-            ; Have to add a specific wildcard for each of the explicitly set subnets... this is disgusting for IPv6
-            *.0 ${wildcardPtr6Def}
-            *.0.0 ${wildcardPtr6Def}
-            *.1.0.0 ${wildcardPtr6Def}
-
-            ${wildcardPtr6Z "0.1.0.0"}
-            ${wildcardPtr6Z "1.1.0.0"}
-            ${wildcardPtr6Z "2.1.0.0"}
+            ${lib.my.dns.ptr6Records {
+              inherit allAssignments names;
+              domain = config.networking.domain;
+              ndots = 20;
+            }}
           '';
         };
       };

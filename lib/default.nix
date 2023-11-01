@@ -11,6 +11,8 @@ rec {
   attrsToNVList = mapAttrsToList nameValuePair;
 
   inherit (import ./net.nix { inherit lib; }) net;
+  dns = import ./dns.nix { inherit lib; };
+
   # Yoinked from nixpkgs/nixos/modules/services/networking/nat.nix
   isIPv6 = ip: length (lib.splitString ":" ip) > 2;
   parseIPPort = ipp:
