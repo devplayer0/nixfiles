@@ -1,7 +1,7 @@
 { lib, ... }:
 let
   inherit (lib.my) net;
-  inherit (lib.my.colony) domain prefixes;
+  inherit (lib.my.c.colony) domain prefixes;
 in
 {
   nixos.systems.chatterbox = {
@@ -128,7 +128,7 @@ in
                   "2001:db8::/32"
                   "ff00::/8"
                   "fec0::/10"
-                ] ++ (with lib.my.colony.prefixes; [ all.v4 all.v6 ]);
+                ] ++ (with lib.my.c.colony.prefixes; [ all.v4 all.v6 ]);
                 url_preview_ip_range_whitelist =
                   with allAssignments.middleman.internal;
                   [ ipv4.address ipv6.address ];

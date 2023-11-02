@@ -39,7 +39,7 @@
           environment.sessionVariables = {
             INSTALL_ROOT = installRoot;
           };
-          users.users.root.openssh.authorizedKeys.keyFiles = [ lib.my.sshKeyFiles.deploy ];
+          users.users.root.openssh.authorizedKeys.keyFiles = [ lib.my.c.sshKeyFiles.deploy ];
           home-manager.users.root = {
             programs = {
               starship.settings = {

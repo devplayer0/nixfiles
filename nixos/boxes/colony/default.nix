@@ -1,7 +1,7 @@
 { lib, ... }:
 let
   inherit (lib.my) net;
-  inherit (lib.my.colony) domain prefixes;
+  inherit (lib.my.c.colony) domain prefixes;
 in
 {
   imports = [ ./vms ];
@@ -93,11 +93,11 @@ in
         };
 
         programs.ssh.knownHostsFiles = [
-          lib.my.sshKeyFiles.rsyncNet
+          lib.my.c.sshKeyFiles.rsyncNet
         ];
 
         services = {
-          fstrim = lib.my.colony.fstrimConfig;
+          fstrim = lib.my.c.colony.fstrimConfig;
           lvm = {
             boot.thin.enable = true;
             dmeventd.enable = true;
@@ -214,16 +214,16 @@ in
                   };
                   ipv6Prefixes = [
                     {
-                      ipv6PrefixConfig.Prefix = lib.my.colony.prefixes.vms.v6;
+                      ipv6PrefixConfig.Prefix = prefixes.vms.v6;
                     }
                   ];
                   routes = map (r: { routeConfig = r; }) [
                     {
-                      Destination = lib.my.colony.prefixes.ctrs.v4;
+                      Destination = prefixes.ctrs.v4;
                       Gateway = allAssignments.shill.routing.ipv4.address;
                     }
                     {
-                      Destination = lib.my.colony.prefixes.ctrs.v6;
+                      Destination = prefixes.ctrs.v6;
                       Gateway = allAssignments.shill.internal.ipv6.address;
                     }
                     {
@@ -232,11 +232,11 @@ in
                     }
 
                     {
-                      Destination = lib.my.colony.prefixes.oci.v4;
+                      Destination = prefixes.oci.v4;
                       Gateway = allAssignments.whale2.routing.ipv4.address;
                     }
                     {
-                      Destination = lib.my.colony.prefixes.oci.v6;
+                      Destination = prefixes.oci.v6;
                       Gateway = allAssignments.whale2.internal.ipv6.address;
                     }
                     {

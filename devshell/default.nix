@@ -15,7 +15,7 @@ in
         experimental-features = nix-command flakes ca-derivations repl-flake
         #substituters = https://nix-cache.nul.ie https://cache.nixos.org
         substituters = https://cache.nixos.org
-        trusted-public-keys = ${concatStringsSep " " lib.my.nix.cacheKeys}
+        trusted-public-keys = ${concatStringsSep " " lib.my.c.nix.cacheKeys}
       '');
 
     INSTALLER_SSH_OPTS = "-i .keys/deploy.key";

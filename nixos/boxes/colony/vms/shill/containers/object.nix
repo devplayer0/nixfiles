@@ -1,7 +1,7 @@
 { lib, ... }:
 let
   inherit (lib.my) net;
-  inherit (lib.my.colony) domain prefixes;
+  inherit (lib.my.c.colony) domain prefixes;
 in
 {
   nixos.systems.object = {
@@ -92,7 +92,7 @@ in
               configOverridesFile = config.age.secrets."object/sharry.conf".path;
 
               config = {
-                base-url = "https://share.${lib.my.pubDomain}";
+                base-url = "https://share.${lib.my.c.pubDomain}";
                 bind.address = "::";
                 alias-member-enabled = true;
                 webapp = {

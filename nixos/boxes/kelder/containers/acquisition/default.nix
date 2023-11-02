@@ -1,7 +1,7 @@
 { lib, ... }:
 let
   inherit (lib.my) net;
-  inherit (lib.my.kelder) domain prefixes;
+  inherit (lib.my.c.kelder) domain prefixes;
 in
 {
   nixos.systems.kelder-acquisition = {
@@ -44,7 +44,7 @@ in
         };
 
         users = {
-          groups.media.gid = lib.my.kelder.groups.media;
+          groups.media.gid = lib.my.c.kelder.groups.media;
           users = {
             "${config.my.user.config.name}".extraGroups = [ "media" ];
 

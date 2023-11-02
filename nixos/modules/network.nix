@@ -6,7 +6,7 @@ in
   config = mkMerge [
     {
       networking = {
-        domain = mkDefault "int.${lib.my.pubDomain}";
+        domain = mkDefault "int.${lib.my.c.pubDomain}";
         useDHCP = false;
         enableIPv6 = mkDefault true;
         useNetworkd = mkDefault true;

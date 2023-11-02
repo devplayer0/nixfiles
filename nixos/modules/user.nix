@@ -41,7 +41,7 @@ in
             shell =
               let shell = cfg.homeConfig.my.shell;
               in mkIf (shell != null) (mkDefault' shell);
-            openssh.authorizedKeys.keyFiles = [ lib.my.sshKeyFiles.me ];
+            openssh.authorizedKeys.keyFiles = [ lib.my.c.sshKeyFiles.me ];
           };
           homeConfig = {
             # In order for this option to evaluate on its own, home-manager expects the `name` (which is derived from the

@@ -2,6 +2,8 @@
 let
   inherit (builtins) mapAttrs toJSON;
   inherit (lib) mkMerge mkDefault genAttrs flatten concatStringsSep;
+  inherit (lib.my.c) pubDomain;
+  inherit (lib.my.c.nginx) proxyHeaders;
 
   dualStackListen' = l: map (addr: l // { inherit addr; }) [ "0.0.0.0" "[::]" ];
   dualStackListen = ll: flatten (map dualStackListen' ll);
@@ -80,7 +82,7 @@ in
           }
           wellKnown
         ];
-        useACMEHost = lib.my.pubDomain;
+        useACMEHost = pubDomain;
       };
       "localhost" = {
         forceSSL = false;
@@ -98,12 +100,12 @@ in
         };
       };
 
-      "sso.${lib.my.pubDomain}" = {
+      "sso.${pubDomain}" = {
         locations."/".proxyPass = config.my.nginx-sso.includes.endpoint;
-        useACMEHost = lib.my.pubDomain;
+        useACMEHost = pubDomain;
       };
 
-      "netdata-colony.${lib.my.pubDomain}" =
+      "netdata-colony.${pubDomain}" =
       let
         hosts = [
           "vm"
@@ -119,10 +121,10 @@ in
             "~ /(?<behost>${matchHosts})$".return = "301 https://$host/$behost/";
             "~ /(?<behost>${matchHosts})/(?<ndpath>.*)" = mkMerge [
               {
-                proxyPass = "http://$behost.${config.networking.domain}:19999/$ndpath$is_args$args";
+                proxyPass = "http://$behost.${config.networking.pubDomain}:19999/$ndpath$is_args$args";
                 extraConfig = ''
                   proxy_pass_request_headers on;
-                  ${lib.my.nginx.proxyHeaders}
+                  ${proxyHeaders}
                   proxy_set_header Connection "keep-alive";
                   proxy_store off;
 
@@ -134,14 +136,14 @@ in
               (ssoLoc "generic")
             ];
           };
-          useACMEHost = lib.my.pubDomain;
+          useACMEHost = pubDomain;
         }
         (ssoServer "generic")
       ];
 
-      "pass.${lib.my.pubDomain}" =
+      "pass.${pubDomain}" =
       let
-        upstream = "http://vaultwarden-ctr.${config.networking.domain}";
+        upstream = "http://vaultwarden-ctr.${config.networking.pubDomain}";
       in
       {
         locations = {
@@ -149,11 +151,11 @@ in
           "/notifications/hub" = {
             proxyPass = upstream;
             proxyWebsockets = true;
-            extraConfig = lib.my.nginx.proxyHeaders;
+            extraConfig = proxyHeaders;
           };
           "/notifications/hub/negotiate".proxyPass = upstream;
         };
-        useACMEHost = lib.my.pubDomain;
+        useACMEHost = pubDomain;
       };
 
       "matrix.nul.ie" = {
@@ -171,15 +173,15 @@ in
         ];
         locations = mkMerge [
           {
-            "/".proxyPass = "http://chatterbox-ctr.${config.networking.domain}:8008";
-            "= /".return = "301 https://element.${lib.my.pubDomain}";
+            "/".proxyPass = "http://chatterbox-ctr.${config.networking.pubDomain}:8008";
+            "= /".return = "301 https://element.${pubDomain}";
           }
           wellKnown
         ];
-        useACMEHost = lib.my.pubDomain;
+        useACMEHost = pubDomain;
       };
 
-      "element.${lib.my.pubDomain}" =
+      "element.${pubDomain}" =
       let
         headers = ''
           # TODO: why are these here?
@@ -224,66 +226,66 @@ in
             '';
           }))
         ];
-        useACMEHost = lib.my.pubDomain;
+        useACMEHost = pubDomain;
       };
 
-      "torrents.${lib.my.pubDomain}" = mkMerge [
+      "torrents.${pubDomain}" = mkMerge [
         {
           locations."/" = mkMerge [
             {
-              proxyPass = "http://jackflix-ctr.${config.networking.domain}:9091";
+              proxyPass = "http://jackflix-ctr.${config.networking.pubDomain}:9091";
             }
             (ssoLoc "generic")
           ];
-          useACMEHost = lib.my.pubDomain;
+          useACMEHost = pubDomain;
         }
         (ssoServer "generic")
       ];
 
-      "jackett.${lib.my.pubDomain}" = mkMerge [
+      "jackett.${pubDomain}" = mkMerge [
         {
           locations."/" = mkMerge [
             {
-              proxyPass = "http://jackflix-ctr.${config.networking.domain}:9117";
+              proxyPass = "http://jackflix-ctr.${config.networking.pubDomain}:9117";
             }
             (ssoLoc "generic")
           ];
-          useACMEHost = lib.my.pubDomain;
+          useACMEHost = pubDomain;
         }
         (ssoServer "generic")
       ];
-      "radarr.${lib.my.pubDomain}" = mkMerge [
+      "radarr.${pubDomain}" = mkMerge [
         {
           locations."/" = mkMerge [
             {
-              proxyPass = "http://jackflix-ctr.${config.networking.domain}:7878";
+              proxyPass = "http://jackflix-ctr.${config.networking.pubDomain}:7878";
               proxyWebsockets = true;
-              extraConfig = lib.my.nginx.proxyHeaders;
+              extraConfig = proxyHeaders;
             }
             (ssoLoc "generic")
           ];
-          useACMEHost = lib.my.pubDomain;
+          useACMEHost = pubDomain;
         }
         (ssoServer "generic")
       ];
-      "sonarr.${lib.my.pubDomain}" = mkMerge [
+      "sonarr.${pubDomain}" = mkMerge [
         {
           locations."/" = mkMerge [
             {
-              proxyPass = "http://jackflix-ctr.${config.networking.domain}:8989";
+              proxyPass = "http://jackflix-ctr.${config.networking.pubDomain}:8989";
               proxyWebsockets = true;
-              extraConfig = lib.my.nginx.proxyHeaders;
+              extraConfig = proxyHeaders;
             }
             (ssoLoc "generic")
           ];
-          useACMEHost = lib.my.pubDomain;
+          useACMEHost = pubDomain;
         }
         (ssoServer "generic")
       ];
 
-      "jackflix.${lib.my.pubDomain}" =
+      "jackflix.${pubDomain}" =
       let
-        upstream = "http://jackflix-ctr.${config.networking.domain}:8096";
+        upstream = "http://jackflix-ctr.${config.networking.pubDomain}:8096";
       in
       {
         extraConfig = ''
@@ -300,10 +302,10 @@ in
           "/socket" = {
             proxyPass = upstream;
             proxyWebsockets = true;
-            extraConfig = lib.my.nginx.proxyHeaders;
+            extraConfig = proxyHeaders;
           };
         };
-        useACMEHost = lib.my.pubDomain;
+        useACMEHost = pubDomain;
       };
 
       "toot.nul.ie" =
@@ -312,7 +314,7 @@ in
           tryFiles = "$uri =404";
           extraConfig = ''
             add_header Cache-Control "public, max-age=2419200, must-revalidate";
-            add_header Strict-Transport-Security "max-age=63072000; includeSubDomains";
+            add_header Strict-Transport-Security "max-age=63072000; includeSubpubDomains";
           '';
         };
       in
@@ -333,20 +335,20 @@ in
             "/".tryFiles = "$uri @proxy";
 
             "^~ /api/v1/streaming" = {
-              proxyPass = "http://toot-ctr.${config.networking.domain}:55000";
+              proxyPass = "http://toot-ctr.${config.networking.pubDomain}:55000";
               proxyWebsockets = true;
               extraConfig = ''
-                ${lib.my.nginx.proxyHeaders}
+                ${proxyHeaders}
                 proxy_set_header Proxy "";
 
-                add_header Strict-Transport-Security "max-age=63072000; includeSubDomains";
+                add_header Strict-Transport-Security "max-age=63072000; includeSubpubDomains";
               '';
             };
             "@proxy" = {
-              proxyPass = "http://toot-ctr.${config.networking.domain}:55001";
+              proxyPass = "http://toot-ctr.${config.networking.pubDomain}:55001";
               proxyWebsockets = true;
               extraConfig = ''
-                ${lib.my.nginx.proxyHeaders}
+                ${proxyHeaders}
                 proxy_set_header Proxy "";
                 proxy_pass_header Server;
 
@@ -359,19 +361,19 @@ in
             };
           }
         ];
-        useACMEHost = lib.my.pubDomain;
+        useACMEHost = pubDomain;
       };
 
-      "share.${lib.my.pubDomain}" = {
+      "share.${pubDomain}" = {
         locations."/" = {
-          proxyPass = "http://object-ctr.${config.networking.domain}:9090";
+          proxyPass = "http://object-ctr.${config.networking.pubDomain}:9090";
           proxyWebsockets = true;
-          extraConfig = lib.my.nginx.proxyHeaders;
+          extraConfig = proxyHeaders;
         };
-        useACMEHost = lib.my.pubDomain;
+        useACMEHost = pubDomain;
       };
 
-      "stuff.${lib.my.pubDomain}" = {
+      "stuff.${pubDomain}" = {
         locations."/" = {
           basicAuthFile = config.age.secrets."middleman/htpasswd".path;
           root = "/mnt/media/stuff";
@@ -380,13 +382,13 @@ in
             fancyindex_show_dotfiles on;
           '';
         };
-        useACMEHost = lib.my.pubDomain;
+        useACMEHost = pubDomain;
       };
     };
 
     minio =
     let
-      host = "object-ctr.${config.networking.domain}";
+      host = "object-ctr.${config.networking.pubDomain}";
       s3Upstream = "http://${host}:9000";
       extraConfig = ''
         chunked_transfer_encoding off;
@@ -401,7 +403,7 @@ in
       '';
     in
     {
-      "minio.${lib.my.pubDomain}" = {
+      "minio.${pubDomain}" = {
         inherit extraConfig;
         locations = {
           "/" = {
@@ -410,19 +412,19 @@ in
           "/ws" = {
             proxyPass = "http://${host}:9001";
             proxyWebsockets = true;
-            extraConfig = lib.my.nginx.proxyHeaders;
+            extraConfig = proxyHeaders;
           };
         };
-        useACMEHost = lib.my.pubDomain;
+        useACMEHost = pubDomain;
       };
-      "s3.${lib.my.pubDomain}" = {
-        serverAliases = [ "*.s3.${lib.my.pubDomain}" ];
+      "s3.${pubDomain}" = {
+        serverAliases = [ "*.s3.${pubDomain}" ];
         inherit extraConfig;
         locations."/".proxyPass = s3Upstream;
-        useACMEHost = lib.my.pubDomain;
+        useACMEHost = pubDomain;
       };
 
-      "nix-cache.${lib.my.pubDomain}" = {
+      "nix-cache.${pubDomain}" = {
         extraConfig = ''
           ${extraConfig}
           proxy_set_header Host "nix-cache.s3.nul.ie";
@@ -434,14 +436,14 @@ in
             extraConfig = nixCacheHeaders;
           };
         };
-        useACMEHost = lib.my.pubDomain;
+        useACMEHost = pubDomain;
         onlySSL = false;
       };
     };
 
     defaultsFor = mapAttrs (n: _: {
       onlySSL = mkDefault true;
-      useACMEHost = mkDefault "${config.networking.domain}";
+      useACMEHost = mkDefault "${config.networking.pubDomain}";
       kTLS = mkDefault true;
       http2 = mkDefault true;
     });

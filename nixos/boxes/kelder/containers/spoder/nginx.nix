@@ -2,6 +2,8 @@
 let
   inherit (builtins) mapAttrs;
   inherit (lib) mkMerge mkIf mkDefault;
+  inherit (lib.my.c.nginx) proxyHeaders;
+  inherit (lib.my.c.kelder) domain;
 in
 {
   config = {
@@ -73,7 +75,7 @@ in
           proxy_send_timeout 60s;
           proxy_http_version 1.1;
 
-          ${lib.my.nginx.proxyHeaders}
+          ${proxyHeaders}
 
           # caching
           proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=CACHE:10m inactive=7d max_size=4g;
@@ -135,15 +137,15 @@ in
               };
             };
 
-            "monitor.${lib.my.kelder.domain}" = withAuth {
-              serverAliases = [ "monitor-local.${lib.my.kelder.domain}" ];
-              extraConfig = localRedirect "monitor-local.${lib.my.kelder.domain}";
+            "monitor.${domain}" = withAuth {
+              serverAliases = [ "monitor-local.${domain}" ];
+              extraConfig = localRedirect "monitor-local.${domain}";
               locations = {
                 "/" = {
                   proxyPass = "http://${allAssignments.kelder.ctrs.ipv4.address}:19999";
                   extraConfig = ''
                     proxy_pass_request_headers on;
-                    ${lib.my.nginx.proxyHeaders}
+                    ${proxyHeaders}
                     proxy_set_header Connection "keep-alive";
                     proxy_store off;
 
@@ -155,8 +157,8 @@ in
               };
             };
 
-            "kontent.${lib.my.kelder.domain}" = {
-              serverAliases = [ "kontent-local.${lib.my.kelder.domain}" ];
+            "kontent.${domain}" = {
+              serverAliases = [ "kontent-local.${domain}" ];
               locations = {
                 "/".proxyPass = "${acquisition}:8096";
                 "= /".return = "302 $scheme://$host/web/";
@@ -164,47 +166,47 @@ in
                 "/socket" = {
                   proxyPass = "${acquisition}:8096/socket";
                   proxyWebsockets = true;
-                  extraConfig = lib.my.nginx.proxyHeaders;
+                  extraConfig = proxyHeaders;
                 };
               };
             };
-            "torrents.${lib.my.kelder.domain}" = withAuth {
-              serverAliases = [ "torrents-local.${lib.my.kelder.domain}" ];
-              extraConfig = localRedirect "torrents-local.${lib.my.kelder.domain}";
+            "torrents.${domain}" = withAuth {
+              serverAliases = [ "torrents-local.${domain}" ];
+              extraConfig = localRedirect "torrents-local.${domain}";
               locations."/".proxyPass = "${acquisition}:9091";
             };
-            "jackett.${lib.my.kelder.domain}" = withAuth {
-              serverAliases = [ "jackett-local.${lib.my.kelder.domain}" ];
-              extraConfig = localRedirect "jackett-local.${lib.my.kelder.domain}";
+            "jackett.${domain}" = withAuth {
+              serverAliases = [ "jackett-local.${domain}" ];
+              extraConfig = localRedirect "jackett-local.${domain}";
               locations."/".proxyPass = "${acquisition}:9117";
             };
-            "radarr.${lib.my.kelder.domain}" = withAuth {
-              serverAliases = [ "radarr-local.${lib.my.kelder.domain}" ];
-              extraConfig = localRedirect "radarr-local.${lib.my.kelder.domain}";
+            "radarr.${domain}" = withAuth {
+              serverAliases = [ "radarr-local.${domain}" ];
+              extraConfig = localRedirect "radarr-local.${domain}";
               locations."/" = {
                 proxyPass = "${acquisition}:7878";
                 proxyWebsockets = true;
-                extraConfig = lib.my.nginx.proxyHeaders;
+                extraConfig = proxyHeaders;
               };
             };
-            "sonarr.${lib.my.kelder.domain}" = withAuth {
-              serverAliases = [ "sonarr-local.${lib.my.kelder.domain}" ];
-              extraConfig = localRedirect "sonarr-local.${lib.my.kelder.domain}";
+            "sonarr.${domain}" = withAuth {
+              serverAliases = [ "sonarr-local.${domain}" ];
+              extraConfig = localRedirect "sonarr-local.${domain}";
               locations."/" = {
                 proxyPass = "${acquisition}:8989";
                 proxyWebsockets = true;
-                extraConfig = lib.my.nginx.proxyHeaders;
+                extraConfig = proxyHeaders;
               };
             };
 
-            "cloud.${lib.my.kelder.domain}" = {
-              serverAliases = [ "cloud-local.${lib.my.kelder.domain}" ];
+            "cloud.${domain}" = {
+              serverAliases = [ "cloud-local.${domain}" ];
             };
           };
 
           defaultsFor = mapAttrs (n: _: {
             onlySSL = mkDefault true;
-            useACMEHost = mkDefault lib.my.kelder.domain;
+            useACMEHost = mkDefault domain;
             kTLS = mkDefault true;
             http2 = mkDefault true;
           });

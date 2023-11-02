@@ -1,7 +1,7 @@
 { lib, ... }:
 let
   inherit (lib.my) net;
-  inherit (lib.my.colony) domain prefixes;
+  inherit (lib.my.c.colony) domain prefixes;
 in
 {
   imports = [ ./containers ];
@@ -97,7 +97,7 @@ in
             };
 
             services = {
-              fstrim = lib.my.colony.fstrimConfig;
+              fstrim = lib.my.c.colony.fstrimConfig;
               netdata.enable = true;
             };
 
@@ -131,7 +131,7 @@ in
                     };
                     ipv6Prefixes = [
                       {
-                        ipv6PrefixConfig.Prefix = lib.my.colony.prefixes.ctrs.v6;
+                        ipv6PrefixConfig.Prefix = prefixes.ctrs.v6;
                       }
                     ];
                   }

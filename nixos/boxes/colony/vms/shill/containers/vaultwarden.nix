@@ -1,7 +1,7 @@
 { lib, ... }:
 let
   inherit (lib.my) net;
-  inherit (lib.my.colony) domain prefixes;
+  inherit (lib.my.c.colony) domain prefixes;
 in
 {
   nixos.systems.vaultwarden = {
@@ -62,7 +62,7 @@ in
           };
 
           programs.ssh.knownHostsFiles = [
-            lib.my.sshKeyFiles.rsyncNet
+            lib.my.c.sshKeyFiles.rsyncNet
           ];
 
           services = {
@@ -79,7 +79,7 @@ in
 
                 SIGNUPS_ALLOWED = false;
 
-                DOMAIN = "https://pass.${lib.my.pubDomain}";
+                DOMAIN = "https://pass.${lib.my.c.pubDomain}";
 
                 ROCKET_ADDRESS = "::";
                 ROCKET_PORT = 80;

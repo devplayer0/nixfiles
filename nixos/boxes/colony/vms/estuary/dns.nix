@@ -1,6 +1,8 @@
 { lib, pkgs, config, assignments, allAssignments, ... }:
 let
   inherit (builtins) attrNames;
+  inherit (lib.my) net;
+  inherit (lib.my.c.colony) prefixes;
 
   authZones = attrNames config.my.pdns.auth.bind.zones;
 in
@@ -49,7 +51,7 @@ in
           ];
           allowFrom = [
             "127.0.0.0/8" "::1/128"
-            lib.my.colony.prefixes.all.v4 lib.my.colony.prefixes.all.v6
+            prefixes.all.v4 prefixes.all.v6
           ];
         };
 
@@ -147,8 +149,8 @@ in
             valheim IN A ${assignments.internal.ipv4.address}
             valheim IN AAAA ${allAssignments.valheim-oci.internal.ipv6.address}
 
-            mail-vm IN A ${lib.my.net.cidr.host 0 lib.my.colony.prefixes.mail.v4}
-            mail-vm IN AAAA ${lib.my.net.cidr.host 1 lib.my.colony.prefixes.mail.v6}
+            mail-vm IN A ${net.cidr.host 0 prefixes.mail.v4}
+            mail-vm IN AAAA ${net.cidr.host 1 prefixes.mail.v6}
 
             andrey-cust IN A ${allAssignments.kelder.estuary.ipv4.address}
 

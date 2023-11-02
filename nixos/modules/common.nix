@@ -47,7 +47,7 @@ in
             #"https://nix-cache.nul.ie"
             "https://cache.nixos.org"
           ];
-          trusted-public-keys = lib.my.nix.cacheKeys;
+          trusted-public-keys = lib.my.c.nix.cacheKeys;
         };
         registry = {
           pkgs = {

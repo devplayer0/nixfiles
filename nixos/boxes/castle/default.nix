@@ -84,7 +84,7 @@
         };
 
         networking = {
-          domain = "h.${lib.my.pubDomain}";
+          domain = "h.${lib.my.c.pubDomain}";
           firewall.enable = false;
         };
 

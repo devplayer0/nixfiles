@@ -1,7 +1,7 @@
 { lib, ... }:
 let
   inherit (lib.my) net;
-  inherit (lib.my.colony) domain prefixes;
+  inherit (lib.my.c.colony) domain prefixes;
 in
 {
   nixos.systems.colony-psql = {
@@ -66,7 +66,7 @@ in
               enable = true;
               enableTCPIP = true;
 
-              authentication = with lib.my.colony.prefixes; ''
+              authentication = with lib.my.c.colony.prefixes; ''
                 local all postgres peer map=local
 
                 host all all ${all.v4} md5

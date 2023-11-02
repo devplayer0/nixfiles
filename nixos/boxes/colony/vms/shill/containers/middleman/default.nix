@@ -1,7 +1,8 @@
 { lib, ... }:
 let
   inherit (lib.my) net;
-  inherit (lib.my.colony) domain prefixes;
+  inherit (lib.my.c) pubDomain;
+  inherit (lib.my.c.colony) domain prefixes;
 in
 {
   nixos.systems.middleman = {
@@ -79,8 +80,8 @@ in
                   port = 8082;
                 };
                 login = {
-                  title = "${lib.my.pubDomain} login";
-                  default_redirect = "https://${lib.my.pubDomain}";
+                  title = "${pubDomain} login";
+                  default_redirect = "https://${pubDomain}";
                   default_method = "google_oauth";
                   names = {
                     google_oauth = "Google account";
@@ -88,7 +89,7 @@ in
                   };
                 };
                 cookie = {
-                  domain = ".${lib.my.pubDomain}";
+                  domain = ".${pubDomain}";
                   secure = true;
                 };
                 audit_log = {
@@ -109,14 +110,14 @@ in
                   };
                   google_oauth = {
                     client_id = "545475967061-cag4g1qf0pk33g3pdbom4v69562vboc8.apps.googleusercontent.com";
-                    redirect_url = "https://sso.${lib.my.pubDomain}/login";
+                    redirect_url = "https://sso.${pubDomain}/login";
                     user_id_method = "user-id";
                   };
                 };
               };
               includes = {
                 endpoint = "http://localhost:8082";
-                baseURL = "https://sso.${lib.my.pubDomain}";
+                baseURL = "https://sso.${pubDomain}";
               };
             };
           };
@@ -173,10 +174,10 @@ in
                     EXEC_PATH=${script}
                   '';
                 };
-                "${lib.my.pubDomain}" = {
+                "${pubDomain}" = {
                   extraDomainNames = [
-                    "*.${lib.my.pubDomain}"
-                    "*.s3.${lib.my.pubDomain}"
+                    "*.${pubDomain}"
+                    "*.s3.${pubDomain}"
                   ];
                   dnsProvider = "cloudflare";
                   credentialsFile = config.age.secrets."middleman/cloudflare-credentials.conf".path;
@@ -194,7 +195,7 @@ in
           };
 
           programs = {
-            ssh.knownHostsFiles = [ lib.my.sshHostKeys.mail-vm ];
+            ssh.knownHostsFiles = [ lib.my.c.sshHostKeys.mail-vm ];
           };
 
           services = {
@@ -265,7 +266,7 @@ in
                 proxy_send_timeout 60s;
                 proxy_http_version 1.1;
 
-                ${lib.my.nginx.proxyHeaders}
+                ${lib.my.c.nginx.proxyHeaders}
 
                 # caching
                 proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=CACHE:10m inactive=7d max_size=4g;

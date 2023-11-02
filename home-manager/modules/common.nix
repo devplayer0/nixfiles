@@ -240,13 +240,13 @@ in
             #"https://nix-cache.nul.ie"
             "https://cache.nixos.org"
           ];
-          trusted-public-keys = lib.my.nix.cacheKeys;
+          trusted-public-keys = lib.my.c.nix.cacheKeys;
         };
       };
     })
     (mkIf config.my.isStandalone {
       my = {
-        ssh.authKeys.files = [ lib.my.sshKeyFiles.me ];
+        ssh.authKeys.files = [ lib.my.c.sshKeyFiles.me ];
       };
 
       nix.package = mkIf (versionAtLeast config.home.stateVersion "22.05") pkgs.nix;

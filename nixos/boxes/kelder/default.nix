@@ -1,7 +1,7 @@
 { lib, ... }:
 let
   inherit (lib.my) net;
-  inherit (lib.my.kelder) domain prefixes;
+  inherit (lib.my.c.kelder) domain prefixes;
 in
 {
   imports = [ ./containers ];
@@ -14,7 +14,7 @@ in
     assignments = {
       estuary = {
         ipv4 ={
-          address = net.cidr.host 0 lib.my.colony.prefixes.vip2;
+          address = net.cidr.host 0 lib.my.c.colony.prefixes.vip2;
           mask = 32;
           gateway = null;
         };
@@ -85,7 +85,7 @@ in
           };
 
           users = {
-            groups = with lib.my.kelder.groups; {
+            groups = with lib.my.c.kelder.groups; {
               storage.gid = storage;
               media.gid = media;
             };
@@ -150,7 +150,7 @@ in
           };
 
           networking = {
-            domain = lib.my.kelder.domain;
+            inherit domain;
           };
 
           system.nixos.distroName = "KelderOS";
@@ -180,7 +180,7 @@ in
                     {
                       wireguardPeerConfig = {
                         PublicKey = "bP1XUNxp9i8NLOXhgPaIaRzRwi5APbam44/xjvYcyjU=";
-                        Endpoint = "estuary-vm.${lib.my.colony.domain}:${toString lib.my.kelder.vpn.port}";
+                        Endpoint = "estuary-vm.${lib.my.c.colony.domain}:${toString lib.my.c.kelder.vpn.port}";
                         AllowedIPs = [ "0.0.0.0/0" ];
                         PersistentKeepalive = 25;
                       };
@@ -270,7 +270,6 @@ in
               config.name = "kontent";
             };
 
-            #deploy.generate.system.mode = "boot";
             #deploy.node.hostname = "10.16.9.21";
             secrets = {
               key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOFvUdJshXkqmchEgkZDn5rgtZ1NO9vbd6Px+S6YioWi";
@@ -311,7 +310,7 @@ in
                   chain prerouting {
                     type filter hook prerouting priority mangle; policy accept;
                     ip daddr ${assignments.estuary.ipv4.address} ct state new ct mark set ${toString dnatMark}
-                    ip saddr ${lib.my.kelder.prefixes.all.v4} ct mark != 0 meta mark set ct mark
+                    ip saddr ${lib.my.c.kelder.prefixes.all.v4} ct mark != 0 meta mark set ct mark
                   }
                   chain output {
                     type filter hook output priority mangle; policy accept;
@@ -320,7 +319,7 @@ in
                 }
                 table inet nat {
                   chain postrouting {
-                    ip saddr ${lib.my.kelder.prefixes.all.v4} oifname et1g0 masquerade
+                    ip saddr ${lib.my.c.kelder.prefixes.all.v4} oifname et1g0 masquerade
                   }
                 }
               '';

@@ -1,7 +1,7 @@
 { lib, ... }:
 let
   inherit (lib.my) net;
-  inherit (lib.my.colony) domain prefixes;
+  inherit (lib.my.c.colony) domain prefixes;
 
   pubV4 = "94.142.240.44";
 in
@@ -95,7 +95,7 @@ in
             };
 
             services = {
-              fstrim = lib.my.colony.fstrimConfig;
+              fstrim = lib.my.c.colony.fstrimConfig;
               lvm = {
                 dmeventd.enable = true;
               };
@@ -182,7 +182,7 @@ in
                     };
                     wireguardConfig = {
                       PrivateKeyFile = config.age.secrets."estuary/kelder-wg.key".path;
-                      ListenPort = lib.my.kelder.vpn.port;
+                      ListenPort = lib.my.c.kelder.vpn.port;
                     };
                     wireguardPeers = [
                       {
@@ -306,27 +306,27 @@ in
                     };
                     ipv6Prefixes = [
                       {
-                        ipv6PrefixConfig.Prefix = lib.my.colony.prefixes.base.v6;
+                        ipv6PrefixConfig.Prefix = prefixes.base.v6;
                       }
                     ];
                     routes = map (r: { routeConfig = r; }) (flatten
                       ([
                         {
-                          Destination = lib.my.colony.prefixes.vip1;
+                          Destination = prefixes.vip1;
                           Gateway = allAssignments.colony.routing.ipv4.address;
                         }
                         {
-                          Destination = lib.my.colony.prefixes.cust.v6;
+                          Destination = prefixes.cust.v6;
                           Gateway = allAssignments.colony.internal.ipv6.address;
                         }
                       ] ++
                       (map (pName: [
                         {
                           Gateway = allAssignments.colony.routing.ipv4.address;
-                          Destination = lib.my.colony.prefixes."${pName}".v4;
+                          Destination = prefixes."${pName}".v4;
                         }
                         {
-                          Destination = lib.my.colony.prefixes."${pName}".v6;
+                          Destination = prefixes."${pName}".v6;
                           Gateway = allAssignments.colony.internal.ipv6.address;
                         }
                       ]) [ "vms" "ctrs" "oci" ])));
@@ -356,7 +356,6 @@ in
             };
 
             my = {
-              #deploy.generate.system.mode = "boot";
               secrets = {
                 key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF9up7pXu6M/OWCKufTOfSiGcxMUk4VqUe7fLuatNFFA";
                 files = {
@@ -369,7 +368,7 @@ in
 
               firewall = {
                 trustedInterfaces = [ "as211024" ];
-                udp.allowed = [ 5353 lib.my.kelder.vpn.port ];
+                udp.allowed = [ 5353 lib.my.c.kelder.vpn.port ];
                 tcp.allowed = [ 5353 "bgp" ];
                 nat = {
                   enable = true;
@@ -458,7 +457,7 @@ in
                       ${matchInet "meta l4proto { udp, tcp } th dport domain redirect to :5353" "estuary"}
                     }
                     chain postrouting {
-                      ip saddr ${lib.my.colony.prefixes.all.v4} snat to ${assignments.internal.ipv4.address}
+                      ip saddr ${prefixes.all.v4} snat to ${assignments.internal.ipv4.address}
                     }
                   }
                 '';

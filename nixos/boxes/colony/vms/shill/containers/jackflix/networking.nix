@@ -2,6 +2,7 @@
 let
   inherit (lib) mkMerge mkIf;
   inherit (lib.my) networkdAssignment;
+  inherit (lib.my.c.colony) prefixes;
 
   wg = {
     keyFile = "jackflix/airvpn-privkey";
@@ -102,23 +103,23 @@ in
                 }
 
                 {
-                  From = lib.my.colony.prefixes.all.v4;
+                  From = prefixes.all.v4;
                   Table = "main";
                   Priority = 100;
                 }
                 {
-                  To = lib.my.colony.prefixes.all.v4;
+                  To = prefixes.all.v4;
                   Table = "main";
                   Priority = 100;
                 }
 
                 {
-                  From = lib.my.colony.prefixes.all.v6;
+                  From = prefixes.all.v6;
                   Table = "main";
                   Priority = 100;
                 }
                 {
-                  To = lib.my.colony.prefixes.all.v6;
+                  To = prefixes.all.v6;
                   Table = "main";
                   Priority = 100;
                 }

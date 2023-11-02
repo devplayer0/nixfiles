@@ -2,7 +2,7 @@
 let
   inherit (builtins) mapAttrs;
   inherit (lib.my) net;
-  inherit (lib.my.colony) domain prefixes;
+  inherit (lib.my.c.colony) domain prefixes;
 in
 {
   nixos.systems.whale2 = {
@@ -94,7 +94,7 @@ in
             };
 
             services = {
-              fstrim = lib.my.colony.fstrimConfig;
+              fstrim = lib.my.c.colony.fstrimConfig;
               netdata.enable = true;
             };
 

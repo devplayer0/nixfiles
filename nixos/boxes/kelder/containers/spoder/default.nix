@@ -2,7 +2,7 @@
 let
   inherit (lib) mkForce mkMerge;
   inherit (lib.my) net;
-  inherit (lib.my.kelder) domain prefixes;
+  inherit (lib.my.c.kelder) domain prefixes;
 in
 {
   nixos.systems.kelder-spoder = {
@@ -54,9 +54,9 @@ in
             dnsResolver = "8.8.8.8";
           };
           certs = {
-            "${lib.my.kelder.domain}" = {
+            "${domain}" = {
               extraDomainNames = [
-                "*.${lib.my.kelder.domain}"
+                "*.${domain}"
               ];
               dnsProvider = "cloudflare";
               credentialsFile = config.age.secrets."kelder/cloudflare-credentials.conf".path;
@@ -65,7 +65,7 @@ in
         };
 
         users = {
-          groups.storage.gid = lib.my.kelder.groups.storage;
+          groups.storage.gid = lib.my.c.kelder.groups.storage;
           users = {
             nginx.extraGroups = [ "acme" ];
 
@@ -93,11 +93,11 @@ in
             enable = true;
             package = pkgs.nextcloud27;
             datadir = "/mnt/storage/nextcloud";
-            hostName = "cloud.${lib.my.kelder.domain}";
+            hostName = "cloud.${domain}";
             https = true;
             enableBrokenCiphersForSSE = false;
             config = {
-              extraTrustedDomains = [ "cloud-local.${lib.my.kelder.domain}" ];
+              extraTrustedDomains = [ "cloud-local.${domain}" ];
               adminpassFile = config.age.secrets."kelder/nextcloud-root.txt".path;
               defaultPhoneRegion = "IE";
             };
