@@ -22,7 +22,7 @@ in
 
     configuration = { lib, pkgs, config, assignments, allAssignments, ... }:
     let
-      inherit (lib) mkMerge mkIf;
+      inherit (lib) mkMerge mkIf mkForce;
       inherit (lib.my) networkdAssignment;
     in
     {
@@ -43,16 +43,41 @@ in
                   owner = "matrix-synapse";
                   group = "matrix-synapse";
                 };
+                "chatterbox/syncv3.env" = {
+                  owner = "matrix-syncv3";
+                  group = "matrix-syncv3";
+                };
               };
             };
 
             firewall = {
-              tcp.allowed = [ 19999 8008 ];
+              tcp.allowed = [ 19999 8008 8009 ];
+            };
+          };
+
+          users = with lib.my.c.ids; {
+            users = {
+              matrix-syncv3 = {
+                isSystemUser = true;
+                uid = uids.matrix-syncv3;
+                group = "matrix-syncv3";
+              };
+            };
+            groups = {
+              matrix-syncv3.gid = gids.matrix-syncv3;
             };
           };
 
           systemd = {
             network.networks."80-container-host0" = networkdAssignment "host0" assignments.internal;
+            services = {
+              matrix-sliding-sync.serviceConfig = {
+                # Needs to be able to read its secrets
+                DynamicUser = mkForce false;
+                User = "matrix-syncv3";
+                Group = "matrix-syncv3";
+              };
+            };
           };
 
           services = {
@@ -141,6 +166,16 @@ in
                 app_service_config_files = [
                   "/var/lib/heisenbridge/registration.yml"
                 ];
+              };
+
+              sliding-sync = {
+                enable = true;
+                createDatabase = false;
+                environmentFile = config.age.secrets."chatterbox/syncv3.env".path;
+                settings = {
+                  SYNCV3_BINDADDR = "[::]:8009";
+                  SYNCV3_SERVER = "http://localhost:8008";
+                };
               };
             };
 

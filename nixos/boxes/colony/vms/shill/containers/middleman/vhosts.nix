@@ -4,6 +4,7 @@ let
   inherit (lib) mkMerge mkDefault genAttrs flatten concatStringsSep;
   inherit (lib.my.c) pubDomain;
   inherit (lib.my.c.nginx) proxyHeaders;
+  inherit (config.networking) domain;
 
   dualStackListen' = l: map (addr: l // { inherit addr; }) [ "0.0.0.0" "[::]" ];
   dualStackListen = ll: flatten (map dualStackListen' ll);
@@ -34,6 +35,7 @@ let
       # For clients
       (mkWellKnown "matrix/client" (toJSON {
         "m.homeserver".base_url = "https://matrix.nul.ie";
+        "org.matrix.msc3575.proxy".url = "https://matrix-syncv3.nul.ie";
       }))
     ];
   };
@@ -121,7 +123,7 @@ in
             "~ /(?<behost>${matchHosts})$".return = "301 https://$host/$behost/";
             "~ /(?<behost>${matchHosts})/(?<ndpath>.*)" = mkMerge [
               {
-                proxyPass = "http://$behost.${config.networking.pubDomain}:19999/$ndpath$is_args$args";
+                proxyPass = "http://$behost.${domain}:19999/$ndpath$is_args$args";
                 extraConfig = ''
                   proxy_pass_request_headers on;
                   ${proxyHeaders}
@@ -143,7 +145,7 @@ in
 
       "pass.${pubDomain}" =
       let
-        upstream = "http://vaultwarden-ctr.${config.networking.pubDomain}";
+        upstream = "http://vaultwarden-ctr.${domain}";
       in
       {
         locations = {
@@ -173,11 +175,15 @@ in
         ];
         locations = mkMerge [
           {
-            "/".proxyPass = "http://chatterbox-ctr.${config.networking.pubDomain}:8008";
+            "/".proxyPass = "http://chatterbox-ctr.${domain}:8008";
             "= /".return = "301 https://element.${pubDomain}";
           }
           wellKnown
         ];
+        useACMEHost = pubDomain;
+      };
+      "matrix-syncv3.${pubDomain}" = {
+        locations."/".proxyPass = "http://chatterbox-ctr.${domain}:8009";
         useACMEHost = pubDomain;
       };
 
@@ -233,7 +239,7 @@ in
         {
           locations."/" = mkMerge [
             {
-              proxyPass = "http://jackflix-ctr.${config.networking.pubDomain}:9091";
+              proxyPass = "http://jackflix-ctr.${domain}:9091";
             }
             (ssoLoc "generic")
           ];
@@ -246,7 +252,7 @@ in
         {
           locations."/" = mkMerge [
             {
-              proxyPass = "http://jackflix-ctr.${config.networking.pubDomain}:9117";
+              proxyPass = "http://jackflix-ctr.${domain}:9117";
             }
             (ssoLoc "generic")
           ];
@@ -258,7 +264,7 @@ in
         {
           locations."/" = mkMerge [
             {
-              proxyPass = "http://jackflix-ctr.${config.networking.pubDomain}:7878";
+              proxyPass = "http://jackflix-ctr.${domain}:7878";
               proxyWebsockets = true;
               extraConfig = proxyHeaders;
             }
@@ -272,7 +278,7 @@ in
         {
           locations."/" = mkMerge [
             {
-              proxyPass = "http://jackflix-ctr.${config.networking.pubDomain}:8989";
+              proxyPass = "http://jackflix-ctr.${domain}:8989";
               proxyWebsockets = true;
               extraConfig = proxyHeaders;
             }
@@ -285,7 +291,7 @@ in
 
       "jackflix.${pubDomain}" =
       let
-        upstream = "http://jackflix-ctr.${config.networking.pubDomain}:8096";
+        upstream = "http://jackflix-ctr.${domain}:8096";
       in
       {
         extraConfig = ''
@@ -335,17 +341,17 @@ in
             "/".tryFiles = "$uri @proxy";
 
             "^~ /api/v1/streaming" = {
-              proxyPass = "http://toot-ctr.${config.networking.pubDomain}:55000";
+              proxyPass = "http://toot-ctr.${domain}:55000";
               proxyWebsockets = true;
               extraConfig = ''
                 ${proxyHeaders}
                 proxy_set_header Proxy "";
 
-                add_header Strict-Transport-Security "max-age=63072000; includeSubpubDomains";
+                add_header Strict-Transport-Security "max-age=63072000; includeSubdomains";
               '';
             };
             "@proxy" = {
-              proxyPass = "http://toot-ctr.${config.networking.pubDomain}:55001";
+              proxyPass = "http://toot-ctr.${domain}:55001";
               proxyWebsockets = true;
               extraConfig = ''
                 ${proxyHeaders}
@@ -366,7 +372,7 @@ in
 
       "share.${pubDomain}" = {
         locations."/" = {
-          proxyPass = "http://object-ctr.${config.networking.pubDomain}:9090";
+          proxyPass = "http://object-ctr.${domain}:9090";
           proxyWebsockets = true;
           extraConfig = proxyHeaders;
         };
@@ -388,7 +394,7 @@ in
 
     minio =
     let
-      host = "object-ctr.${config.networking.pubDomain}";
+      host = "object-ctr.${domain}";
       s3Upstream = "http://${host}:9000";
       extraConfig = ''
         chunked_transfer_encoding off;
@@ -443,7 +449,7 @@ in
 
     defaultsFor = mapAttrs (n: _: {
       onlySSL = mkDefault true;
-      useACMEHost = mkDefault "${config.networking.pubDomain}";
+      useACMEHost = mkDefault "${domain}";
       kTLS = mkDefault true;
       http2 = mkDefault true;
     });

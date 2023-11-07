@@ -1,4 +1,13 @@
 { lib }: rec {
+  ids = {
+    uids = {
+      matrix-syncv3 = 400;
+    };
+    gids = {
+      matrix-syncv3 = 400;
+    };
+  };
+
   nginx = {
     proxyHeaders = ''
       # Setting any proxy_header in a child (e.g. location) will nuke the parents...
