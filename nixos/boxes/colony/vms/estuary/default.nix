@@ -316,6 +316,10 @@ in
                           Gateway = allAssignments.colony.routing.ipv4.address;
                         }
                         {
+                          Destination = prefixes.darts.v4;
+                          Gateway = allAssignments.colony.routing.ipv4.address;
+                        }
+                        {
                           Destination = prefixes.cust.v6;
                           Gateway = allAssignments.colony.internal.ipv6.address;
                         }
@@ -429,7 +433,7 @@ in
                       return
                     }
                     chain filter-routing {
-                      ip daddr ${prefixes.mail.v4} accept
+                      ip daddr { ${prefixes.mail.v4}, ${prefixes.darts.v4} } accept
                       ip6 daddr ${prefixes.cust.v6} accept
 
                       tcp flags & (fin|syn|rst|ack) == syn ct state new jump routing-tcp

@@ -152,6 +152,9 @@ in
             mail-vm IN A ${net.cidr.host 0 prefixes.mail.v4}
             mail-vm IN AAAA ${net.cidr.host 1 prefixes.mail.v6}
 
+            darts-cust IN A ${net.cidr.host 0 prefixes.darts.v4}
+            darts-cust IN AAAA ${net.cidr.host 1 prefixes.darts.v6}
+
             andrey-cust IN A ${allAssignments.kelder.estuary.ipv4.address}
 
             $TTL 3
@@ -201,6 +204,8 @@ in
             @ IN NS ns1.he.net.
 
             1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2 IN PTR mail.nul.ie.
+
+            1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.2 IN PTR darts-cust.${config.networking.domain}.
 
             ${lib.my.dns.ptr6Records {
               inherit allAssignments names;

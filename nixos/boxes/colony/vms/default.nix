@@ -31,7 +31,8 @@
         driver = "file";
         #filename = "${systems.installer.configuration.config.my.buildAs.iso}/iso/nixos-installer-devplayer0.iso";
         #filename = "/persist/home/dev/nixos-installer-devplayer0.iso";
-        filename = "/persist/home/dev/debian-12.1.0-amd64-netinst.iso";
+        #filename = "/persist/home/dev/debian-12.1.0-amd64-netinst.iso";
+        filename = "/persist/home/dev/ubuntu-22.04.3-live-server-amd64.iso";
         read-only = "on";
       };
       format.driver = "raw";
@@ -215,6 +216,24 @@
             drives = [
               (mkMerge [ (vmLVM "mail" "root") { frontendOpts.bootindex = 0; } ])
               (vmLVM "mail" "data")
+            ];
+          };
+
+          darts = {
+            uuid = "ee3882a9-5616-4fcb-83d7-89eb41a84d28";
+            cpu = "host,topoext";
+            smp = {
+              cpus = 4;
+              threads = 2;
+            };
+            memory = 16384;
+            networks.public = {
+              bridge = null;
+              mac = "52:54:00:a8:29:cd";
+            };
+            cleanShutdown.timeout = 120;
+            drives = [
+              (mkMerge [ (vmLVM "darts" "root") { frontendOpts.bootindex = 0; } ])
             ];
           };
         };

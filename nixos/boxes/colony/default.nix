@@ -276,6 +276,29 @@ in
                   }
                 ];
               };
+
+              "90-vm-darts" = {
+                matchConfig.Name = "vm-darts";
+                address = [
+                  (net.cidr.subnet 8 2 prefixes.cust.v4)
+                  prefixes.darts.v6
+                ];
+                networkConfig = {
+                  IPv6AcceptRA = false;
+                  IPv6SendRA = true;
+                };
+                ipv6Prefixes = [
+                  {
+                    ipv6PrefixConfig.Prefix = prefixes.darts.v6;
+                  }
+                ];
+                routes = map (r: { routeConfig = r; }) [
+                  {
+                    Destination = prefixes.darts.v4;
+                    Scope = "link";
+                  }
+                ];
+              };
             };
           };
         };
@@ -307,7 +330,7 @@ in
           firewall = {
             trustedInterfaces = [ "vms" ];
             extraRules = ''
-              define cust = { vm-mail }
+              define cust = { vm-mail, vm-darts }
               table inet filter {
                 chain forward {
                   # Trust that the outer firewall has done the filtering!
