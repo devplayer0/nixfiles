@@ -53,6 +53,7 @@ in
           cpu = {
             amd.updateMicrocode = true;
           };
+          rasdaemon.enable = true;
         };
 
         boot = {
