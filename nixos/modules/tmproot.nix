@@ -436,6 +436,9 @@ in
           "/var/lib/samba"
         ];
       })
+      (mkIf config.hardware.rasdaemon.enable {
+        my.tmproot.persistence.config.directories = [ "/var/lib/rasdaemon" ];
+      })
     ]))
   ]);
 
