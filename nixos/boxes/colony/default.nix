@@ -138,6 +138,23 @@ in
             "serial-getty@ttyS0".enable = true;
             "serial-getty@ttyS1".enable = true;
 
+            rsync-lvm-meta = {
+              description = "rsync lvm metadata backups / archives to rsync.net";
+              serviceConfig = {
+                Type = "oneshot";
+
+                # Only run when no other process is using CPU or disk
+                CPUSchedulingPolicy = "idle";
+                IOSchedulingClass = "idle";
+              };
+              script = ''
+                ${pkgs.rsync}/bin/rsync -av --delete --delete-after \
+                  -e "${pkgs.openssh}/bin/ssh -i ${config.age.secrets."colony/rsync.key".path}" \
+                  /etc/lvm/{archive,backup} zh2855@zh2855.rsync.net:colony/lvm/
+              '';
+              wantedBy = [ "borgthin-job-main.service" ];
+              after = [ "borgthin-job-main.service" ];
+            };
             borgthin-rsync = {
               description = "rsync borgthin backups to rsync.net";
               serviceConfig = {

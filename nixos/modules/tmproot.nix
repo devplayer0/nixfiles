@@ -256,6 +256,18 @@ in
         my.tmproot.persistence.config.files =
           concatMap (k: [ k.path "${k.path}.pub" ]) config.services.openssh.hostKeys;
       })
+      (mkIf config.services.lvm.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = "/etc/lvm/archive";
+            mode = "0700";
+          }
+          {
+            directory = "/etc/lvm/backup";
+            mode = "0700";
+          }
+        ];
+      })
       (mkIf (config.security.acme.certs != { }) {
         my.tmproot.persistence.config.directories = [
           {
