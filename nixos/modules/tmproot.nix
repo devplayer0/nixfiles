@@ -439,6 +439,16 @@ in
       (mkIf config.hardware.rasdaemon.enable {
         my.tmproot.persistence.config.directories = [ "/var/lib/rasdaemon" ];
       })
+      (mkIf (config.services.gitea-actions-runner.instances != { }) {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = "/var/lib/gitea-runner";
+            mode = "0750";
+            user = "gitea-runner";
+            group = "gitea-runner";
+          }
+        ];
+      })
     ]))
   ]);
 

@@ -1,10 +1,13 @@
 { lib }: rec {
+  # See https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/misc/ids.nix
   ids = {
     uids = {
       matrix-syncv3 = 400;
+      gitea-runner = 401;
     };
     gids = {
       matrix-syncv3 = 400;
+      gitea-runner = 401;
     };
   };
 

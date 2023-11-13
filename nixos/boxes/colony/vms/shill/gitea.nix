@@ -1,4 +1,4 @@
-{ lib, pkgs, config, ... }:
+{ lib, pkgs, config, assignments, allAssignments, ... }:
 let
   inherit (lib.my.c) pubDomain;
   inherit (lib.my.c.colony) prefixes;
@@ -72,6 +72,9 @@ in
             PASSWORD = "#mailerpass#";
             REPLY_TO_ADDRESS = "git+%{token}@nul.ie";
           };
+          actions = {
+            ENABLED = true;
+          };
         };
       };
     };
@@ -96,6 +99,12 @@ in
           chain input {
             ip saddr ${prefixes.all.v4} tcp dport 3000 accept
             ip6 saddr ${prefixes.all.v6} tcp dport 3000 accept
+          }
+        }
+        table inet nat {
+          chain prerouting {
+            ip daddr ${assignments.internal.ipv4.address} tcp dport { http, https } dnat to ${allAssignments.middleman.internal.ipv4.address}
+            ip6 daddr ${assignments.internal.ipv6.address} tcp dport { http, https } dnat to ${allAssignments.middleman.internal.ipv6.address}
           }
         }
       '';
