@@ -4,10 +4,12 @@
     uids = {
       matrix-syncv3 = 400;
       gitea-runner = 401;
+      jellyseerr = 402;
     };
     gids = {
       matrix-syncv3 = 400;
       gitea-runner = 401;
+      jellyseerr = 402;
     };
   };
 

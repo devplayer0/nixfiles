@@ -22,7 +22,7 @@ in
 
     configuration = { lib, pkgs, config, ... }:
     let
-      inherit (lib);
+      inherit (lib) mkForce;
     in
     {
       imports = [ ./networking.nix ];
@@ -37,14 +37,22 @@ in
           };
         };
 
-        users = {
-          groups.media.gid = 2000;
+        users = with lib.my.c.ids; {
           users = {
             "${config.my.user.config.name}".extraGroups = [ "media" ];
 
             transmission.extraGroups = [ "media" ];
             radarr.extraGroups = [ "media" ];
             sonarr.extraGroups = [ "media" ];
+            jellyseerr = {
+              isSystemUser = true;
+              uid = uids.jellyseerr;
+              group = "jellyseerr";
+            };
+          };
+          groups = {
+            media.gid = 2000;
+            jellyseerr.gid = gids.jellyseerr;
           };
         };
 
@@ -55,6 +63,12 @@ in
 
             radarr.serviceConfig.UMask = "0002";
             sonarr.serviceConfig.UMask = "0002";
+            jellyseerr.serviceConfig = {
+              # Needs to be able to read its secrets
+              DynamicUser = mkForce false;
+              User = "jellyseerr";
+              Group = "jellyseerr";
+            };
 
             # https://github.com/NixOS/nixpkgs/issues/258793#issuecomment-1748168206
             transmission.serviceConfig = {
@@ -96,6 +110,10 @@ in
           jackett.enable = true;
           radarr.enable = true;
           sonarr.enable = true;
+          jellyseerr = {
+            enable = true;
+            openFirewall = true;
+          };
 
           jellyfin.enable = true;
         };

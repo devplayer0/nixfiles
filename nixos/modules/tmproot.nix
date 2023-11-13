@@ -335,6 +335,16 @@ in
       (persistSimpleSvc "jackett")
       (persistSimpleSvc "radarr")
       (persistSimpleSvc "sonarr")
+      (mkIf config.services.jellyseerr.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = "/var/lib/jellyseerr";
+            mode = "0750";
+            user = "jellyseerr";
+            group = "jellyseerr";
+          }
+        ];
+      })
       (mkIf config.services.minio.enable {
         my.tmproot.persistence.config.directories = [
           {

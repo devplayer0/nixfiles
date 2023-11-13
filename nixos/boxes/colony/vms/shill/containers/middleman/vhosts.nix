@@ -288,6 +288,10 @@ in
         }
         (ssoServer "generic")
       ];
+      "gib.${pubDomain}" = {
+        locations."/".proxyPass = "http://jackflix-ctr.${domain}:5055";
+        useACMEHost = pubDomain;
+      };
 
       "jackflix.${pubDomain}" =
       let
