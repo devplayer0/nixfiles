@@ -63,6 +63,15 @@ in
             USER = "git@nul.ie";
             FROM = "Gitea <git@nul.ie>";
           };
+          "email.incoming" = {
+            ENABLED = true;
+            HOST = "mail.nul.ie";
+            PORT = 993;
+            USE_TLS = true;
+            USERNAME = "git@nul.ie";
+            PASSWORD = "#mailerpass#";
+            REPLY_TO_ADDRESS = "git+%{token}@nul.ie";
+          };
         };
       };
     };
