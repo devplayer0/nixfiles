@@ -372,6 +372,7 @@ in
                   "vm-estuary-persist"
                   "vm-whale2-persist"
                   "vm-mail-data"
+                  "git"
                 ];
                 compression = "zstd,5";
                 extraCreateArgs = [ "--stats" ];
