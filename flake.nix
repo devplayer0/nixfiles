@@ -34,6 +34,9 @@
     sharry.inputs.nixpkgs.follows = "nixpkgs-unstable";
     borgthin.url = "github:devplayer0/borg";
     borgthin.inputs.nixpkgs.follows = "nixpkgs-mine";
+    attic.url = "github:zhaofengli/attic";
+    attic.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    attic.inputs.nixpkgs-stable.follows = "nixpkgs-stable";
   };
 
   outputs =
