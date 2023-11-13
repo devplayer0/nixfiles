@@ -247,6 +247,19 @@
             cleanShutdown.timeout = 120;
             drives = [
               (mkMerge [ (vmLVM "darts" "root") { frontendOpts.bootindex = 0; } ])
+              {
+                name = "media";
+                backend = {
+                  driver = "host_device";
+                  filename = "/dev/main/darts-media";
+                  discard = "unmap";
+                };
+                format = {
+                  driver = "raw";
+                  discard = "unmap";
+                };
+                frontend = "virtio-blk";
+              }
             ];
           };
         };
