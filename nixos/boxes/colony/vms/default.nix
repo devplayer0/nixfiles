@@ -167,6 +167,19 @@
                 };
                 frontend = "virtio-blk";
               }
+              {
+                name = "git";
+                backend = {
+                  driver = "host_device";
+                  filename = "/dev/main/git";
+                  discard = "unmap";
+                };
+                format = {
+                  driver = "raw";
+                  discard = "unmap";
+                };
+                frontend = "virtio-blk";
+              }
             ]);
           };
 

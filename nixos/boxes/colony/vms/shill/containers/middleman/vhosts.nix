@@ -390,6 +390,11 @@ in
         };
         useACMEHost = pubDomain;
       };
+
+      "git.${pubDomain}" = {
+        locations."/".proxyPass = "http://shill-vm.${domain}:3000";
+        useACMEHost = pubDomain;
+      };
     };
 
     minio =

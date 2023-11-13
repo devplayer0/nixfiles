@@ -459,6 +459,8 @@ in
                   table inet nat {
                     chain prerouting {
                       ${matchInet "meta l4proto { udp, tcp } th dport domain redirect to :5353" "estuary"}
+                      ip daddr ${allAssignments.shill.internal.ipv4.address} tcp dport { http, https } dnat to ${allAssignments.middleman.internal.ipv4.address}
+                      ip6 daddr ${allAssignments.shill.internal.ipv6.address} tcp dport { http, https } dnat to ${allAssignments.middleman.internal.ipv6.address}
                     }
                     chain postrouting {
                       ip saddr ${prefixes.all.v4} snat to ${assignments.internal.ipv4.address}
