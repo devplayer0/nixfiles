@@ -5,9 +5,10 @@ let
   inherit (lib.my.c.colony) domain prefixes;
 in
 {
-  nixos.systems.chatterbox = {
+  nixos.systems.chatterbox = { config, ... }: {
     system = "x86_64-linux";
     nixpkgs = "mine";
+    rendered = config.configuration.config.my.asContainer;
 
     assignments = {
       internal = {

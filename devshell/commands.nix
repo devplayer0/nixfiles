@@ -89,7 +89,7 @@ in
       name = "build-iso";
       category = "tasks";
       help = "Build NixOS configuration into an ISO";
-      command = ''nix build "''${@:2}" ".#nixosConfigurations.\"$1\".config.my.buildAs.iso"'';
+      command = ''nix build "''${@:2}" ".#nixfiles.config.nixos.systems.\"$1\".configuration.config.my.buildAs.iso"'';
     }
     {
       name = "build-home";

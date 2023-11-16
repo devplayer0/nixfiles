@@ -1,4 +1,4 @@
-{ lib, pkgs, extendModules, modulesPath, baseModules, options, config, ... }:
+{ lib, pkgs, extendModules, modulesPath, options, config, ... }:
 let
   inherit (lib) recursiveUpdate mkOption mkDefault mkIf mkMerge flatten optional;
   inherit (lib.my) mkBoolOpt' dummyOption;
@@ -43,15 +43,15 @@ let
     ];
   };
 
-  mkAsOpt = ext: desc: mkOption {
-    inherit (ext) type;
-    default = { };
+  mkAsOpt = ext: desc: with lib.types; mkOption {
+    type = unspecified;
+    default = ext;
     visible = "shallow";
     description = "Configuration as ${desc}.";
   };
 in
 {
-  options = with lib.types; {
+  options = {
     my = {
       build = {
         isDevVM = mkBoolOpt' false "Whether the system is a development VM.";
@@ -92,10 +92,10 @@ in
     my = {
       buildAs = {
         # The meta.mainProgram should probably be set upstream but oh well...
-        devVM = recursiveUpdate config.my.asDevVM.system.build.vm { meta.mainProgram = "run-${config.system.name}-vm"; };
-        iso = config.my.asISO.system.build.isoImage;
-        container = config.my.asContainer.system.build.toplevel;
-        kexecTree = config.my.asKexecTree.system.build.kexecTree;
+        devVM = recursiveUpdate config.my.asDevVM.config.system.build.vm { meta.mainProgram = "run-${config.system.name}-vm"; };
+        iso = config.my.asISO.config.system.build.isoImage;
+        container = config.my.asContainer.config.system.build.toplevel;
+        kexecTree = config.my.asKexecTree.config.system.build.kexecTree;
       };
     };
   };

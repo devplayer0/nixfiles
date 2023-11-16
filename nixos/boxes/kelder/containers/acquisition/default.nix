@@ -4,9 +4,10 @@ let
   inherit (lib.my.c.kelder) domain prefixes;
 in
 {
-  nixos.systems.kelder-acquisition = {
+  nixos.systems.kelder-acquisition = { config, ...}: {
     system = "x86_64-linux";
     nixpkgs = "mine";
+    rendered = config.configuration.config.my.asContainer;
 
     assignments = {
       internal = {

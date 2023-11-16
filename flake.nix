@@ -153,7 +153,7 @@
       nixosModules = nixfiles.config.nixos.modules;
       homeModules = nixfiles.config.home-manager.modules;
 
-      nixosConfigurations = mapAttrs (_: s: s.configuration) nixfiles.config.nixos.systems;
+      nixosConfigurations = mapAttrs (_: s: s.rendered) nixfiles.config.nixos.systems;
       homeConfigurations = mapAttrs (_: s: s.configuration) nixfiles.config.home-manager.homes;
 
       deploy = nixfiles.config.deploy-rs.rendered;
@@ -199,6 +199,5 @@
       packages = flattenTree (import ./pkgs { inherit lib pkgs; });
 
       devShells.default = shell;
-      devShell = shell;
     }));
 }

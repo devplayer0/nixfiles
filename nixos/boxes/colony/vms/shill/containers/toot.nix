@@ -4,9 +4,10 @@ let
   inherit (lib.my.c.colony) domain prefixes;
 in
 {
-  nixos.systems.toot = {
+  nixos.systems.toot = { config, ... }: {
     system = "x86_64-linux";
     nixpkgs = "mine";
+    rendered = config.configuration.config.my.asContainer;
 
     assignments = {
       internal = {

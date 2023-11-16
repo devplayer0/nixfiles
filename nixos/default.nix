@@ -164,6 +164,7 @@ let
           });
         };
       };
+      rendered = mkOpt' unspecified config'.configuration "Final NixOS modules system output.";
     };
 
     config = {
