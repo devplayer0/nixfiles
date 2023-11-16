@@ -23,6 +23,25 @@ in
       groups.git = {};
     };
 
+    systemd = {
+      services = {
+        gitea.preStart =
+        let
+          repSec = "${pkgs.replace-secret}/bin/replace-secret";
+          confPath = "${config.services.gitea.customDir}/conf/app.ini";
+        in
+        ''
+          gitea_extra_setup() {
+            chmod u+w '${confPath}'
+            ${repSec} '#miniosecret#' '${config.age.secrets."gitea/minio.txt".path}' '${confPath}'
+            chmod u-w '${confPath}'
+          }
+
+          (umask 027; gitea_extra_setup)
+        '';
+      };
+    };
+
     services = {
       gitea = {
         enable = true;
@@ -72,6 +91,16 @@ in
             PASSWORD = "#mailerpass#";
             REPLY_TO_ADDRESS = "git+%{token}@nul.ie";
           };
+          storage = {
+            STORAGE_TYPE = "minio";
+            SERVE_DIRECT = true;
+            MINIO_ENDPOINT = "s3.${pubDomain}";
+            MINIO_ACCESS_KEY_ID = "gitea";
+            MINIO_SECRET_ACCESS_KEY = "#miniosecret#";
+            MINIO_BUCKET = "gitea";
+            MINIO_LOCATION = "eu-central-1";
+            MINIO_USE_SSL = true;
+          };
           actions = {
             ENABLED = true;
           };
@@ -91,6 +120,7 @@ in
         {
           "gitea/db.txt" = ownedByGit;
           "gitea/mail.txt" = ownedByGit;
+          "gitea/minio.txt" = ownedByGit;
         };
       };
 
