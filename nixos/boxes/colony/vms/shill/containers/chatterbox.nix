@@ -1,6 +1,7 @@
 { lib, ... }:
 let
   inherit (lib.my) net;
+  inherit (lib.my.c) pubDomain;
   inherit (lib.my.c.colony) domain prefixes;
 in
 {
@@ -93,6 +94,7 @@ in
               settings = {
                 server_name = "nul.ie";
                 public_baseurl = "https://matrix.nul.ie";
+                web_client_location = "https://element.${pubDomain}";
                 admin_contact = "dev@nul.ie";
                 prescence.enabled = true;
 
