@@ -7,14 +7,13 @@
 
   nixos.systems.colony.configuration = { lib, pkgs, config, systems, ... }:
   let
-    inherit (builtins) listToAttrs;
     inherit (lib) mkIf mkMerge optionals;
 
-    vmLVM = vm: lv: {
-      name = lv;
+    lvmDisk' = name: lv: {
+      inherit name;
       backend = {
         driver = "host_device";
-        filename = "/dev/main/vm-${vm}-${lv}";
+        filename = "/dev/main/${lv}";
         # It appears this needs to be set on the backend _and_ the format
         discard = "unmap";
       };
@@ -24,6 +23,8 @@
       };
       frontend = "virtio-blk";
     };
+    lvmDisk = lv: lvmDisk' lv lv;
+    vmLVM = vm: lv: lvmDisk' lv "vm-${vm}-${lv}";
 
     installerDisk = {
       name = "installer";
@@ -141,45 +142,10 @@
               (mkMerge [ (vmLVM "shill" "esp") { frontendOpts.bootindex = 0; } ])
               (vmLVM "shill" "nix")
               (vmLVM "shill" "persist")
-              {
-                name = "media";
-                backend = {
-                  driver = "host_device";
-                  filename = "/dev/main/media";
-                  discard = "unmap";
-                };
-                format = {
-                  driver = "raw";
-                  discard = "unmap";
-                };
-                frontend = "virtio-blk";
-              }
-              {
-                name = "minio";
-                backend = {
-                  driver = "host_device";
-                  filename = "/dev/main/minio";
-                  discard = "unmap";
-                };
-                format = {
-                  driver = "raw";
-                  discard = "unmap";
-                };
-                frontend = "virtio-blk";
-              }
-              {
-                name = "git";
-                backend = {
-                  driver = "host_device";
-                  filename = "/dev/main/git";
-                  discard = "unmap";
-                };
-                format = {
-                  driver = "raw";
-                  discard = "unmap";
-                };
-                frontend = "virtio-blk";
-              }
+
+              (lvmDisk "media")
+              (lvmDisk "minio")
+              (lvmDisk "git")
             ]);
           };
 
@@ -197,19 +163,9 @@
               (mkMerge [ (vmLVM "whale2" "esp") { frontendOpts.bootindex = 0; } ])
               (vmLVM "whale2" "nix")
               (vmLVM "whale2" "persist")
-              {
-                name = "oci";
-                backend = {
-                  driver = "host_device";
-                  filename = "/dev/main/oci";
-                  discard = "unmap";
-                };
-                format = {
-                  driver = "raw";
-                  discard = "unmap";
-                };
-                frontend = "virtio-blk";
-              }
+
+              (lvmDisk "oci")
+              (lvmDisk "gitea-actions-cache")
             ]);
           };
 
@@ -247,19 +203,7 @@
             cleanShutdown.timeout = 120;
             drives = [
               (mkMerge [ (vmLVM "darts" "root") { frontendOpts.bootindex = 0; } ])
-              {
-                name = "media";
-                backend = {
-                  driver = "host_device";
-                  filename = "/dev/main/darts-media";
-                  discard = "unmap";
-                };
-                format = {
-                  driver = "raw";
-                  discard = "unmap";
-                };
-                frontend = "virtio-blk";
-              }
+              (lvmDisk' "media" "darts-media")
             ];
           };
         };

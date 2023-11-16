@@ -8,10 +8,21 @@ let
     container = {
       network = "colony";
     };
+    cache = {
+      enabled = true;
+      dir = "/var/cache/gitea-runner";
+    };
   });
 in
 {
   config = {
+    fileSystems = {
+      "/var/cache/gitea-runner" = {
+        device = "/dev/disk/by-label/actions-cache";
+        fsType = "ext4";
+      };
+    };
+
     services = {
       gitea-actions-runner.instances = {
         main = {
@@ -42,6 +53,7 @@ in
       services = {
         gitea-runner-main.serviceConfig = {
           # Needs to be able to read its secrets
+          CacheDirectory = "gitea-runner";
           DynamicUser = mkForce false;
           User = "gitea-runner";
           Group = "gitea-runner";
