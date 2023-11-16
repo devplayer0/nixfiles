@@ -9,6 +9,7 @@ let
 
   defaultKeys = [
     (fileContents .keys/dev.pub)
+    (fileContents .keys/ci.pub)
   ];
   secretKeys =
     zipAttrsWith

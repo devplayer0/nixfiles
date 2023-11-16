@@ -157,29 +157,6 @@
       homeConfigurations = mapAttrs (_: s: s.configuration) nixfiles.config.home-manager.homes;
 
       deploy = nixfiles.config.deploy-rs.rendered;
-
-      # TODO: Modularise?
-      herculesCI =
-      let
-        system = n: self.nixosConfigurations."${n}".config.system.build.toplevel;
-        container = n: self.nixosConfigurations."${n}".config.my.buildAs.container;
-        home = n: self.homeConfigurations."${n}".activationPackage;
-      in
-      {
-        onPush = {
-          default.outputs = {
-            shell = self.devShells.x86_64-linux.default;
-          };
-          systems.outputs = {
-            colony = system "colony";
-            vms = genAttrs [ "estuary" "shill" ] system;
-            containers = genAttrs [ "jackflix" "middleman" "chatterbox" ] container;
-          };
-          homes.outputs = {
-            castle = home "dev@castle";
-          };
-        };
-      };
     } //
     (eachDefaultSystem (system:
     let

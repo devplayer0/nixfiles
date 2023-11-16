@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  check:
+    name: Check Nix flake
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v23
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: Write agenix secrets key to file
+        env:
+          KEY: ${{ secrets.AGENIX_SECRETS_KEY }}
+        run: printf "$KEY" > .keys/ci.key
+      - name: Check flake
+        run: nix flake check
