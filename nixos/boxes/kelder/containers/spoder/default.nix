@@ -96,7 +96,6 @@ in
             datadir = "/mnt/storage/nextcloud";
             hostName = "cloud.${domain}";
             https = true;
-            enableBrokenCiphersForSSE = false;
             config = {
               extraTrustedDomains = [ "cloud-local.${domain}" ];
               adminpassFile = config.age.secrets."kelder/nextcloud-root.txt".path;
