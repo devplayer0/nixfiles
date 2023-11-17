@@ -448,7 +448,7 @@ in
                     chain forward {
                       iifname { wan, $ixps } oifname base jump filter-routing
                       oifname $ixps jump ixp
-                      iifname base oifname { wan, $ixps } accept
+                      iifname base oifname { base, wan, $ixps } accept
                       oifname { as211024, kelder } accept
                     }
                     chain output {
