@@ -165,35 +165,38 @@
       lib = pkgs.lib;
 
       filterSystem = filterAttrs (_: c: c.config.nixpkgs.system == system);
-      homes' =
+      homes =
         mapAttrs
           (_: h: h.activationPackage)
           (filterSystem self.homeConfigurations);
-      systems' =
+      systems =
         mapAttrs
           (_: h: h.config.system.build.toplevel)
           (filterSystem self.nixosConfigurations);
       shell = pkgs.devshell.mkShell ./devshell;
     in
     # Stuff for each platform
-    {
+    rec {
       checks = flattenTree {
-        homeConfigurations = recurseIntoAttrs homes';
+        homeConfigurations = recurseIntoAttrs homes;
         deploy = recurseIntoAttrs (pkgs.deploy-rs.lib.deployChecks self.deploy);
       };
-
-      ci =
-      let
-        homes =
-          mapAttrs'
-            (n: v: nameValuePair ''home-${replaceStrings ["@"] ["-at-"] n}'' v)
-            homes';
-        systems = mapAttrs' (n: v: nameValuePair "system-${n}" v) systems';
-      in
-        pkgs.linkFarm "ci" (homes // systems);
 
       packages = flattenTree (import ./pkgs { inherit lib pkgs; });
 
       devShells.default = shell;
+
+      ci =
+      let
+        homes' =
+          mapAttrs'
+            (n: v: nameValuePair ''home-${replaceStrings ["@"] ["-at-"] n}'' v)
+            homes;
+        systems' = mapAttrs' (n: v: nameValuePair "system-${n}" v) systems;
+        packages' = mapAttrs' (n: v: nameValuePair "package-${n}" v) packages;
+      in
+        pkgs.linkFarm "ci" (homes' // systems' // packages' // {
+          inherit shell;
+        });
     }));
 }
