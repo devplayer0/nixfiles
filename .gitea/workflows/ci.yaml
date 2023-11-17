@@ -28,11 +28,11 @@ jobs:
           nix run .#nixpkgs.mine.x86_64-linux.attic-client -- \
             login --set-default colony https://nix-cache.nul.ie "${{ secrets.NIX_CACHE_TOKEN }}"
 
-      - name: Check and build flake
+      - name: Check flake
+        run: nix flake check
+      - name: Build the world
         id: build
         run: |
-          nix flake check
-
           path=$(nix build --no-link .#ci.x86_64-linux --json | jq -r .[0].outputs.out)
           echo "path=$path" >> "$GITHUB_OUTPUT"
       - name: Push to cache
