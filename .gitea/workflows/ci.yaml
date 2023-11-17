@@ -6,7 +6,7 @@ on:
 
 jobs:
   check:
-    name: Check Nix flake
+    name: Check, build and cache Nix flake
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -27,10 +27,14 @@ jobs:
           nix run .#nixpkgs.mine.x86_64-linux.attic-client -- \
             login --set-default colony https://nix-cache.nul.ie "${{ secrets.NIX_CACHE_TOKEN }}"
 
-      # - name: Check flake
-      #   run: nix flake check
+      - name: Check and build flake
+        id: build
+        run: |
+          nix flake check
+
+          path=$(nix build --no-link .#ci.x86_64-linux --json | jq -r .[0].outputs.out)
+          echo "path=$path" >> "$GITHUB_OUTPUT"
       - name: Push to cache
         run: |
-          path=$(nix build --no-link .#nixosConfigurations.middleman.config.system.build.toplevel --json | jq -r .[0].outputs.out)
           nix run .#nixpkgs.mine.x86_64-linux.attic-client -- \
-            push main $path
+            push main ${{ steps.build.outputs.path }}

@@ -412,7 +412,6 @@ in
 
       nixCacheableRegex = ''^\/(\S+\.narinfo|nar\/\S+\.nar\.\S+)$'';
       nixCacheHeaders = ''
-        proxy_hide_header "X-Amz-Request-Id";
         add_header Cache-Control $nix_cache_control;
         add_header Expires $nix_expires;
       '';
@@ -448,7 +447,6 @@ in
           };
         };
         useACMEHost = pubDomain;
-        onlySSL = false;
       };
     };
 

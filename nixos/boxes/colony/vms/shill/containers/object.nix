@@ -162,7 +162,7 @@ in
                   type = "s3";
                   region = "eu-central-1";
                   bucket = "nix-attic";
-                  endpoint = "http://localhost:9000";
+                  endpoint = "https://s3.nul.ie";
                 };
                 chunking = {
                   nar-size-threshold = 65536;

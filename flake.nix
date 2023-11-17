@@ -51,8 +51,8 @@
       ...
     }:
     let
-      inherit (builtins) mapAttrs;
-      inherit (lib) genAttrs recurseIntoAttrs evalModules;
+      inherit (builtins) mapAttrs replaceStrings;
+      inherit (lib) mapAttrs' filterAttrs nameValuePair recurseIntoAttrs evalModules;
       inherit (lib.flake) flattenTree eachDefaultSystem;
       inherit (lib.my) mkDefaultSystemsPkgs flakePackageOverlay;
 
@@ -164,15 +164,33 @@
       pkgs = pkgs'.mine.${system};
       lib = pkgs.lib;
 
+      filterSystem = filterAttrs (_: c: c.config.nixpkgs.system == system);
+      homes' =
+        mapAttrs
+          (_: h: h.activationPackage)
+          (filterSystem self.homeConfigurations);
+      systems' =
+        mapAttrs
+          (_: h: h.config.system.build.toplevel)
+          (filterSystem self.nixosConfigurations);
       shell = pkgs.devshell.mkShell ./devshell;
     in
     # Stuff for each platform
     {
       checks = flattenTree {
-        homeConfigurations = recurseIntoAttrs (mapAttrs (_: h: h.activationPackage)
-          (lib.filterAttrs (_: h: h.config.nixpkgs.system == system) self.homeConfigurations));
+        homeConfigurations = recurseIntoAttrs homes';
         deploy = recurseIntoAttrs (pkgs.deploy-rs.lib.deployChecks self.deploy);
       };
+
+      ci =
+      let
+        homes =
+          mapAttrs'
+            (n: v: nameValuePair ''home-${replaceStrings ["@"] ["-at-"] n}'' v)
+            homes';
+        systems = mapAttrs' (n: v: nameValuePair "system-${n}" v) systems';
+      in
+        pkgs.linkFarm "ci" (homes // systems);
 
       packages = flattenTree (import ./pkgs { inherit lib pkgs; });
 
