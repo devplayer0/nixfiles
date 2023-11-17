@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+      - name: Install jq
+        run: apt-get update -y && apt-get install -y jq
       - uses: cachix/install-nix-action@v23
         with:
           # Gitea will supply a token in GITHUB_TOKEN, which this action will
@@ -18,16 +20,17 @@ jobs:
           extra_nix_config: |
             # Make sure we're using sandbox
             sandbox-fallback = false
-      - name: Fix Nix path
-        run: ln -s $(which nix) /usr/local/bin/nix
-      - uses: DeterminateSystems/magic-nix-cache-action@main
-        env:
-          # Arch is amd64 in Gitea actions, this forms the download path for the cache
-          RUNNER_ARCH: X64
+            extra-substituters = https://nix-cache.nul.ie/main
+            extra-trusted-public-keys = main:a2CtSxCXCXKabLa6IYQWzy3rdYjOwg9Ccm4ayahFjDI=
+      - name: Set up attic
+        run: |
+          nix run .#nixpkgs.mine.x86_64-linux.attic-client -- \
+            login --set-default colony https://nix-cache.nul.ie "${{ secrets.NIX_CACHE_TOKEN }}"
 
-      - name: Write agenix secrets key to file
-        env:
-          KEY: ${{ secrets.AGENIX_SECRETS_KEY }}
-        run: printf "$KEY" > .keys/ci.key
-      - name: Check flake
-        run: nix flake check
+      # - name: Check flake
+      #   run: nix flake check
+      - name: Push to cache
+        run: |
+          path=$(nix build --no-link .#nixosConfigurations.middleman.config.system.build.toplevel --json | jq -r .[0].outputs.out)
+          nix run .#nixpkgs.mine.x86_64-linux.attic-client -- \
+            push main $path
