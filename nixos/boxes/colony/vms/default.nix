@@ -156,7 +156,7 @@
               cpus = 8;
               threads = 2;
             };
-            memory = 16384;
+            memory = 32768;
             networks.vms.mac = "52:54:00:d5:d9:c6";
             cleanShutdown.timeout = 120;
             drives = [ ] ++ (optionals (!config.my.build.isDevVM) [

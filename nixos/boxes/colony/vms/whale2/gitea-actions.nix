@@ -7,6 +7,7 @@ let
   cfgFile = pkgs.writeText "gitea-actions-runner.yaml" (toJSON {
     container = {
       network = "colony";
+      privileged = true;
     };
     cache = {
       enabled = true;
@@ -28,7 +29,9 @@ in
         main = {
           enable = true;
           name = "main-docker";
-          labels = [ ];
+          labels = [
+            "ubuntu-22.04:docker://git.nul.ie/dev/actions-ubuntu:22.04"
+          ];
           url = "https://git.${pubDomain}";
           tokenFile = config.age.secrets."gitea/actions-runner.env".path;
         };
