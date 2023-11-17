@@ -60,9 +60,23 @@ in
             };
           };
 
+          users = with lib.my.c.ids; let inherit (config.services.atticd) user group; in {
+            users."${user}" = {
+              isSystemUser = true;
+              uid = uids.atticd;
+              group = group;
+            };
+            groups."${user}".gid = gids.atticd;
+          };
+
           systemd = {
             network.networks."80-container-host0" = networkdAssignment "host0" assignments.internal;
-            services = {
+
+            services =
+            let
+              awaitPostgres = systemdAwaitPostgres pkgs.postgresql "colony-psql";
+            in
+            {
               minio = {
                 environment = {
                   MINIO_ROOT_USER = "minioadmin";
@@ -71,7 +85,17 @@ in
                   MINIO_BROWSER_REDIRECT_URL = "https://minio.nul.ie";
                 };
               };
-              sharry = systemdAwaitPostgres pkgs.postgresql "colony-psql";
+              sharry = awaitPostgres;
+              atticd = mkMerge [
+                awaitPostgres
+                {
+                  serviceConfig = {
+                    # Needs to be able to access its data
+                    DynamicUser = mkForce false;
+                    BindPaths = [ "/mnt/atticd:/var/lib/atticd/storage" ];
+                  };
+                }
+              ];
             };
           };
 
@@ -159,10 +183,8 @@ in
                 api-endpoint = "https://nix-cache.${pubDomain}/";
                 database = mkForce {}; # blank to pull from env
                 storage = {
-                  type = "s3";
-                  region = "eu-central-1";
-                  bucket = "nix-attic";
-                  endpoint = "https://s3.nul.ie";
+                  type = "local";
+                  path = "/var/lib/atticd/storage";
                 };
                 chunking = {
                   nar-size-threshold = 65536;

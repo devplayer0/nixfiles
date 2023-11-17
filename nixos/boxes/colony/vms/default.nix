@@ -145,6 +145,7 @@
 
               (lvmDisk "media")
               (lvmDisk "minio")
+              (lvmDisk "nix-atticd")
               (lvmDisk "git")
             ]);
           };

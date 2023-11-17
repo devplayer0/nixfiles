@@ -81,6 +81,7 @@ in
                 fsType = "ext4";
                 neededForBoot = true;
               };
+
               "/mnt/media" = {
                 device = "/dev/disk/by-label/media";
                 fsType = "ext4";
@@ -88,6 +89,10 @@ in
               "/mnt/minio" = {
                 device = "/dev/disk/by-label/minio";
                 fsType = "xfs";
+              };
+              "/mnt/atticd" = {
+                device = "/dev/disk/by-label/atticd";
+                fsType = "ext4";
               };
             };
 
@@ -175,6 +180,7 @@ in
                   object = {
                     bindMounts = {
                       "/mnt/minio".readOnly = false;
+                      "/mnt/atticd".readOnly = false;
                     };
                   };
                   toot = {};
