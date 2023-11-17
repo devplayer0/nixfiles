@@ -95,6 +95,7 @@
             inputs.ragenix.overlays.default
             inputs.deploy-rs.overlay
             (flakePackageOverlay inputs.home-manager-unstable system)
+            inputs.attic.overlays.default
           ];
         }))
         pkgsFlakes;

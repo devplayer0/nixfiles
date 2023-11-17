@@ -1,6 +1,7 @@
 { lib, ... }:
 let
   inherit (lib.my) net;
+  inherit (lib.my.c) pubDomain;
   inherit (lib.my.c.colony) domain prefixes;
 in
 {
@@ -23,7 +24,7 @@ in
 
     configuration = { lib, pkgs, config, assignments, ... }:
     let
-      inherit (lib) mkMerge mkIf;
+      inherit (lib) mkMerge mkIf mkForce;
       inherit (config.my.user.homeConfig.lib.file) mkOutOfStoreSymlink;
       inherit (lib.my) networkdAssignment systemdAwaitPostgres;
     in
@@ -46,11 +47,12 @@ in
                   owner = config.my.user.config.name;
                   group = config.my.user.config.group;
                 };
+                "object/atticd.env" = {};
               };
             };
 
             firewall = {
-              tcp.allowed = [ 9000 9001 config.services.sharry.config.bind.port ];
+              tcp.allowed = [ 9000 9001 config.services.sharry.config.bind.port 8069 ];
             };
 
             user.homeConfig = {
@@ -144,6 +146,29 @@ in
                       timeout = "30 seconds";
                     };
                   };
+                };
+              };
+            };
+
+            atticd = {
+              enable = true;
+              credentialsFile = config.age.secrets."object/atticd.env".path;
+              settings = {
+                listen = "[::]:8069";
+                allowed-hosts = [ "nix-cache.${pubDomain}" ];
+                api-endpoint = "https://nix-cache.${pubDomain}/";
+                database = mkForce {}; # blank to pull from env
+                storage = {
+                  type = "s3";
+                  region = "eu-central-1";
+                  bucket = "nix-attic";
+                  endpoint = "http://localhost:9000";
+                };
+                chunking = {
+                  nar-size-threshold = 65536;
+                  min-size = 16384;
+                  avg-size = 65536;
+                  max-size = 262144;
                 };
               };
             };

@@ -440,14 +440,10 @@ in
       };
 
       "nix-cache.${pubDomain}" = {
-        extraConfig = ''
-          ${extraConfig}
-          proxy_set_header Host "nix-cache.s3.nul.ie";
-        '';
         locations = {
-          "/".proxyPass = s3Upstream;
+          "/".proxyPass = "http://${host}:8069";
           "~ ${nixCacheableRegex}" = {
-            proxyPass = s3Upstream;
+            proxyPass = "http://${host}:8069";
             extraConfig = nixCacheHeaders;
           };
         };

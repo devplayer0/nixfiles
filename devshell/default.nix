@@ -27,5 +27,6 @@ in
     rage
     deploy-rs.deploy-rs
     home-manager
+    attic-client
   ];
 }
