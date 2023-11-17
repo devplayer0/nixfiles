@@ -1,6 +1,5 @@
 { lib, pkgs, ... }:
 let
-  inherit (lib) concatStringsSep;
   inherit (lib.my) attrsToNVList;
 in
 {
@@ -13,9 +12,7 @@ in
     NIX_USER_CONF_FILES = toString (pkgs.writeText "nix.conf"
       ''
         experimental-features = nix-command flakes ca-derivations repl-flake
-        #substituters = https://nix-cache.nul.ie https://cache.nixos.org
-        substituters = https://cache.nixos.org
-        trusted-public-keys = ${concatStringsSep " " lib.my.c.nix.cacheKeys}
+        ${lib.my.c.nix.cache.conf}
       '');
 
     INSTALLER_SSH_OPTS = "-i .keys/deploy.key";

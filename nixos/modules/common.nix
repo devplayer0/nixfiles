@@ -41,14 +41,11 @@ in
 
       nix = {
         package = pkgs'.mine.nix;
-        settings = {
+        settings = with lib.my.c.nix; {
           trusted-users = [ "@wheel" ];
           experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
-          substituters = [
-            #"https://nix-cache.nul.ie"
-            "https://cache.nixos.org"
-          ];
-          trusted-public-keys = lib.my.c.nix.cacheKeys;
+          extra-substituters = cache.substituters;
+          extra-trusted-public-keys = cache.keys;
         };
         registry = {
           pkgs = {

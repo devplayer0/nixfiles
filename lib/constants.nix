@@ -1,4 +1,8 @@
-{ lib }: rec {
+{ lib }:
+let
+  inherit (lib) concatStringsSep;
+in
+rec {
   # See https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/misc/ids.nix
   ids = {
     uids = {
@@ -32,10 +36,18 @@
   };
 
   nix = {
-    cacheKeys = [
-      "nix-cache.nul.ie-1:XofkqdHQSGFoPjB6aRohQbCU2ILKFqhNjWfoOdQgF5Y="
-      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-    ];
+    cache = rec {
+      substituters = [
+        "https://nix-cache.${pubDomain}/main"
+      ];
+      keys = [
+        "main:mMChkG8LwXrFirVfudqjSHasK1jV31OVElYD3eImYl8="
+      ];
+      conf = ''
+        extra-substituters = ${concatStringsSep " " substituters}
+        extra-trusted-public-keys = ${concatStringsSep " " keys}
+      '';
+    };
   };
 
   pubDomain = "nul.ie";

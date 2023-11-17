@@ -235,12 +235,9 @@ in
             exact = true;
           };
         };
-        settings = {
-          substituters = [
-            #"https://nix-cache.nul.ie"
-            "https://cache.nixos.org"
-          ];
-          trusted-public-keys = lib.my.c.nix.cacheKeys;
+        settings = with lib.my.c.nix; {
+          extra-substituters = cache.substituters;
+          extra-trusted-public-keys = cache.keys;
         };
       };
     })

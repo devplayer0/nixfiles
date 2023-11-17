@@ -20,6 +20,7 @@ jobs:
           extra_nix_config: |
             # Make sure we're using sandbox
             sandbox-fallback = false
+
             extra-substituters = https://nix-cache.nul.ie/main
             extra-trusted-public-keys = main:mMChkG8LwXrFirVfudqjSHasK1jV31OVElYD3eImYl8=
       - name: Set up attic
