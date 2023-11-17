@@ -21,7 +21,7 @@ jobs:
             # Make sure we're using sandbox
             sandbox-fallback = false
             extra-substituters = https://nix-cache.nul.ie/main
-            extra-trusted-public-keys = main:a2CtSxCXCXKabLa6IYQWzy3rdYjOwg9Ccm4ayahFjDI=
+            extra-trusted-public-keys = main:mMChkG8LwXrFirVfudqjSHasK1jV31OVElYD3eImYl8=
       - name: Set up attic
         run: |
           nix run .#nixpkgs.mine.x86_64-linux.attic-client -- \
