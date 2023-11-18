@@ -238,6 +238,8 @@ in
         settings = with lib.my.c.nix; {
           extra-substituters = cache.substituters;
           extra-trusted-public-keys = cache.keys;
+          connect-timeout = 5;
+          fallback = true;
         };
       };
     })

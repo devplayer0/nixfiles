@@ -12,6 +12,8 @@ in
     NIX_USER_CONF_FILES = toString (pkgs.writeText "nix.conf"
       ''
         experimental-features = nix-command flakes ca-derivations repl-flake
+        connect-timeout = 5
+        fallback = true
         ${lib.my.c.nix.cache.conf}
       '');
 

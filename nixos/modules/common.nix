@@ -46,6 +46,8 @@ in
           experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
           extra-substituters = cache.substituters;
           extra-trusted-public-keys = cache.keys;
+          connect-timeout = 5;
+          fallback = true;
         };
         registry = {
           pkgs = {
