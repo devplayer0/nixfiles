@@ -97,6 +97,54 @@ rec {
       interval = "04:45";
     };
   };
+  home = rec {
+    domain = "h.${pubDomain}";
+    vlans = {
+      hi = 100;
+      lo = 110;
+      untrusted = 120;
+      wan = 130;
+    };
+    hiMTU = 9000;
+    prefixes = with lib.my.net.cidr; rec {
+      modem = {
+        v4 = "192.168.0.0/24";
+      };
+      all = {
+        v4 = "192.168.64.0/18";
+        v6 = "2a0e:97c0:4d0::/60";
+      };
+      core = {
+        v4 = subnet 6 0 all.v4;
+      };
+      hi = {
+        v4 = subnet 4 1 all.v4;
+        v6 = subnet 4 1 all.v6;
+      };
+      lo = {
+        v4 = subnet 3 1 all.v4;
+        v6 = subnet 4 2 all.v6;
+      };
+      untrusted = {
+        v4 = subnet 6 16 all.v4;
+        v6 = subnet 4 3 all.v6;
+      };
+    };
+    vips = with lib.my.net.cidr; {
+      hi = {
+        v4 = host (4*256-2) prefixes.hi.v4;
+        v6 = host 65535 prefixes.hi.v6;
+      };
+      lo = {
+        v4 = host (8*256-2) prefixes.lo.v4;
+        v6 = host 65535 prefixes.lo.v6;
+      };
+      untrusted = {
+        v4 = host 254 prefixes.untrusted.v4;
+        v6 = host 65535 prefixes.untrusted.v6;
+      };
+    };
+  };
   kelder = {
     groups = {
       storage = 2000;

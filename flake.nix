@@ -116,11 +116,11 @@
         nixos/boxes/colony
         nixos/boxes/tower
         nixos/boxes/castle
+        nixos/boxes/home/oxbow.nix
         nixos/boxes/kelder
 
         # Homes
-        # home-manager/configs/castle.nix
-        home-manager/configs/macsimum.nix
+        # home-manager/configs/macsimum.nix
       ];
 
       nixfiles = evalModules {
