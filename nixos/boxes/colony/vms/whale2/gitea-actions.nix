@@ -30,6 +30,7 @@ in
           enable = true;
           name = "main-docker";
           labels = [
+            "debian-node-bullseye:docker://node:18-bullseye"
             "ubuntu-22.04:docker://git.nul.ie/dev/actions-ubuntu:22.04"
           ];
           url = "https://git.${pubDomain}";

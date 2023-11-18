@@ -10,8 +10,6 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - name: Install jq
-        run: apt-get update -y && apt-get install -y jq
       - uses: cachix/install-nix-action@v23
         with:
           # Gitea will supply a token in GITHUB_TOKEN, which this action will
