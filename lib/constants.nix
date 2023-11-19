@@ -106,6 +106,10 @@ rec {
       wan = 130;
     };
     hiMTU = 9000;
+    routers = [
+      "river"
+      "stream"
+    ];
     prefixes = with lib.my.net.cidr; rec {
       modem = {
         v4 = "192.168.0.0/24";

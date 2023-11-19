@@ -1,20 +1,27 @@
-{ index, name }: { lib, ... }:
+index: { lib, ... }:
 let
+  inherit (builtins) elemAt;
   inherit (lib.my) net;
-  inherit (lib.my.c.home) domain vlans prefixes;
+  inherit (lib.my.c) pubDomain;
+  inherit (lib.my.c.home) domain vlans prefixes routers;
+
+  name = elemAt routers index;
 in
 {
   nixos.systems."${name}" = {
     assignments = {
       modem = {
-        ipv4.address = net.cidr.host (254 - index) prefixes.modem.v4;
+        ipv4 = {
+          address = net.cidr.host (254 - index) prefixes.modem.v4;
+          gateway = null;
+        };
       };
       core = {
         name = "${name}-core";
         inherit domain;
         ipv4 = {
           address = net.cidr.host (index + 1) prefixes.core.v4;
-          mask = 24;
+          gateway = null;
         };
       };
       hi = {
@@ -77,6 +84,8 @@ in
             };
           };
 
+          networking.domain = "h.${pubDomain}";
+
           systemd.network = {
             wait-online.enable = false;
             config = {
@@ -109,36 +118,23 @@ in
                 };
               }
 
-              (mkVLAN "hi" vlans.hi)
-              (mkVLAN "lo" vlans.lo)
-              (mkVLAN "untrusted" vlans.untrusted)
+              (mkVLAN "lan-hi" vlans.hi)
+              (mkVLAN "lan-lo" vlans.lo)
+              (mkVLAN "lan-untrusted" vlans.untrusted)
               (mkVLAN "wan-tunnel" vlans.wan)
             ];
 
-            links = {
-              "10-lan-jim" = {
-                matchConfig = {
-                  # Matching against MAC address seems to break VLAN interfaces
-                  # (since they share the same MAC address)
-                  Driver = "igb";
-                  Path = "pci-0000:01:00.0";
-                };
-                linkConfig = {
-                  Name = "lan-jim";
-                  RxBufferSize = 4096;
-                  TxBufferSize = 4096;
-                  MTUBytes = toString lib.my.c.home.hiMTU;
-                };
-              };
-            };
-
             networks =
             let
-              mkVLANConfig = name: {
-                "60-${name}" = mkMerge [
-                  (networkdAssignment name assignments.hi)
+              mkVLANConfig = name: mtu:
+              let
+                iface = "lan-${name}";
+              in
+              {
+                "60-${iface}" = mkMerge [
+                  (networkdAssignment iface assignments."${name}")
                   {
-                    dns = [ "127.0.0.1" "::1" ];
+                    linkConfig.MTUBytes = toString mtu;
                     domains = [ config.networking.domain ];
                     networkConfig = {
                       IPv6AcceptRA = mkForce false;
@@ -171,12 +167,14 @@ in
                 "50-wan-tunnel" = {
                   matchConfig.Name = "wan-tunnel";
                   networkConfig.Bridge = "wan";
+                  linkConfig.MTUBytes = "1500";
                 };
                 "50-wan" = mkMerge [
                   (networkdAssignment "wan" assignments.modem)
                   {
                     matchConfig.Name = "wan";
                     DHCP = "ipv4";
+                    dns = [ "127.0.0.1" "::1" ];
                     dhcpV4Config.UseDNS = false;
                     routes = map (r: { routeConfig = r; }) [
                       # {
@@ -195,15 +193,19 @@ in
                   matchConfig.Name = "lan-dave";
                   networkConfig.Bridge = "lan";
                 };
-                "55-lan" = {
-                  matchConfig.Name = "lan";
-                  vlan = [ "hi" "lo" "untrusted" ];
-                };
+                "55-lan" = mkMerge [
+                  (networkdAssignment "lan" assignments.core)
+                  {
+                    matchConfig.Name = "lan";
+                    vlan = [ "lan-hi" "lan-lo" "lan-untrusted" "wan-tunnel" ];
+                    networkConfig.IPv6AcceptRA = mkForce false;
+                  }
+                ];
               }
 
-              (mkVLANConfig "hi")
-              (mkVLANConfig "lo")
-              (mkVLANConfig "untrusted")
+              (mkVLANConfig "hi" 9000)
+              (mkVLANConfig "lo" 1500)
+              (mkVLANConfig "untrusted" 1500)
             ];
           };
 
@@ -217,7 +219,7 @@ in
             };
 
             firewall = {
-              trustedInterfaces = [ "hi" "lo" ];
+              trustedInterfaces = [ "lan-hi" "lan-lo" ];
               udp.allowed = [ 5353 ];
               tcp.allowed = [ 5353 ];
               nat = {
@@ -266,8 +268,8 @@ in
                   }
 
                   chain forward {
-                    iifname untrusted jump filter-untrusted
-                    iifname { wan, untrusted } oifname { hi, lo } jump filter-routing
+                    iifname lan-untrusted jump filter-untrusted
+                    iifname { wan, lan-untrusted } oifname { lan-hi, lan-lo } jump filter-routing
                   }
                   chain output { }
                 }

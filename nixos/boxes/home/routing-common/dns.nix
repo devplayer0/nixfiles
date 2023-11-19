@@ -43,7 +43,7 @@ in
 
         settings = {
           query-local-address = [
-            # TODO: IPv4 WAN address?
+            # TODO: Dynamic IPv4 WAN address?
             # assignments.internal.ipv4.address
             # assignments.internal.ipv6.address
             # assignments.hi.ipv6.address
@@ -108,11 +108,21 @@ in
 
             @ IN NS ns1
             @ IN NS ns2
-            # TODO: WAN?
+            ; TODO: WAN?
             ns1 IN A ${net.cidr.host 1 prefixes.hi.v4}
             ns2 IN A ${net.cidr.host 2 prefixes.hi.v4}
             ns1 IN AAAA ${net.cidr.host 1 prefixes.hi.v6}
             ns2 IN AAAA ${net.cidr.host 2 prefixes.hi.v6}
+
+            jim-core IN A ${net.cidr.host 10 prefixes.core.v4}
+            jim IN A ${net.cidr.host 10 prefixes.hi.v4}
+            jim-lo IN A ${net.cidr.host 10 prefixes.lo.v4}
+
+            dave-core IN A ${net.cidr.host 11 prefixes.core.v4}
+            dave IN A ${net.cidr.host 11 prefixes.hi.v4}
+            dave-lo IN A ${net.cidr.host 11 prefixes.lo.v4}
+
+            ups IN A ${net.cidr.host 20 prefixes.lo.v4}
 
             ${lib.my.dns.fwdRecords {
               inherit allAssignments names;
