@@ -43,6 +43,8 @@ in
 
         settings = {
           query-local-address = [
+            # TODO: IPv6
+            "0.0.0.0"
             # TODO: Dynamic IPv4 WAN address?
             # assignments.internal.ipv4.address
             # assignments.internal.ipv6.address

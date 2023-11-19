@@ -94,16 +94,12 @@
           };
         };
 
-        services = {
-          pdns-recursor.settings.query-local-address = [ "109.255.252.104" ];
-        };
-
         my = {
           secrets = {
             key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPYTB4zeAqotrEJ8M+AiGm/s9PFsWlAodz3hYSROGuDb";
           };
           server.enable = true;
-          deploy.node.hostname = "109.255.252.104";
+          deploy.node.hostname = "192.168.72.2";
         };
       };
     };
