@@ -54,6 +54,8 @@ in
         inherit (lib.my) networkdAssignment;
       in
       {
+        imports = [ (import ./dns.nix index) ];
+
         config = {
           environment = {
             systemPackages = with pkgs; [
@@ -140,7 +142,7 @@ in
                     domains = [ config.networking.domain ];
                     networkConfig = {
                       IPv6AcceptRA = mkForce false;
-                      IPv6SendRA = true;
+                      # IPv6SendRA = true;
                     };
                     ipv6SendRAConfig = {
                       DNS = [
