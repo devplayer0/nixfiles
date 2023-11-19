@@ -2,11 +2,11 @@
   imports = [
     (import ./routing-common {
       index = 1;
-      name = "oxbow";
+      name = "stream";
     })
   ];
 
-  config.nixos.systems.oxbow = {
+  config.nixos.systems.stream = {
     system = "x86_64-linux";
     nixpkgs = "mine";
     home-manager = "mine";
