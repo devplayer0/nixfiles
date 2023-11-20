@@ -1,0 +1,26 @@
+diff --git a/bridge-stp.in b/bridge-stp.in
+index 3807873..9c73126 100755
+--- a/bridge-stp.in
++++ b/bridge-stp.in
+@@ -31,6 +31,10 @@
+ # bridge or any associated kernel network interfaces in any code paths that are
+ # used when this script is called by the kernel.
+ 
++# Ensure that we have a sane PATH.
++PATH='/run/current-system/sw/bin'
++export PATH
++
+ # Parse arguments.
+ CalledAs="$(basename "$0")"
+ if [ "$CalledAs" = 'mstpctl_restart_config' ]; then
+@@ -62,10 +66,6 @@ fi
+ # Ensure that we have a sane umask.
+ umask 022
+ 
+-# Ensure that we have a sane PATH.
+-PATH='/sbin:/usr/sbin:/bin:/usr/bin'
+-export PATH
+-
+ # Define some relevant paths.
+ mstpctl='@mstpctlfile@'
+ mstpd='@mstpdfile@'

@@ -59,15 +59,27 @@ in
       let
         inherit (lib) mkIf mkMerge mkForce;
         inherit (lib.my) networkdAssignment;
+
+        # TODO: Move into nixpkgs
+        mstpd = pkgs.mstpd.overrideAttrs {
+          patches = [ ./mstpd.patch ];
+        };
       in
       {
         imports = [ (import ./dns.nix index) ];
 
         config = {
           environment = {
-            systemPackages = with pkgs; [
-              ethtool
+            systemPackages = [
+              pkgs.ethtool
+              mstpd
             ];
+            etc = {
+              "bridge-stp.conf".text = ''
+                MANAGE_MSTPD=n
+                MSTP_BRIDGES=lan
+              '';
+            };
           };
 
           services = {
@@ -82,9 +94,43 @@ in
               enable = true;
               openFirewall = true;
             };
+
+            networkd-dispatcher = {
+              enable = true;
+              rules = {
+                configure-mstpd = {
+                  onState = [ "routable" ];
+                  script = ''
+                    #!${pkgs.runtimeShell}
+                    if [ $IFACE = "lan" ]; then
+                      ${mstpd}/sbin/mstpctl setforcevers $IFACE rstp
+                    fi
+                  '';
+                };
+              };
+            };
           };
 
           networking.domain = "h.${pubDomain}";
+
+          systemd = {
+            services = {
+              mstpd = {
+                description = "MSTP daemon";
+                before = [ "network-pre.target" ];
+                serviceConfig = {
+                  Type = "forking";
+                  ExecStart = "${mstpd}/sbin/bridge-stp restart";
+                  ExecReload = "${mstpd}/sbin/bridge-stp restart_config";
+                  PIDFile = "/run/mstpd.pid";
+                  Restart = "always";
+                  PrivateTmp = true;
+                  ProtectHome = true;
+                };
+                wantedBy = [ "multi-user.target" ];
+              };
+            };
+          };
 
           systemd.network = {
             wait-online.enable = false;
@@ -112,9 +158,15 @@ in
                   Name = "wan";
                   Kind = "bridge";
                 };
-                "25-lan".netdevConfig = {
-                  Name = "lan";
-                  Kind = "bridge";
+                "25-lan" = {
+                  netdevConfig = {
+                    Name = "lan";
+                    Kind = "bridge";
+                  };
+                  extraConfig = ''
+                    [Bridge]
+                    STP=true
+                  '';
                 };
               }
 
