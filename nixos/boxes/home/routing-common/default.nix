@@ -168,6 +168,11 @@ in
                     STP=true
                   '';
                 };
+                "30-lan-core".netdevConfig = {
+                  Name = "lan-core";
+                  Kind = "macvlan";
+                  MTUBytes = "1500";
+                };
               }
 
               (mkVLAN "lan-hi" vlans.hi)
@@ -245,11 +250,21 @@ in
                   matchConfig.Name = "lan-dave";
                   networkConfig.Bridge = "lan";
                 };
-                "55-lan" = mkMerge [
-                  (networkdAssignment "lan" assignments.core)
+                "55-lan" = {
+                  matchConfig.Name = "lan";
+                  vlan = [ "lan-hi" "lan-lo" "lan-untrusted" "wan-tunnel" ];
+                  macvlan = [ "lan-core" ];
+                  networkConfig = {
+                    LinkLocalAddressing = "no";
+                    IPv6AcceptRA = false;
+                    LLDP = false;
+                    EmitLLDP = false;
+                  };
+                };
+                "60-lan-core" = mkMerge [
+                  (networkdAssignment "lan-core" assignments.core)
                   {
-                    matchConfig.Name = "lan";
-                    vlan = [ "lan-hi" "lan-lo" "lan-untrusted" "wan-tunnel" ];
+                    matchConfig.Name = "lan-core";
                     networkConfig.IPv6AcceptRA = mkForce false;
                   }
                 ];
