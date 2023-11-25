@@ -1,8 +1,12 @@
 index: { lib, pkgs, config, assignments, allAssignments, ... }:
 let
-  inherit (builtins) attrNames;
+  inherit (builtins) attrNames elemAt;
   inherit (lib.my) net;
-  inherit (lib.my.c.home) prefixes vips;
+  inherit (lib.my.c.home) prefixes vips routers;
+
+  name = elemAt routers index;
+  otherIndex = 1 - index;
+  otherName = elemAt routers otherIndex;
 
   authZones = attrNames config.my.pdns.auth.bind.zones;
 in
@@ -63,6 +67,11 @@ in
       };
     };
 
+    systemd.services = {
+      # Add AF_NETLINK to allow pulling IP from network interfaces
+      pdns.serviceConfig.RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6 AF_NETLINK";
+    };
+
     # For rec_control
     environment.systemPackages = with pkgs; [
       pdns-recursor
@@ -80,9 +89,9 @@ in
         ];
         also-notify = [ "127.0.0.1" ];
         enable-lua-records = true;
-        #loglevel = 7;
-        #log-dns-queries = true;
-        #log-dns-details = true;
+        # loglevel = 7;
+        # log-dns-queries = true;
+        # log-dns-details = true;
 
         api = true;
         webserver = true;
@@ -108,13 +117,23 @@ in
               1h ; minimum
             )
 
+            ${name} IN LUA ${lib.my.dns.ifaceA {
+              inherit pkgs;
+              iface = "wan";
+              skipBroadcasts = [ (lib.my.netBroadcast prefixes.modem.v4) ];
+            }}
+            ${otherName} IN LUA ${lib.my.dns.lookupIP {
+              inherit pkgs;
+              hostname = "${otherName}.${config.networking.domain}";
+              server = net.cidr.host (otherIndex + 1) prefixes.hi.v4;
+            }}
+            ${elemAt routers 0} IN AAAA ${net.cidr.host 1 prefixes.hi.v6}
+            ${elemAt routers 1} IN AAAA ${net.cidr.host 2 prefixes.hi.v6}
+
             @ IN NS ns1
             @ IN NS ns2
-            ; TODO: WAN?
-            ns1 IN A ${net.cidr.host 1 prefixes.hi.v4}
-            ns2 IN A ${net.cidr.host 2 prefixes.hi.v4}
-            ns1 IN AAAA ${net.cidr.host 1 prefixes.hi.v6}
-            ns2 IN AAAA ${net.cidr.host 2 prefixes.hi.v6}
+            ns1 IN ALIAS ${elemAt routers 0}.${config.networking.domain}.
+            ns2 IN ALIAS ${elemAt routers 1}.${config.networking.domain}.
 
             jim-core IN A ${net.cidr.host 10 prefixes.core.v4}
             jim IN A ${net.cidr.host 10 prefixes.hi.v4}

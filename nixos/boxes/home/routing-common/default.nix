@@ -26,6 +26,7 @@ in
       };
       hi = {
         inherit domain;
+        name = "${name}-hi";
         ipv4 = {
           address = net.cidr.host (index + 1) prefixes.hi.v4;
           mask = 22;

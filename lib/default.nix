@@ -8,6 +8,18 @@ let
   inherit (lib.flake) defaultSystems;
 in
 rec {
+  pow =
+    let
+      pow' = base: exponent: value:
+        # FIXME: It will silently overflow on values > 2**62 :(
+        # The value will become negative or zero in this case
+        if exponent == 0
+        then 1
+        else if exponent <= 1
+        then value
+        else (pow' base (exponent - 1) (value * base));
+    in base: exponent: pow' base exponent base;
+
   attrsToNVList = mapAttrsToList nameValuePair;
 
   inherit (import ./net.nix { inherit lib; }) net;
@@ -28,6 +40,8 @@ rec {
       ip = checked (elemAt m 0);
       ports = checked (elemAt m 1);
     };
+
+  netBroadcast = net': net.cidr.host ((pow 2 (net.cidr.size net')) - 1) net';
 
   mkDefaultSystemsPkgs = path: args': genAttrs defaultSystems (system: import path ((args' system) // { inherit system; }));
   mkApp = program: { type = "app"; inherit program; };
