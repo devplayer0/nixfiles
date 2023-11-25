@@ -87,7 +87,21 @@ in
               openFirewall = true;
             };
 
-            networkd-dispatcher.enable = true;
+            networkd-dispatcher = {
+              enable = true;
+              rules = {
+                # tc filter hasn't been networkd-ified yet
+                setup-wan-mirror = {
+                  onState = [ "configured" ];
+                  script = ''
+                  #!${pkgs.runtimeShell}
+                  if [ $IFACE = "wan-phy-ifb" ]; then
+                    ${pkgs.iproute2}/bin/tc filter add dev wan-phy parent ffff: matchall action mirred egress redirect dev $IFACE
+                  fi
+                  '';
+                };
+              };
+            };
           };
 
           networking.domain = "h.${pubDomain}";
@@ -114,6 +128,10 @@ in
             in
             mkMerge [
               {
+                "25-wan-phy-ifb".netdevConfig = {
+                  Name = "wan-phy-ifb";
+                  Kind = "ifb";
+                };
                 "25-wan".netdevConfig = {
                   Name = "wan";
                   Kind = "bridge";
@@ -180,7 +198,37 @@ in
                 "50-wan-phy" = {
                   matchConfig.Name = "wan-phy";
                   networkConfig.Bridge = "wan";
+                  qdiscConfig = {
+                    Parent = "ingress";
+                    Handle = "0xffff";
+                  };
+                  extraConfig = ''
+                    [CAKE]
+                    Parent=root
+                    Bandwidth=24M
+                    RTTSec=1ms
+                  '';
                 };
+                "50-wan-phy-ifb" = {
+                  matchConfig.Name = "wan-phy-ifb";
+                  networkConfig = {
+                    LinkLocalAddressing = "no";
+                    IPv6AcceptRA = false;
+                    LLDP = false;
+                    EmitLLDP = false;
+                  };
+                  extraConfig = ''
+                    [CAKE]
+                    Bandwidth=235M
+                    RTTSec=10ms
+                    PriorityQueueingPreset=besteffort
+                    # DOCSIS preset
+                    OverheadBytes=18
+                    MPUBytes=64
+                    CompensationMode=none
+                  '';
+                };
+
                 "50-wan-tunnel" = {
                   matchConfig.Name = "wan-tunnel";
                   networkConfig.Bridge = "wan";
