@@ -64,6 +64,7 @@ in
       {
         imports = map (m: import m index) [
           ./mstpd.nix
+          ./keepalived.nix
           ./dns.nix
         ];
 
