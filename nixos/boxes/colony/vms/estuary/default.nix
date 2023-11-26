@@ -1,9 +1,8 @@
 { lib, ... }:
 let
+  inherit (builtins) elemAt;
   inherit (lib.my) net;
-  inherit (lib.my.c.colony) domain prefixes;
-
-  pubV4 = "94.142.240.44";
+  inherit (lib.my.c.colony) pubV4 domain prefixes;
 in
 {
   nixos = {
@@ -11,9 +10,11 @@ in
       l2 = {
         as211024 = {
           vni = 211024;
+          security.enable = true;
           peers = {
             estuary.addr = pubV4;
-            home.addr = "188.141.75.2";
+            # river.addr = elemAt lib.my.c.home.routersPubV4 0;
+            stream.addr = elemAt lib.my.c.home.routersPubV4 1;
           };
         };
       };
@@ -53,10 +54,10 @@ in
       };
       as211024 = {
         ipv4 = {
-          address = "10.255.3.1";
+          address = net.cidr.host 1 prefixes.as211024.v4;
           gateway = null;
         };
-        ipv6.address = "2a0e:97c0:4df:0:3::1";
+        ipv6.address = net.cidr.host 1 prefixes.as211024.v6;
       };
     };
 
@@ -90,6 +91,7 @@ in
             environment = {
               systemPackages = with pkgs; [
                 ethtool
+                conntrack-tools
                 wireguard-tools
               ];
             };
@@ -114,33 +116,18 @@ in
             };
 
             systemd = {
-              services = {
-                # Use this as a way to make sure the router always knows we're here (NDP seems kindy funky)
-                ipv6-neigh-keepalive =
-                let
-                  waitOnline = "systemd-networkd-wait-online@wan.service";
-                in
-                {
-                  description = "Frequent ICMP6 neighbour solicitations";
-                  enable = false;
-                  requires = [ waitOnline ];
-                  after = [ waitOnline ];
-                  script = ''
-                    while true; do
-                      ${pkgs.ndisc6}/bin/ndisc6 ${assignments.internal.ipv6.gateway} wan
-                      sleep 10
-                    done
-                  '';
-                  wantedBy = [ "multi-user.target" ];
-                };
-
-                bird2 =
-                let
-                  waitOnline = "systemd-networkd-wait-online@wan.service";
-                in
-                {
+              services =
+              let
+                waitOnline = "systemd-networkd-wait-online@wan.service";
+              in
+              {
+                bird2 = {
                   after = [ waitOnline ];
                   # requires = [ waitOnline ];
+                };
+                ipsec = {
+                  after = [ waitOnline ];
+                  requires = [ waitOnline ];
                 };
               };
             };
@@ -337,14 +324,13 @@ in
                   }
                 ];
 
-                "90-l2mesh-as211024" = {
-                  matchConfig.Name = "as211024";
-                  address = with assignments.as211024; [
-                    (with ipv4; "${address}/${toString mask}")
-                    (with ipv6; "${address}/${toString mask}")
-                  ];
-                  networkConfig.IPv6AcceptRA = false;
-                };
+                "90-l2mesh-as211024" = mkMerge [
+                  (networkdAssignment "as211024" assignments.as211024)
+                  {
+                    matchConfig.Name = "as211024";
+                    networkConfig.IPv6AcceptRA = mkForce false;
+                  }
+                ];
                 "95-kelder" = {
                   matchConfig.Name = "kelder";
                   routes = [
@@ -366,10 +352,16 @@ in
                   "estuary/kelder-wg.key" = {
                     owner = "systemd-network";
                   };
+                  "l2mesh/as211024.key" = {};
                 };
               };
               server.enable = true;
 
+              vpns = {
+                l2.pskFiles = {
+                  as211024 = config.age.secrets."l2mesh/as211024.key".path;
+                };
+              };
               firewall = {
                 trustedInterfaces = [ "as211024" ];
                 udp.allowed = [ 5353 lib.my.c.kelder.vpn.port ];

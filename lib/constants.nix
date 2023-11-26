@@ -53,6 +53,7 @@ rec {
   pubDomain = "nul.ie";
   colony = {
     domain = "ams1.int.${pubDomain}";
+    pubV4 = "94.142.240.44";
     prefixes = with lib.my.net.cidr; rec {
       all = {
         v4 = "10.100.0.0/16";
@@ -90,6 +91,12 @@ rec {
 
       vip1 = "94.142.241.224/30";
       vip2 = "94.142.242.254/31";
+
+      as211024 = {
+        v4 = subnet 8 50 all.v4;
+        v6 = "2a0e:97c0:4df::/64";
+      };
+      home.v6 = "2a0e:97c0:4d0::/48";
     };
     fstrimConfig = {
       enable = true;
@@ -97,6 +104,7 @@ rec {
       interval = "04:45";
     };
   };
+
   home = rec {
     domain = "h.${pubDomain}";
     vlans = {
@@ -110,6 +118,11 @@ rec {
       "river"
       "stream"
     ];
+    routersPubV4 = [
+      "109.255.252.123" # placeholder
+      "109.255.252.104"
+    ];
+
     prefixes = with lib.my.net.cidr; rec {
       modem = {
         v4 = "192.168.0.0/24";
@@ -133,6 +146,7 @@ rec {
         v4 = subnet 6 16 all.v4;
         v6 = subnet 4 3 all.v6;
       };
+      inherit (colony.prefixes) as211024;
     };
     vips = with lib.my.net.cidr; {
       hi = {
@@ -147,8 +161,13 @@ rec {
         v4 = host 254 prefixes.untrusted.v4;
         v6 = host 65535 prefixes.untrusted.v6;
       };
+      as211024 = {
+        v4 = host 4 prefixes.as211024.v4;
+        v6 = host ((1*65536*65536*65536) + 65535) prefixes.as211024.v6;
+      };
     };
   };
+
   kelder = {
     groups = {
       storage = 2000;

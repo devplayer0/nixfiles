@@ -4,9 +4,10 @@ let
   inherit (lib.my) net;
   inherit (lib.my.c.home) prefixes vips;
 
+  vlanIface = vlan: if vlan == "as211024" then vlan else "lan-${vlan}";
   vrrpIPs = family: map (vlan: {
     addr = "${vips.${vlan}.${family}}/${toString (net.cidr.length prefixes.${vlan}.${family})}";
-    dev = "lan-${vlan}";
+    dev = vlanIface vlan;
   }) (attrNames vips);
   mkVRRP = family: routerId: {
     state = if index == 0 then "MASTER" else "BACKUP";

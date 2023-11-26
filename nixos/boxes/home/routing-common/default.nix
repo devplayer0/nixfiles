@@ -1,4 +1,4 @@
-index: { lib, ... }:
+index: { lib, allAssignments, ... }:
 let
   inherit (builtins) elemAt;
   inherit (lib.my) net;
@@ -54,6 +54,13 @@ in
         };
         ipv6.address = net.cidr.host (index + 1) prefixes.untrusted.v6;
       };
+      as211024 = {
+        ipv4 = {
+          address = net.cidr.host (index + 2) prefixes.as211024.v4;
+          gateway = null;
+        };
+        ipv6.address = net.cidr.host ((1*65536*65536*65536) + index + 1) prefixes.as211024.v6;
+      };
     };
 
     configuration = { lib, pkgs, config, assignments, allAssignments, ... }:
@@ -72,6 +79,7 @@ in
           environment = {
             systemPackages = with pkgs; [
               ethtool
+              conntrack-tools
             ];
           };
 
@@ -106,6 +114,17 @@ in
           };
 
           networking.domain = "h.${pubDomain}";
+
+          systemd.services = {
+            ipsec =
+            let
+              waitOnline = "systemd-networkd-wait-online@wan.service";
+            in
+            {
+              after = [ waitOnline ];
+              requires = [ waitOnline ];
+            };
+          };
 
           systemd.network = {
             wait-online.enable = false;
@@ -277,6 +296,14 @@ in
                     networkConfig.IPv6AcceptRA = mkForce false;
                   }
                 ];
+
+                "90-l2mesh-as211024" = mkMerge [
+                  (networkdAssignment "as211024" assignments.as211024)
+                  {
+                    matchConfig.Name = "as211024";
+                    networkConfig.IPv6AcceptRA = mkForce false;
+                  }
+                ];
               }
 
               (mkVLANConfig "hi" 9000)
@@ -288,12 +315,15 @@ in
           my = {
             secrets = {
               files = {
-                # "estuary/kelder-wg.key" = {
-                #   owner = "systemd-network";
-                # };
+                "l2mesh/as211024.key" = {};
               };
             };
 
+            vpns = {
+              l2.pskFiles = {
+                as211024 = config.age.secrets."l2mesh/as211024.key".path;
+              };
+            };
             firewall = {
               trustedInterfaces = [ "lan-hi" "lan-lo" ];
               udp.allowed = [ 5353 ];

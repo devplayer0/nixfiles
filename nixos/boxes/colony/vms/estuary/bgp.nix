@@ -29,7 +29,7 @@ in
           define OWNNETSET6 = [ ${intnet6}, ${amsnet6}, ${homenet6} ];
           #define TRANSSET6 = [ ::1/128 ];
 
-          define DUB1IP6 = 2a0e:97c0:4df:0:2::1;
+          define DUB1IP6 = ${lib.my.c.home.vips.as211024.v6};
 
           define PREFIXP = 110;
           define PREFPEER = 120;
