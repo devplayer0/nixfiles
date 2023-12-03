@@ -11,6 +11,8 @@
       inherit (lib);
     in
     {
+      imports = [ ./routing-common/mstpd.nix ];
+
       config = {
         boot = {
           kernelModules = [ "kvm-intel" ];
@@ -42,6 +44,18 @@
         };
 
         systemd.network = {
+          netdevs = {
+            "25-lan" = {
+              netdevConfig = {
+                Name = "lan";
+                Kind = "bridge";
+              };
+              extraConfig = ''
+                [Bridge]
+                STP=true
+              '';
+            };
+          };
           links = {
             "10-wan-phy" = {
               matchConfig = {
@@ -92,6 +106,16 @@
               linkConfig.Name = "et5";
             };
           };
+          networks = {
+            "50-lan-jim" = {
+              matchConfig.Name = "lan-jim";
+              networkConfig.Bridge = "lan";
+            };
+            "50-lan-dave" = {
+              matchConfig.Name = "lan-dave";
+              networkConfig.Bridge = "lan";
+            };
+          };
         };
 
         my = {
@@ -99,7 +123,7 @@
             key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPYTB4zeAqotrEJ8M+AiGm/s9PFsWlAodz3hYSROGuDb";
           };
           server.enable = true;
-          deploy.node.hostname = "192.168.72.2";
+          deploy.node.hostname = "192.168.68.2";
         };
       };
     };

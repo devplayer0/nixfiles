@@ -187,6 +187,9 @@ in
     (mkIf config.networking.resolvconf.enable {
       my.tmproot.unsaved.ignore = [ "/etc/resolv.conf" ];
     })
+    (mkIf config.networking.nftables.enable {
+      my.tmproot.unsaved.ignore = [ "/var/lib/nftables/deletions.nft" ];
+    })
     (mkIf config.security.doas.enable {
       my.tmproot.unsaved.ignore = [ "/etc/doas.conf" ];
     })

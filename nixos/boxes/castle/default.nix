@@ -1,12 +1,37 @@
-{ lib, ... }: {
+{ lib, ... }:
+let
+  inherit (lib.my) net;
+  inherit (lib.my.c.home) domain vlans prefixes;
+in
+{
   nixos.systems.castle = {
     system = "x86_64-linux";
     nixpkgs = "mine";
     home-manager = "mine";
 
+    assignments = {
+      hi = {
+        inherit domain;
+        ipv4 = {
+          address = net.cidr.host 40 prefixes.hi.v4;
+          mask = 22;
+          gateway = null;
+        };
+      };
+      lo = {
+        inherit domain;
+        ipv4 = {
+          address = net.cidr.host 40 prefixes.lo.v4;
+          mask = 21;
+          gateway = null;
+        };
+      };
+    };
+
     configuration = { lib, pkgs, modulesPath, config, systems, assignments, allAssignments, ... }:
       let
         inherit (lib) mkIf mkMerge mkForce;
+        inherit (lib.my) mkVLAN networkdAssignment;
       in
       {
         hardware = {
@@ -117,6 +142,10 @@
         systemd = {
           network = {
             wait-online.enable = false;
+            netdevs = mkMerge [
+              (mkVLAN "lan-hi" vlans.hi)
+              (mkVLAN "lan-lo" vlans.lo)
+            ];
             links = {
               "10-et2.5g" = {
                 matchConfig.MACAddress = "c8:7f:54:6e:17:0f";
@@ -127,8 +156,11 @@
                 linkConfig.Name = "et10g";
               };
               "12-et100g" = {
-                matchConfig.MACAddress = "24:8a:07:a8:fe:3a";
-                linkConfig.Name = "et100g";
+                matchConfig.PermanentMACAddress = "24:8a:07:a8:fe:3a";
+                linkConfig = {
+                  Name = "et100g";
+                  MTUBytes = "9000";
+                };
               };
             };
             networks = {
@@ -136,6 +168,26 @@
                 matchConfig.Name = "et2.5g";
                 DHCP = "yes";
               };
+
+              "50-et100g" = {
+                matchConfig.Name = "et100g";
+                vlan = [ "lan-hi" "lan-lo" ];
+                networkConfig.IPv6AcceptRA = false;
+              };
+              "60-lan-hi" = mkMerge [
+                (networkdAssignment "lan-hi" assignments.hi)
+                {
+                  matchConfig.Name = "lan-hi";
+                  linkConfig.MTUBytes = "9000";
+                }
+              ];
+              "60-lan-lo" = mkMerge [
+                (networkdAssignment "lan-lo" assignments.lo)
+                {
+                  matchConfig.Name = "lan-lo";
+                  linkConfig.MTUBytes = "1500";
+                }
+              ];
             };
           };
         };

@@ -117,6 +117,7 @@
         nixos/boxes/tower
         nixos/boxes/castle
         nixos/boxes/home/stream.nix
+        nixos/boxes/home/palace
         nixos/boxes/kelder
 
         # Homes

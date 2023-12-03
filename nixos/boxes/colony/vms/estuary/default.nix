@@ -1,7 +1,7 @@
 { lib, ... }:
 let
   inherit (builtins) elemAt;
-  inherit (lib.my) net;
+  inherit (lib.my) net mkVLAN;
   inherit (lib.my.c.colony) pubV4 domain prefixes;
 in
 {
@@ -141,19 +141,7 @@ in
                 };
               };
 
-              netdevs =
-              let
-                mkVLAN = name: vid: {
-                  "25-${name}" = {
-                    netdevConfig = {
-                      Name = name;
-                      Kind = "vlan";
-                    };
-                    vlanConfig.Id = vid;
-                  };
-                };
-              in
-              mkMerge [
+              netdevs = mkMerge [
                 (mkVLAN "ifog" 409)
 
                 (mkVLAN "frys-ix" 701)

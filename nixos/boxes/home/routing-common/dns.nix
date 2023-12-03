@@ -145,6 +145,7 @@ in
             dave-lo IN A ${net.cidr.host 11 prefixes.lo.v4}
 
             ups IN A ${net.cidr.host 20 prefixes.lo.v4}
+            palace-kvm IN A ${net.cidr.host 21 prefixes.lo.v4}
 
             ${lib.my.dns.fwdRecords {
               inherit allAssignments names;

@@ -1,4 +1,4 @@
-index: { lib, pkgs, ... }:
+{ lib, pkgs, ... }:
 let
   # TODO: Move into nixpkgs
   mstpd = pkgs.mstpd.overrideAttrs {

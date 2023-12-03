@@ -123,6 +123,15 @@ rec {
     home-manager = mkOpt' (enum [ "unstable" "stable" "mine" "mine-stable" ]) "unstable" "Branch of home-manager to use.";
   };
 
+  mkVLAN = name: vid: {
+    "25-${name}" = {
+      netdevConfig = {
+        Name = name;
+        Kind = "vlan";
+      };
+      vlanConfig.Id = vid;
+    };
+  };
   networkdAssignment = iface: a: {
     matchConfig.Name = iface;
     address =

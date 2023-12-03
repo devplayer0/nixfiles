@@ -1,9 +1,9 @@
 index: { lib, allAssignments, ... }:
 let
   inherit (builtins) elemAt;
-  inherit (lib.my) net;
+  inherit (lib.my) net mkVLAN;
   inherit (lib.my.c) pubDomain;
-  inherit (lib.my.c.home) domain vlans prefixes routers;
+  inherit (lib.my.c.home) domain vlans prefixes routers routersPubV4;
 
   name = elemAt routers index;
 in
@@ -59,7 +59,10 @@ in
           address = net.cidr.host (index + 2) prefixes.as211024.v4;
           gateway = null;
         };
-        ipv6.address = net.cidr.host ((1*65536*65536*65536) + index + 1) prefixes.as211024.v6;
+        ipv6 = {
+          address = net.cidr.host ((1*65536*65536*65536) + index + 1) prefixes.as211024.v6;
+          gateway = net.cidr.host 1 prefixes.as211024.v6;
+        };
       };
     };
 
@@ -70,7 +73,6 @@ in
       in
       {
         imports = map (m: import m index) [
-          ./mstpd.nix
           ./keepalived.nix
           ./dns.nix
         ];
@@ -134,19 +136,7 @@ in
               };
             };
 
-            netdevs =
-            let
-              mkVLAN = name: vid: {
-                "25-${name}" = {
-                  netdevConfig = {
-                    Name = name;
-                    Kind = "vlan";
-                  };
-                  vlanConfig.Id = vid;
-                };
-              };
-            in
-            mkMerge [
+            netdevs = mkMerge [
               {
                 "25-wan-phy-ifb".netdevConfig = {
                   Name = "wan-phy-ifb";
@@ -155,16 +145,6 @@ in
                 "25-wan".netdevConfig = {
                   Name = "wan";
                   Kind = "bridge";
-                };
-                "25-lan" = {
-                  netdevConfig = {
-                    Name = "lan";
-                    Kind = "bridge";
-                  };
-                  extraConfig = ''
-                    [Bridge]
-                    STP=true
-                  '';
                 };
                 "30-lan-core".netdevConfig = {
                   Name = "lan-core";
@@ -270,14 +250,6 @@ in
                   }
                 ];
 
-                "50-lan-jim" = {
-                  matchConfig.Name = "lan-jim";
-                  networkConfig.Bridge = "lan";
-                };
-                "50-lan-dave" = {
-                  matchConfig.Name = "lan-dave";
-                  networkConfig.Bridge = "lan";
-                };
                 "55-lan" = {
                   matchConfig.Name = "lan";
                   vlan = [ "lan-hi" "lan-lo" "lan-untrusted" "wan-tunnel" ];
@@ -339,15 +311,7 @@ in
                   # }
                 ];
               };
-              extraRules =
-              let
-                aa = allAssignments;
-                matchInet = rule: sys: ''
-                  ip daddr ${aa."${sys}".hi.ipv4.address} ${rule}
-                  ip6 daddr ${aa."${sys}".hi.ipv6.address} ${rule}
-                '';
-              in
-              ''
+              extraRules = ''
                 table inet filter {
                   chain input {
                     iifname base meta l4proto { udp, tcp } th dport domain accept
@@ -381,7 +345,8 @@ in
                 }
                 table inet nat {
                   chain prerouting {
-                    ${matchInet "meta l4proto { udp, tcp } th dport domain redirect to :5353" name}
+                    ip daddr ${elemAt routersPubV4 index} meta l4proto { udp, tcp } th dport domain redirect to :5353
+                    ip6 daddr ${assignments.as211024.ipv6.address} meta l4proto { udp, tcp } th dport domain redirect to :5353
                   }
                   chain postrouting {
                     oifname wan masquerade

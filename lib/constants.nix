@@ -125,7 +125,7 @@ rec {
     ];
     routersPubV4 = [
       "109.255.252.123" # placeholder
-      "109.255.252.104"
+      "109.255.252.166"
     ];
 
     prefixes = with lib.my.net.cidr; rec {
