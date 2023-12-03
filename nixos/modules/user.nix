@@ -99,7 +99,7 @@ in
     (mkIf (cfg.passwordSecret != null) {
       my = {
         secrets.files."${cfg.passwordSecret}" = {};
-        user.config.passwordFile = config.age.secrets."${cfg.passwordSecret}".path;
+        user.config.hashedPasswordFile = config.age.secrets."${cfg.passwordSecret}".path;
       };
     })
   ]);

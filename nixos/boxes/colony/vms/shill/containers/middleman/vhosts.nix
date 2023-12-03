@@ -318,59 +318,12 @@ in
         useACMEHost = pubDomain;
       };
 
-      "toot.nul.ie" =
-      let
-        mkAssetLoc = name: {
-          tryFiles = "$uri =404";
-          extraConfig = ''
-            add_header Cache-Control "public, max-age=2419200, must-revalidate";
-            add_header Strict-Transport-Security "max-age=63072000; includeSubpubDomains";
-          '';
+      "toot.nul.ie" = {
+        locations."/" = {
+          proxyPass = "http://toot-ctr.${domain}:80";
+          proxyWebsockets = true;
+          extraConfig = proxyHeaders;
         };
-      in
-      {
-        root = "${pkgs.mastodon}/public";
-        locations = mkMerge [
-          (genAttrs [
-            "= /sw.js"
-            "~ ^/assets/"
-            "~ ^/avatars/"
-            "~ ^/emoji/"
-            "~ ^/headers/"
-            "~ ^/packs/"
-            "~ ^/shortcuts/"
-            "~ ^/sounds/"
-          ] mkAssetLoc)
-          {
-            "/".tryFiles = "$uri @proxy";
-
-            "^~ /api/v1/streaming" = {
-              proxyPass = "http://toot-ctr.${domain}:55000";
-              proxyWebsockets = true;
-              extraConfig = ''
-                ${proxyHeaders}
-                proxy_set_header Proxy "";
-
-                add_header Strict-Transport-Security "max-age=63072000; includeSubdomains";
-              '';
-            };
-            "@proxy" = {
-              proxyPass = "http://toot-ctr.${domain}:55001";
-              proxyWebsockets = true;
-              extraConfig = ''
-                ${proxyHeaders}
-                proxy_set_header Proxy "";
-                proxy_pass_header Server;
-
-                proxy_cache CACHE;
-                proxy_cache_valid 200 7d;
-                proxy_cache_valid 410 24h;
-                proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
-                add_header X-Cached $upstream_cache_status;
-              '';
-            };
-          }
-        ];
         useACMEHost = pubDomain;
       };
 

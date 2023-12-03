@@ -61,6 +61,7 @@ in
             settings = {
               background_opacity = "0.8";
               tab_bar_edge = "top";
+              shell_integration = "no-sudo";
             };
           };
 

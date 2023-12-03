@@ -57,7 +57,7 @@ in
         };
 
         boot = {
-          kernelPackages = pkgs.linuxKernel.packages.linux_6_1.extend (self: super: {
+          kernelPackages = (lib.my.c.kernel.lts pkgs).extend (self: super: {
             kernel = super.kernel.override {
               structuredExtraConfig = with lib.kernel; {
                 #SOME_OPT = yes;

@@ -19,6 +19,11 @@ rec {
     };
   };
 
+  kernel = {
+    lts = pkgs: pkgs.linuxKernel.packages.linux_6_1;
+    latest = pkgs: pkgs.linuxKernel.packages.linux_6_6;
+  };
+
   nginx = {
     proxyHeaders = ''
       # Setting any proxy_header in a child (e.g. location) will nuke the parents...

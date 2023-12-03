@@ -1,5 +1,6 @@
 { lib, ... }:
 let
+  inherit (lib) mkForce;
   inherit (lib.my) net;
   inherit (lib.my.c.colony) domain prefixes;
 in
@@ -54,8 +55,7 @@ in
               tcp.allowed = [
                 19999
 
-                config.services.mastodon.webPort
-                config.services.mastodon.streamingPort
+                "http"
               ];
             };
           };
@@ -78,10 +78,13 @@ in
           services = {
             netdata.enable = true;
             mastodon = mkMerge [
-              {
+              rec {
                 enable = true;
-                localDomain = "nul.ie";
-                extraConfig.WEB_DOMAIN = "toot.nul.ie";
+                localDomain = extraConfig.WEB_DOMAIN; # for nginx config
+                extraConfig = {
+                  LOCAL_DOMAIN = "nul.ie";
+                  WEB_DOMAIN = "toot.nul.ie";
+                };
 
                 secretKeyBaseFile = config.age.secrets."toot/secret-key.txt".path;
                 otpSecretFile = config.age.secrets."toot/otp-secret.txt".path;
@@ -90,9 +93,8 @@ in
                   "vapid-pubkey.txt"
                   "BAyRyD2pnLQtMHr3J5AzjNMll_HDC6ra1ilOLAUmKyhkEdbm7_OwKZUgw1UefY4CHEcv4OOX9TnnN2DOYYuPZu8=");
 
-                enableUnixSocket = false;
-                configureNginx = false;
-                trustedProxy = allAssignments.middleman.internal.ipv6.address;
+                streamingProcesses = 4;
+                configureNginx = true;
 
                 database = {
                   createLocally = false;
@@ -134,13 +136,31 @@ in
                 };
               }
             ];
+
+            # Override some stuff since we are proxying upstream
+            nginx = {
+              recommendedProxySettings = mkForce false;
+              virtualHosts."${config.services.mastodon.localDomain}" =
+              let
+                extraConfig = ''
+                  proxy_set_header Host $host;
+                '';
+              in
+              {
+                forceSSL = false;
+                enableACME = false;
+                locations = {
+                  "@proxy" = { inherit extraConfig; };
+                  "/api/v1/streaming/" = { inherit extraConfig; };
+                };
+              };
+            };
           };
         }
         (mkIf config.my.build.isDevVM {
           virtualisation = {
             forwardPorts = with config.services.mastodon; [
               { from = "host"; guest.port = webPort; }
-              { from = "host"; guest.port = streamingPort; }
             ];
           };
         })

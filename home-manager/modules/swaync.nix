@@ -70,13 +70,17 @@ in
         "swaync/config.json" = mkIf (cfg.settings != { }) {
           source = configSource;
           onChange = ''
-            ${cfg.package}/bin/swaync-client --reload-config
+            if ${pkgs.systemd}/bin/systemctl --user is-active --quiet swaync; then
+              ${cfg.package}/bin/swaync-client --reload-config
+            fi
           '';
         };
         "swaync/style.css" = mkIf (cfg.style != null) {
           source = styleSource;
           onChange = ''
-            ${cfg.package}/bin/swaync-client --reload-css
+            if ${pkgs.systemd}/bin/systemctl --user is-active --quiet swaync; then
+              ${cfg.package}/bin/swaync-client --reload-css
+            fi
           '';
         };
       };

@@ -57,7 +57,7 @@ in
 
     programs.dconf.enable = true;
 
-    fonts.fonts = with pkgs; [
+    fonts.packages = with pkgs; [
       dejavu_fonts
       freefont_ttf
       gyre-fonts # TrueType substitutes for standard PostScript fonts
@@ -69,8 +69,19 @@ in
     xdg = {
       portal = {
         enable = true;
+        extraPortals = with pkgs; [
+          xdg-desktop-portal-gtk
+        ];
         # For sway
         wlr.enable = true;
+        configPackages = [
+          (pkgs.writeTextDir "share/xdg-desktop-portal/sway-portals.conf" ''
+            [preferred]
+            default=gtk
+            org.freedesktop.impl.portal.Screenshot=wlr
+            org.freedesktop.impl.portal.ScreenCast=wlr
+          '')
+        ];
       };
     };
   };

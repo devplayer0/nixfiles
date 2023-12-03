@@ -88,7 +88,7 @@ in
 
       boot = {
         # Use latest LTS release by default
-        kernelPackages = mkDefault pkgs.linuxKernel.packages.linux_6_1;
+        kernelPackages = mkDefault (lib.my.c.kernel.lts pkgs);
         kernel = {
           sysctl = {
             "net.ipv6.route.max_size" = mkDefault 16384;
