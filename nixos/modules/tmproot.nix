@@ -224,8 +224,9 @@ in
 
         # Catch non-existent source directories that are needed for boot (see `pathsNeededForBoot` in
         # nixos/lib/util.nix). We do this by monkey-patching the `waitDevice` function that would otherwise hang.
-        boot.initrd.postDeviceCommands =
-          ''
+        # Seems like systemd initrd doesn't care because it uses the systemd.mount units
+        # ("If this mount is a bind mount and the specified path does not exist yet it is created as directory.")
+        boot.initrd.postDeviceCommands = mkIf (!config.boot.initrd.systemd.enable) ''
             ensurePersistSource() {
               [ -e "/mnt-root$1" ] && return
               echo "Persistent source directory $1 does not exist, creating..."

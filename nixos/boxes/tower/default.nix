@@ -31,17 +31,14 @@
           initrd = {
             availableKernelModules = [ "nvme" "xhci_pci" "usb_storage" "usbhid" "thunderbolt" ];
             luks = {
-              reusePassphrases = true;
               devices = {
                 persist = {
                   device = "/dev/disk/by-uuid/27840c6f-445c-4b95-8c39-e69d07219f33";
                   allowDiscards = true;
-                  preLVM = false;
                 };
                 home = {
                   device = "/dev/disk/by-uuid/c16c5038-7883-42c3-960a-a085a99364eb";
                   allowDiscards = true;
-                  preLVM = false;
                 };
               };
             };

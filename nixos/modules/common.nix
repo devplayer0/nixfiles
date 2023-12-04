@@ -94,6 +94,7 @@ in
             "net.ipv6.route.max_size" = mkDefault 16384;
           };
         };
+
         loader = {
           efi = {
             efiSysMountPoint = mkDefault "/boot";
@@ -110,6 +111,14 @@ in
             configurationLimit = mkDefault 10;
             memtest86.enable = mkDefault true;
           };
+        };
+
+        initrd = {
+          systemd = {
+            enable = mkDefault true;
+            emergencyAccess = mkDefault true;
+          };
+          services.lvm.enable = mkDefault true;
         };
       };
 

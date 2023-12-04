@@ -208,7 +208,13 @@ in
 
             mkdir -p -m 0755 "$root"/sbin "$root"/etc
             touch "$root"/etc/os-release
-            ln -sf "${containerSystem}"/init "$root"/sbin/init
+
+            if [ -e "${containerSystem}"/prepare-root ]; then
+              initSource="${containerSystem}"/prepare-root
+            else
+              initSource="${containerSystem}"/init
+            fi
+            ln -sf "$initSource" "$root"/sbin/init
           '';
           postStop =
           ''
