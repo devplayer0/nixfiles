@@ -108,6 +108,9 @@ in
           blueman.enable = true;
         };
 
+        programs.virt-manager.enable = true;
+        virtualisation.libvirtd.enable = true;
+
         networking = {
           domain = "h.${lib.my.c.pubDomain}";
           firewall.enable = false;

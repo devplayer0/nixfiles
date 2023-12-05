@@ -463,6 +463,9 @@ in
           }
         ];
       })
+      (mkIf config.virtualisation.libvirtd.enable {
+        my.tmproot.persistence.config.directories = [ "/var/lib/libvirt" ];
+      })
     ]))
   ]);
 

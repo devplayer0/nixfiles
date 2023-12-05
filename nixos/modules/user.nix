@@ -35,8 +35,9 @@ in
             isNormalUser = true;
             uid = mkDefault 1000;
             extraGroups =
-              [ "wheel" "kvm" ] ++
-              (optional config.networking.networkmanager.enable "networkmanager");
+              [ "wheel" "kvm" "dialout" ] ++
+              (optional config.networking.networkmanager.enable "networkmanager") ++
+              (optional config.virtualisation.libvirtd.enable "libvirtd");
             password = mkIf (cfg.passwordSecret == null) (mkDefault "hunter2");
             shell =
               let shell = cfg.homeConfig.my.shell;
