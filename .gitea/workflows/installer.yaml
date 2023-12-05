@@ -1,0 +1,34 @@
+name: Installer ISO
+
+on:
+  push:
+    tags: [installer]
+
+jobs:
+  installer:
+    name: Build installer ISO
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v23
+        with:
+          github_access_token: ${{ secrets.GH_PULL_TOKEN }}
+          extra_nix_config: |
+            # Make sure we're using sandbox
+            sandbox-fallback = false
+
+            extra-substituters = https://nix-cache.nul.ie/main
+            extra-trusted-public-keys = main:mMChkG8LwXrFirVfudqjSHasK1jV31OVElYD3eImYl8=
+      - name: Set up attic
+        run: |
+          nix run .#nixpkgs.mine.x86_64-linux.attic-client -- \
+            login --set-default colony https://nix-cache.nul.ie "${{ secrets.NIX_CACHE_TOKEN }}"
+
+      - name: Build installer ISO
+        run: |
+          nix build .#nixosConfigurations.installer.config.my.buildAs.iso
+      - name: Upload ISO
+        uses: actions/upload-artifact@v3
+        with:
+          name: installer-iso
+          path: result/iso/nixos-installer-devplayer0.iso
