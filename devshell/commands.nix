@@ -121,5 +121,11 @@ in
       help = "Update home-manager flake inputs";
       command = ''update-inputs home-manager-{unstable,stable}'';
     }
+    {
+      name = "update-installer";
+      category = "tasks";
+      help = "Update installer tag (to trigger new release)";
+      command = ''git tag -f installer && git push -f origin installer'';
+    }
   ];
 }
