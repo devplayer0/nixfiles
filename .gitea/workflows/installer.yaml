@@ -10,6 +10,10 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: https://github.com/actions/setup-go@v4
+        with:
+          go-version: '>=1.20.1'
       - uses: cachix/install-nix-action@v23
         with:
           github_access_token: ${{ secrets.GH_PULL_TOKEN }}
@@ -25,10 +29,15 @@ jobs:
             login --set-default colony https://nix-cache.nul.ie "${{ secrets.NIX_CACHE_TOKEN }}"
 
       - name: Build installer ISO
+        id: build
         run: |
           nix build .#nixosConfigurations.installer.config.my.buildAs.iso
-      - name: Upload ISO
-        uses: actions/upload-artifact@v3
+          short_rev="$(git rev-parse --short HEAD)"
+          ln -s result/iso/nixos-installer-devplayer0.iso nixos-installer-devplayer0-$short_rev.iso
+          echo "short_rev=$short_rev" >> "$GITHUB_OUTPUT"
+      - name: Create release for ISO
+        uses: https://gitea.com/actions/release-action@main
         with:
-          name: installer-iso
-          path: result/iso/nixos-installer-devplayer0.iso
+          title: Latest installer
+          files: |
+            nixos-installer-devplayer0-${{ steps.build.outputs.short_rev }}.iso
