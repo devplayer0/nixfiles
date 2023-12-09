@@ -48,29 +48,6 @@ let
       asyncio.run(main())
     '';
 
-  # TODO: Upstream or something...
-  vfio-pci-bind = pkgs.stdenv.mkDerivation rec {
-    pname = "vfio-pci-bind";
-    version = "b41e4545b21de434fc51a34a9bf1d72e3ac66cc8";
-
-    src = fetchGit {
-      url = "https://github.com/andre-richter/vfio-pci-bind";
-      rev = version;
-    };
-
-    prePatch = ''
-      substituteInPlace vfio-pci-bind.sh \
-        --replace modprobe ${pkgs.kmod}/bin/modprobe
-      substituteInPlace 25-vfio-pci-bind.rules \
-        --replace vfio-pci-bind.sh "$out"/bin/vfio-pci-bind.sh
-    '';
-    installPhase = ''
-      mkdir -p "$out"/bin/ "$out"/lib/udev/rules.d
-      cp vfio-pci-bind.sh "$out"/bin/
-      cp 25-vfio-pci-bind.rules "$out"/lib/udev/rules.d/
-    '';
-  };
-
   cfg = config.my.vms;
 
   netOpts = with lib.types; { name, iName, ... }: {
@@ -226,7 +203,7 @@ in
         optionals
           (any (d: d.bindVFIO) allHostDevs)
           [
-            vfio-pci-bind
+            pkgs.vfio-pci-bind
             (pkgs.writeTextDir
               "etc/udev/rules.d/20-vfio-tags.rules"
               (concatMapStringsSep
