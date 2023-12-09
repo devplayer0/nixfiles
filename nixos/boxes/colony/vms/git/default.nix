@@ -84,6 +84,7 @@ in
               oci-containers = {
                 backend = "podman";
               };
+              containers.containersConf.settings.network.default_subnet = "10.88.0.0/16";
             };
 
             systemd.network = {
@@ -108,7 +109,13 @@ in
 
               firewall = {
                 tcp.allowed = [ 19999 ];
-                trustedInterfaces = [ "oci" ];
+                extraRules = ''
+                  table inet filter {
+                    chain forward {
+                      ip saddr 10.88.0.0/16 accept
+                    }
+                  }
+                '';
               };
             };
           }

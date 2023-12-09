@@ -1,5 +1,6 @@
 { lib, pkgs, config, assignments, allAssignments, ... }:
 let
+  inherit (lib) mkMerge;
   inherit (lib.my.c) pubDomain;
   inherit (lib.my.c.colony) prefixes;
 in
@@ -37,20 +38,25 @@ in
           wantedBy = [ "multi-user.target" ];
         };
 
-        gitea.preStart =
-        let
-          repSec = "${pkgs.replace-secret}/bin/replace-secret";
-          confPath = "${config.services.gitea.customDir}/conf/app.ini";
-        in
-        ''
-          gitea_extra_setup() {
-            chmod u+w '${confPath}'
-            ${repSec} '#miniosecret#' '${config.age.secrets."gitea/minio.txt".path}' '${confPath}'
-            chmod u-w '${confPath}'
-          }
+        gitea = mkMerge [
+          (lib.my.systemdAwaitPostgres pkgs.postgresql "colony-psql")
+          {
+            preStart =
+            let
+              repSec = "${pkgs.replace-secret}/bin/replace-secret";
+              confPath = "${config.services.gitea.customDir}/conf/app.ini";
+            in
+            ''
+              gitea_extra_setup() {
+                chmod u+w '${confPath}'
+                ${repSec} '#miniosecret#' '${config.age.secrets."gitea/minio.txt".path}' '${confPath}'
+                chmod u-w '${confPath}'
+              }
 
-          (umask 027; gitea_extra_setup)
-        '';
+              (umask 027; gitea_extra_setup)
+            '';
+          }
+        ];
       };
     };
 

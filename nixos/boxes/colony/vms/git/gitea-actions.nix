@@ -6,7 +6,7 @@ let
 
   cfgFile = pkgs.writeText "gitea-actions-runner.yaml" (toJSON {
     container = {
-      # network = "colony";
+      network = "podman";
       privileged = true;
     };
     cache = {
