@@ -184,6 +184,11 @@ in
       secretsPath = mkOpt' path null "Path to encrypted secret files.";
       modules = mkOpt' (attrsOf commonOpts.moduleType) { } "NixOS modules to be exported by nixfiles.";
       systems = mkOpt' (attrsOf (submodule systemOpts)) { } "NixOS systems to be exported by nixfiles.";
+      allAssignments = mkOption {
+        type = attrsOf (attrsOf (submodule assignmentOpts));
+        description = "All network assignments.";
+        readOnly = true;
+      };
       vpns = {
         l2 = mkOpt' (attrsOf (submodule l2MeshOpts)) { } "Layer 2 meshes.";
       };
@@ -209,5 +214,9 @@ in
         message = "Duplicate assignments: ${toString dupIPs}";
       }
     ];
+
+    nixos = {
+      inherit allAssignments;
+    };
   };
 }

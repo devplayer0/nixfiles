@@ -49,7 +49,7 @@ in
         inherit (lib.my) networkdAssignment;
       in
       {
-        imports = [ "${modulesPath}/profiles/qemu-guest.nix" ./gitea.nix ];
+        imports = [ "${modulesPath}/profiles/qemu-guest.nix" ];
 
         config = mkMerge [
           {

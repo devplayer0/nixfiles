@@ -63,7 +63,6 @@ in
           "${modulesPath}/profiles/qemu-guest.nix"
 
           ./valheim.nix
-          ./gitea-actions.nix
         ];
 
         config = mkMerge [

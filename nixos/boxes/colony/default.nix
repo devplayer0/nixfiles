@@ -261,6 +261,11 @@ in
                       Destination = allAssignments.whale2.internal.ipv4.address;
                       Gateway = allAssignments.whale2.routing.ipv4.address;
                     }
+
+                    {
+                      Destination = allAssignments.git.internal.ipv4.address;
+                      Gateway = allAssignments.git.routing.ipv4.address;
+                    }
                   ];
                 }
               ];
@@ -372,6 +377,7 @@ in
                   "vm-estuary-persist"
                   "vm-whale2-persist"
                   "vm-mail-data"
+                  "vm-git-persist"
                   "git"
                 ];
                 compression = "zstd,5";

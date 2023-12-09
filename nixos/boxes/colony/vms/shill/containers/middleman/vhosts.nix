@@ -349,7 +349,7 @@ in
       };
 
       "git.${pubDomain}" = {
-        locations."/".proxyPass = "http://shill-vm.${domain}:3000";
+        locations."/".proxyPass = "http://git-vm.${domain}:3000";
         useACMEHost = pubDomain;
       };
     };

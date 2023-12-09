@@ -3,6 +3,7 @@
     ./estuary
     ./shill
     ./whale2
+    ./git
   ];
 
   nixos.systems.colony.configuration = { lib, pkgs, config, systems, ... }:
@@ -31,9 +32,9 @@
       backend = {
         driver = "file";
         #filename = "${systems.installer.configuration.config.my.buildAs.iso}/iso/nixos-installer-devplayer0.iso";
-        #filename = "/persist/home/dev/nixos-installer-devplayer0.iso";
+        filename = "/persist/home/dev/nixos-installer-devplayer0-b4d0d9a.iso";
         #filename = "/persist/home/dev/debian-12.1.0-amd64-netinst.iso";
-        filename = "/persist/home/dev/ubuntu-22.04.3-live-server-amd64.iso";
+        # filename = "/persist/home/dev/ubuntu-22.04.3-live-server-amd64.iso";
         read-only = "on";
       };
       format.driver = "raw";
@@ -135,7 +136,7 @@
               cpus = 12;
               threads = 2;
             };
-            memory = 65536;
+            memory = 49152;
             networks.vms.mac = "52:54:00:27:3d:5c";
             cleanShutdown.timeout = 120;
             drives = [ ] ++ (optionals (!config.my.build.isDevVM) [
@@ -146,7 +147,6 @@
               (lvmDisk "media")
               (lvmDisk "minio")
               (lvmDisk "nix-atticd")
-              (lvmDisk "git")
             ]);
           };
 
@@ -157,7 +157,7 @@
               cpus = 8;
               threads = 2;
             };
-            memory = 32768;
+            memory = 16384;
             networks.vms.mac = "52:54:00:d5:d9:c6";
             cleanShutdown.timeout = 120;
             drives = [ ] ++ (optionals (!config.my.build.isDevVM) [
@@ -166,8 +166,28 @@
               (vmLVM "whale2" "persist")
 
               (lvmDisk "oci")
-              (lvmDisk "gitea-actions-cache")
             ]);
+          };
+
+          git = {
+            uuid = "c0659fdc-3356-4717-a6a1-5f289ef03c4a";
+            cpu = "host,topoext";
+            smp = {
+              cpus = 12;
+              threads = 2;
+            };
+            memory = 32768;
+            networks.vms.mac = "52:54:00:75:78:a8";
+            cleanShutdown.timeout = 120;
+            drives = [
+              (mkMerge [ (vmLVM "git" "esp") { frontendOpts.bootindex = 0; } ])
+              (vmLVM "git" "nix")
+              (vmLVM "git" "persist")
+              (vmLVM "git" "oci")
+
+              (lvmDisk "git")
+              (lvmDisk "gitea-actions-cache")
+            ];
           };
 
           mail = {
