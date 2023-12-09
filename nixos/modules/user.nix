@@ -58,33 +58,17 @@ in
 
             "/home/${user'.name}/.config/fish/fish_variables"
           ];
-          persistence.config =
-          let
-            perms = {
-              mode = "0700";
-              user = user.name;
-              group = user.group;
-            };
-          in
-          {
-            files = (map (file: {
-              inherit file;
-              parentDirectory = perms;
-            }) [
-              "/home/${user'.name}/.bash_history"
-              "/home/${user'.name}/.lesshst"
-            ]) ++ [
-              # Just to make sure we get correct default perms
-              "/home/.tmproot.dummy"
+          persistence.config.users."${user'.name}" = {
+            files = [
+              ".bash_history"
+              ".lesshst"
             ];
-            directories = map (directory: {
-              inherit directory;
-            } // perms) [
+            directories = [
               # Persist all of fish; it's not easy to persist just the history fish won't let you move it to a different
               # directory. Also it does some funny stuff and can't really be a symlink it seems.
-              "/home/${user'.name}/.local/share/fish"
+              ".local/share/fish"
 
-              "/home/${user'.name}/.cache/nix"
+              ".cache/nix"
             ];
           };
         };
