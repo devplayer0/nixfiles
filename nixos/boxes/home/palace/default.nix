@@ -36,6 +36,14 @@ in
       in
       {
         boot = {
+          kernelPackages = (lib.my.c.kernel.lts pkgs).extend (self: super: {
+            kernel = super.kernel.override {
+              structuredExtraConfig = with lib.kernel; {
+                ACPI_APEI_PCIEAER = yes;
+                PCIEAER = yes;
+              };
+            };
+          });
           kernelModules = [ "kvm-amd" ];
           kernelParams = [ "amd_iommu=on" ];
           initrd = {
