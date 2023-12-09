@@ -1,6 +1,7 @@
 { lib, ... }:
 let
   inherit (lib.my) net;
+  inherit (lib.my.c) pubDomain;
   inherit (lib.my.c.colony) domain prefixes;
 in
 {

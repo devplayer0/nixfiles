@@ -131,6 +131,9 @@ in
                 chain prerouting {
                   type nat hook prerouting priority dstnat;
                 }
+                chain output {
+                  type nat hook output priority dstnat;
+                }
                 chain postrouting {
                   type nat hook postrouting priority srcnat;
                 }

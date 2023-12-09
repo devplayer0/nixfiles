@@ -25,6 +25,18 @@ in
 
     systemd = {
       services = {
+        # TODO: Figure out a way to do this properly... redirecting localhost is awkward...
+        local-http-forward = {
+          description = "Forward local HTTP connections";
+          serviceConfig.ExecStart = "${pkgs.socat}/bin/socat tcp-listen:80,fork tcp:${allAssignments.middleman.internal.ipv4.address}:80";
+          wantedBy = [ "multi-user.target" ];
+        };
+        local-https-forward = {
+          description = "Forward local HTTPS connections";
+          serviceConfig.ExecStart = "${pkgs.socat}/bin/socat tcp-listen:443,fork tcp:${allAssignments.middleman.internal.ipv4.address}:443";
+          wantedBy = [ "multi-user.target" ];
+        };
+
         gitea.preStart =
         let
           repSec = "${pkgs.replace-secret}/bin/replace-secret";
