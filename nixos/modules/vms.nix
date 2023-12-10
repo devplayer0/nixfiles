@@ -126,6 +126,8 @@ let
       (map
         (i: mapAttrsToList (name: c: c // { inherit name; }) i.hostDevices)
         (attrValues cfg.instances));
+  anyVfioDevs = any (d: d.bindVFIO) allHostDevs;
+  vfioHostDevs = filter (d: d.bindVFIO) allHostDevs;
 
   mkQemuScript = n: i:
   let
@@ -161,6 +163,7 @@ let
             else "ifname=${c.ifname},script=no,downscript=no"))
         ("device ${c.model},netdev=${nn},mac=${c.mac}" + (extraQEMUOpts c.extraOptions))
       ]) i.networks)) ++
+      (optional (i.networks == { }) "nic none") ++
       (flatten (map (d: [
         "blockdev node-name=${d.name}-backend,${d.backend}"
         "blockdev node-name=${d.name}-format,${d.formatBackendProp}=${d.name}-backend,${d.format}"
@@ -201,7 +204,7 @@ in
     services.udev = {
       packages =
         optionals
-          (any (d: d.bindVFIO) allHostDevs)
+          anyVfioDevs
           [
             pkgs.vfio-pci-bind
             (pkgs.writeTextDir
@@ -209,7 +212,7 @@ in
               (concatMapStringsSep
                 "\n"
                 (d: ''ACTION=="add", SUBSYSTEM=="pci", KERNEL=="0000:${d.hostBDF}", TAG="vfio-pci-bind"'')
-                (filter (d: d.bindVFIO) allHostDevs)))
+                vfioHostDevs))
           ];
     };
 
@@ -262,6 +265,23 @@ in
               if [ ! -e "$STATE_DIRECTORY"/ovmf_vars.bin ]; then
                 cp "${cfg.ovmfPackage.fd}"/FV/OVMF_VARS.fd "$STATE_DIRECTORY"/ovmf_vars.bin
               fi
+
+              ${optionalString anyVfioDevs ''
+                iommu_group() {
+                  g=/sys/bus/pci/devices/0000:$1/iommu_group
+                  until [ -e $g ]; do
+                    sleep 0.1
+                  done
+                  basename $(readlink $g)
+                }
+                wait_vfio() {
+                  until [ -e /dev/vfio/$(iommu_group $1) ]; do
+                    sleep 0.1
+                  done
+                }
+
+                ${concatMapStringsSep "\n" (d: "wait_vfio ${d.hostBDF}") vfioHostDevs}
+              ''}
             '';
           script = mkQemuScript n i;
           postStart =

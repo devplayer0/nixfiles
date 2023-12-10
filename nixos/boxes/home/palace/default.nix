@@ -5,6 +5,8 @@ let
   inherit (lib.my.c.home) domain vlans prefixes vips;
 in
 {
+  imports = [ ./vms ];
+
   nixos.systems.palace = {
     system = "x86_64-linux";
     nixpkgs = "mine-stable";
@@ -47,7 +49,7 @@ in
           kernelModules = [ "kvm-amd" ];
           kernelParams = [ "amd_iommu=on" ];
           initrd = {
-            availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" "sr_mod" ];
+            availableKernelModules = [ "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" "sr_mod" ];
           };
         };
 
@@ -64,22 +66,29 @@ in
             fsType = "vfat";
           };
           "/nix" = {
-            device = "/dev/disk/by-partuuid/71695225-b306-41e6-83f8-c5cde57c06f7";
+            device = "/dev/disk/by-uuid/450e1f72-238a-4160-98b8-b5e6d0d6fdf6";
             fsType = "ext4";
           };
           "/persist" = {
-            device = "/dev/disk/by-partuuid/9991aec3-c062-41d1-971e-e056b63370f0";
+            device = "/dev/disk/by-uuid/9d6d53a8-dff8-49e0-9bc3-fb5f7c6760d0";
             fsType = "ext4";
             neededForBoot = true;
           };
         };
 
         services = {
+          lvm = {
+            boot.thin.enable = true;
+            dmeventd.enable = true;
+          };
           smartd = {
             enable = true;
             autodetect = true;
             extraOptions = [ "-A /var/log/smartd/" "--interval=600" ];
           };
+          udev.extraRules = ''
+            ACTION=="add", SUBSYSTEM=="net", ENV{ID_NET_DRIVER}=="mlx5_core", ENV{ID_PATH}=="pci-0000:44:00.0", ATTR{device/sriov_numvfs}="3"
+          '';
         };
 
         environment.systemPackages = with pkgs; [
@@ -91,6 +100,7 @@ in
           smartmontools
           mstflint
           ethtool
+          hwloc
         ];
 
         networking.domain = "h.${pubDomain}";
@@ -99,25 +109,6 @@ in
           tmpfiles.rules = [
             "d /var/log/smartd 0755 root root"
           ];
-
-          services = {
-            setup-mlx5-vfs = {
-              description = "Enable 100G NIC VFs";
-              serviceConfig = {
-                Type = "oneshot";
-              };
-              script = ''
-                vfsFile=/sys/class/infiniband/mlx5_0/device/sriov_numvfs
-                until [ -f "$vfsFile" ]; do
-                  sleep 0.2
-                done
-
-                echo 3 > "$vfsFile"
-              '';
-              wantedBy = [ "multi-user.target" ];
-              before = [ "network-pre.target" ];
-            };
-          };
 
           network = {
             links = {
@@ -158,6 +149,14 @@ in
                 matchConfig.Name = "et100g";
                 vlan = [ "lan-hi" ];
                 networkConfig.IPv6AcceptRA = false;
+                extraConfig = ''
+                  # cellar
+                  [SR-IOV]
+                  VirtualFunction=0
+                  VLANId=${toString vlans.hi}
+                  LinkState=yes
+                  MACAddress=52:54:00:cc:3e:70
+                '';
               };
               "60-lan-hi" = mkMerge [
                 (networkdAssignment "lan-hi" assignments.hi)

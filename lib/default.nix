@@ -164,6 +164,25 @@ rec {
     '';
   };
 
+  vm = rec {
+    lvmDisk' = name: lv: {
+      inherit name;
+      backend = {
+        driver = "host_device";
+        filename = "/dev/main/${lv}";
+        # It appears this needs to be set on the backend _and_ the format
+        discard = "unmap";
+      };
+      format = {
+        driver = "raw";
+        discard = "unmap";
+      };
+      frontend = "virtio-blk";
+    };
+    lvmDisk = lv: lvmDisk' lv lv;
+    disk = vm: lv: lvmDisk' lv "vm-${vm}-${lv}";
+  };
+
   deploy-rs =
   with types;
   let

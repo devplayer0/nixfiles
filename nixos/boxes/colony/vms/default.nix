@@ -9,23 +9,7 @@
   nixos.systems.colony.configuration = { lib, pkgs, config, systems, ... }:
   let
     inherit (lib) mkIf mkMerge optionals;
-
-    lvmDisk' = name: lv: {
-      inherit name;
-      backend = {
-        driver = "host_device";
-        filename = "/dev/main/${lv}";
-        # It appears this needs to be set on the backend _and_ the format
-        discard = "unmap";
-      };
-      format = {
-        driver = "raw";
-        discard = "unmap";
-      };
-      frontend = "virtio-blk";
-    };
-    lvmDisk = lv: lvmDisk' lv lv;
-    vmLVM = vm: lv: lvmDisk' lv "vm-${vm}-${lv}";
+    inherit (lib.my) vm;
 
     installerDisk = {
       name = "installer";
@@ -117,9 +101,9 @@
               };
             };
             drives = [ ] ++ (optionals (!config.my.build.isDevVM) [
-              (mkMerge [ (vmLVM "estuary" "esp") { frontendOpts.bootindex = 0; } ])
-              (vmLVM "estuary" "nix")
-              (vmLVM "estuary" "persist")
+              (mkMerge [ (vm.disk "estuary" "esp") { frontendOpts.bootindex = 0; } ])
+              (vm.disk "estuary" "nix")
+              (vm.disk "estuary" "persist")
             ]);
             hostDevices = {
               net-wan0 = {
@@ -140,13 +124,13 @@
             networks.vms.mac = "52:54:00:27:3d:5c";
             cleanShutdown.timeout = 120;
             drives = [ ] ++ (optionals (!config.my.build.isDevVM) [
-              (mkMerge [ (vmLVM "shill" "esp") { frontendOpts.bootindex = 0; } ])
-              (vmLVM "shill" "nix")
-              (vmLVM "shill" "persist")
+              (mkMerge [ (vm.disk "shill" "esp") { frontendOpts.bootindex = 0; } ])
+              (vm.disk "shill" "nix")
+              (vm.disk "shill" "persist")
 
-              (lvmDisk "media")
-              (lvmDisk "minio")
-              (lvmDisk "nix-atticd")
+              (vm.lvmDisk "media")
+              (vm.lvmDisk "minio")
+              (vm.lvmDisk "nix-atticd")
             ]);
           };
 
@@ -161,11 +145,11 @@
             networks.vms.mac = "52:54:00:d5:d9:c6";
             cleanShutdown.timeout = 120;
             drives = [ ] ++ (optionals (!config.my.build.isDevVM) [
-              (mkMerge [ (vmLVM "whale2" "esp") { frontendOpts.bootindex = 0; } ])
-              (vmLVM "whale2" "nix")
-              (vmLVM "whale2" "persist")
+              (mkMerge [ (vm.disk "whale2" "esp") { frontendOpts.bootindex = 0; } ])
+              (vm.disk "whale2" "nix")
+              (vm.disk "whale2" "persist")
 
-              (lvmDisk "oci")
+              (vm.lvmDisk "oci")
             ]);
           };
 
@@ -180,13 +164,13 @@
             networks.vms.mac = "52:54:00:75:78:a8";
             cleanShutdown.timeout = 120;
             drives = [
-              (mkMerge [ (vmLVM "git" "esp") { frontendOpts.bootindex = 0; } ])
-              (vmLVM "git" "nix")
-              (vmLVM "git" "persist")
-              (vmLVM "git" "oci")
+              (mkMerge [ (vm.disk "git" "esp") { frontendOpts.bootindex = 0; } ])
+              (vm.disk "git" "nix")
+              (vm.disk "git" "persist")
+              (vm.disk "git" "oci")
 
-              (lvmDisk "git")
-              (lvmDisk "gitea-actions-cache")
+              (vm.lvmDisk "git")
+              (vm.lvmDisk "gitea-actions-cache")
             ];
           };
 
@@ -204,8 +188,8 @@
             };
             cleanShutdown.timeout = 120;
             drives = [
-              (mkMerge [ (vmLVM "mail" "root") { frontendOpts.bootindex = 0; } ])
-              (vmLVM "mail" "data")
+              (mkMerge [ (vm.disk "mail" "root") { frontendOpts.bootindex = 0; } ])
+              (vm.disk "mail" "data")
             ];
           };
 
@@ -223,8 +207,8 @@
             };
             cleanShutdown.timeout = 120;
             drives = [
-              (mkMerge [ (vmLVM "darts" "root") { frontendOpts.bootindex = 0; } ])
-              (lvmDisk' "media" "darts-media")
+              (mkMerge [ (vm.disk "darts" "root") { frontendOpts.bootindex = 0; } ])
+              (vm.lvmDisk' "media" "darts-media")
             ];
           };
         };
