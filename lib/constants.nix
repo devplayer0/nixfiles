@@ -114,6 +114,33 @@ rec {
       };
       home.v6 = "2a0e:97c0:4d0::/48";
     };
+
+    firewallForwards = aa: [
+      {
+        port = "http";
+        dst = aa.middleman.internal.ipv4.address;
+      }
+      {
+        port = "https";
+        dst = aa.middleman.internal.ipv4.address;
+      }
+      {
+        port = 8448;
+        dst = aa.middleman.internal.ipv4.address;
+      }
+
+      {
+        port = 2456;
+        dst = aa.valheim-oci.internal.ipv4.address;
+        proto = "udp";
+      }
+      {
+        port = 2457;
+        dst = aa.valheim-oci.internal.ipv4.address;
+        proto = "udp";
+      }
+    ];
+
     fstrimConfig = {
       enable = true;
       # backup happens at 05:00

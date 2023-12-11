@@ -1,6 +1,6 @@
 { lib, options, config, ... }:
 let
-  inherit (builtins) typeOf replaceStrings attrNames;
+  inherit (builtins) typeOf attrNames;
   inherit (lib)
     optionalString concatStringsSep concatMapStringsSep mapAttrsToList optionalAttrs mkIf
     mkDefault mkMerge mkOverride;
@@ -140,6 +140,9 @@ in
                 chain postrouting {
                   type nat hook postrouting priority srcnat;
                 }
+                chain input {
+                  type nat hook input priority srcnat;
+                }
               }
 
               ${cfg.extraRules}
@@ -179,13 +182,22 @@ in
 
       my.firewall.extraRules =
         let
+          inherit (lib.my.nft) natFilterChain dnatChain;
           ipK = ip: "ip${optionalString (isIPv6 ip) "6"}";
-          ipEscaped = replaceStrings ["." ":"] ["-" "-"];
 
           makeFilter = f:
             "${ipK f.dst} daddr ${f.dst} ${f.proto} dport ${toString f.dstPort} accept";
           makeForward = f:
             "${f.proto} dport ${toString f.port} dnat ${ipK f.dst} to ${f.dst}:${toString f.dstPort}";
+
+          dnatJumps = ''
+            ${optionalString
+              iifForward
+              "iifname ${cfg.nat.externalInterface} jump iif-port-forward"}
+            ${optionalString
+              dipForward
+              (concatMapStringsSep "\n    " (ip: "${ipK ip} daddr ${ip} jump ${dnatChain ip}") (attrNames cfg.nat.forwardPorts))}
+          '';
         in
         ''
           table inet filter {
@@ -198,7 +210,7 @@ in
             ${optionalString
               dipForward
               (concatStringsSep "\n" (mapAttrsToList (ip: fs: ''
-                chain filter-fwd-${ipEscaped ip} {
+                chain ${natFilterChain ip} {
                   ${concatMapStringsSep "\n    " makeFilter fs}
                   return
                 }
@@ -210,7 +222,7 @@ in
                 "iifname ${cfg.nat.externalInterface} jump filter-iif-port-forwards"}
               ${optionalString
                 dipForward
-                (concatMapStringsSep "\n    " (ip: "${ipK ip} daddr ${ip} jump filter-fwd-${ipEscaped ip}") (attrNames cfg.nat.forwardPorts))}
+                (concatMapStringsSep "\n    " (ip: "${ipK ip} daddr ${ip} jump ${natFilterChain ip}") (attrNames cfg.nat.forwardPorts))}
             }
           }
 
@@ -224,19 +236,17 @@ in
             ${optionalString
               dipForward
               (concatStringsSep "\n" (mapAttrsToList (ip: fs: ''
-                chain fwd-${ipEscaped ip} {
+                chain ${dnatChain ip} {
                   ${concatMapStringsSep "\n    " makeForward fs}
                   return
                 }
               '') cfg.nat.forwardPorts))}
 
             chain prerouting {
-              ${optionalString
-                iifForward
-                "iifname ${cfg.nat.externalInterface} jump iif-port-forward"}
-              ${optionalString
-                dipForward
-                (concatMapStringsSep "\n    " (ip: "${ipK ip} daddr ${ip} jump fwd-${ipEscaped ip}") (attrNames cfg.nat.forwardPorts))}
+              ${dnatJumps}
+            }
+            chain output {
+              ${dnatJumps}
             }
           }
         '';

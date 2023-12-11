@@ -1,7 +1,7 @@
 { lib, ... }:
 let
   inherit (lib.my) net;
-  inherit (lib.my.c.colony) domain prefixes;
+  inherit (lib.my.c.colony) domain prefixes firewallForwards;
 in
 {
   imports = [ ./vms ];
@@ -351,6 +351,7 @@ in
 
           firewall = {
             trustedInterfaces = [ "vms" ];
+            nat.forwardPorts."${allAssignments.estuary.internal.ipv4.address}" = firewallForwards allAssignments;
             extraRules = ''
               define cust = { vm-mail, vm-darts }
               table inet filter {

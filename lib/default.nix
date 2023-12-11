@@ -1,6 +1,6 @@
 { lib }:
 let
-  inherit (builtins) length match elemAt filter;
+  inherit (builtins) length match elemAt filter replaceStrings;
   inherit (lib)
     genAttrs mapAttrsToList filterAttrsRecursive nameValuePair types
     mkOption mkOverride mkForce mkIf mergeEqualOption optional
@@ -121,6 +121,12 @@ rec {
     system = mkOpt' (enum defaultSystems) null "Nix-style system string.";
     nixpkgs = mkOpt' (enum [ "unstable" "stable" "mine" "mine-stable" ]) "unstable" "Branch of nixpkgs to use.";
     home-manager = mkOpt' (enum [ "unstable" "stable" "mine" "mine-stable" ]) "unstable" "Branch of home-manager to use.";
+  };
+
+  nft = rec {
+    ipEscape = replaceStrings ["." ":"] ["-" "-"];
+    natFilterChain = ip: "filter-fwd-${ipEscape ip}";
+    dnatChain = ip: "fwd-${ipEscape ip}";
   };
 
   mkVLAN = name: vid: {

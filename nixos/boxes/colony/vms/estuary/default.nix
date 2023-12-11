@@ -2,7 +2,7 @@
 let
   inherit (builtins) elemAt;
   inherit (lib.my) net mkVLAN;
-  inherit (lib.my.c.colony) pubV4 domain prefixes;
+  inherit (lib.my.c.colony) pubV4 domain prefixes firewallForwards;
 in
 {
   nixos = {
@@ -356,31 +356,7 @@ in
                 nat = {
                   enable = true;
                   externalInterface = "wan";
-                  forwardPorts."${assignments.internal.ipv4.address}" = [
-                    {
-                      port = "http";
-                      dst = allAssignments.middleman.internal.ipv4.address;
-                    }
-                    {
-                      port = "https";
-                      dst = allAssignments.middleman.internal.ipv4.address;
-                    }
-                    {
-                      port = 8448;
-                      dst = allAssignments.middleman.internal.ipv4.address;
-                    }
-
-                    {
-                      port = 2456;
-                      dst = allAssignments.valheim-oci.internal.ipv4.address;
-                      proto = "udp";
-                    }
-                    {
-                      port = 2457;
-                      dst = allAssignments.valheim-oci.internal.ipv4.address;
-                      proto = "udp";
-                    }
-                  ];
+                  forwardPorts."${assignments.internal.ipv4.address}" = firewallForwards allAssignments;
                 };
                 extraRules =
                 let
