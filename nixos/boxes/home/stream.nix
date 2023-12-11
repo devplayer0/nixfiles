@@ -57,7 +57,7 @@
             };
           };
           links = {
-            "10-wan-phy" = {
+            "10-wan" = {
               matchConfig = {
                 # Matching against MAC address seems to break VLAN interfaces
                 # (since they share the same MAC address)
@@ -65,7 +65,7 @@
                 PermanentMACAddress = "00:f0:cb:ee:ca:dd";
               };
               linkConfig = {
-                Name = "wan-phy";
+                Name = "wan";
                 RxBufferSize = 4096;
                 TxBufferSize = 4096;
               };

@@ -242,7 +242,7 @@
         {
           "method": "nvmf_create_subsystem",
           "params": {
-            "nqn": "nqn.2016-06.io.spdk:cellar",
+            "nqn": "nqn.2016-06.io.spdk:river",
             "allow_any_host": false,
             "serial_number": "SPDK00000000000001",
             "model_number": "SPDK bdev Controller",
@@ -255,26 +255,64 @@
         {
           "method": "nvmf_subsystem_add_host",
           "params": {
-            "nqn": "nqn.2016-06.io.spdk:cellar",
-            "host": "nqn.2014-08.org.nvmexpress:uuid:de712327-7fc8-6e54-15af-c87f546e170f"
+            "nqn": "nqn.2016-06.io.spdk:river",
+            "host": "nqn.2014-08.org.nvmexpress:uuid:12b52d80-ccb6-418d-9b2e-2be34bff3cd9"
           }
         },
         {
           "method": "nvmf_subsystem_add_ns",
           "params": {
-            "nqn": "nqn.2016-06.io.spdk:cellar",
+            "nqn": "nqn.2016-06.io.spdk:river",
             "namespace": {
               "nsid": 1,
-              "bdev_name": "Raid0",
-              "nguid": "FA9D43CFD8D54885BB73F038BDC31B25",
-              "uuid": "fa9d43cf-d8d5-4885-bb73-f038bdc31b25"
+              "bdev_name": "9c545b0b-5b9c-4a32-b1eb-483adf5369fc",
+              "nguid": "9C545B0B5B9C4A32B1EB483ADF5369FC",
+              "uuid": "9c545b0b-5b9c-4a32-b1eb-483adf5369fc"
             }
           }
         },
         {
           "method": "nvmf_subsystem_add_listener",
           "params": {
-            "nqn": "nqn.2016-06.io.spdk:cellar",
+            "nqn": "nqn.2016-06.io.spdk:river",
+            "listen_address": {
+              "trtype": "RDMA",
+              "adrfam": "IPv4",
+              "traddr": "192.168.68.80",
+              "trsvcid": "4420"
+            },
+            "secure_channel": false
+          }
+        },
+        {
+          "method": "nvmf_create_subsystem",
+          "params": {
+            "nqn": "nqn.2016-06.io.spdk:sfh",
+            "allow_any_host": false,
+            "serial_number": "SPDK00000000000002",
+            "model_number": "SPDK bdev Controller",
+            "max_namespaces": 32,
+            "min_cntlid": 1,
+            "max_cntlid": 65519,
+            "ana_reporting": false
+          }
+        },
+        {
+          "method": "nvmf_subsystem_add_ns",
+          "params": {
+            "nqn": "nqn.2016-06.io.spdk:sfh",
+            "namespace": {
+              "nsid": 1,
+              "bdev_name": "780ddeb9-646d-4331-a0d5-3b0aecd3bf3e",
+              "nguid": "780DDEB9646D4331A0D53B0AECD3BF3E",
+              "uuid": "780ddeb9-646d-4331-a0d5-3b0aecd3bf3e"
+            }
+          }
+        },
+        {
+          "method": "nvmf_subsystem_add_listener",
+          "params": {
+            "nqn": "nqn.2016-06.io.spdk:sfh",
             "listen_address": {
               "trtype": "RDMA",
               "adrfam": "IPv4",

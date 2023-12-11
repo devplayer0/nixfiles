@@ -13,7 +13,7 @@ in
           security.enable = true;
           peers = {
             estuary.addr = pubV4;
-            # river.addr = elemAt lib.my.c.home.routersPubV4 0;
+            river.addr = elemAt lib.my.c.home.routersPubV4 0;
             stream.addr = elemAt lib.my.c.home.routersPubV4 1;
           };
         };
@@ -65,6 +65,7 @@ in
       let
         inherit (lib) flatten mkIf mkMerge mkForce;
         inherit (lib.my) networkdAssignment;
+        inherit (lib.my.c) networkd;
       in
       {
         imports = [ "${modulesPath}/profiles/qemu-guest.nix" ./dns.nix ./bgp.nix ];
@@ -246,13 +247,7 @@ in
                     Kind = "vlan";
                   };
                   vlan = [ "frys-ix" "nl-ix" "fogixp" "ifog-transit" ];
-                  networkConfig = {
-                    LinkLocalAddressing = "no";
-                    DHCP = "no";
-                    LLDP = false;
-                    EmitLLDP = false;
-                    IPv6AcceptRA = false;
-                  };
+                  networkConfig = networkd.noL3;
                 };
                 "85-ifog-transit" = {
                   matchConfig.Name = "ifog-transit";

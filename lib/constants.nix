@@ -40,6 +40,16 @@ rec {
     '';
   };
 
+  networkd = {
+    noL3 = {
+      LinkLocalAddressing = "no";
+      DHCP = "no";
+      LLDP = false;
+      EmitLLDP = false;
+      IPv6AcceptRA = false;
+    };
+  };
+
   nix = {
     cache = rec {
       substituters = [
@@ -125,8 +135,8 @@ rec {
       "stream"
     ];
     routersPubV4 = [
-      "109.255.252.123" # placeholder
-      "109.255.252.166"
+      "109.255.31.25"
+      "109.255.252.63"
     ];
 
     prefixes = with lib.my.net.cidr; rec {

@@ -1,12 +1,14 @@
 {
   imports = [
     ./cellar
+    ./river.nix
   ];
 
   nixos.systems.palace.configuration = { lib, pkgs, config, systems, ... }:
   let
     inherit (lib) mkMerge;
     inherit (lib.my) vm;
+    inherit (lib.my.c) networkd;
 
     installerDisk = {
       name = "installer";
@@ -23,6 +25,36 @@
     };
   in
   {
+    systemd.network = {
+      netdevs = {
+        "25-vm-et1g0" = {
+           netdevConfig = {
+             Name = "vm-et1g0";
+             Kind = "macvtap";
+           };
+           # TODO: Upstream this missing section
+           extraConfig = ''
+             [MACVTAP]
+             Mode=passthru
+           '';
+        };
+      };
+      networks = {
+        "75-et1g0" = {
+          matchConfig.Name = "et1g0";
+          linkConfig.RequiredForOnline = "no";
+          networkConfig = {
+            MACVTAP = "vm-et1g0";
+          } // networkd.noL3;
+        };
+        "75-vm-et1g0" = {
+          matchConfig.Name = "vm-et1g0";
+          linkConfig.RequiredForOnline = "no";
+          networkConfig = networkd.noL3;
+        };
+      };
+    };
+
     systemd.services = {
       "vm@cellar" = {
         serviceConfig = {
@@ -30,6 +62,14 @@
           NUMAPolicy = "bind";
           NUMAMask = "1";
         };
+      };
+      "vm@river" =
+      let
+        vtapUnit = "sys-subsystem-net-devices-vm\\x2det1g0.device";
+      in
+      {
+        requires = [ vtapUnit ];
+        after = [ vtapUnit ];
       };
     };
 
@@ -65,6 +105,36 @@
               nvme2 = {
                 index = 3;
                 hostBDF = "43:00.0";
+              };
+            };
+          };
+
+          river = {
+            uuid = "12b52d80-ccb6-418d-9b2e-2be34bff3cd9";
+            cpu = "host,topoext";
+            smp = {
+              cpus = 3;
+              threads = 2;
+            };
+            memory = 4096;
+            networks = {
+              et1g0 = {
+                ifname = "vm-et1g0";
+                bridge = null;
+                tapFD = 100;
+                # Real hardware MAC
+                mac = "e0:d5:5e:68:0c:6e";
+                waitOnline = false;
+              };
+            };
+            drives = [
+              installerDisk
+              (mkMerge [ (vm.disk "river" "esp") { frontendOpts.bootindex = 0; } ])
+            ];
+            hostDevices = {
+              et100g0vf1 = {
+                index = 0;
+                hostBDF = "44:00.2";
               };
             };
           };

@@ -35,6 +35,7 @@ in
       let
         inherit (lib) mkForce mkMerge;
         inherit (lib.my) networkdAssignment;
+        inherit (lib.my.c) networkd;
       in
       {
         boot = {
@@ -87,7 +88,7 @@ in
             extraOptions = [ "-A /var/log/smartd/" "--interval=600" ];
           };
           udev.extraRules = ''
-            ACTION=="add", SUBSYSTEM=="net", ENV{ID_NET_DRIVER}=="mlx5_core", ENV{ID_PATH}=="pci-0000:44:00.0", ATTR{device/sriov_numvfs}="3"
+            ACTION=="add", SUBSYSTEM=="net", ENV{ID_NET_DRIVER}=="mlx5_core", ENV{ID_PATH}=="pci-0000:44:00.0", ATTR{device/sriov_numvfs}="2"
           '';
         };
 
@@ -113,11 +114,14 @@ in
           network = {
             links = {
               "10-et1g0" = {
-                matchConfig.MACAddress = "e0:d5:5e:68:0c:6e";
+                matchConfig = {
+                  PermanentMACAddress = "e0:d5:5e:68:0c:6e";
+                  Driver = "igb";
+                };
                 linkConfig.Name = "et1g0";
               };
               "10-lan-core" = {
-                matchConfig.MACAddress = "e0:d5:5e:68:0c:70";
+                matchConfig.PermanentMACAddress = "e0:d5:5e:68:0c:70";
                 linkConfig.Name = "lan-core";
               };
               "10-et100g" = {
@@ -148,7 +152,8 @@ in
               "50-et100g" = {
                 matchConfig.Name = "et100g";
                 vlan = [ "lan-hi" ];
-                networkConfig.IPv6AcceptRA = false;
+                networkConfig = networkd.noL3;
+                linkConfig.RequiredForOnline = "no";
                 extraConfig = ''
                   # cellar
                   [SR-IOV]
@@ -156,6 +161,12 @@ in
                   VLANId=${toString vlans.hi}
                   LinkState=yes
                   MACAddress=52:54:00:cc:3e:70
+
+                  # river
+                  [SR-IOV]
+                  VirtualFunction=1
+                  LinkState=yes
+                  MACAddress=52:54:00:8a:8a:f2
                 '';
               };
               "60-lan-hi" = mkMerge [
