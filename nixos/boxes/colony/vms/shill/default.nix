@@ -1,7 +1,7 @@
 { lib, ... }:
 let
-  inherit (lib.my) net;
-  inherit (lib.my.c.colony) domain prefixes;
+  inherit (lib.my) net nft;
+  inherit (lib.my.c.colony) domain prefixes firewallForwards;
 in
 {
   imports = [ ./containers ];
@@ -151,11 +151,23 @@ in
               firewall = {
                 tcp.allowed = [ 19999 ];
                 trustedInterfaces = [ "ctrs" ];
+                nat.forwardPorts."${allAssignments.estuary.internal.ipv4.address}" = firewallForwards allAssignments;
                 extraRules = ''
                   table inet filter {
                     chain forward {
                       # Trust that the outer firewall has done the filtering!
                       iifname vms oifname ctrs accept
+                    }
+                  }
+                  table inet nat {
+                    # Hack to fix our NAT situation with internal routing
+                    # We need to snat to our public IP, otherwise on the return path from e.g. middleman it will
+                    # try to forward packet directly with its own IP, bypassing our carefully crafted DNAT...
+                    chain ${nft.dnatChain allAssignments.estuary.internal.ipv4.address} {
+                      ct mark set 0x1337
+                    }
+                    chain postrouting {
+                      ct mark 0x1337 snat ip to ${assignments.internal.ipv4.address}
                     }
                   }
                 '';
