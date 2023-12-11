@@ -356,8 +356,7 @@ in
                 nat = {
                   enable = true;
                   externalInterface = "wan";
-                  externalIP = assignments.internal.ipv4.address;
-                  forwardPorts = [
+                  forwardPorts."${assignments.internal.ipv4.address}" = [
                     {
                       port = "http";
                       dst = allAssignments.middleman.internal.ipv4.address;
