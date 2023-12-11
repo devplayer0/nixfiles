@@ -292,6 +292,7 @@ in
                 table inet filter {
                   chain input {
                     iifname base meta l4proto { udp, tcp } th dport domain accept
+                    iifname lan-core meta l4proto vrrp accept
                   }
 
                   chain routing-tcp {
