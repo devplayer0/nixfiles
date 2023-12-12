@@ -242,6 +242,51 @@
         {
           "method": "nvmf_create_subsystem",
           "params": {
+            "nqn": "nqn.2016-06.io.spdk:castle",
+            "allow_any_host": false,
+            "serial_number": "SPDK00000000000003",
+            "model_number": "SPDK bdev Controller",
+            "max_namespaces": 32,
+            "min_cntlid": 1,
+            "max_cntlid": 65519,
+            "ana_reporting": false
+          }
+        },
+        {
+          "method": "nvmf_subsystem_add_host",
+          "params": {
+            "nqn": "nqn.2016-06.io.spdk:castle",
+            "host": "nqn.2014-08.org.nvmexpress:uuid:2230b066-a674-4f45-a1dc-f7727b3a9e7b"
+          }
+        },
+        {
+          "method": "nvmf_subsystem_add_ns",
+          "params": {
+            "nqn": "nqn.2016-06.io.spdk:castle",
+            "namespace": {
+              "nsid": 1,
+              "bdev_name": "70f5af98-d685-42bd-9024-ca8c498a0ec2",
+              "nguid": "70F5AF98D68542BD9024CA8C498A0EC2",
+              "uuid": "70f5af98-d685-42bd-9024-ca8c498a0ec2"
+            }
+          }
+        },
+        {
+          "method": "nvmf_subsystem_add_listener",
+          "params": {
+            "nqn": "nqn.2016-06.io.spdk:castle",
+            "listen_address": {
+              "trtype": "RDMA",
+              "adrfam": "IPv4",
+              "traddr": "192.168.68.80",
+              "trsvcid": "4420"
+            },
+            "secure_channel": false
+          }
+        },
+        {
+          "method": "nvmf_create_subsystem",
+          "params": {
             "nqn": "nqn.2016-06.io.spdk:river",
             "allow_any_host": false,
             "serial_number": "SPDK00000000000001",
@@ -326,49 +371,6 @@
     },
     {
       "subsystem": "nbd",
-      "config": []
-    },
-    {
-      "subsystem": "vhost_blk",
-      "config": []
-    },
-    {
-      "subsystem": "scsi",
-      "config": null
-    },
-    {
-      "subsystem": "iscsi",
-      "config": [
-        {
-          "method": "iscsi_set_options",
-          "params": {
-            "node_base": "iqn.2016-06.io.spdk",
-            "max_sessions": 128,
-            "max_connections_per_session": 2,
-            "max_queue_depth": 64,
-            "default_time2wait": 2,
-            "default_time2retain": 20,
-            "first_burst_length": 8192,
-            "immediate_data": true,
-            "allow_duplicated_isid": false,
-            "error_recovery_level": 0,
-            "nop_timeout": 60,
-            "nop_in_interval": 30,
-            "disable_chap": false,
-            "require_chap": false,
-            "mutual_chap": false,
-            "chap_group": 0,
-            "max_large_datain_per_connection": 64,
-            "max_r2t_per_connection": 4,
-            "pdu_pool_size": 36864,
-            "immediate_data_pool_size": 16384,
-            "data_out_pool_size": 2048
-          }
-        }
-      ]
-    },
-    {
-      "subsystem": "vhost_scsi",
       "config": []
     }
   ]

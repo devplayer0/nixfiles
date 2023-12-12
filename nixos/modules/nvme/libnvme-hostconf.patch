@@ -1,0 +1,15 @@
+diff --git a/src/nvme/fabrics.c b/src/nvme/fabrics.c
+index 21fb292..f9090d1 100644
+--- a/src/nvme/fabrics.c
++++ b/src/nvme/fabrics.c
+@@ -41,8 +41,8 @@
+ 
+ #define NVMF_HOSTID_SIZE	37
+ 
+-#define NVMF_HOSTNQN_FILE	SYSCONFDIR "/nvme/hostnqn"
+-#define NVMF_HOSTID_FILE	SYSCONFDIR "/nvme/hostid"
++#define NVMF_HOSTNQN_FILE	"/etc/nvme/hostnqn"
++#define NVMF_HOSTID_FILE	"/etc/nvme/hostid"
+ 
+ const char *nvmf_dev = "/dev/nvme-fabrics";
+ 

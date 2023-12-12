@@ -251,6 +251,7 @@ in
           secrets = {
             key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMlVuTzKObeaUuPocCF41IO/8X+443lzUJLuCIclt2vr";
           };
+          nvme.uuid = "2230b066-a674-4f45-a1dc-f7727b3a9e7b";
 
           firewall = {
             enable = false;

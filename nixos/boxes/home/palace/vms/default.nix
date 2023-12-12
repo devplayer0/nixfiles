@@ -4,7 +4,7 @@
     ./river.nix
   ];
 
-  nixos.systems.palace.configuration = { lib, pkgs, config, systems, ... }:
+  nixos.systems.palace.configuration = { lib, pkgs, config, systems, allAssignments, ... }:
   let
     inherit (lib) mkMerge;
     inherit (lib.my) vm;
@@ -70,6 +70,11 @@
       {
         requires = [ vtapUnit ];
         after = [ vtapUnit ];
+        preStart = ''
+          until ${pkgs.netcat}/bin/nc -w1 -z ${allAssignments.cellar.hi.ipv4.address} 22; do
+            sleep 1
+          done
+        '';
       };
     };
 
@@ -83,7 +88,8 @@
               cpus = 8;
               threads = 2;
             };
-            memory = 32768;
+            memory = 16384;
+            cleanShutdown.timeout = 120;
             drives = [
               (mkMerge [ (vm.disk "cellar" "esp") { frontendOpts.bootindex = 0; } ])
               (vm.disk "cellar" "nix")
@@ -117,6 +123,7 @@
               threads = 2;
             };
             memory = 4096;
+            cleanShutdown.timeout = 120;
             networks = {
               et1g0 = {
                 ifname = "vm-et1g0";

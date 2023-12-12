@@ -57,8 +57,8 @@ in
               };
             };
 
-            environment.systemPackages = with pkgs; [
-              pciutils
+            environment.systemPackages = [
+              pkgs.pciutils
               spdk
               (pkgs.writeShellScriptBin "spdk-rpc" ''
                 exec ${pkgs.python3}/bin/python3 ${spdk.src}/scripts/rpc.py "$@"
@@ -83,7 +83,7 @@ in
                 preStart = ''
                   ${spdk.src}/scripts/setup.sh
                 '';
-                serviceConfig.ExecStart = "${spdk}/bin/spdk_tgt -c ${./spdk_nvmf.json}";
+                serviceConfig.ExecStart = "${spdk}/bin/spdk_tgt --cpumask 0xffff -c ${./spdk_nvmf.json}";
                 wantedBy = [ "multi-user.target" ];
               };
             };

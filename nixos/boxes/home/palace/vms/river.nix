@@ -43,7 +43,6 @@
               extraBin = with pkgs; {
                 dmesg = "${util-linux}/bin/dmesg";
                 ip = "${iproute2}/bin/ip";
-                nvme = "${nvme-cli}/bin/nvme";
               };
               extraConfig = ''
                 DefaultTimeoutStartSec=50
@@ -64,25 +63,6 @@
                   };
                   "30-lan-hi" = networkdAssignment "lan-hi" assignments.hi;
                 };
-              };
-
-              services.connect-nvme = {
-                description = "Connect NVMe-oF";
-                before = [ "initrd-root-device.target" ];
-                after = [ "systemd-networkd-wait-online.service" ];
-                requires = [ "systemd-networkd-wait-online.service" ];
-
-                serviceConfig = {
-                  Type = "oneshot";
-                  Restart = "on-failure";
-                  RestartSec = 10;
-                };
-                script = ''
-                  ${pkgs.nvme-cli}/bin/nvme connect -t rdma -a 192.168.68.80 \
-                    -n nqn.2016-06.io.spdk:river -q nqn.2014-08.org.nvmexpress:uuid:12b52d80-ccb6-418d-9b2e-2be34bff3cd9
-                '';
-
-                wantedBy = [ "initrd-root-device.target" ];
               };
             };
           };
@@ -146,6 +126,14 @@
             key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP9uFa4z9WPuXRFVA+PClQSitQCSPckhKTxo1Hq585Oa";
           };
           server.enable = true;
+          nvme = {
+            uuid = "12b52d80-ccb6-418d-9b2e-2be34bff3cd9";
+            boot = {
+              nqn = "nqn.2016-06.io.spdk:river";
+              address = "192.168.68.80";
+            };
+          };
+
           deploy.node.hostname = "192.168.68.1";
         };
       };

@@ -17,5 +17,6 @@
     gui = ./gui.nix;
     l2mesh = ./l2mesh.nix;
     borgthin = ./borgthin.nix;
+    nvme = ./nvme;
   };
 }
