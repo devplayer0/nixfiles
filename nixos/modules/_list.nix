@@ -18,5 +18,6 @@
     l2mesh = ./l2mesh.nix;
     borgthin = ./borgthin.nix;
     nvme = ./nvme;
+    spdk = ./spdk.nix;
   };
 }

@@ -24,21 +24,17 @@ in
       let
         inherit (lib) mkMerge;
         inherit (lib.my) networkdAssignment;
-
-        spdk = pkgs.spdk.overrideAttrs (o: {
-          configureFlags = o.configureFlags ++ [ "--with-rdma" ];
-        });
       in
       {
         imports = [
           "${modulesPath}/profiles/qemu-guest.nix"
+          ./spdk.nix
         ];
 
         config = mkMerge [
           {
             boot = {
               kernelParams = [ "console=ttyS0,115200n8" ];
-              blacklistedKernelModules = [ "nvme" ];
             };
 
             fileSystems = {
@@ -57,35 +53,13 @@ in
               };
             };
 
-            environment.systemPackages = [
-              pkgs.pciutils
-              spdk
-              (pkgs.writeShellScriptBin "spdk-rpc" ''
-                exec ${pkgs.python3}/bin/python3 ${spdk.src}/scripts/rpc.py "$@"
-              '')
+            environment.systemPackages = with pkgs; [
+              pciutils
+              partclone
             ];
 
             services = {
               netdata.enable = true;
-            };
-
-            systemd.services = {
-              spdk-nvmf = {
-                description = "SPDK NVMe-oF target";
-                path = with pkgs; [
-                  bash
-                  python3
-                  kmod
-                  gawk
-                  util-linux
-                ];
-                after = [ "systemd-networkd-wait-online@lan-hi.service" ];
-                preStart = ''
-                  ${spdk.src}/scripts/setup.sh
-                '';
-                serviceConfig.ExecStart = "${spdk}/bin/spdk_tgt --cpumask 0xffff -c ${./spdk_nvmf.json}";
-                wantedBy = [ "multi-user.target" ];
-              };
             };
 
             systemd.network = {
@@ -105,7 +79,7 @@ in
                   {
                     networkConfig.DNS = [
                       (allAssignments.stream.hi.ipv4.address)
-                      # (allAssignments.river.hi.ipv4.address)
+                      (allAssignments.river.hi.ipv4.address)
                     ];
                   }
                 ];
