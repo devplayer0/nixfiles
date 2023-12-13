@@ -47,9 +47,14 @@ in
 
       nix = {
         package = mkIf (!(versionAtLeast config.home.stateVersion "22.11")) pkgs.nix;
-        settings = {
+        settings = with lib.my.c.nix; {
           experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
           max-jobs = mkDefault "auto";
+
+          extra-substituters = cache.substituters;
+          extra-trusted-public-keys = cache.keys;
+          connect-timeout = 5;
+          fallback = true;
         };
       };
 
@@ -234,12 +239,6 @@ in
             };
             exact = true;
           };
-        };
-        settings = with lib.my.c.nix; {
-          extra-substituters = cache.substituters;
-          extra-trusted-public-keys = cache.keys;
-          connect-timeout = 5;
-          fallback = true;
         };
       };
     })
