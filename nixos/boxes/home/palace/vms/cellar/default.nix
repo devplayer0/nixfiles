@@ -34,7 +34,7 @@ in
         config = mkMerge [
           {
             boot = {
-              kernelParams = [ "console=ttyS0,115200n8" ];
+              kernelParams = [ "console=ttyS0,115200n8" "intel_iommu=on" ];
             };
 
             fileSystems = {

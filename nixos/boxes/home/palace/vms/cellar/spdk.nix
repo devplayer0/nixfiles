@@ -13,7 +13,7 @@ in
     my = {
       spdk = {
         enable = true;
-        extraArgs = "--mem-channels 2 --cpumask 0xffff";
+        extraArgs = "--mem-channels 2 --cpumask 0x3";
         debugCommands = ''
           spdk-rpc bdev_nvme_attach_controller -t pcie -a 02:00.0 -b NVMe0
           spdk-rpc bdev_nvme_attach_controller -t pcie -a 03:00.0 -b NVMe1

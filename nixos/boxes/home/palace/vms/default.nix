@@ -113,6 +113,10 @@
                 hostBDF = "43:00.0";
               };
             };
+            qemuFlags = [
+              "machine kernel-irqchip=split"
+              "device intel-iommu,caching-mode=on,device-iotlb=on,intremap=on"
+            ];
           };
 
           river = {
