@@ -13,7 +13,7 @@ in
     my = {
       spdk = {
         enable = true;
-        extraArgs = "--mem-channels 2 --cpumask 0x3";
+        extraArgs = "--mem-channels 2 --cpumask 0xffff";
         debugCommands = ''
           spdk-rpc bdev_nvme_attach_controller -t pcie -a 02:00.0 -b NVMe0
           spdk-rpc bdev_nvme_attach_controller -t pcie -a 03:00.0 -b NVMe1
@@ -82,6 +82,13 @@ in
           ];
         in
         {
+          scheduler = [
+            {
+              method = "framework_set_scheduler";
+              params.name = "dynamic";
+            }
+          ];
+
           bdev = [
             {
               method = "bdev_set_options";
