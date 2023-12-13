@@ -48,6 +48,12 @@ in
       help = "Print the ed25519 pubkey for a host";
       command = "${pkgs.openssh}/bin/ssh-keyscan -t ed25519 \"$1\" 2> /dev/null | awk '{ print $2 \" \" $3 }'";
     }
+    {
+      name = "json2nix";
+      category = "utilities";
+      help = "Convert JSON to formatted Nix";
+      command = "nix eval --impure --expr 'builtins.fromJSON (builtins.readFile /dev/stdin)' | ${pkgs.nixfmt}/bin/nixfmt";
+    }
 
     {
       name = "fmt";
