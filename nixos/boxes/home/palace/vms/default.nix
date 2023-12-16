@@ -69,7 +69,8 @@
       in
       {
         requires = [ vtapUnit ];
-        after = [ vtapUnit ];
+        after = [ vtapUnit "vm@cellar.service" ];
+        bindsTo = [ "vm@cellar.service" ];
         preStart = ''
           until ${pkgs.netcat}/bin/nc -w1 -z ${allAssignments.cellar.hi.ipv4.address} 22; do
             sleep 1
