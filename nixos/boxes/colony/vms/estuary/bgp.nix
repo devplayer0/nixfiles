@@ -204,14 +204,15 @@ in
             neighbor 2001:7f8:10f::1b1b:154 as 6939;
           }
 
-          protocol bgp upstream4_fogixp_efero from upstream_bgp4 {
-            description "efero transit (on FogIXP, IPv4)";
-            neighbor 185.1.147.107 as 208431;
-          }
-          protocol bgp upstream6_fogixp_efero from upstream_bgp6 {
-            description "efero transit (on FogIXP, IPv6)";
-            neighbor 2001:7f8:ca:1::107 as 208431;
-          }
+          # Not working so well lately...
+          # protocol bgp upstream4_fogixp_efero from upstream_bgp4 {
+          #   description "efero transit (on FogIXP, IPv4)";
+          #   neighbor 185.1.147.107 as 208431;
+          # }
+          # protocol bgp upstream6_fogixp_efero from upstream_bgp6 {
+          #   description "efero transit (on FogIXP, IPv6)";
+          #   neighbor 2001:7f8:ca:1::107 as 208431;
+          # }
 
           protocol bgp peer4_cc_luje from peer_bgp4 {
             description "LUJE.net (on ColoClue, IPv4)";
