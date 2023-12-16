@@ -1,7 +1,7 @@
 { lib, pkgs, config, ... }:
 let
   inherit (builtins) toJSON;
-  inherit (lib) optional mapAttrsToList mkIf withFeature;
+  inherit (lib) optional optionalAttrs mapAttrsToList mkIf withFeature;
   inherit (lib.my) mkOpt' mkBoolOpt';
 
   rpcOpts = with lib.types; {
@@ -17,7 +17,7 @@ let
       inherit subsystem;
       config = map (rpc: {
         inherit (rpc) method;
-      } // (if rpc.params != { } then { inherit (rpc) params; } else { })) c;
+      } // (optionalAttrs (rpc.params != { }) { inherit (rpc) params; })) c;
     }) cfg.config.subsystems;
   };
   configJSON = pkgs.writeText "spdk-config.json" (toJSON config');

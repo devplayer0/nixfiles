@@ -4,7 +4,7 @@ let
   inherit (lib)
     genAttrs mapAttrsToList filterAttrsRecursive nameValuePair types
     mkOption mkOverride mkForce mkIf mergeEqualOption optional
-    showWarnings concatStringsSep flatten unique;
+    showWarnings concatStringsSep flatten unique optionalAttrs;
   inherit (lib.flake) defaultSystems;
 in
 rec {
@@ -151,6 +151,9 @@ rec {
       # NOTE: LLDP emission / reception is ignored on bridge interfaces
       LLDP = true;
       EmitLLDP = "customer-bridge";
+    };
+    linkConfig = optionalAttrs (a.mtu != null) {
+      MTUBytes = toString a.mtu;
     };
     ipv6AcceptRAConfig = {
       Token = mkIf (a.ipv6.iid != null) "static:${a.ipv6.iid}";

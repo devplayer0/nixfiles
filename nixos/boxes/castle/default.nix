@@ -17,6 +17,10 @@ in
           mask = 22;
           gateway = null;
         };
+        ipv6 = {
+          iid = "::3:1";
+          address = net.cidr.host (65536*3+1) prefixes.hi.v6;
+        };
       };
       lo = {
         inherit domain;
@@ -24,6 +28,10 @@ in
           address = net.cidr.host 40 prefixes.lo.v4;
           mask = 21;
           gateway = null;
+        };
+        ipv6 = {
+          iid = "::3:1";
+          address = net.cidr.host (65536*3+1) prefixes.lo.v6;
         };
       };
     };

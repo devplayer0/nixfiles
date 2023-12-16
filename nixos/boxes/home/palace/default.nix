@@ -2,7 +2,7 @@
 let
   inherit (lib.my) net mkVLAN;
   inherit (lib.my.c) pubDomain;
-  inherit (lib.my.c.home) domain vlans prefixes vips;
+  inherit (lib.my.c.home) domain vlans prefixes vips hiMTU;
 in
 {
   imports = [ ./vms ];
@@ -15,15 +15,21 @@ in
     assignments = {
       hi = {
         inherit domain;
+        mtu = hiMTU;
         ipv4 = {
           address = net.cidr.host 22 prefixes.hi.v4;
           mask = 22;
           gateway = vips.hi.v4;
         };
+        ipv6 = {
+          iid = "::2:1";
+          address = net.cidr.host (65536*2+1) prefixes.hi.v6;
+        };
       };
       core = {
         inherit domain;
         name = "palace-core";
+        mtu = 1500;
         ipv4 = {
           address = net.cidr.host 20 prefixes.core.v4;
           gateway = null;
@@ -131,7 +137,7 @@ in
                 };
                 linkConfig = {
                   Name = "et100g";
-                  MTUBytes = "9000";
+                  MTUBytes = toString hiMTU;
                 };
               };
             };
@@ -169,17 +175,7 @@ in
                   MACAddress=52:54:00:8a:8a:f2
                 '';
               };
-              "60-lan-hi" = mkMerge [
-                (networkdAssignment "lan-hi" assignments.hi)
-                {
-                  matchConfig.Name = "lan-hi";
-                  linkConfig.MTUBytes = "9000";
-                  networkConfig.DNS = [
-                    (allAssignments.stream.hi.ipv4.address)
-                    # (allAssignments.river.hi.ipv4.address)
-                  ];
-                }
-              ];
+              "60-lan-hi" = networkdAssignment "lan-hi" assignments.hi;
             };
           };
         };

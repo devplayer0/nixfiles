@@ -180,14 +180,17 @@ rec {
       hi = {
         v4 = subnet 4 1 all.v4;
         v6 = subnet 4 1 all.v6;
+        mtu = hiMTU;
       };
       lo = {
         v4 = subnet 3 1 all.v4;
         v6 = subnet 4 2 all.v6;
+        mtu = 1500;
       };
       untrusted = {
         v4 = subnet 6 16 all.v4;
         v6 = subnet 4 3 all.v6;
+        mtu = 1500;
       };
       inherit (colony.prefixes) as211024;
     };

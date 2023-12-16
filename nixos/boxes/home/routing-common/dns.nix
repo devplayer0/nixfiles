@@ -102,7 +102,7 @@ in
 
       bind.zones =
       let
-        names = [ "core" "hi" "lo" ];
+        names = [ "core" "hi" "lo" "untrusted" ];
         i = toString (index + 1);
       in
       {
@@ -138,11 +138,15 @@ in
 
             jim-core IN A ${net.cidr.host 10 prefixes.core.v4}
             jim IN A ${net.cidr.host 10 prefixes.hi.v4}
+            jim IN AAAA ${net.cidr.host (65536+1) prefixes.hi.v6}
             jim-lo IN A ${net.cidr.host 10 prefixes.lo.v4}
+            jim-lo IN AAAA ${net.cidr.host (65536+1) prefixes.lo.v6}
 
             dave-core IN A ${net.cidr.host 11 prefixes.core.v4}
             dave IN A ${net.cidr.host 11 prefixes.hi.v4}
+            dave IN AAAA ${net.cidr.host (65536+2) prefixes.hi.v6}
             dave-lo IN A ${net.cidr.host 11 prefixes.lo.v4}
+            dave-lo IN AAAA ${net.cidr.host (65536+2) prefixes.lo.v6}
 
             ups IN A ${net.cidr.host 20 prefixes.lo.v4}
             palace-kvm IN A ${net.cidr.host 21 prefixes.lo.v4}

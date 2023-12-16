@@ -3,7 +3,7 @@ let
   inherit (builtins) elemAt;
   inherit (lib.my) net mkVLAN;
   inherit (lib.my.c) pubDomain;
-  inherit (lib.my.c.home) domain vlans prefixes routers routersPubV4;
+  inherit (lib.my.c.home) domain vlans prefixes vips routers routersPubV4;
 
   name = elemAt routers index;
   otherIndex = 1 - index;
@@ -20,14 +20,16 @@ in
       core = {
         name = "${name}-core";
         inherit domain;
+        mtu = 1500;
         ipv4 = {
           address = net.cidr.host (index + 1) prefixes.core.v4;
           gateway = null;
         };
       };
       hi = {
-        inherit domain;
         name = "${name}-hi";
+        inherit domain;
+        mtu = 9000;
         ipv4 = {
           address = net.cidr.host (index + 1) prefixes.hi.v4;
           mask = 22;
@@ -38,6 +40,7 @@ in
       lo = {
         name = "${name}-lo";
         inherit domain;
+        mtu = 1500;
         ipv4 = {
           address = net.cidr.host (index + 1) prefixes.lo.v4;
           mask = 21;
@@ -48,6 +51,7 @@ in
       untrusted  = {
         name = "${name}-ut";
         inherit domain;
+        mtu = 1500;
         ipv4 = {
           address = net.cidr.host (index + 1) prefixes.untrusted.v4;
           mask = 24;
@@ -67,6 +71,33 @@ in
       };
     };
 
+    extraAssignments = {
+      router-hi.hi = {
+        name = "router-hi";
+        inherit domain;
+        ipv4 = {
+          address = vips.hi.v4;
+          mask = 22;
+        };
+        ipv6.address = vips.hi.v6;
+      };
+      router-lo.lo = {
+        name = "router-lo";
+        inherit domain;
+        ipv4 = {
+          address = vips.lo.v4;
+          mask = 21;
+        };
+        ipv6.address = vips.lo.v6;
+      };
+      router-ut.untrusted = {
+        name = "router-ut";
+        inherit domain;
+        ipv4.address = vips.untrusted.v4;
+        ipv6.address = vips.untrusted.v6;
+      };
+    };
+
     configuration = { lib, pkgs, config, assignments, allAssignments, ... }:
       let
         inherit (lib) mkIf mkMerge mkForce;
@@ -77,6 +108,7 @@ in
         imports = map (m: import m index) [
           ./keepalived.nix
           ./dns.nix
+          ./radvd.nix
         ];
 
         config = {
@@ -158,7 +190,7 @@ in
 
             networks =
             let
-              mkVLANConfig = name: mtu:
+              mkVLANConfig = name:
               let
                 iface = "lan-${name}";
               in
@@ -166,26 +198,9 @@ in
                 "60-${iface}" = mkMerge [
                   (networkdAssignment iface assignments."${name}")
                   {
-                    linkConfig.MTUBytes = toString mtu;
+                    dns = [ "127.0.0.1" "::1" ];
                     domains = [ config.networking.domain ];
-                    networkConfig = {
-                      IPv6AcceptRA = mkForce false;
-                      # IPv6SendRA = true;
-                    };
-                    ipv6SendRAConfig = {
-                      DNS = [
-                        (net.cidr.host 1 prefixes."${name}".v4)
-                        (net.cidr.host 2 prefixes."${name}".v4)
-                        (net.cidr.host 1 prefixes."${name}".v6)
-                        (net.cidr.host 2 prefixes."${name}".v6)
-                      ];
-                      Domains = [ config.networking.domain ];
-                    };
-                    ipv6Prefixes = [
-                      {
-                        ipv6PrefixConfig.Prefix = prefixes."${name}".v6;
-                      }
-                    ];
+                    networkConfig.IPv6AcceptRA = mkForce false;
                   }
                 ];
               };
@@ -256,9 +271,9 @@ in
                 ];
               }
 
-              (mkVLANConfig "hi" 9000)
-              (mkVLANConfig "lo" 1500)
-              (mkVLANConfig "untrusted" 1500)
+              (mkVLANConfig "hi")
+              (mkVLANConfig "lo")
+              (mkVLANConfig "untrusted")
 
               {
                 "60-lan-hi" = {

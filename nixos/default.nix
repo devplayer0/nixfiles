@@ -100,6 +100,7 @@ let
       altNames = mkOpt' (listOf str) [ ] "Extra names to assign.";
       visible = mkBoolOpt' true "Whether or not this assignment should be visible.";
       domain = mkOpt' (nullOr str) null "Domain for this assignment.";
+      mtu = mkOpt' (nullOr ints.unsigned) null "Interface MTU.";
       ipv4 = {
         address = mkOpt' net.types.ipv4 null "IPv4 address.";
         mask = mkOpt' ints.u8 24 "Network mask.";

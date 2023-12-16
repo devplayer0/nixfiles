@@ -1,20 +1,30 @@
-index: { lib, pkgs, ... }:
+index: { lib, pkgs, config, ... }:
 let
-  inherit (builtins) attrNames;
+  inherit (builtins) attrNames concatMap;
+  inherit (lib) optional;
   inherit (lib.my) net;
   inherit (lib.my.c.home) prefixes vips;
 
   vlanIface = vlan: if vlan == "as211024" then vlan else "lan-${vlan}";
-  vrrpIPs = family: map (vlan: {
-    addr = "${vips.${vlan}.${family}}/${toString (net.cidr.length prefixes.${vlan}.${family})}";
+  vrrpIPs = family: concatMap (vlan: [
+    {
+      addr = "${vips.${vlan}.${family}}/${toString (net.cidr.length prefixes.${vlan}.${family})}";
+      dev = vlanIface vlan;
+    }
+  ] ++ (optional (family == "v6") {
+    addr = "fe80::1/64";
     dev = vlanIface vlan;
-  }) (attrNames vips);
+  })) (attrNames vips);
   mkVRRP = family: routerId: {
     state = if index == 0 then "MASTER" else "BACKUP";
     interface = "lan-core";
     priority = 255 - index;
     virtualRouterId = routerId;
     virtualIps = vrrpIPs family;
+    extraConfig = ''
+      notify_master "${config.systemd.package}/bin/systemctl start radvd.service"
+      notify_backup "${config.systemd.package}/bin/systemctl stop radvd.service"
+    '';
   };
 in
 {

@@ -2,7 +2,7 @@
 let
   inherit (lib.my) net;
   inherit (lib.my.c) pubDomain;
-  inherit (lib.my.c.home) domain prefixes vips;
+  inherit (lib.my.c.home) domain prefixes vips hiMTU;
 in
 {
   nixos.systems.cellar = {
@@ -12,10 +12,15 @@ in
     assignments = {
       hi = {
         inherit domain;
+        mtu = hiMTU;
         ipv4 = {
           address = net.cidr.host 80 prefixes.hi.v4;
           mask = 22;
           gateway = vips.hi.v4;
+        };
+        ipv6 = {
+          iid = "::4:1";
+          address = net.cidr.host (65536*4+1) prefixes.hi.v6;
         };
       };
     };
@@ -66,23 +71,12 @@ in
               links = {
                 "10-lan-hi" = {
                   matchConfig.PermanentMACAddress = "52:54:00:cc:3e:70";
-                  linkConfig = {
-                    Name = "lan-hi";
-                    MTUBytes = "9000";
-                  };
+                  linkConfig.Name = "lan-hi";
                 };
               };
 
               networks = {
-                "80-vms" = mkMerge [
-                  (networkdAssignment "lan-hi" assignments.hi)
-                  {
-                    networkConfig.DNS = [
-                      (allAssignments.stream.hi.ipv4.address)
-                      (allAssignments.river.hi.ipv4.address)
-                    ];
-                  }
-                ];
+                "80-lan-hi" = networkdAssignment "lan-hi" assignments.hi;
               };
             };
 
