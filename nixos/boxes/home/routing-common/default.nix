@@ -6,6 +6,7 @@ let
   inherit (lib.my.c.home) domain vlans prefixes routers routersPubV4;
 
   name = elemAt routers index;
+  otherIndex = 1 - index;
 in
 {
   nixos.systems."${name}" = {
@@ -258,6 +259,17 @@ in
               (mkVLANConfig "hi" 9000)
               (mkVLANConfig "lo" 1500)
               (mkVLANConfig "untrusted" 1500)
+
+              {
+                "60-lan-hi" = {
+                  routes = map (r: { routeConfig = r; }) [
+                    {
+                      Destination = elemAt routersPubV4 otherIndex;
+                      Gateway = net.cidr.host (otherIndex + 1) prefixes.hi.v4;
+                    }
+                  ];
+                };
+              }
             ];
           };
 
