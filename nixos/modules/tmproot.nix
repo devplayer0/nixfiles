@@ -466,6 +466,16 @@ in
       (mkIf config.virtualisation.libvirtd.enable {
         my.tmproot.persistence.config.directories = [ "/var/lib/libvirt" ];
       })
+      (mkIf (with config.services.kea; (dhcp4.enable || dhcp6.enable || dhcp-ddns.enable)) {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = "/var/lib/kea";
+            mode = "0750";
+            user = "kea";
+            group = "kea";
+          }
+        ];
+      })
     ]))
   ]);
 

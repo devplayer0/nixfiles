@@ -10,12 +10,14 @@ rec {
       gitea-runner = 401;
       jellyseerr = 402;
       atticd = 403;
+      kea = 404;
     };
     gids = {
       matrix-syncv3 = 400;
       gitea-runner = 401;
       jellyseerr = 402;
       atticd = 403;
+      kea = 404;
     };
   };
 

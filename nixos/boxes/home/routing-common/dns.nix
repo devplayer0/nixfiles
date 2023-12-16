@@ -47,13 +47,8 @@ in
 
         settings = {
           query-local-address = [
-            # TODO: IPv6
             "0.0.0.0"
             "::"
-            # TODO: Dynamic IPv4 WAN address?
-            # assignments.internal.ipv4.address
-            # assignments.internal.ipv6.address
-            # assignments.hi.ipv6.address
           ];
           forward-zones = map (z: "${z}=127.0.0.1:5353") authZones;
 
@@ -73,9 +68,10 @@ in
       pdns.serviceConfig.RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6 AF_NETLINK";
     };
 
-    # For rec_control
     environment.systemPackages = with pkgs; [
+      # For rec_control
       pdns-recursor
+      sqlite
     ];
 
     my.pdns.auth = {
@@ -98,6 +94,10 @@ in
         webserver = true;
         webserver-address = "::";
         webserver-allow-from = [ "127.0.0.1" "::1" ];
+
+        dnsupdate = true;
+        launch = [ "gsqlite3" ];
+        gsqlite3-database = "/var/lib/pdns/dynamic.sqlite3";
       };
 
       bind.zones =
@@ -135,6 +135,11 @@ in
             @ IN NS ns2
             ns1 IN ALIAS ${elemAt routers 0}.${config.networking.domain}.
             ns2 IN ALIAS ${elemAt routers 1}.${config.networking.domain}.
+
+            dyn IN NS ns1.dyn.h.nul.ie.
+            dyn IN NS ns2.dyn.h.nul.ie.
+            ns1.dyn.h.nul.ie. IN ALIAS ${elemAt routers 0}.${config.networking.domain}.
+            ns2.dyn.h.nul.ie. IN ALIAS ${elemAt routers 1}.${config.networking.domain}.
 
             jim-core IN A ${net.cidr.host 10 prefixes.core.v4}
             jim IN A ${net.cidr.host 10 prefixes.hi.v4}

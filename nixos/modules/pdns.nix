@@ -268,6 +268,9 @@ in
         # For pdns_control etc
         systemPackages = with pkgs; [
           pdns
+          (pkgs.writeShellScriptBin "pu" ''
+            ${pdns}/bin/pdnsutil --config-dir /run/pdns "$@"
+          '')
           pdns-file-record
         ];
 

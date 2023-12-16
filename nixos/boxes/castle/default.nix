@@ -22,18 +22,6 @@ in
           address = net.cidr.host (65536*3+1) prefixes.hi.v6;
         };
       };
-      lo = {
-        inherit domain;
-        ipv4 = {
-          address = net.cidr.host 40 prefixes.lo.v4;
-          mask = 21;
-          gateway = null;
-        };
-        ipv6 = {
-          iid = "::3:1";
-          address = net.cidr.host (65536*3+1) prefixes.lo.v6;
-        };
-      };
     };
 
     configuration = { lib, pkgs, modulesPath, config, systems, assignments, allAssignments, ... }:
@@ -116,7 +104,13 @@ in
           blueman.enable = true;
         };
 
-        programs.virt-manager.enable = true;
+        programs = {
+          virt-manager.enable = true;
+          wireshark = {
+            enable = true;
+            package = pkgs.wireshark-qt;
+          };
+        };
         virtualisation.libvirtd.enable = true;
 
         networking = {
@@ -155,7 +149,6 @@ in
             wait-online.enable = false;
             netdevs = mkMerge [
               (mkVLAN "lan-hi" vlans.hi)
-              (mkVLAN "lan-lo" vlans.lo)
             ];
             links = {
               "10-et2.5g" = {
@@ -177,26 +170,21 @@ in
             networks = {
               "50-lan" = {
                 matchConfig.Name = "et2.5g";
-                DHCP = "yes";
+                DHCP = "no";
+                address = [ "10.16.7.1/16" ];
               };
 
               "50-et100g" = {
                 matchConfig.Name = "et100g";
-                vlan = [ "lan-hi" "lan-lo" ];
+                vlan = [ "lan-hi" ];
                 networkConfig.IPv6AcceptRA = false;
               };
               "60-lan-hi" = mkMerge [
                 (networkdAssignment "lan-hi" assignments.hi)
                 {
+                  DHCP = "yes";
                   matchConfig.Name = "lan-hi";
                   linkConfig.MTUBytes = "9000";
-                }
-              ];
-              "60-lan-lo" = mkMerge [
-                (networkdAssignment "lan-lo" assignments.lo)
-                {
-                  matchConfig.Name = "lan-lo";
-                  linkConfig.MTUBytes = "1500";
                 }
               ];
             };

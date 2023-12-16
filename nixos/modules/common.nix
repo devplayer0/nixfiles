@@ -125,7 +125,6 @@ in
       environment.systemPackages = with pkgs; mkMerge [
         [
           bash-completion
-          vim
           git
           unzip
         ]
@@ -138,6 +137,7 @@ in
         fish.enable = mkDefault true;
         # TODO: This is expecting to look up the channel for the database...
         command-not-found.enable = mkDefault false;
+        vim.defaultEditor = true;
       };
 
       services = {

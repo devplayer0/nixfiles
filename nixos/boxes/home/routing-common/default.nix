@@ -109,6 +109,7 @@ in
           ./keepalived.nix
           ./dns.nix
           ./radvd.nix
+          ./kea.nix
         ];
 
         config = {

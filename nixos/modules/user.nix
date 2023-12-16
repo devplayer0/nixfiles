@@ -37,7 +37,8 @@ in
             extraGroups =
               [ "wheel" "kvm" "dialout" ] ++
               (optional config.networking.networkmanager.enable "networkmanager") ++
-              (optional config.virtualisation.libvirtd.enable "libvirtd");
+              (optional config.virtualisation.libvirtd.enable "libvirtd") ++
+              (optional config.programs.wireshark.enable "wireshark");
             password = mkIf (cfg.passwordSecret == null) (mkDefault "hunter2");
             shell =
               let shell = cfg.homeConfig.my.shell;
