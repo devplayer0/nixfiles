@@ -24,7 +24,9 @@ in
     coreutils
     nixVersions.stable
     rage
-    deploy-rs.deploy-rs
+    (pkgs.writeShellScriptBin "deploy" ''
+      exec ${deploy-rs.deploy-rs}/bin/deploy --skip-checks "$@"
+    '')
     home-manager
     attic-client
   ];

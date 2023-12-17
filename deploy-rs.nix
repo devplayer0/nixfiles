@@ -47,8 +47,8 @@ in
           (nodesFor homes)
         );
 
-        autoRollback = true;
-        magicRollback = true;
+        autoRollback = false;
+        magicRollback = false;
       };
 
       # Filter out null values so deploy merges overriding options correctly
