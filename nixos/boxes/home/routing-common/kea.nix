@@ -2,7 +2,7 @@ index: { lib, pkgs, assignments, ... }:
 let
   inherit (lib) mkForce;
   inherit (lib.my) net;
-  inherit (lib.my.c.home) domain prefixes vips;
+  inherit (lib.my.c.home) domain prefixes vips hiMTU;
 
   dns-servers = [
     {
@@ -72,6 +72,10 @@ in
                 {
                   name = "domain-name-servers";
                   data = "${net.cidr.host 1 prefixes.hi.v4}, ${net.cidr.host 2 prefixes.hi.v4}";
+                }
+                {
+                  name = "interface-mtu";
+                  data = toString hiMTU;
                 }
               ];
               pools = [
