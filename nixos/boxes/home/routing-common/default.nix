@@ -229,12 +229,6 @@ in
                     DHCP = "ipv4";
                     dns = [ "127.0.0.1" "::1" ];
                     dhcpV4Config.UseDNS = false;
-                    routes = map (r: { routeConfig = r; }) [
-                      # {
-                      #   Destination = prefixes.ctrs.v4;
-                      #   Gateway = allAssignments.shill.routing.ipv4.address;
-                      # }
-                    ];
 
                     qdiscConfig = {
                       Parent = "ingress";
@@ -308,13 +302,6 @@ in
               nat = {
                 enable = true;
                 externalInterface = "wan";
-                # externalIP = assignments.internal.ipv4.address;
-                forwardPorts = [
-                  # {
-                  #   port = "http";
-                  #   dst = allAssignments.middleman.internal.ipv4.address;
-                  # }
-                ];
               };
               extraRules = ''
                 table inet filter {
