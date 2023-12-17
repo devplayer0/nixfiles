@@ -1,4 +1,4 @@
-name: Installer ISO
+name: Installer
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   installer:
-    name: Build installer ISO
+    name: Build installer
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -24,20 +24,27 @@ jobs:
             extra-substituters = https://nix-cache.nul.ie/main
             extra-trusted-public-keys = main:mMChkG8LwXrFirVfudqjSHasK1jV31OVElYD3eImYl8=
       - name: Set up attic
+        id: setup
         run: |
           nix run .#nixpkgs.mine.x86_64-linux.attic-client -- \
             login --set-default colony https://nix-cache.nul.ie "${{ secrets.NIX_CACHE_TOKEN }}"
+          echo "short_rev=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Build installer ISO
-        id: build
         run: |
-          nix build .#nixosConfigurations.installer.config.my.buildAs.iso
-          short_rev="$(git rev-parse --short HEAD)"
-          ln -s result/iso/nixos-installer-devplayer0.iso nixos-installer-devplayer0-$short_rev.iso
-          echo "short_rev=$short_rev" >> "$GITHUB_OUTPUT"
-      - name: Create release for ISO
+          nix build .#nixfiles.config.nixos.systems.installer.configuration.config.my.buildAs.iso
+          ln -s "$(readlink result)"/iso/nixos-installer-devplayer0.iso \
+            nixos-installer-devplayer0-${{ steps.setup.outputs.short_rev }}.iso
+      - name: Build installer netboot archive
+        run: |
+          nix build .#nixfiles.config.nixos.systems.installer.configuration.config.my.buildAs.netbootArchive
+          ln -s "$(readlink result)" \
+            nixos-installer-devplayer0-netboot-${{ steps.setup.outputs.short_rev }}.tar
+
+      - name: Create release
         uses: https://gitea.com/actions/release-action@main
         with:
           title: Latest installer
           files: |
-            nixos-installer-devplayer0-${{ steps.build.outputs.short_rev }}.iso
+            nixos-installer-devplayer0-${{ steps.setup.outputs.short_rev }}.iso
+            nixos-installer-devplayer0-netboot-${{ steps.setup.outputs.short_rev }}.tar

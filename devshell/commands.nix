@@ -98,6 +98,18 @@ in
       command = ''nix build "''${@:2}" ".#nixfiles.config.nixos.systems.\"$1\".configuration.config.my.buildAs.iso"'';
     }
     {
+      name = "build-kexec";
+      category = "tasks";
+      help = "Build NixOS configuration as kexec tree";
+      command = ''nix build "''${@:2}" ".#nixfiles.config.nixos.systems.\"$1\".configuration.config.my.buildAs.kexecTree"'';
+    }
+    {
+      name = "build-netboot";
+      category = "tasks";
+      help = "Build NixOS configuration as netboot archive";
+      command = ''nix build "''${@:2}" ".#nixfiles.config.nixos.systems.\"$1\".configuration.config.my.buildAs.netbootArchive"'';
+    }
+    {
       name = "build-home";
       category = "tasks";
       help = "Build home-manager configuration";

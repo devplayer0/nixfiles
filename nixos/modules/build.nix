@@ -43,6 +43,16 @@ let
     modules = flatten [
       "${modulesPath}/installer/netboot/netboot.nix"
       allHardware
+      ({ pkgs, config, ... }: {
+        system.build.netbootArchive = pkgs.runCommand "netboot-${config.system.name}-archive.tar" { } ''
+          ${pkgs.gnutar}/bin/tar -rvC "${config.system.build.kernel}" \
+            -f "$out" "${config.system.boot.loader.kernelFile}"
+          ${pkgs.gnutar}/bin/tar -rvC "${config.system.build.netbootRamdisk}" \
+            -f "$out" initrd
+          ${pkgs.gnutar}/bin/tar -rvC "${config.system.build.netbootIpxeScript}" \
+            -f "$out" netboot.ipxe
+        '';
+      })
     ];
   };
 
@@ -99,6 +109,7 @@ in
         iso = config.my.asISO.config.system.build.isoImage;
         container = config.my.asContainer.config.system.build.toplevel;
         kexecTree = config.my.asKexecTree.config.system.build.kexecTree;
+        netbootArchive = config.my.asKexecTree.config.system.build.netbootArchive;
       };
     };
   };
