@@ -92,7 +92,10 @@ in
           protocol kernel kernel6 {
             ipv6 {
               import none;
-              export none;
+              export filter {
+                if net = HOMENET6 then accept;
+                reject;
+              };
             };
           }
 

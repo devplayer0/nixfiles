@@ -118,7 +118,9 @@ in
                 };
               };
 
-              firewall = { };
+              firewall = {
+                trustedInterfaces = [ "as211024" ];
+              };
             };
           }
         ];
