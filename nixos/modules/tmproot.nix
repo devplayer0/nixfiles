@@ -476,6 +476,7 @@ in
           }
         ];
       })
+      (persistSimpleSvc "headscale")
     ]))
   ]);
 

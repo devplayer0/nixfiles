@@ -1,6 +1,7 @@
 { lib, ... }:
 let
   inherit (lib.my) net;
+  inherit (lib.my.c) pubDomain;
   inherit (lib.my.c.britway) prefixes domain pubV4 assignedV6;
 in
 {
@@ -39,6 +40,8 @@ in
         imports = [
           "${modulesPath}/profiles/qemu-guest.nix"
           ./bgp.nix
+          ./nginx.nix
+          ./tailscale.nix
         ];
 
         config = mkMerge [

@@ -26,7 +26,7 @@ rec {
     latest = pkgs: pkgs.linuxKernel.packages.linux_6_6;
   };
 
-  nginx = {
+  nginx = rec {
     proxyHeaders = ''
       # Setting any proxy_header in a child (e.g. location) will nuke the parents...
       proxy_set_header X-Origin-URI $request_uri;
@@ -39,6 +39,45 @@ rec {
       proxy_set_header X-Forwarded-Proto $scheme;
       proxy_set_header X-Forwarded-Protocol $scheme;
       proxy_set_header X-Scheme $scheme;
+    '';
+    baseHttpConfig = ''
+      # NixOS provides a logrotate config that auto-compresses :)
+      log_format main
+        '$remote_addr - $remote_user [$time_local] $scheme "$host" "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent"';
+      access_log /var/log/nginx/access.log main;
+
+      # optimisation
+      sendfile on;
+      tcp_nopush on;
+      tcp_nodelay on;
+      keepalive_timeout 65;
+
+      # gzip
+      gzip on;
+      gzip_proxied any;
+      gzip_comp_level 5;
+      gzip_types
+        application/atom+xml
+        application/javascript
+        application/json
+        application/xml
+        application/xml+rss
+        image/svg+xml
+        text/css
+        text/javascript
+        text/plain
+        text/xml;
+      gzip_vary on;
+
+      # proxying
+      proxy_buffering off;
+      proxy_redirect off;
+      proxy_connect_timeout 60s;
+      proxy_read_timeout 60s;
+      proxy_send_timeout 60s;
+      proxy_http_version 1.1;
+
+      ${proxyHeaders}
     '';
   };
 

@@ -2,6 +2,7 @@
 let
   inherit (lib.my) net;
   inherit (lib.my.c) pubDomain;
+  inherit (lib.my.c.nginx) baseHttpConfig;
   inherit (lib.my.c.colony) domain prefixes;
 in
 {
@@ -231,43 +232,7 @@ in
 
               # Based on recommended*Settings, but probably better to be explicit about these
               appendHttpConfig = ''
-                # NixOS provides a logrotate config that auto-compresses :)
-                log_format main
-                  '$remote_addr - $remote_user [$time_local] $scheme "$host" "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent"';
-                access_log /var/log/nginx/access.log main;
-
-                # optimisation
-                sendfile on;
-                tcp_nopush on;
-                tcp_nodelay on;
-                keepalive_timeout 65;
-
-                # gzip
-                gzip on;
-                gzip_proxied any;
-                gzip_comp_level 5;
-                gzip_types
-                  application/atom+xml
-                  application/javascript
-                  application/json
-                  application/xml
-                  application/xml+rss
-                  image/svg+xml
-                  text/css
-                  text/javascript
-                  text/plain
-                  text/xml;
-                gzip_vary on;
-
-                # proxying
-                proxy_buffering off;
-                proxy_redirect off;
-                proxy_connect_timeout 60s;
-                proxy_read_timeout 60s;
-                proxy_send_timeout 60s;
-                proxy_http_version 1.1;
-
-                ${lib.my.c.nginx.proxyHeaders}
+                ${baseHttpConfig}
 
                 # caching
                 proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=CACHE:10m inactive=7d max_size=4g;
