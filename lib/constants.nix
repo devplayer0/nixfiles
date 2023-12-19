@@ -220,8 +220,13 @@ rec {
     domain = "lon1.int.${pubDomain}";
     pubV4 = "45.76.141.188";
     prefixes = {
+      vultr = {
+        v6 = "2001:19f0:7402:128b::/64";
+      };
       inherit (colony.prefixes) as211024;
     };
+    # Need to use this IP as the source address for BGP
+    assignedV6 = "2001:19f0:7402:128b:5400:04ff:feac:6e06";
   };
 
   kelder = {

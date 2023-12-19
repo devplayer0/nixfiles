@@ -1,7 +1,7 @@
 { lib, ... }:
 let
   inherit (lib.my) net;
-  inherit (lib.my.c.britway) prefixes domain pubV4;
+  inherit (lib.my.c.britway) prefixes domain pubV4 assignedV6;
 in
 {
   nixos.systems.britway = {
@@ -38,6 +38,7 @@ in
       {
         imports = [
           "${modulesPath}/profiles/qemu-guest.nix"
+          ./bgp.nix
         ];
 
         config = mkMerge [
@@ -69,7 +70,14 @@ in
               };
             };
 
-            services = { };
+            services = {
+              iperf3 = {
+                enable = true;
+                openFirewall = true;
+              };
+            };
+
+            networking = { inherit domain; };
 
             systemd.network = {
               links = {
@@ -80,7 +88,12 @@ in
               };
 
               networks = {
-                "20-veth0" = networkdAssignment "veth0" assignments.vultr;
+                "20-veth0" = mkMerge [
+                  (networkdAssignment "veth0" assignments.vultr)
+                  {
+                    address = [ assignedV6 ];
+                  }
+                ];
                 "90-l2mesh-as211024" = mkMerge [
                   (networkdAssignment "as211024" assignments.as211024)
                   {
