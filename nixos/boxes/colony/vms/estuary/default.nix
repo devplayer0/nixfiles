@@ -15,6 +15,7 @@ in
             estuary.addr = pubV4;
             river.addr = elemAt lib.my.c.home.routersPubV4 0;
             stream.addr = elemAt lib.my.c.home.routersPubV4 1;
+            britway.addr = lib.my.c.britway.pubV4;
           };
         };
       };

@@ -118,6 +118,7 @@
         nixos/boxes/castle
         nixos/boxes/home/stream.nix
         nixos/boxes/home/palace
+        nixos/boxes/britway
         nixos/boxes/kelder
 
         # Homes

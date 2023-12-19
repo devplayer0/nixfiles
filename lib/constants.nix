@@ -216,6 +216,14 @@ rec {
     };
   };
 
+  britway = {
+    domain = "lon1.int.${pubDomain}";
+    pubV4 = "45.76.141.188";
+    prefixes = {
+      inherit (colony.prefixes) as211024;
+    };
+  };
+
   kelder = {
     groups = {
       storage = 2000;
