@@ -24,6 +24,12 @@ let
     lib.my.c.home.prefixes.all.v4
     lib.my.c.home.prefixes.all.v6
   ];
+  pubNameservers = [
+    "1.1.1.1"
+    "1.0.0.1"
+    "2606:4700:4700::1111"
+    "2606:4700:4700::1001"
+  ];
 in
 {
   config = {
@@ -45,20 +51,19 @@ in
           noise.private_key_path = "/var/lib/headscale/noise_private.key";
           ip_prefixes = with lib.my.c.tailscale.prefix; [ v4 v6 ];
           dns_config = {
-            domains = [
-              domain
-              lib.my.c.colony.domain
-              lib.my.c.home.domain
-            ];
-            nameservers = [
-              "1.1.1.1"
-              "1.0.0.1"
-              "2606:4700:4700::1111"
-              "2606:4700:4700::1001"
-            ];
+            restricted_nameservers = {
+              "${domain}" = pubNameservers;
+              "${lib.my.c.colony.domain}" = with allAssignments.estuary.internal; [
+                ipv4.address ipv6.address
+              ];
+              "${lib.my.c.home.domain}" = lib.my.c.home.routersPubV4 ++ ([
+                allAssignments.river.as211024.ipv6.address
+                allAssignments.stream.as211024.ipv6.address
+              ]);
+            };
             magic_dns = true;
             base_domain = "ts.${pubDomain}";
-            override_local_dns = true;
+            override_local_dns = false;
           };
           oidc = {
             only_start_if_oidc_is_available = true;
@@ -77,7 +82,9 @@ in
         openFirewall = true;
         interfaceName = "tailscale0";
         extraUpFlags = [
+          "--operator=${config.my.user.config.name}"
           "--login-server=https://ts.nul.ie"
+          "--netfilter-mode=off"
           "--advertise-exit-node"
           "--advertise-routes=${advRoutes}"
         ];
