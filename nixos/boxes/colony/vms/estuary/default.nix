@@ -366,7 +366,6 @@ in
                 };
               };
               firewall = {
-                trustedInterfaces = [ "as211024" ];
                 udp.allowed = [ 5353 lib.my.c.kelder.vpn.port ];
                 tcp.allowed = [ 5353 "bgp" ];
                 nat = {
@@ -416,7 +415,8 @@ in
                     }
 
                     chain forward {
-                      iifname { wan, $ixps } oifname base jump filter-routing
+                      ${lib.my.c.as211024.nftTrust}
+                      iifname { wan, as211024, $ixps } oifname base jump filter-routing
                       oifname $ixps jump ixp
                       iifname base oifname { base, wan, $ixps } accept
                       oifname { as211024, kelder } accept

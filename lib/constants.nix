@@ -281,6 +281,25 @@ rec {
     };
   };
 
+  as211024 = rec {
+    trusted = {
+      v4 = [
+        colony.prefixes.all.v4
+        home.prefixes.all.v4
+        tailscale.prefix.v4
+      ];
+      v6 = [
+        colony.prefixes.all.v6
+        home.prefixes.all.v6
+        tailscale.prefix.v6
+      ];
+    };
+    nftTrust = ''
+      iifname as211024 ip saddr { ${concatStringsSep ", " trusted.v4} } accept
+      iifname as211024 ip6 saddr { ${concatStringsSep ", " trusted.v6} } accept
+    '';
+  };
+
   kelder = {
     groups = {
       storage = 2000;

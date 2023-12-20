@@ -311,7 +311,7 @@ in
               };
             };
             firewall = {
-              trustedInterfaces = [ "lan-hi" "lan-lo" "as211024" ];
+              trustedInterfaces = [ "lan-hi" "lan-lo" ];
               udp.allowed = [ 5353 ];
               tcp.allowed = [ 5353 ];
               nat = {
@@ -358,8 +358,10 @@ in
                   }
 
                   chain forward {
+                    ${lib.my.c.as211024.nftTrust}
                     iifname lan-untrusted jump filter-untrusted
-                    iifname { wan, lan-untrusted } oifname { lan-hi, lan-lo } jump filter-routing
+                    iifname { wan, as211024, lan-untrusted } oifname { lan-hi, lan-lo } jump filter-routing
+                    oifname as211024 accept
                   }
                   chain output { }
                 }

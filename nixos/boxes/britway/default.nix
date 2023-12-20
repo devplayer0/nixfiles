@@ -150,8 +150,14 @@ in
               };
 
               firewall = {
-                trustedInterfaces = [ "as211024" "tailscale0" ];
+                trustedInterfaces = [ "tailscale0" ];
                 extraRules = ''
+                  table inet filter {
+                    chain forward {
+                      ${lib.my.c.as211024.nftTrust}
+                      oifname as211024 accept
+                    }
+                  }
                   table inet nat {
                     chain postrouting {
                       iifname tailscale0 oifname veth0 snat ip to ${assignments.vultr.ipv4.address}
