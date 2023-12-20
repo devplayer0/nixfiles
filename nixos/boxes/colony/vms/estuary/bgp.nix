@@ -27,7 +27,9 @@ in
           define HOMENET6 = ${homenet6};
 
           define OWNIP6 = ${assignments.base.ipv6.address};
-          define OWNNETSET6 = [ ${intnet6}, ${amsnet6}, ${homenet6} ];
+          # we have issues with sending ICMPv6 too big back on the wrong interface right now...
+          define OWNNETSET6 = [ ${intnet6}, ${amsnet6} ];
+          define CCNETSET6 = [ ];
           #define TRANSSET6 = [ ::1/128 ];
 
           define DUB1IP6 = ${lib.my.c.home.vips.as211024.v6};
@@ -42,7 +44,7 @@ in
             if net ~ OWNNETSET4 || net ~ OWNNETSET6 then accept; else reject;
           }
           filter bgp_export_cc {
-            if net ~ OWNNETSET4 || net ~ OWNNETSET6 || net ~ CCNETSET4 then accept; else reject;
+            if net ~ OWNNETSET4 || net ~ OWNNETSET6 || net ~ CCNETSET4 || net ~ CCNETSET6 then accept; else reject;
           }
 
           router id from "wan";
@@ -188,10 +190,12 @@ in
           protocol bgp upstream6_coloclue_eun2 from upstream_bgp6 {
             description "ColoClue euNetworks 2 (IPv6)";
             neighbor 2a02:898:0:20::e2 as 8283;
+            ipv6 { export filter bgp_export_cc; };
           }
           protocol bgp upstream6_coloclue_eun3 from upstream_bgp6 {
             description "ColoClue euNetworks 3 (IPv6)";
             neighbor 2a02:898:0:20::e1 as 8283;
+            ipv6 { export filter bgp_export_cc; };
           }
 
           protocol bgp upstream6_ifog from upstream_bgp6 {
