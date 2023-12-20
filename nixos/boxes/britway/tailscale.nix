@@ -1,5 +1,6 @@
 { lib, pkgs, config, assignments, allAssignments, ... }:
 let
+  inherit (lib) concatStringsSep;
   inherit (lib.my.c) pubDomain;
   inherit (lib.my.c.britway) prefixes domain;
 
@@ -16,6 +17,13 @@ let
       vendorHash = "sha256-u9AmJguQ5dnJpfhOeLN43apvMHuraOrJhvlEIp9RoIc=";
     });
   };
+
+  advRoutes = concatStringsSep "," [
+    lib.my.c.colony.prefixes.all.v4
+    lib.my.c.colony.prefixes.all.v6
+    lib.my.c.home.prefixes.all.v4
+    lib.my.c.home.prefixes.all.v6
+  ];
 in
 {
   config = {
@@ -65,6 +73,18 @@ in
           };
         };
       };
+
+      tailscale = {
+        enable = true;
+        authKeyFile = config.age.secrets."tailscale-auth.key".path;
+        openFirewall = true;
+        interfaceName = "tailscale0";
+        extraUpFlags = [
+          "--login-server=https://ts.nul.ie"
+          "--advertise-exit-node"
+          "--advertise-routes=${advRoutes}"
+        ];
+      };
     };
 
     my = {
@@ -75,6 +95,7 @@ in
             group = "headscale";
             mode = "440";
           };
+          "tailscale-auth.key" = {};
         };
       };
     };
