@@ -318,7 +318,11 @@ in
                 enable = true;
                 externalInterface = "wan";
               };
-              extraRules = ''
+              extraRules =
+              let
+                aa = allAssignments;
+              in
+              ''
                 table inet filter {
                   chain input {
                     iifname base meta l4proto { udp, tcp } th dport domain accept
@@ -326,8 +330,16 @@ in
                   }
 
                   chain routing-tcp {
-                    # Safe enough to allow all SSH
-                    tcp dport ssh accept
+                    ip daddr {
+                      ${aa.castle.hi.ipv4.address},
+                      ${aa.cellar.hi.ipv4.address},
+                      ${aa.palace.hi.ipv4.address}
+                    } tcp dport ssh accept
+                    ip6 daddr {
+                      ${aa.castle.hi.ipv6.address},
+                      ${aa.cellar.hi.ipv6.address},
+                      ${aa.palace.hi.ipv6.address}
+                    } tcp dport ssh accept
 
                     return
                   }
