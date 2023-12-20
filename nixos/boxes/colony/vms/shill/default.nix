@@ -139,6 +139,16 @@ in
                         ipv6PrefixConfig.Prefix = prefixes.ctrs.v6;
                       }
                     ];
+                    routes = map (r: { routeConfig = r; }) [
+                      {
+                        Destination = lib.my.c.tailscale.prefix.v4;
+                        Gateway = allAssignments.waffletail.internal.ipv4.address;
+                      }
+                      {
+                        Destination = lib.my.c.tailscale.prefix.v6;
+                        Gateway = allAssignments.waffletail.internal.ipv6.address;
+                      }
+                    ];
                   }
                 ];
               };
@@ -196,6 +206,7 @@ in
                     };
                   };
                   toot = {};
+                  waffletail = {};
                 };
               in
               mkMerge [

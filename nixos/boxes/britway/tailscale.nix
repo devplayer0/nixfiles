@@ -19,8 +19,6 @@ let
   };
 
   advRoutes = concatStringsSep "," [
-    lib.my.c.colony.prefixes.all.v4
-    lib.my.c.colony.prefixes.all.v6
     lib.my.c.home.prefixes.all.v4
     lib.my.c.home.prefixes.all.v6
   ];
@@ -87,6 +85,7 @@ in
           "--netfilter-mode=off"
           "--advertise-exit-node"
           "--advertise-routes=${advRoutes}"
+          "--accept-routes=false"
         ];
       };
     };

@@ -180,6 +180,12 @@ rec {
         dst = aa.valheim-oci.internal.ipv4.address;
         proto = "udp";
       }
+
+      {
+        port = 41641;
+        dst = aa.waffletail.internal.ipv4.address;
+        proto = "udp";
+      }
     ];
 
     fstrimConfig = {

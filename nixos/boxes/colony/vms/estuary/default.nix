@@ -298,6 +298,15 @@ in
                           Destination = prefixes.cust.v6;
                           Gateway = allAssignments.colony.internal.ipv6.address;
                         }
+
+                        {
+                          Destination = lib.my.c.tailscale.prefix.v4;
+                          Gateway = allAssignments.colony.routing.ipv4.address;
+                        }
+                        {
+                          Destination = lib.my.c.tailscale.prefix.v6;
+                          Gateway = allAssignments.colony.internal.ipv6.address;
+                        }
                       ] ++
                       (map (pName: [
                         {
@@ -321,15 +330,6 @@ in
                       {
                         Destination = lib.my.c.home.prefixes.all.v4;
                         Gateway = lib.my.c.home.vips.as211024.v4;
-                      }
-
-                      {
-                        Destination = lib.my.c.tailscale.prefix.v4;
-                        Gateway = allAssignments.britway.as211024.ipv4.address;
-                      }
-                      {
-                        Destination = lib.my.c.tailscale.prefix.v6;
-                        Gateway = allAssignments.britway.as211024.ipv6.address;
                       }
                     ];
                   }
@@ -395,11 +395,11 @@ in
                       tcp dport ssh accept
 
                       ${matchInet "tcp dport { http, https, 8448 } accept" "middleman"}
-                      ${matchInet "udp dport { 2456-2457 } accept" "valheim-oci"}
-
                       return
                     }
                     chain routing-udp {
+                      ip6 daddr ${aa.valheim-oci.internal.ipv6.address} udp dport { 2456-2457 } accept
+                      ip6 daddr ${aa.waffletail.internal.ipv6.address} udp dport 41641 accept
                       return
                     }
                     chain filter-routing {

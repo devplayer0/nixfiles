@@ -7,5 +7,6 @@
     ./jackflix
     ./object.nix
     ./toot.nix
+    ./waffletail.nix
   ];
 }

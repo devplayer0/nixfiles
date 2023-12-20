@@ -248,6 +248,14 @@ in
                       Destination = allAssignments.shill.internal.ipv4.address;
                       Gateway = allAssignments.shill.routing.ipv4.address;
                     }
+                    {
+                      Destination = lib.my.c.tailscale.prefix.v4;
+                      Gateway = allAssignments.shill.routing.ipv4.address;
+                    }
+                    {
+                      Destination = lib.my.c.tailscale.prefix.v6;
+                      Gateway = allAssignments.shill.internal.ipv6.address;
+                    }
 
                     {
                       Destination = prefixes.oci.v4;
