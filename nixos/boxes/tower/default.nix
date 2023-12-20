@@ -107,6 +107,11 @@
 
           fprintd.enable = true;
           blueman.enable = true;
+
+          tailscale = {
+            enable = true;
+            openFirewall = true;
+          };
         };
 
         programs = {
