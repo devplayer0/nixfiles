@@ -132,6 +132,10 @@ in
 
           systemd = {
             network.networks."80-container-host0" = networkdAssignment "host0" assignments.internal;
+            services = {
+              # HACK: nginx seems to get stuck not being able to DNS early...
+              nginx = lib.my.systemdAwaitPostgres pkgs.postgresql "colony-psql";
+            };
           };
 
           security = {
@@ -233,6 +237,8 @@ in
               # Based on recommended*Settings, but probably better to be explicit about these
               appendHttpConfig = ''
                 ${baseHttpConfig}
+
+                resolver_timeout 5s;
 
                 # caching
                 proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=CACHE:10m inactive=7d max_size=4g;
