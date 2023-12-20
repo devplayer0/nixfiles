@@ -209,12 +209,16 @@ in
             mkdir -p -m 0755 "$root"/sbin "$root"/etc
             touch "$root"/etc/os-release
 
-            if [ -e "${containerSystem}"/prepare-root ]; then
-              initSource="${containerSystem}"/prepare-root
-            else
-              initSource="${containerSystem}"/init
-            fi
-            ln -sf "$initSource" "$root"/sbin/init
+            ${if system == sysProfile then ''
+              if [ -e "${sysProfile}"/prepare-root ]; then
+                initSource="${containerSystem}"/prepare-root
+              else
+                initSource="${containerSystem}"/init
+              fi
+              ln -sf "$initSource" "$root"/sbin/init
+            '' else ''
+              ln -sf "${containerSystem}/prepare-root" "$root"/sbin/init
+            ''}
           '';
           postStop =
           ''
