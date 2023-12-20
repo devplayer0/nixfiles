@@ -477,6 +477,9 @@ in
         ];
       })
       (persistSimpleSvc "headscale")
+      (mkIf config.services.tailscale.enable {
+        my.tmproot.persistence.config.directories = [ "/var/lib/tailscale" ];
+      })
     ]))
   ]);
 

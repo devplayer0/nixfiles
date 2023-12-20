@@ -43,10 +43,7 @@ in
           db_type = "sqlite3";
           db_path = "/var/lib/headscale/db.sqlite3";
           noise.private_key_path = "/var/lib/headscale/noise_private.key";
-          ip_prefixes = [
-            "100.64.0.0/10"
-            "fd7a:115c:a1e0::/48"
-          ];
+          ip_prefixes = with lib.my.c.tailscale.prefix; [ v4 v6 ];
           dns_config = {
             domains = [
               domain

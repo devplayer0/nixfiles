@@ -317,6 +317,21 @@ in
                   {
                     matchConfig.Name = "as211024";
                     networkConfig.IPv6AcceptRA = mkForce false;
+                    routes = map (r: { routeConfig = r; }) [
+                      {
+                        Destination = lib.my.c.home.prefixes.all.v4;
+                        Gateway = lib.my.c.home.vips.as211024.v4;
+                      }
+
+                      {
+                        Destination = lib.my.c.tailscale.prefix.v4;
+                        Gateway = allAssignments.britway.as211024.ipv4.address;
+                      }
+                      {
+                        Destination = lib.my.c.tailscale.prefix.v6;
+                        Gateway = allAssignments.britway.as211024.ipv6.address;
+                      }
+                    ];
                   }
                 ];
                 "95-kelder" = {
@@ -418,7 +433,7 @@ in
                       ip6 daddr ${aa.git.internal.ipv6.address} tcp dport { http, https } dnat to ${aa.middleman.internal.ipv6.address}
                     }
                     chain postrouting {
-                      ip saddr ${prefixes.all.v4} snat to ${assignments.internal.ipv4.address}
+                      ip saddr ${prefixes.all.v4} oifname != as211024 snat to ${assignments.internal.ipv4.address}
                     }
                   }
                 '';

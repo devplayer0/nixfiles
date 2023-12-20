@@ -83,6 +83,10 @@ in
             networking = { inherit domain; };
 
             systemd.network = {
+              config = {
+                routeTables.ts-extra = 1337;
+              };
+
               links = {
                 "10-veth0" = {
                   matchConfig.PermanentMACAddress = "56:00:04:ac:6e:06";
@@ -94,7 +98,7 @@ in
                 "20-veth0" = mkMerge [
                   (networkdAssignment "veth0" assignments.vultr)
                   {
-                    address = [ assignedV6 ];
+                    address = [ "${assignedV6}/64" ];
                   }
                 ];
                 "90-l2mesh-as211024" = mkMerge [
@@ -110,6 +114,20 @@ in
                       {
                         Destination = lib.my.c.home.prefixes.all.v4;
                         Gateway = lib.my.c.home.vips.as211024.v4;
+                      }
+
+                      {
+                        # Just when routing traffic from Tailscale nodes, otherwise use WAN
+                        Destination = lib.my.c.colony.prefixes.all.v6;
+                        Gateway = allAssignments.estuary.as211024.ipv6.address;
+                        Table = "ts-extra";
+                      }
+                    ];
+                    routingPolicyRules = map (r: { routingPolicyRuleConfig = r; }) [
+                      {
+                        IncomingInterface = "tailscale0";
+                        To = lib.my.c.colony.prefixes.all.v6;
+                        Table = "ts-extra";
                       }
                     ];
                   }
@@ -138,8 +156,6 @@ in
                     chain postrouting {
                       iifname tailscale0 oifname veth0 snat ip to ${assignments.vultr.ipv4.address}
                       iifname tailscale0 oifname veth0 snat ip6 to ${assignments.vultr.ipv6.address}
-                      iifname tailscale0 oifname as211024 snat ip to ${assignments.as211024.ipv4.address}
-                      iifname tailscale0 oifname as211024 snat ip6 to ${assignments.as211024.ipv6.address}
                     }
                   }
                 '';

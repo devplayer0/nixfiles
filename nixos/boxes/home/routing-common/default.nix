@@ -66,7 +66,7 @@ in
         };
         ipv6 = {
           address = net.cidr.host ((1*65536*65536*65536) + index + 1) prefixes.as211024.v6;
-          gateway = net.cidr.host 1 prefixes.as211024.v6;
+          gateway = net.cidr.host ((2*65536*65536*65536) + 1) prefixes.as211024.v6;
         };
       };
     };
@@ -262,6 +262,21 @@ in
                   {
                     matchConfig.Name = "as211024";
                     networkConfig.IPv6AcceptRA = mkForce false;
+                    routes = map (r: { routeConfig = r; }) [
+                      {
+                        Destination = lib.my.c.colony.prefixes.all.v4;
+                        Gateway = allAssignments.estuary.as211024.ipv4.address;
+                      }
+
+                      {
+                        Destination = lib.my.c.tailscale.prefix.v4;
+                        Gateway = allAssignments.britway.as211024.ipv4.address;
+                      }
+                      {
+                        Destination = lib.my.c.tailscale.prefix.v6;
+                        Gateway = allAssignments.britway.as211024.ipv6.address;
+                      }
+                    ];
                   }
                 ];
               }
@@ -296,7 +311,7 @@ in
               };
             };
             firewall = {
-              trustedInterfaces = [ "lan-hi" "lan-lo" ];
+              trustedInterfaces = [ "lan-hi" "lan-lo" "as211024" ];
               udp.allowed = [ 5353 ];
               tcp.allowed = [ 5353 ];
               nat = {

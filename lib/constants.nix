@@ -268,6 +268,13 @@ rec {
     assignedV6 = "2001:19f0:7402:128b:5400:04ff:feac:6e06";
   };
 
+  tailscale = {
+    prefix = {
+      v4 = "100.64.0.0/10";
+      v6 = "fd7a:115c:a1e0::/48";
+    };
+  };
+
   kelder = {
     groups = {
       storage = 2000;
