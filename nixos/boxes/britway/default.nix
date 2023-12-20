@@ -155,7 +155,7 @@ in
                   table inet nat {
                     chain postrouting {
                       iifname tailscale0 oifname veth0 snat ip to ${assignments.vultr.ipv4.address}
-                      iifname tailscale0 oifname veth0 snat ip6 to ${assignments.vultr.ipv6.address}
+                      iifname tailscale0 oifname veth0 snat ip6 to ${assignments.as211024.ipv6.address}
                     }
                   }
                 '';
