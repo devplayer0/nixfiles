@@ -284,11 +284,13 @@ rec {
   as211024 = rec {
     trusted = {
       v4 = [
+        colony.prefixes.as211024.v4
         colony.prefixes.all.v4
         home.prefixes.all.v4
         tailscale.prefix.v4
       ];
       v6 = [
+        colony.prefixes.as211024.v6
         colony.prefixes.all.v6
         home.prefixes.all.v6
         tailscale.prefix.v6
