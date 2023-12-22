@@ -55,21 +55,10 @@
       };
     };
 
-    systemd.services = {
-      "vm@cellar" = {
-        serviceConfig = {
-          CPUAffinity = "numa";
-          NUMAPolicy = "bind";
-          NUMAMask = "1";
-        };
-      };
-      "vm@river" =
-      let
-        vtapUnit = "sys-subsystem-net-devices-vm\\x2det1g0.device";
-      in
-      {
-        requires = [ vtapUnit ];
-        after = [ vtapUnit "vm@cellar.service" ];
+    systemd.services =
+    let
+      awaitCellar = {
+        after = [ "vm@cellar.service" ];
         bindsTo = [ "vm@cellar.service" ];
         preStart = ''
           until ${pkgs.netcat}/bin/nc -w1 -z ${allAssignments.cellar.hi.ipv4.address} 22; do
@@ -77,6 +66,28 @@
           done
         '';
       };
+    in
+    {
+      "vm@cellar" = {
+        serviceConfig = {
+          CPUAffinity = "numa";
+          NUMAPolicy = "bind";
+          NUMAMask = "1";
+        };
+      };
+
+      "vm@river" =
+      let
+        vtapUnit = "sys-subsystem-net-devices-vm\\x2det1g0.device";
+      in
+      mkMerge [
+        awaitCellar
+        {
+          requires = [ vtapUnit ];
+          after = [ vtapUnit ];
+        }
+      ];
+      "vm@sfh" = awaitCellar;
     };
 
     my = {
@@ -128,7 +139,7 @@
               threads = 2;
             };
             memory = 4096;
-            cleanShutdown.timeout = 120;
+            cleanShutdown.timeout = 60;
             networks = {
               et1g0 = {
                 ifname = "vm-et1g0";
@@ -147,6 +158,29 @@
               et100g0vf1 = {
                 index = 0;
                 hostBDF = "44:00.2";
+              };
+            };
+          };
+
+          sfh = {
+            uuid = "82ec149d-577c-421a-93e2-a9307c756cd8";
+            cpu = "host,topoext";
+            smp = {
+              cpus = 8;
+              threads = 2;
+            };
+            memory = 32768;
+            cleanShutdown.timeout = 120;
+            networks.netboot = {
+              bridge = "lan-lo";
+              waitOnline = "carrier";
+              mac = "52:54:00:a5:7e:93";
+              extraOptions.bootindex = 1;
+            };
+            hostDevices = {
+              et100g0vf2 = {
+                index = 0;
+                hostBDF = "44:00.3";
               };
             };
           };

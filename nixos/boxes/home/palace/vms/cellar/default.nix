@@ -58,6 +58,8 @@ in
               };
             };
 
+            networking = { inherit domain; };
+
             environment.systemPackages = with pkgs; [
               pciutils
               partclone

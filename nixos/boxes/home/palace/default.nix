@@ -94,7 +94,7 @@ in
             extraOptions = [ "-A /var/log/smartd/" "--interval=600" ];
           };
           udev.extraRules = ''
-            ACTION=="add", SUBSYSTEM=="net", ENV{ID_NET_DRIVER}=="mlx5_core", ENV{ID_PATH}=="pci-0000:44:00.0", ATTR{device/sriov_numvfs}="2"
+            ACTION=="add", SUBSYSTEM=="net", ENV{ID_NET_DRIVER}=="mlx5_core", ENV{ID_PATH}=="pci-0000:44:00.0", ATTR{device/sriov_numvfs}="3"
           '';
         };
 
@@ -110,7 +110,7 @@ in
           hwloc
         ];
 
-        networking.domain = "h.${pubDomain}";
+        networking = { inherit domain; };
 
         systemd = {
           tmpfiles.rules = [
@@ -144,6 +144,13 @@ in
 
             netdevs = mkMerge [
               (mkVLAN "lan-hi" vlans.hi)
+              (mkVLAN "lan-lo-phy" vlans.lo)
+              {
+                "25-lan-lo".netdevConfig = {
+                  Name = "lan-lo";
+                  Kind = "bridge";
+                };
+              }
             ];
 
             networks = {
@@ -151,6 +158,7 @@ in
                 (networkdAssignment "lan-core" assignments.core)
                 {
                   matchConfig.Name = "lan-core";
+                  vlan = [ "lan-lo-phy" ];
                   networkConfig.IPv6AcceptRA = mkForce false;
                 }
               ];
@@ -173,9 +181,28 @@ in
                   VirtualFunction=1
                   LinkState=yes
                   MACAddress=52:54:00:8a:8a:f2
+
+                  # sfh
+                  [SR-IOV]
+                  VirtualFunction=2
+                  VLANId=${toString vlans.hi}
+                  LinkState=yes
+                  MACAddress=52:54:00:ac:15:a9
                 '';
               };
               "60-lan-hi" = networkdAssignment "lan-hi" assignments.hi;
+
+              "50-lan-lo-phy" = {
+                matchConfig.Name = "lan-lo-phy";
+                networkConfig = {
+                  Bridge = "lan-lo";
+                } // networkd.noL3;
+              };
+              "60-lan-lo" = {
+                matchConfig.Name = "lan-lo";
+                linkConfig.RequiredForOnline = "no";
+                networkConfig = networkd.noL3;
+              };
             };
           };
         };

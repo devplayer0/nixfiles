@@ -116,7 +116,7 @@ let
         });
         default = { };
       };
-      drives = mkOpt' (listOf (submodule driveOpts)) { } "Drives to attach to VM.";
+      drives = mkOpt' (listOf (submodule driveOpts)) [ ] "Drives to attach to VM.";
       hostDevices = mkOpt' (attrsOf (submodule hostDevOpts)) { } "Host PCI devices to pass to the VM.";
     };
   };
@@ -126,8 +126,8 @@ let
       (map
         (i: mapAttrsToList (name: c: c // { inherit name; }) i.hostDevices)
         (attrValues cfg.instances));
-  anyVfioDevs = any (d: d.bindVFIO) allHostDevs;
-  vfioHostDevs = filter (d: d.bindVFIO) allHostDevs;
+  anyVfioDevs = any (d: d.bindVFIO);
+  vfioHostDevs = filter (d: d.bindVFIO);
 
   mkQemuScript = n: i:
   let
@@ -204,7 +204,7 @@ in
     services.udev = {
       packages =
         optionals
-          anyVfioDevs
+          (anyVfioDevs allHostDevs)
           [
             pkgs.vfio-pci-bind
             (pkgs.writeTextDir
@@ -212,7 +212,7 @@ in
               (concatMapStringsSep
                 "\n"
                 (d: ''ACTION=="add", SUBSYSTEM=="pci", KERNEL=="0000:${d.hostBDF}", TAG="vfio-pci-bind"'')
-                vfioHostDevs))
+                (vfioHostDevs allHostDevs)))
           ];
     };
 
@@ -261,12 +261,15 @@ in
           };
 
           preStart =
+          let
+            hostDevs = attrValues i.hostDevices;
+          in
             ''
               if [ ! -e "$STATE_DIRECTORY"/ovmf_vars.bin ]; then
                 cp "${cfg.ovmfPackage.fd}"/FV/OVMF_VARS.fd "$STATE_DIRECTORY"/ovmf_vars.bin
               fi
 
-              ${optionalString anyVfioDevs ''
+              ${optionalString (anyVfioDevs hostDevs) ''
                 iommu_group() {
                   g=/sys/bus/pci/devices/0000:$1/iommu_group
                   until [ -e $g ]; do
@@ -280,7 +283,7 @@ in
                   done
                 }
 
-                ${concatMapStringsSep "\n" (d: "wait_vfio ${d.hostBDF}") vfioHostDevs}
+                ${concatMapStringsSep "\n" (d: "wait_vfio ${d.hostBDF}") (vfioHostDevs hostDevs) }
               ''}
             '';
           script = mkQemuScript n i;
