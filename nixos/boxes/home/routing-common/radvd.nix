@@ -11,7 +11,7 @@ let
       AdvLinkMTU ${toString prefixes."${name}".mtu};
       prefix ${prefixes."${name}".v6} {};
       RDNSS ${net.cidr.host 1 prefixes."${name}".v6} ${net.cidr.host 2 prefixes."${name}".v6} {};
-      DNSSL ${domain} dyn.${domain} {};
+      DNSSL ${domain} dyn.${domain} ${lib.my.c.colony.domain} ${lib.my.c.britway.domain} {};
      };
   '';
 in

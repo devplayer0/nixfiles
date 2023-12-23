@@ -49,15 +49,19 @@ in
           noise.private_key_path = "/var/lib/headscale/noise_private.key";
           ip_prefixes = with lib.my.c.tailscale.prefix; [ v4 v6 ];
           dns_config = {
+            # Use IPs that will route inside the VPN to prevent interception
+            # (e.g. DNS rebinding filtering)
             restricted_nameservers = {
               "${domain}" = pubNameservers;
-              "${lib.my.c.colony.domain}" = with allAssignments.estuary.internal; [
+              "${lib.my.c.colony.domain}" = with allAssignments.estuary.base; [
                 ipv4.address ipv6.address
               ];
-              "${lib.my.c.home.domain}" = lib.my.c.home.routersPubV4 ++ ([
-                allAssignments.river.as211024.ipv6.address
-                allAssignments.stream.as211024.ipv6.address
-              ]);
+              "${lib.my.c.home.domain}" = with allAssignments; [
+                river.hi.ipv4.address
+                river.hi.ipv6.address
+                stream.hi.ipv4.address
+                stream.hi.ipv6.address
+              ];
             };
             magic_dns = true;
             base_domain = "ts.${pubDomain}";

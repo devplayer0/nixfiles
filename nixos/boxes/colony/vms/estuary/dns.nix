@@ -52,7 +52,7 @@ in
           allowFrom = [
             "127.0.0.0/8" "::1/128"
             prefixes.all.v4 prefixes.all.v6
-          ];
+          ] ++ (with lib.my.c.tailscale.prefix; [ v4 v6 ]);
         };
 
         settings = {

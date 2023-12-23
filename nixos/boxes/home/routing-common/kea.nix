@@ -55,7 +55,7 @@ in
             }
             {
               name = "domain-search";
-              data = "${domain}, dyn.${domain}";
+              data = "${domain}, dyn.${domain}, ${lib.my.c.colony.domain}, ${lib.my.c.britway.domain}";
               always-send = true;
             }
           ];
