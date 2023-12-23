@@ -116,6 +116,10 @@
 
         programs = {
           steam.enable = true;
+          wireshark = {
+            enable = true;
+            package = pkgs.wireshark-qt;
+          };
         };
 
         networking = {
@@ -169,6 +173,14 @@
 
               home = {
                 packages = with pkgs; [ ];
+              };
+
+              programs = {
+                fish = {
+                  shellAbbrs = {
+                    tsup = "doas tailscale up --login-server=https://ts.nul.ie --accept-routes";
+                  };
+                };
               };
 
               services = {
