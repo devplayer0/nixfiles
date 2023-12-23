@@ -2,6 +2,7 @@ index: { lib, pkgs, config, assignments, allAssignments, ... }:
 let
   inherit (builtins) attrNames elemAt;
   inherit (lib.my) net;
+  inherit (lib.my.c) pubDomain;
   inherit (lib.my.c.home) prefixes vips routers;
 
   name = elemAt routers index;
@@ -22,6 +23,7 @@ in
           owner = "pdns-recursor";
           group = "pdns-recursor";
         };
+        "home/ddclient-cloudflare.key" = {};
       };
 
       pdns.recursor = {
@@ -63,9 +65,36 @@ in
       };
     };
 
-    systemd.services = {
-      # Add AF_NETLINK to allow pulling IP from network interfaces
-      pdns.serviceConfig.RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6 AF_NETLINK";
+    systemd = {
+      services = {
+        # Add AF_NETLINK to allow pulling IP from network interfaces
+        pdns.serviceConfig.RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6 AF_NETLINK";
+        ddns-update = {
+          description = "DNS update script";
+          after = [ "network.target" ];
+          path = [
+            (pkgs.python3.withPackages (ps: [ ps.cloudflare ]))
+            pkgs.ldns
+          ];
+          serviceConfig = {
+            Type = "oneshot";
+            ExecStart =
+              ''${./dns_update.py} -k ${config.age.secrets."home/ddclient-cloudflare.key".path} '' +
+              ''${pubDomain} ns${toString (index + 1)}.${config.networking.domain}'';
+          };
+          wantedBy = [ "multi-user.target" ];
+        };
+      };
+      timers = {
+        ddns-update = {
+          description = "Periodically update DNS";
+          wantedBy = [ "timers.target" ];
+          timerConfig = {
+            OnBootSec = "5min";
+            OnUnitInactiveSec = "5min";
+          };
+        };
+      };
     };
 
     environment.systemPackages = with pkgs; [
