@@ -325,6 +325,7 @@ in
               ''
                 table inet filter {
                   chain input {
+                    ${lib.my.c.as211024.nftTrust}
                     iifname base meta l4proto { udp, tcp } th dport domain accept
                     iifname lan-core meta l4proto vrrp accept
                   }
