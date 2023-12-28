@@ -15,16 +15,20 @@ let
   # Based on https://github.com/serokell/deploy-rs/blob/master/flake.nix
   nixosActivate = cfg': base: (pkgs.deploy-rs.lib.activate.custom // {
     dryActivate = "$PROFILE/bin/switch-to-configuration dry-activate";
-    boot = "$PROFILE/bin/switch-to-configuration boot";
+    boot = ''
+      $PROFILE/bin/switch-to-configuration boot
+
+      ${keepGensSnippet "$PROFILE" cfg'.keepGenerations}
+    '';
   }) base.config.system.build.toplevel ''
     # work around https://github.com/NixOS/nixpkgs/issues/73404
     cd /tmp
 
-    "$PROFILE"/bin/switch-to-configuration ${cfg'.mode}
+    "$PROFILE"/bin/switch-to-configuration switch
 
     # https://github.com/serokell/deploy-rs/issues/31
     ${with base.config.boot.loader;
-    optionalString ((cfg'.mode == "switch" || cfg'.mode == "boot") && systemd-boot.enable)
+    optionalString systemd-boot.enable
     "sed -i '/^default /d' ${efi.efiSysMountPoint}/loader/loader.conf"}
 
     ${keepGensSnippet "$PROFILE" cfg'.keepGenerations}
@@ -59,7 +63,11 @@ let
   {
     name = "container-${n}";
     value = {
-      path = pkgs.deploy-rs.lib.activate.custom ctrConfig.my.buildAs.container ''
+      path = (pkgs.deploy-rs.lib.activate.custom // {
+        boot = ''
+          echo "Next systemd-nspawn@${n}.service restart / reload will load config"
+        '';
+      }) ctrConfig.my.buildAs.container ''
         source ${systemdUtil}/bin/systemd-util.sh
         ${if c.hotReload then ''
           if (! systemctl show -p ActiveState systemd-nspawn@${n} | grep -q "ActiveState=active") || \
