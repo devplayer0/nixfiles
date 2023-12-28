@@ -33,18 +33,18 @@ jobs:
       - name: Build installer ISO
         run: |
           nix build .#nixfiles.config.nixos.systems.installer.configuration.config.my.buildAs.iso
-          ln -s "$(readlink result)"/iso/nixos-installer-devplayer0.iso \
-            nixos-installer-devplayer0-${{ steps.setup.outputs.short_rev }}.iso
+          ln -s "$(readlink result)"/iso/jackos-installer.iso \
+            jackos-installer-${{ steps.setup.outputs.short_rev }}.iso
       - name: Build installer netboot archive
         run: |
           nix build .#nixfiles.config.nixos.systems.installer.configuration.config.my.buildAs.netbootArchive
           ln -s "$(readlink result)" \
-            nixos-installer-devplayer0-netboot-${{ steps.setup.outputs.short_rev }}.tar
+            jackos-installer-netboot-${{ steps.setup.outputs.short_rev }}.tar
 
       - name: Create release
         uses: https://gitea.com/actions/release-action@main
         with:
           title: Latest installer
           files: |
-            nixos-installer-devplayer0-${{ steps.setup.outputs.short_rev }}.iso
-            nixos-installer-devplayer0-netboot-${{ steps.setup.outputs.short_rev }}.tar
+            jackos-installer-${{ steps.setup.outputs.short_rev }}.iso
+            jackos-installer-netboot-${{ steps.setup.outputs.short_rev }}.tar

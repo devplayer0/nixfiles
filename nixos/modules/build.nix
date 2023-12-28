@@ -92,6 +92,7 @@ in
     };
     isoImage = {
       isoBaseName = dummyOption;
+      volumeID = dummyOption;
       edition = dummyOption;
       appendToMenuLabel = dummyOption;
     };

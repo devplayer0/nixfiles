@@ -1,6 +1,6 @@
 { lib }:
 let
-  inherit (builtins) length match elemAt filter replaceStrings;
+  inherit (builtins) length match elemAt filter replaceStrings substring;
   inherit (lib)
     genAttrs mapAttrsToList filterAttrsRecursive nameValuePair types
     mkOption mkOverride mkForce mkIf mergeEqualOption optional
@@ -238,5 +238,19 @@ rec {
     deploy = mkOpt' deployType { } "deploy-rs configuration.";
 
     filterOpts = filterAttrsRecursive (_: v: v != null);
+  };
+
+  versionOverlay = { self, pkgsFlake }: final: prev:
+  let
+    date = substring 0 8 (self.lastModifiedDate or self.lastModified or "19700101");
+    revCode = flake: flake.shortRev or "dirty";
+  in
+  {
+    trivial = prev.trivial // {
+      release = "23.12:u-${prev.trivial.release}";
+      codeName = "Amogus";
+      revisionWithDefault = default: self.rev or default;
+      versionSuffix = ".${date}.${revCode self}:u-${revCode pkgsFlake}";
+    };
   };
 }

@@ -26,7 +26,7 @@
     impermanence.url = "github:nix-community/impermanence";
     boardie.url = "github:devplayer0/boardie";
     boardie.inputs.nixpkgs.follows = "nixpkgs-unstable";
-    nixGL.url = "github:guibou/nixGL";
+    nixGL.url = "github:nix-community/nixGL";
     nixGL.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
     # Packages not in nixpkgs
@@ -63,7 +63,7 @@
         flake = flake-utils.lib;
       };
       pkgsLibOverlay = final: prev: { lib = prev.lib.extend libOverlay; };
-      myPkgsOverlay = final: prev: import ./pkgs { lib = prev.lib; pkgs = prev; };
+      myPkgsOverlay = final: prev: import ./pkgs { lib = final.lib; pkgs = prev; };
 
       # Override the flake-level lib since we're going to use it for non-config specific stuff
       pkgsFlakes = mapAttrs (_: pkgsFlake: pkgsFlake // { lib = pkgsFlake.lib.extend libOverlay; }) {
@@ -129,7 +129,7 @@
         modules = [
           {
             _module.args = {
-              inherit lib pkgsFlakes hmFlakes inputs;
+              inherit lib pkgsFlakes hmFlakes self inputs;
               pkgs' = configPkgs';
             };
 

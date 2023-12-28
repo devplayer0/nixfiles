@@ -1,4 +1,4 @@
-{ lib, pkgsFlakes, hmFlakes, inputs, pkgs', config, ... }:
+{ self, lib, pkgsFlakes, hmFlakes, inputs, pkgs', config, ... }:
 let
   inherit (builtins) attrValues mapAttrs;
   inherit (lib)
@@ -25,10 +25,14 @@ let
 
       modules' = [ hmFlakes.${config'.home-manager}.nixosModule ] ++ (attrValues cfg.modules);
     in
-    pkgsFlake.lib.nixosSystem {
+    # Import eval-config ourselves since the flake now force-sets lib
+    import "${pkgsFlake}/nixos/lib/eval-config.nix" {
       # Gotta override lib here unforunately, eval-config.nix likes to import its own (unextended) lib. We explicitly
       # don't pass pkgs so that it'll be imported with modularly applied config and overlays.
-      lib = pkgs.lib;
+      lib = pkgs.lib.extend (lib.my.versionOverlay { inherit self pkgsFlake; });
+
+      # Set to null since we pass modularly
+      system = null;
 
       # Put the inputs in specialArgs to avoid infinite recursion when modules try to do imports
       specialArgs = { inherit inputs pkgsFlakes pkgsFlake allAssignments; inherit (cfg) systems; };
@@ -51,7 +55,7 @@ let
             pkgs' = allPkgs;
           };
 
-          system.name = name;
+          system = { inherit name; };
           networking = {
             domain = let d = config'.assignments.internal.domain or null; in mkIf (d != null) (mkDefault' d);
             hostName = mkDefault (config'.assignments.internal.name or name);
@@ -86,6 +90,8 @@ let
                   pkgsPath = toString pkgsFlakes.${config'.hmNixpkgs};
                   pkgs' = allPkgs;
                 };
+
+                home.enableNixpkgsReleaseCheck = false;
               }
               (homeStateVersion config'.home-manager)
             ];

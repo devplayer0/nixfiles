@@ -32,7 +32,8 @@
           };
 
           isoImage = {
-            isoBaseName = "nixos-installer-devplayer0";
+            isoBaseName = "jackos-installer";
+            volumeID = "jackos-${config.system.nixos.release}-${pkgs.stdenv.hostPlatform.uname.processor}";
             edition = "devplayer0";
             appendToMenuLabel = " /dev/player0 Installer";
           };

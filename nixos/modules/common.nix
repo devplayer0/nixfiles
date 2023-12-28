@@ -1,7 +1,7 @@
 { lib, pkgs, pkgs', inputs, config, ... }:
 let
   inherit (lib) mkIf mkDefault mkMerge;
-  inherit (lib.my) mkBoolOpt' dummyOption;
+  inherit (lib.my) mkDefault';
 in
 {
   options = with lib.types; {
@@ -121,6 +121,11 @@ in
           services.lvm.enable = mkDefault true;
         };
       };
+      system = {
+        nixos = {
+          distroName = mkDefault' "JackOS";
+        };
+      };
 
       environment.systemPackages = with pkgs; mkMerge [
         [
@@ -151,6 +156,7 @@ in
               font-name=SauceCodePro Nerd Font Mono
             '';
         };
+        getty.greetingLine = mkDefault' ''<<< Welcome to ${config.system.nixos.distroName} ${config.system.nixos.label} (\m) - \l >>>'';
 
         openssh = {
           enable = mkDefault true;
