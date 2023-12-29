@@ -80,6 +80,7 @@ in
 
         tmux = {
           enable = true;
+          keyMode = "vi";
         };
 
         bash = {
