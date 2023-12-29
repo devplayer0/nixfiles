@@ -4,7 +4,8 @@ let
   inherit (lib)
     genAttrs mapAttrsToList filterAttrsRecursive nameValuePair types
     mkOption mkOverride mkForce mkIf mergeEqualOption optional
-    showWarnings concatStringsSep flatten unique optionalAttrs;
+    showWarnings concatStringsSep flatten unique optionalAttrs
+    mkBefore;
   inherit (lib.flake) defaultSystems;
 in
 rec {
@@ -166,7 +167,7 @@ rec {
 
   systemdAwaitPostgres = pkg: host: {
     after = [ "systemd-networkd-wait-online.service" ];
-    preStart = ''
+    preStart = mkBefore ''
       until ${pkg}/bin/pg_isready -h ${host}; do
         sleep 0.5
       done
