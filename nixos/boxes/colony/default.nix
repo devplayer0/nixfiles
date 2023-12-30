@@ -66,10 +66,21 @@ in
             };
           });
           kernelModules = [ "kvm-amd" ];
-          kernelParams = [ "amd_iommu=on" "console=ttyS0,115200n8" "console=ttyS1,115200n8" "console=tty0" ];
+          kernelParams = [
+            "amd_iommu=on"
+            "console=ttyS0,115200n8" "console=ttyS1,115200n8" "console=tty0"
+            "systemd.setenv=SYSTEMD_SULOGIN_FORCE=1"
+          ];
           initrd = {
             kernelModules = [ "dm-raid" ];
             availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" "sr_mod" ];
+            systemd = {
+              enable = true;
+              # Onlu activate volumes needed for boot to prevent thin check from getting killed while switching root
+              contents."/etc/lvm/lvm.conf".text = ''
+                activation/auto_activation_volume_list = [ "main/colony-nix" "main/colony-persist" ]
+              '';
+            };
           };
         };
 
@@ -137,6 +148,15 @@ in
           services = {
             "serial-getty@ttyS0".enable = true;
             "serial-getty@ttyS1".enable = true;
+            lvm-activate-main = {
+              description = "Activate remaining LVs";
+              before = [ "local-fs-pre.target" ];
+              serviceConfig = {
+                Type = "oneshot";
+                ExecStart = "${pkgs.lvm2.bin}/bin/vgchange -aay main";
+              };
+              wantedBy = [ "sysinit.target" ];
+            };
 
             rsync-lvm-meta = {
               description = "rsync lvm metadata backups / archives to rsync.net";
