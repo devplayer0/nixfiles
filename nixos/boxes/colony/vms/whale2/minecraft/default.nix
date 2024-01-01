@@ -20,6 +20,7 @@ in
           ICON = "/ext/icon.png";
           DIFFICULTY = "normal";
 
+          OVERRIDE_WHITELIST = "true";
           WHITELIST = concatStringsSep "," [
             op
             "dcd2ecb9-2b5e-49cb-9d4f-f5a76162df56" # Elderlypug
@@ -28,8 +29,11 @@ in
             "703b378a-09f9-4c1d-9876-1c9305728c49" # OROURKEIRE
             "f105bbe6-eda6-4a13-a8cf-894e77cab77b" # Adzerq
             "1fc94979-41fb-497a-81e9-34ae24ca537a" # johnnyscrims
+            "d53c91df-b6e6-4463-b106-e8427d7a8d01" # BossLonus
           ];
           OPS = op;
+          SPAWN_PROTECTION = "0";
+          VIEW_DISTANCE = "20";
 
           MAX_MEMORY = "4G";
           MODRINTH_PROJECTS = concatStringsSep "," [ ];
