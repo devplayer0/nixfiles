@@ -135,17 +135,14 @@ in
             samba-wsdd.enable = true;
 
             minecraft-server = {
-              enable = true;
+              enable = false;
               package = pkgs.minecraftServers.vanilla-1-20;
               declarative = true;
               eula = true;
               whitelist = {
                 devplayer0 = "6d7d971b-ce10-435b-85c5-c99c0d8d288c";
                 Elderlypug = "dcd2ecb9-2b5e-49cb-9d4f-f5a76162df56";
-                Jesthral_ = "fcb26db2-c3ce-41aa-b588-efec79d37a8a";
                 shr3kas0ras = "1d366062-12c0-4e29-aba7-6ab5d8c6bb05";
-                OROURKEIRE = "703b378a-09f9-4c1d-9876-1c9305728c49";
-                Adzerq = "f105bbe6-eda6-4a13-a8cf-894e77cab77b";
               };
               serverProperties = {
                 motd = "Simpcraft";
