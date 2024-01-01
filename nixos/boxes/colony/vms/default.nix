@@ -181,7 +181,7 @@
               cpus = 3;
               threads = 2;
             };
-            memory = 8192;
+            memory = 6144;
             networks.public = {
               bridge = null;
               mac = "52:54:00:a8:d1:03";
