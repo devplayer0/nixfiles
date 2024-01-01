@@ -50,6 +50,7 @@ in
       };
     }) {
       valheim-oci = 2;
+      simpcraft-oci = 3;
     };
 
     configuration = { lib, pkgs, modulesPath, config, assignments, allAssignments, ... }:
@@ -63,6 +64,7 @@ in
           "${modulesPath}/profiles/qemu-guest.nix"
 
           ./valheim.nix
+          ./minecraft
         ];
 
         config = mkMerge [

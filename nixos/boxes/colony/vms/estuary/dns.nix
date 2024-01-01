@@ -148,6 +148,8 @@ in
 
             valheim IN A ${assignments.internal.ipv4.address}
             valheim IN AAAA ${allAssignments.valheim-oci.internal.ipv6.address}
+            simpcraft IN A ${assignments.internal.ipv4.address}
+            simpcraft IN AAAA ${allAssignments.simpcraft-oci.internal.ipv6.address}
 
             mail-vm IN A ${net.cidr.host 0 prefixes.mail.v4}
             mail-vm IN AAAA ${net.cidr.host 1 prefixes.mail.v6}

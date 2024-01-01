@@ -393,7 +393,8 @@ in
                       # Safe enough to allow all SSH
                       tcp dport ssh accept
 
-                      ${matchInet "tcp dport { http, https, 8448 } accept" "middleman"}
+                      ip6 daddr ${aa.middleman.internal.ipv6.address} tcp dport { http, https, 8448 } accept
+                      ip6 daddr ${aa.simpcraft-oci.internal.ipv6.address} tcp dport 25565 accept
                       return
                     }
                     chain routing-udp {

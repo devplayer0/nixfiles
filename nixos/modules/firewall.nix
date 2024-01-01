@@ -222,7 +222,7 @@ in
                 "iifname ${cfg.nat.externalInterface} jump filter-iif-port-forwards"}
               ${optionalString
                 dipForward
-                (concatMapStringsSep "\n    " (ip: "${ipK ip} daddr ${ip} jump ${natFilterChain ip}") (attrNames cfg.nat.forwardPorts))}
+                (concatMapStringsSep "\n    " (ip: "jump ${natFilterChain ip}") (attrNames cfg.nat.forwardPorts))}
             }
           }
 

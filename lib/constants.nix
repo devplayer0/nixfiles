@@ -169,6 +169,10 @@ rec {
         port = 8448;
         dst = aa.middleman.internal.ipv4.address;
       }
+      {
+        port = 25565;
+        dst = aa.simpcraft-oci.internal.ipv4.address;
+      }
 
       {
         port = 2456;
