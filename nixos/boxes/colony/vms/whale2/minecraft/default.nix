@@ -30,6 +30,7 @@ in
             "f105bbe6-eda6-4a13-a8cf-894e77cab77b" # Adzerq
             "1fc94979-41fb-497a-81e9-34ae24ca537a" # johnnyscrims
             "d53c91df-b6e6-4463-b106-e8427d7a8d01" # BossLonus
+            "f439f64d-91c9-4c74-9ce5-df4d24cd8e05" # hynge_
           ];
           OPS = op;
           SPAWN_PROTECTION = "0";
