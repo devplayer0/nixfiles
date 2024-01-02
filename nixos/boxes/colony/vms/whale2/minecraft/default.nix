@@ -31,6 +31,7 @@ in
             "1fc94979-41fb-497a-81e9-34ae24ca537a" # johnnyscrims
             "d53c91df-b6e6-4463-b106-e8427d7a8d01" # BossLonus
             "f439f64d-91c9-4c74-9ce5-df4d24cd8e05" # hynge_
+            "d6ec4c91-5da2-44eb-b89d-71dc8fe017a0" # Eefah98
           ];
           OPS = op;
           SPAWN_PROTECTION = "0";
