@@ -145,6 +145,7 @@ in
 
             http IN A ${assignments.internal.ipv4.address}
             http IN AAAA ${allAssignments.middleman.internal.ipv6.address}
+            librespeed IN CNAME http.${config.networking.domain}.
 
             valheim IN A ${assignments.internal.ipv4.address}
             valheim IN AAAA ${allAssignments.valheim-oci.internal.ipv6.address}

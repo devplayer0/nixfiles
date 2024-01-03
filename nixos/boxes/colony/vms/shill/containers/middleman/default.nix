@@ -66,6 +66,7 @@ in
                   owner = "nginx";
                   group = "nginx";
                 };
+                "librespeed.toml" = { };
               };
             };
 
@@ -120,6 +121,19 @@ in
               includes = {
                 endpoint = "http://localhost:8082";
                 baseURL = "https://sso.${pubDomain}";
+              };
+            };
+
+            librespeed = {
+              frontend.servers = [
+                {
+                  name = "Amsterdam, Netherlands";
+                  server = "//librespeed.${domain}";
+                }
+              ];
+              backend = {
+                enable = true;
+                extraSettingsFile = config.age.secrets."librespeed.toml".path;
               };
             };
           };

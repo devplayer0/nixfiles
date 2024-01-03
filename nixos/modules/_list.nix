@@ -19,5 +19,6 @@
     borgthin = ./borgthin.nix;
     nvme = ./nvme;
     spdk = ./spdk.nix;
+    librespeed = ./librespeed;
   };
 }

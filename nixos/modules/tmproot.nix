@@ -480,6 +480,9 @@ in
       (mkIf config.services.tailscale.enable {
         my.tmproot.persistence.config.directories = [ "/var/lib/tailscale" ];
       })
+      (mkIf config.my.librespeed.backend.enable {
+        my.tmproot.persistence.config.directories = [ "/var/lib/librespeed-go" ];
+      })
     ]))
   ]);
 

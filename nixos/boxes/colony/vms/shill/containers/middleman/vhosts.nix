@@ -357,6 +357,14 @@ in
         locations."/".proxyPass = "http://simpcraft-oci.${domain}:8100";
         useACMEHost = pubDomain;
       };
+
+      "librespeed.${domain}" = {
+        locations."/".proxyPass = "http://localhost:8989";
+      };
+      "speed.${pubDomain}" = {
+        locations."/".proxyPass = "http://localhost:8989";
+        useACMEHost = pubDomain;
+      };
     };
 
     minio =
