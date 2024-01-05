@@ -400,6 +400,7 @@ in
                     chain routing-udp {
                       ip6 daddr ${aa.valheim-oci.internal.ipv6.address} udp dport { 2456-2457 } accept
                       ip6 daddr ${aa.waffletail.internal.ipv6.address} udp dport 41641 accept
+                      ip6 daddr ${aa.simpcraft-oci.internal.ipv6.address} udp dport 25565 accept
                       return
                     }
                     chain filter-routing {

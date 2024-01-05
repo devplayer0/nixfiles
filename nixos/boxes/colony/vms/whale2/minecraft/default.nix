@@ -13,14 +13,14 @@ in
         image = "ghcr.io/itzg/minecraft-server:2023.12.2-java17-alpine";
 
         environment = {
-          TYPE = "paper";
+          TYPE = "MODRINTH";
 
           EULA = "true";
+          ENABLE_QUERY = "true";
           MOTD = "§4§k----- §9S§ai§bm§cp§dc§er§fa§6f§5t §4§k-----";
           ICON = "/ext/icon.png";
-          DIFFICULTY = "normal";
 
-          OVERRIDE_WHITELIST = "true";
+          EXISTING_WHITELIST_FILE = "SYNCHRONIZE";
           WHITELIST = concatStringsSep "," [
             op
             "dcd2ecb9-2b5e-49cb-9d4f-f5a76162df56" # Elderlypug
@@ -33,12 +33,14 @@ in
             "f439f64d-91c9-4c74-9ce5-df4d24cd8e05" # hynge_
             "d6ec4c91-5da2-44eb-b89d-71dc8fe017a0" # Eefah98
           ];
+          EXISTING_OPS_FILE = "SYNCHRONIZE";
           OPS = op;
+          DIFFICULTY = "normal";
           SPAWN_PROTECTION = "0";
           VIEW_DISTANCE = "20";
 
-          MAX_MEMORY = "4G";
-          MODRINTH_PROJECTS = concatStringsSep "," [ ];
+          MAX_MEMORY = "6G";
+          MODRINTH_MODPACK = "https://cdn.modrinth.com/data/CIYf3Hk8/versions/CN6MqSAU/Simpcraft-0.1.0.mrpack";
 
           TZ = "Europe/Dublin";
         };
