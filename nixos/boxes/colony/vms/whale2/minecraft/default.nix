@@ -40,7 +40,7 @@ in
           VIEW_DISTANCE = "20";
 
           MAX_MEMORY = "6G";
-          MODRINTH_MODPACK = "https://cdn.modrinth.com/data/CIYf3Hk8/versions/CN6MqSAU/Simpcraft-0.1.0.mrpack";
+          MODRINTH_MODPACK = "https://cdn.modrinth.com/data/CIYf3Hk8/versions/cdj2bSKg/Simpcraft-0.1.2.mrpack";
 
           TZ = "Europe/Dublin";
         };
