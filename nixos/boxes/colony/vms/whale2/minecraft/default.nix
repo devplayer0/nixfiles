@@ -32,6 +32,7 @@ in
             "d53c91df-b6e6-4463-b106-e8427d7a8d01" # BossLonus
             "f439f64d-91c9-4c74-9ce5-df4d24cd8e05" # hynge_
             "d6ec4c91-5da2-44eb-b89d-71dc8fe017a0" # Eefah98
+            "096a7348-fabe-4b2d-93fc-fd1fd5608fb0" # ToTheMoonStar
           ];
           EXISTING_OPS_FILE = "SYNCHRONIZE";
           OPS = op;
