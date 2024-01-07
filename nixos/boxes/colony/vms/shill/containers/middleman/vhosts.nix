@@ -347,6 +347,17 @@ in
         };
         useACMEHost = pubDomain;
       };
+      "public.${pubDomain}" = {
+        serverAliases = [ "p.${pubDomain}" ];
+        locations."/" = {
+          root = "/mnt/media/public";
+          extraConfig = ''
+            fancyindex on;
+            fancyindex_show_dotfiles on;
+          '';
+        };
+        useACMEHost = pubDomain;
+      };
 
       "git.${pubDomain}" = {
         locations."/".proxyPass = "http://git-vm.${domain}:3000";
