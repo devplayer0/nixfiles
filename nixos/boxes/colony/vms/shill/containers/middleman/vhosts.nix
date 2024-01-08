@@ -376,6 +376,11 @@ in
         locations."/".proxyPass = "http://localhost:8989";
         useACMEHost = pubDomain;
       };
+
+      "md.${pubDomain}" = {
+        locations."/".proxyPass = "http://object-ctr.${domain}:3000";
+        useACMEHost = pubDomain;
+      };
     };
 
     minio =

@@ -483,6 +483,15 @@ in
       (mkIf config.my.librespeed.backend.enable {
         my.tmproot.persistence.config.directories = [ "/var/lib/librespeed-go" ];
       })
+      (mkIf config.services.hedgedoc.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = "/var/lib/hedgedoc";
+            user = "hedgedoc";
+            group = "hedgedoc";
+          }
+        ];
+      })
     ]))
   ]);
 

@@ -48,11 +48,17 @@ in
                   group = config.my.user.config.group;
                 };
                 "object/atticd.env" = {};
+                "object/hedgedoc.env" = {};
               };
             };
 
             firewall = {
-              tcp.allowed = [ 9000 9001 config.services.sharry.config.bind.port 8069 ];
+              tcp.allowed = [
+                9000 9001
+                config.services.sharry.config.bind.port
+                8069
+                config.services.hedgedoc.settings.port
+              ];
             };
 
             user.homeConfig = {
@@ -192,6 +198,26 @@ in
                   avg-size = 65536;
                   max-size = 262144;
                 };
+              };
+            };
+
+            hedgedoc = {
+              enable = true;
+              environmentFile = config.age.secrets."object/hedgedoc.env".path;
+              settings = {
+                domain = "md.${pubDomain}";
+                protocolUseSSL = true;
+                db = {
+                  dialect = "postgresql";
+                  username = "hedgedoc";
+                  database = "hedgedoc";
+                  host = "colony-psql";
+                };
+                host = "::";
+                allowAnonymous = false;
+                allowAnonymousEdits = true;
+                email = true;
+                allowEmailRegister = false;
               };
             };
           };
