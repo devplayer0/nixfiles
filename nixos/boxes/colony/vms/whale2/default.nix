@@ -51,7 +51,7 @@ in
     }) {
       valheim-oci = 2;
       simpcraft-oci = 3;
-      # simpcraft-staging-oci = 4;
+      simpcraft-staging-oci = 4;
     };
 
     configuration = { lib, pkgs, modulesPath, config, assignments, allAssignments, ... }:

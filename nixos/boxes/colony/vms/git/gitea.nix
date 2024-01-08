@@ -26,18 +26,6 @@ in
 
     systemd = {
       services = {
-        # TODO: Figure out a way to do this properly... redirecting localhost is awkward...
-        local-http-forward = {
-          description = "Forward local HTTP connections";
-          serviceConfig.ExecStart = "${pkgs.socat}/bin/socat tcp-listen:80,fork tcp:${allAssignments.middleman.internal.ipv4.address}:80";
-          wantedBy = [ "multi-user.target" ];
-        };
-        local-https-forward = {
-          description = "Forward local HTTPS connections";
-          serviceConfig.ExecStart = "${pkgs.socat}/bin/socat tcp-listen:443,fork tcp:${allAssignments.middleman.internal.ipv4.address}:443";
-          wantedBy = [ "multi-user.target" ];
-        };
-
         gitea = mkMerge [
           (lib.my.systemdAwaitPostgres pkgs.postgresql "colony-psql")
           {
@@ -141,21 +129,6 @@ in
           "gitea/minio.txt" = ownedByGit;
         };
       };
-
-      firewall.extraRules = ''
-        table inet filter {
-          chain input {
-            ip saddr ${prefixes.all.v4} tcp dport 3000 accept
-            ip6 saddr ${prefixes.all.v6} tcp dport 3000 accept
-          }
-        }
-        table inet nat {
-          chain prerouting {
-            ip daddr ${assignments.internal.ipv4.address} tcp dport { http, https } dnat to ${allAssignments.middleman.internal.ipv4.address}
-            ip6 daddr ${assignments.internal.ipv6.address} tcp dport { http, https } dnat to ${allAssignments.middleman.internal.ipv6.address}
-          }
-        }
-      '';
     };
   };
 }

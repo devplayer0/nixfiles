@@ -394,7 +394,9 @@ in
                       tcp dport ssh accept
 
                       ip6 daddr ${aa.middleman.internal.ipv6.address} tcp dport { http, https, 8448 } accept
-                      ip6 daddr ${aa.simpcraft-oci.internal.ipv6.address} tcp dport 25565 accept
+                      ${matchInet "tcp dport { http, https } accept" "git"}
+                      ip6 daddr ${aa.simpcraft-oci.internal.ipv6.address} tcp dport { 25565, 25575 } accept
+                      ip6 daddr ${aa.simpcraft-staging-oci.internal.ipv6.address} tcp dport 25565 accept
                       return
                     }
                     chain routing-udp {
@@ -431,8 +433,6 @@ in
                   table inet nat {
                     chain prerouting {
                       ${matchInet "meta l4proto { udp, tcp } th dport domain redirect to :5353" "estuary"}
-                      ip daddr ${aa.git.internal.ipv4.address} tcp dport { http, https } dnat to ${aa.middleman.internal.ipv4.address}
-                      ip6 daddr ${aa.git.internal.ipv6.address} tcp dport { http, https } dnat to ${aa.middleman.internal.ipv6.address}
                     }
                     chain postrouting {
                       ip saddr ${prefixes.all.v4} oifname != as211024 snat to ${assignments.internal.ipv4.address}

@@ -359,11 +359,6 @@ in
         useACMEHost = pubDomain;
       };
 
-      "git.${pubDomain}" = {
-        locations."/".proxyPass = "http://git-vm.${domain}:3000";
-        useACMEHost = pubDomain;
-      };
-
       "mc-map.${pubDomain}" = {
         locations."/".proxyPass = "http://simpcraft-oci.${domain}:8100";
         useACMEHost = pubDomain;
