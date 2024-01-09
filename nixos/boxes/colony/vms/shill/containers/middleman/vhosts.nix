@@ -377,7 +377,11 @@ in
       };
 
       "md.${pubDomain}" = {
-        locations."/".proxyPass = "http://object-ctr.${domain}:3000";
+        locations."/" = {
+          proxyPass = "http://object-ctr.${domain}:3000";
+          proxyWebsockets = true;
+          extraConfig = proxyHeaders;
+        };
         useACMEHost = pubDomain;
       };
     };
