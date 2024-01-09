@@ -419,7 +419,22 @@ in
       "s3.${pubDomain}" = {
         serverAliases = [ "*.s3.${pubDomain}" ];
         inherit extraConfig;
-        locations."/".proxyPass = s3Upstream;
+        locations = {
+          "/".proxyPass = s3Upstream;
+          "/gitea/packages/" = {
+            proxyPass = s3Upstream;
+            # HACK: Docker images need the MIME type to be correct for the manifest but Gitea
+            # doesn't tell S3... By hiding the header we can use add_header to set Content-Type
+            # (normally can't be set directly)
+            extraConfig = ''
+              proxy_hide_header Content-Type;
+              add_header Content-Type $upstream_http_content_type always;
+              if ($args ~ "response-content-disposition=.+filename%3D%22manifest\.json%22") {
+                add_header Content-Type "application/vnd.docker.distribution.manifest.v2+json";
+              }
+            '';
+          };
+        };
         useACMEHost = pubDomain;
       };
 
