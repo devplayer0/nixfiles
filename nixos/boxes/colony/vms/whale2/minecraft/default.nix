@@ -1,4 +1,4 @@
-{ lib, config, allAssignments, ... }:
+{ lib, pkgs, config, allAssignments, ... }:
 let
   inherit (lib) concatStringsSep;
   inherit (lib.my) dockerNetAssignment;
@@ -18,6 +18,17 @@ let
     "d6ec4c91-5da2-44eb-b89d-71dc8fe017a0" # Eefah98
     "096a7348-fabe-4b2d-93fc-fd1fd5608fb0" # ToTheMoonStar
   ];
+
+  fastback = {
+    gitConfig = pkgs.writeText "git-config" ''
+      [user]
+      	email = "simpcraft@nul.ie"
+      	name = "Simpcraft bot"
+    '';
+    knownHosts = pkgs.writeText "known_hosts" ''
+      git.nul.ie ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBD023ECzYmLeXIpcGVaciPjq6UN/Sjmsys5HP/Nei5GkrUZqPa3OJ2uSXKLUSKGYdeNhxaFTPJe8Yx3TsZxMme8=
+    '';
+  };
 in
 {
   config = {
@@ -87,6 +98,9 @@ in
         volumes = [
           "minecraft_staging_data:/data"
           "${./icon.png}:/ext/icon.png:ro"
+          "${fastback.gitConfig}:/data/.config/git/config:ro"
+          "${fastback.knownHosts}:/data/.ssh/known_hosts:ro"
+          "${config.age.secrets."whale2/simpcraft-git.key".path}:/data/.ssh/id_rsa"
         ];
 
         extraOptions = [
@@ -98,6 +112,9 @@ in
     my = {
       secrets.files = {
         "whale2/simpcraft.env" = {};
+        "whale2/simpcraft-git.key" = {
+          owner = "1000";
+        };
       };
     };
   };
