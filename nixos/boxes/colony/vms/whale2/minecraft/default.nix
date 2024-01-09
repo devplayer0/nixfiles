@@ -57,42 +57,42 @@ in
         ];
       };
 
-      # simpcraft-staging = {
-      #   image = "git.nul.ie/dev/craftblock:2024.1.0-java17-alpine";
+      simpcraft-staging = {
+        image = "git.nul.ie/dev/craftblock:2024.1.0-java17-alpine";
 
-      #   environment = {
-      #     TYPE = "MODRINTH";
+        environment = {
+          TYPE = "MODRINTH";
 
-      #     EULA = "true";
-      #     ENABLE_QUERY = "true";
-      #     ENABLE_RCON = "true";
-      #     MOTD = "§4§k----- §9S§ai§bm§cp§dc§er§fa§6f§5t [staging] §4§k-----";
-      #     ICON = "/ext/icon.png";
+          EULA = "true";
+          ENABLE_QUERY = "true";
+          ENABLE_RCON = "true";
+          MOTD = "§4§k----- §9S§ai§bm§cp§dc§er§fa§6f§5t [staging] §4§k-----";
+          ICON = "/ext/icon.png";
 
-      #     EXISTING_WHITELIST_FILE = "SYNCHRONIZE";
-      #     WHITELIST = whitelist;
-      #     EXISTING_OPS_FILE = "SYNCHRONIZE";
-      #     OPS = op;
-      #     DIFFICULTY = "normal";
-      #     SPAWN_PROTECTION = "0";
-      #     VIEW_DISTANCE = "20";
+          EXISTING_WHITELIST_FILE = "SYNCHRONIZE";
+          WHITELIST = whitelist;
+          EXISTING_OPS_FILE = "SYNCHRONIZE";
+          OPS = op;
+          DIFFICULTY = "normal";
+          SPAWN_PROTECTION = "0";
+          VIEW_DISTANCE = "20";
 
-      #     MAX_MEMORY = "4G";
-      #     MODRINTH_MODPACK = "https://cdn.modrinth.com/data/CIYf3Hk8/versions/Ym3sIi6H/Simpcraft-0.2.0.mrpack";
+          MAX_MEMORY = "4G";
+          MODRINTH_MODPACK = "https://cdn.modrinth.com/data/CIYf3Hk8/versions/Ym3sIi6H/Simpcraft-0.2.0.mrpack";
 
-      #     TZ = "Europe/Dublin";
-      #   };
-      #   environmentFiles = [ config.age.secrets."whale2/simpcraft.env".path ];
+          TZ = "Europe/Dublin";
+        };
+        environmentFiles = [ config.age.secrets."whale2/simpcraft.env".path ];
 
-      #   volumes = [
-      #     "minecraft_staging_data:/data"
-      #     "${./icon.png}:/ext/icon.png:ro"
-      #   ];
+        volumes = [
+          "minecraft_staging_data:/data"
+          "${./icon.png}:/ext/icon.png:ro"
+        ];
 
-      #   extraOptions = [
-      #     ''--network=colony:${dockerNetAssignment allAssignments "simpcraft-staging-oci"}''
-      #   ];
-      # };
+        extraOptions = [
+          ''--network=colony:${dockerNetAssignment allAssignments "simpcraft-staging-oci"}''
+        ];
+      };
     };
 
     my = {

@@ -363,6 +363,10 @@ in
         locations."/".proxyPass = "http://simpcraft-oci.${domain}:8100";
         useACMEHost = pubDomain;
       };
+      "mc-rail.${pubDomain}" = {
+        locations."/".proxyPass = "http://simpcraft-staging-oci.${domain}:3876";
+        useACMEHost = pubDomain;
+      };
 
       "librespeed.${domain}" = {
         locations."/".proxyPass = "http://localhost:8989";
