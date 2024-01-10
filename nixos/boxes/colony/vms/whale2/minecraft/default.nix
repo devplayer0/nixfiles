@@ -1,4 +1,4 @@
-{ lib, config, allAssignments, ... }:
+{ lib, pkgs, config, allAssignments, ... }:
 let
   inherit (lib) concatStringsSep;
   inherit (lib.my) dockerNetAssignment;
@@ -18,18 +18,27 @@ let
     "d6ec4c91-5da2-44eb-b89d-71dc8fe017a0" # Eefah98
     "096a7348-fabe-4b2d-93fc-fd1fd5608fb0" # ToTheMoonStar
   ];
+
+  fastback = {
+    gitConfig = pkgs.writeText "git-config" ''
+      [user]
+      	email = "simpcraft@nul.ie"
+      	name = "Simpcraft bot"
+    '';
+  };
 in
 {
   config = {
     virtualisation.oci-containers.containers = {
       simpcraft = {
-        image = "ghcr.io/itzg/minecraft-server:2023.12.2-java17-alpine";
+        image = "git.nul.ie/dev/craftblock:2024.1.0-java17-alpine";
 
         environment = {
           TYPE = "MODRINTH";
 
           EULA = "true";
           ENABLE_QUERY = "true";
+          ENABLE_RCON = "true";
           MOTD = "§4§k----- §9S§ai§bm§cp§dc§er§fa§6f§5t §4§k-----";
           ICON = "/ext/icon.png";
 
@@ -42,7 +51,7 @@ in
           VIEW_DISTANCE = "20";
 
           MAX_MEMORY = "6G";
-          MODRINTH_MODPACK = "https://cdn.modrinth.com/data/CIYf3Hk8/versions/cdj2bSKg/Simpcraft-0.1.2.mrpack";
+          MODRINTH_MODPACK = "https://cdn.modrinth.com/data/CIYf3Hk8/versions/Ym3sIi6H/Simpcraft-0.2.0.mrpack";
 
           TZ = "Europe/Dublin";
         };
@@ -50,6 +59,7 @@ in
         volumes = [
           "minecraft_data:/data"
           "${./icon.png}:/ext/icon.png:ro"
+          "${fastback.gitConfig}:/data/.config/git/config:ro"
         ];
 
         extraOptions = [
@@ -57,42 +67,42 @@ in
         ];
       };
 
-      simpcraft-staging = {
-        image = "git.nul.ie/dev/craftblock:2024.1.0-java17-alpine";
+      # simpcraft-staging = {
+      #   image = "git.nul.ie/dev/craftblock:2024.1.0-java17-alpine";
 
-        environment = {
-          TYPE = "MODRINTH";
+      #   environment = {
+      #     TYPE = "MODRINTH";
 
-          EULA = "true";
-          ENABLE_QUERY = "true";
-          ENABLE_RCON = "true";
-          MOTD = "§4§k----- §9S§ai§bm§cp§dc§er§fa§6f§5t [staging] §4§k-----";
-          ICON = "/ext/icon.png";
+      #     EULA = "true";
+      #     ENABLE_QUERY = "true";
+      #     ENABLE_RCON = "true";
+      #     MOTD = "§4§k----- §9S§ai§bm§cp§dc§er§fa§6f§5t [staging] §4§k-----";
+      #     ICON = "/ext/icon.png";
 
-          EXISTING_WHITELIST_FILE = "SYNCHRONIZE";
-          WHITELIST = whitelist;
-          EXISTING_OPS_FILE = "SYNCHRONIZE";
-          OPS = op;
-          DIFFICULTY = "normal";
-          SPAWN_PROTECTION = "0";
-          VIEW_DISTANCE = "20";
+      #     EXISTING_WHITELIST_FILE = "SYNCHRONIZE";
+      #     WHITELIST = whitelist;
+      #     EXISTING_OPS_FILE = "SYNCHRONIZE";
+      #     OPS = op;
+      #     DIFFICULTY = "normal";
+      #     SPAWN_PROTECTION = "0";
+      #     VIEW_DISTANCE = "20";
 
-          MAX_MEMORY = "4G";
-          MODRINTH_MODPACK = "https://cdn.modrinth.com/data/CIYf3Hk8/versions/Ym3sIi6H/Simpcraft-0.2.0.mrpack";
+      #     MAX_MEMORY = "4G";
+      #     MODRINTH_MODPACK = "https://cdn.modrinth.com/data/CIYf3Hk8/versions/Ym3sIi6H/Simpcraft-0.2.0.mrpack";
 
-          TZ = "Europe/Dublin";
-        };
-        environmentFiles = [ config.age.secrets."whale2/simpcraft.env".path ];
+      #     TZ = "Europe/Dublin";
+      #   };
+      #   environmentFiles = [ config.age.secrets."whale2/simpcraft.env".path ];
 
-        volumes = [
-          "minecraft_staging_data:/data"
-          "${./icon.png}:/ext/icon.png:ro"
-        ];
+      #   volumes = [
+      #     "minecraft_staging_data:/data"
+      #     "${./icon.png}:/ext/icon.png:ro"
+      #   ];
 
-        extraOptions = [
-          ''--network=colony:${dockerNetAssignment allAssignments "simpcraft-staging-oci"}''
-        ];
-      };
+      #   extraOptions = [
+      #     ''--network=colony:${dockerNetAssignment allAssignments "simpcraft-staging-oci"}''
+      #   ];
+      # };
     };
 
     my = {

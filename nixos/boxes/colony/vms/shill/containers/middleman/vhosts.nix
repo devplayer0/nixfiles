@@ -364,7 +364,7 @@ in
         useACMEHost = pubDomain;
       };
       "mc-rail.${pubDomain}" = {
-        locations."/".proxyPass = "http://simpcraft-staging-oci.${domain}:3876";
+        locations."/".proxyPass = "http://simpcraft-oci.${domain}:3876";
         useACMEHost = pubDomain;
       };
 
