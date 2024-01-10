@@ -384,6 +384,10 @@ in
         };
         useACMEHost = pubDomain;
       };
+      "pb.${pubDomain}" = {
+        locations."/".proxyPass = "http://object-ctr.${domain}:8088";
+        useACMEHost = pubDomain;
+      };
     };
 
     minio =

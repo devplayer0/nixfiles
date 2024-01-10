@@ -492,6 +492,9 @@ in
           }
         ];
       })
+      (mkIf config.services.wastebin.enable {
+        my.tmproot.persistence.config.directories = [ "/var/lib/private/wastebin" ];
+      })
     ]))
   ]);
 

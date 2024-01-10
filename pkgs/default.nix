@@ -8,4 +8,5 @@ in
   vfio-pci-bind = callPackage ./vfio-pci-bind.nix { };
   librespeed-go = callPackage ./librespeed-go.nix { };
   modrinth-app = callPackage ./modrinth-app { };
+  wastebin = callPackage ./wastebin { };
 }

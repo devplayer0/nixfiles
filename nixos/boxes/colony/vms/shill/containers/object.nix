@@ -49,6 +49,7 @@ in
                 };
                 "object/atticd.env" = {};
                 "object/hedgedoc.env" = {};
+                "object/wastebin.env" = {};
               };
             };
 
@@ -58,6 +59,7 @@ in
                 config.services.sharry.config.bind.port
                 8069
                 config.services.hedgedoc.settings.port
+                8088
               ];
             };
 
@@ -219,6 +221,15 @@ in
                 email = true;
                 allowEmailRegister = false;
               };
+            };
+
+            wastebin = {
+              enable = true;
+              settings = {
+                WASTEBIN_MAX_BODY_SIZE = "67108864"; # 16 MiB
+                WASTEBIN_PASSWORD_SALT = "TeGhaemeer0Siez3";
+              };
+              extraSettingsFile = config.age.secrets."object/wastebin.env".path;
             };
           };
         }
