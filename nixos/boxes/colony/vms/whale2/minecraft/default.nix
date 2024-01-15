@@ -55,6 +55,7 @@ in
 
           TZ = "Europe/Dublin";
         };
+        environmentFiles = [ config.age.secrets."whale2/simpcraft.env".path ];
 
         volumes = [
           "minecraft_data:/data"
