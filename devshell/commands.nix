@@ -20,7 +20,7 @@ in
           [ -e "${homeFlake}" ] && echo "${homeFlake} already exists" && exit 1
 
           mkdir -p "$(dirname "${homeFlake}")"
-          ln -s "$(pwd)/flake.nix" "${homeFlake}"
+          ln -sf "$(pwd)/flake.nix" "${homeFlake}"
           echo "Installed link to $(pwd)/flake.nix at ${homeFlake}"
         '';
     }
