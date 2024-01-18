@@ -106,6 +106,21 @@ in
       # };
     };
 
+    services = {
+      borgbackup.jobs.simpcraft = {
+        paths = [ "/var/lib/containers/storage/volumes/minecraft_data/_data/world" ];
+        repo = "/var/lib/containers/backup/simpcraft";
+        doInit = true;
+        encryption.mode = "none";
+        compression = "zstd,10";
+        startAt = "*:00/10:00"; # every 10 minutes
+        prune.keep = {
+          within = "1d";
+          hourly = 48;
+        };
+      };
+    };
+
     my = {
       secrets.files = {
         "whale2/simpcraft.env" = {};
