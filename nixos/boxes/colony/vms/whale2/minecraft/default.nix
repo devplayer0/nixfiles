@@ -113,7 +113,8 @@ in
         doInit = true;
         encryption.mode = "none";
         compression = "zstd,10";
-        startAt = "*:00/10:00"; # every 10 minutes
+        # every ~15 minutes offset from 5 minute intervals (Minecraft seems to save at precise times?)
+        startAt = "*:03,17,33,47";
         prune.keep = {
           within = "1d";
           hourly = 48;
