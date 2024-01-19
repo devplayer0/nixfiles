@@ -107,7 +107,11 @@ in
     };
 
     services = {
-      borgbackup.jobs.simpcraft = {
+      borgbackup.jobs.simpcraft =
+      let
+        rconCommand = cmd: ''${pkgs.mcrcon}/bin/mcrcon -H simpcraft-oci -p "$RCON_PASSWORD" "${cmd}"'';
+      in
+      {
         paths = [ "/var/lib/containers/storage/volumes/minecraft_data/_data/world" ];
         repo = "/var/lib/containers/backup/simpcraft";
         doInit = true;
@@ -116,9 +120,19 @@ in
         # every ~15 minutes offset from 5 minute intervals (Minecraft seems to save at precise times?)
         startAt = "*:03,17,33,47";
         prune.keep = {
-          within = "1d";
+          within = "12H";
           hourly = 48;
         };
+
+        # Avoid Minecraft poking the files while we back up
+        preHook = rconCommand "save-off";
+        postHook = rconCommand "save-on";
+      };
+    };
+
+    systemd = {
+      services = {
+        borgbackup-job-simpcraft.serviceConfig.EnvironmentFile = [ config.age.secrets."whale2/simpcraft.env".path ];
       };
     };
 
