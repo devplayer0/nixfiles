@@ -50,7 +50,7 @@ in
           SPAWN_PROTECTION = "0";
           VIEW_DISTANCE = "20";
 
-          MAX_MEMORY = "6G";
+          MAX_MEMORY = "8G";
           MODRINTH_MODPACK = "https://cdn.modrinth.com/data/CIYf3Hk8/versions/Ym3sIi6H/Simpcraft-0.2.0.mrpack";
 
           TZ = "Europe/Dublin";
