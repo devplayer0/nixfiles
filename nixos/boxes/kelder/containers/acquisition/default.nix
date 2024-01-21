@@ -65,7 +65,13 @@ in
         systemd = {
           services = {
             jackett.bindsTo = [ "systemd-networkd-wait-online@vpn.service" ];
+
             transmission.bindsTo = [ "systemd-networkd-wait-online@vpn.service" ];
+            # https://github.com/NixOS/nixpkgs/issues/258793#issuecomment-1748168206
+            transmission.serviceConfig = {
+              RootDirectoryStartOnly = lib.mkForce false;
+              RootDirectory = lib.mkForce "";
+            };
 
             radarr.serviceConfig.UMask = "0002";
             sonarr.serviceConfig.UMask = "0002";
