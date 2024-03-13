@@ -182,8 +182,10 @@ in
             dave-lo IN A ${net.cidr.host 11 prefixes.lo.v4}
             dave-lo IN AAAA ${net.cidr.host (65536+2) prefixes.lo.v6}
 
-            ;ap0 IN A ${net.cidr.host 12 prefixes.hi.v4}
-            ;ap0 IN AAAA ${net.cidr.host (65536+3) prefixes.hi.v6}
+            shytzel IN A ${net.cidr.host 12 prefixes.core.v4}
+
+            wave IN A ${net.cidr.host 12 prefixes.hi.v4}
+            wave IN AAAA ${net.cidr.host (65536+3) prefixes.hi.v6}
             vibe IN A ${net.cidr.host 13 prefixes.hi.v4}
             vibe IN AAAA ${net.cidr.host (65536+4) prefixes.hi.v6}
 
