@@ -152,14 +152,26 @@ in
 
           networking.domain = "h.${pubDomain}";
 
-          systemd.services = {
-            ipsec =
-            let
-              waitOnline = "systemd-networkd-wait-online@wan.service";
-            in
-            {
+          systemd.services =
+          let
+            waitOnline = "systemd-networkd-wait-online@wan.service";
+          in
+          {
+            ipsec = {
               after = [ waitOnline ];
               requires = [ waitOnline ];
+            };
+
+            ipv6-clear-default-route = {
+              description = "Clear IPv6 RA default route";
+              after = [ waitOnline ];
+              requires = [ waitOnline ];
+              script = ''
+                # Seems like we can sometimes pick up a default route somehow...
+                ${pkgs.iproute2}/bin/ip -6 route del default via fe80::1 || true
+              '';
+              serviceConfig.Type = "oneshot";
+              wantedBy = [ "multi-user.target" ];
             };
           };
 
