@@ -101,6 +101,12 @@ in
             dnssec = "false";
           };
 
+          pipewire.extraConfig.pipewire = {
+            "context.properties" = {
+              "default.clock.quantum" = 128;
+              "default.clock.max-quantum" = 128;
+            };
+          };
           blueman.enable = true;
         };
 
@@ -131,14 +137,6 @@ in
           qperf
           ethtool
         ];
-        environment.etc = {
-          "pipewire/pipewire.conf.d/sample-size.conf".text = ''
-            context.properties = {
-              default.clock.quantum = 128
-              default.clock.max-quantum = 128
-            }
-          '';
-        };
 
         nix = {
           gc.automatic = false;

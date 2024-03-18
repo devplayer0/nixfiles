@@ -6,7 +6,7 @@ let
   cfg = config.my.nvme;
   nvme-cli = pkgs.nvme-cli.override {
     libnvme = pkgs.libnvme.overrideAttrs (o: {
-      patches = o.patches ++ [ ./libnvme-hostconf.patch ];
+      patches = (if (o ? patches) then o.patches else [ ]) ++ [ ./libnvme-hostconf.patch ];
     });
   };
 

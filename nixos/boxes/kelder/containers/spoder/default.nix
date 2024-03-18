@@ -97,12 +97,12 @@ in
             hostName = "cloud.${domain}";
             https = true;
             config = {
-              extraTrustedDomains = [ "cloud-local.${domain}" ];
               adminpassFile = config.age.secrets."kelder/nextcloud-root.txt".path;
-              defaultPhoneRegion = "IE";
             };
-            extraOptions = {
+            settings = {
               updatechecker = false;
+              trusted_domains = [ "cloud-local.${domain}" ];
+              default_phone_region = "IE";
             };
           };
         };

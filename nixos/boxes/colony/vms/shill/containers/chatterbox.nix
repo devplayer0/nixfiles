@@ -171,14 +171,14 @@ in
                 ];
               };
 
-              sliding-sync = {
-                enable = true;
-                createDatabase = false;
-                environmentFile = config.age.secrets."chatterbox/syncv3.env".path;
-                settings = {
-                  SYNCV3_BINDADDR = "[::]:8009";
-                  SYNCV3_SERVER = "http://localhost:8008";
-                };
+            };
+            matrix-sliding-sync = {
+              enable = true;
+              createDatabase = false;
+              environmentFile = config.age.secrets."chatterbox/syncv3.env".path;
+              settings = {
+                SYNCV3_BINDADDR = "[::]:8009";
+                SYNCV3_SERVER = "http://localhost:8008";
               };
             };
 
