@@ -863,15 +863,15 @@
         "sbt": "sbt"
       },
       "locked": {
-        "lastModified": 1710531241,
-        "narHash": "sha256-kHGjvzIZsZFG+b53OgLxZlg05Z7JUKWd+hygUs04g78=",
-        "owner": "eikek",
+        "lastModified": 1710796573,
+        "narHash": "sha256-23fLZFNacZU/skc8i7JExHfD//Mpkslhga6f5ATTqBA=",
+        "owner": "devplayer0",
         "repo": "sharry",
-        "rev": "4ee0015cd4153eecfae43ee7ffc22e79e216828f",
+        "rev": "4e7a87880ba0807afd5d21706ce383b8b8727990",
         "type": "github"
       },
       "original": {
-        "owner": "eikek",
+        "owner": "devplayer0",
         "repo": "sharry",
         "type": "github"
       }

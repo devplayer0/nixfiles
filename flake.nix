@@ -30,7 +30,8 @@
     nixGL.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
     # Packages not in nixpkgs
-    sharry.url = "github:eikek/sharry";
+    # sharry.url = "github:eikek/sharry";
+    sharry.url = "github:devplayer0/sharry";
     sharry.inputs.nixpkgs.follows = "nixpkgs-unstable";
     borgthin.url = "github:devplayer0/borg";
     borgthin.inputs.nixpkgs.follows = "nixpkgs-mine";
