@@ -81,7 +81,7 @@ rustPlatform.buildRustPackage rec {
 
     dontFixup = true;
     outputHashMode = "recursive";
-    outputHash = "sha256-9HtTdIotG3sNIlWhd76v7Ia6P69ufp/FFqZfINXSkVc=";
+    outputHash = "sha256-Txttk8qZpDsAuiF8laKbZss/KEoT1Z+oepbj2s4XjE8=";
   };
 
   preBuild = ''
