@@ -32,7 +32,7 @@ in
             slurp
             swappy
 
-            python310Packages.python-lsp-server
+            python3Packages.python-lsp-server
             nil # nix language server
             zls # zig language server
             rust-analyzer
