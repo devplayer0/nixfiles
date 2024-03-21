@@ -226,7 +226,7 @@ in
                   extraConfig = ''
                     [CAKE]
                     Bandwidth=235M
-                    RTTSec=10ms
+                    RTTSec=50ms
                     PriorityQueueingPreset=besteffort
                     # DOCSIS preset
                     OverheadBytes=18
@@ -250,7 +250,7 @@ in
                       [CAKE]
                       Parent=root
                       Bandwidth=24M
-                      RTTSec=1ms
+                      RTTSec=50ms
                     '';
                   }
                 ];
