@@ -370,6 +370,12 @@ in
                     return
                   }
 
+                  chain forward-early {
+                    type filter hook forward priority -1; policy accept;
+
+                    # MSS clamping to workaround IPv6 PMTUD being broken...
+                    tcp flags syn tcp option maxseg size set rt mtu counter
+                  }
                   chain forward {
                     ${lib.my.c.as211024.nftTrust}
                     iifname lan-untrusted jump filter-untrusted
