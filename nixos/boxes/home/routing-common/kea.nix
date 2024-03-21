@@ -26,7 +26,11 @@ in
   };
 
   systemd.services = {
-    kea-dhcp4-server.serviceConfig.DynamicUser = mkForce false;
+    kea-dhcp4-server.serviceConfig = {
+      # Sometimes interfaces might not be ready in time and Kea doesn't like that
+      Restart = "on-failure";
+      DynamicUser = mkForce false;
+    };
     kea-dhcp-ddns-server.serviceConfig.DynamicUser = mkForce false;
   };
 
