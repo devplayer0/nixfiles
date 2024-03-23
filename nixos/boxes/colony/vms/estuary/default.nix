@@ -9,6 +9,7 @@ in
     vpns = {
       l2 = {
         as211024 = {
+          udpEncapsulation = true;
           vni = 211024;
           security.enable = true;
           peers = {

@@ -36,8 +36,8 @@ let
         espOverhead =
           if (!mesh.security.enable) then 0
           else
-            # SPI + seq + IV + pad / header + ICV
-            4 + 4 + (if mesh.security.encrypt then 8 else 0) + 2 + 16;
+            # UDP encap + SPI + seq + IV + pad / header + ICV
+            (if mesh.udpEncapsulation then 8 else 0) + 4 + 4 + (if mesh.security.encrypt then 8 else 0) + 2 + 16;
         # UDP + VXLAN + Ethernet + L3 (IPv4/IPv6)
         overhead = espOverhead + 8 + 8 + 14 + mesh.l3Overhead;
       in
@@ -62,7 +62,11 @@ let
       chain l2mesh-${name} {
         ${optionalString mesh.security.enable ''
           udp dport isakmp accept
-          meta l4proto esp accept
+          ${if mesh.udpEncapsulation then ''
+            udp dport ipsec-nat-t accept
+          '' else ''
+            meta l4proto esp accept
+          ''}
         ''}
         ${optionalString (!mesh.security.enable) (vxlanAllow mesh.vni)}
         return
@@ -94,6 +98,7 @@ let
           esp=${if mesh.security.encrypt then "aes_gcm256" else "null-sha256"}
           ikev2=yes
           modecfgpull=no
+          encapsulation=${if mesh.udpEncapsulation then "yes" else "no"}
         '';
       })
     otherPeers);

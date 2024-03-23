@@ -135,6 +135,7 @@ let
       ipv6 = mkBoolOpt' false "Whether this mesh's underlay operates over IPv6.";
       baseMTU = mkOpt' ints.unsigned 1500 "Base MTU to calculate VXLAN MTU with.";
       l3Overhead = mkOpt' ints.unsigned 40 "Overhead of L3 header (to calculate MTU).";
+      udpEncapsulation = mkBoolOpt' false "Whether to encapsulate ESP frames in UDP.";
       firewall = mkBoolOpt' true "Whether to generate firewall rules.";
       vni = mkOpt' ints.unsigned 1 "VXLAN VNI.";
       peers = mkOpt' (attrsOf (submodule l2PeerOpts)) { } "Peers.";
