@@ -150,12 +150,12 @@ in
             "serial-getty@ttyS1".enable = true;
             lvm-activate-main = {
               description = "Activate remaining LVs";
-              before = [ "local-fs-pre.target" ];
+              unitConfig.DefaultDependencies = false;
               serviceConfig = {
                 Type = "oneshot";
                 ExecStart = "${pkgs.lvm2.bin}/bin/vgchange -aay main";
               };
-              wantedBy = [ "sysinit.target" ];
+              wantedBy = [ "local-fs-pre.target" ];
             };
 
             rsync-lvm-meta = {
