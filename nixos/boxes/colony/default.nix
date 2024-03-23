@@ -60,8 +60,8 @@ in
           kernelPackages = (lib.my.c.kernel.lts pkgs).extend (self: super: {
             kernel = super.kernel.override {
               structuredExtraConfig = with lib.kernel; {
-                #SOME_OPT = yes;
-                #A_MOD = module;
+                ACPI_APEI_PCIEAER = yes;
+                PCIEAER = yes;
               };
             };
           });
