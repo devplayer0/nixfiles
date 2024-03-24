@@ -11,6 +11,7 @@ rec {
       jellyseerr = 402;
       atticd = 403;
       kea = 404;
+      keepalived_script = 405;
     };
     gids = {
       matrix-syncv3 = 400;
@@ -18,6 +19,7 @@ rec {
       jellyseerr = 402;
       atticd = 403;
       kea = 404;
+      keepalived_script = 405;
     };
   };
 
