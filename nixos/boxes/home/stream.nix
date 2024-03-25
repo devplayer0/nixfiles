@@ -123,7 +123,7 @@
             key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPYTB4zeAqotrEJ8M+AiGm/s9PFsWlAodz3hYSROGuDb";
           };
           server.enable = true;
-          deploy.node.hostname = "192.168.68.2";
+          # deploy.node.hostname = "192.168.68.2";
         };
       };
     };
