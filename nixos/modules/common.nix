@@ -1,4 +1,4 @@
-{ lib, pkgs, pkgs', inputs, config, ... }:
+{ lib, pkgsFlake, pkgs, pkgs', inputs, config, ... }:
 let
   inherit (lib) mkIf mkDefault mkMerge;
   inherit (lib.my) mkDefault';
@@ -53,7 +53,7 @@ in
           pkgs = {
             to = {
               type = "path";
-              path = "${pkgs.path}";
+              path = "${pkgsFlake}";
             };
             exact = true;
           };
