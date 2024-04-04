@@ -52,7 +52,7 @@ in
       name = "json2nix";
       category = "utilities";
       help = "Convert JSON to formatted Nix";
-      command = "nix eval --impure --expr 'builtins.fromJSON (builtins.readFile /dev/stdin)' | ${pkgs.nixfmt}/bin/nixfmt";
+      command = "nix eval --impure --expr 'builtins.fromJSON (builtins.readFile /dev/stdin)' | ${pkgs.nixfmt-rfc-style}/bin/nixfmt";
     }
 
     {

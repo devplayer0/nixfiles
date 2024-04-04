@@ -226,10 +226,10 @@ in
             wastebin = {
               enable = true;
               settings = {
-                WASTEBIN_MAX_BODY_SIZE = "67108864"; # 16 MiB
+                WASTEBIN_MAX_BODY_SIZE = 67108864; # 16 MiB
                 WASTEBIN_PASSWORD_SALT = "TeGhaemeer0Siez3";
               };
-              extraSettingsFile = config.age.secrets."object/wastebin.env".path;
+              secretFile = config.age.secrets."object/wastebin.env".path;
             };
           };
         }
