@@ -1,14 +1,20 @@
 index: { lib, pkgs, config, ... }:
 let
-  inherit (builtins) attrNames concatMap;
-  inherit (lib) optional;
+  inherit (builtins) attrNames concatMap length;
+  inherit (lib) optional concatMapStringsSep;
   inherit (lib.my) net;
   inherit (lib.my.c.home) prefixes vips;
 
-  pingScriptFor = ip: {
-    script = "${pkgs.iputils}/bin/ping -qnc 1 ${ip}";
+  pingScriptFor = name: ips:
+  let
+    script' = pkgs.writeShellScript
+      "keepalived-ping-${name}"
+      (concatMapStringsSep " || " (ip: "${pkgs.iputils}/bin/ping -qnc 1 -W 1 ${ip}") ips);
+  in
+  {
+    script = toString script';
     interval = 1;
-    timeout = 1;
+    timeout = (length ips) + 1;
     rise = 3;
     fall = 3;
   };
@@ -55,21 +61,22 @@ in
         nftables keepalived
       '';
       vrrpScripts = {
-        v4Alive = pingScriptFor "1.1.1.1";
-        v6Alive = pingScriptFor "2600::";
+        v4Alive = pingScriptFor "v4" [ "1.1.1.1" "8.8.8.8" "216.218.236.2" ];
+        v6Alive = pingScriptFor "v6" [ "2606:4700:4700::1111" "2001:4860:4860::8888" "2600::" ];
       };
       vrrpInstances = {
         v4 = mkVRRP "v4" 51;
         v6 = mkVRRP "v6" 52;
       };
-      extraConfig = ''
-        vrrp_sync_group main {
-          group {
-            v4
-            v6
-          }
-        }
-      '';
+      # Actually disable this for now, don't want to fault IPv4 just because IPv6 is broken...
+      # extraConfig = ''
+      #   vrrp_sync_group main {
+      #     group {
+      #       v4
+      #       v6
+      #     }
+      #   }
+      # '';
     };
   };
 }
