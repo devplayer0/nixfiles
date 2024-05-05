@@ -388,6 +388,14 @@ in
         locations."/".proxyPass = "http://object-ctr.${domain}:8088";
         useACMEHost = pubDomain;
       };
+      "photos.${pubDomain}" = {
+        locations."/" = {
+          proxyPass = "http://jackflix-ctr.${domain}:2342";
+          proxyWebsockets = true;
+          extraConfig = proxyHeaders;
+        };
+        useACMEHost = pubDomain;
+      };
     };
 
     minio =

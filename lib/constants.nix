@@ -12,6 +12,7 @@ rec {
       atticd = 403;
       kea = 404;
       keepalived_script = 405;
+      photoprism = 406;
     };
     gids = {
       matrix-syncv3 = 400;
@@ -20,6 +21,7 @@ rec {
       atticd = 403;
       kea = 404;
       keepalived_script = 405;
+      photoprism = 406;
     };
   };
 

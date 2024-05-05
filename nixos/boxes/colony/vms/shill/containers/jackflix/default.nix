@@ -1,6 +1,8 @@
 { lib, ... }:
 let
+  inherit (lib) concatStringsSep;
   inherit (lib.my) net;
+  inherit (lib.my.c) pubDomain;
   inherit (lib.my.c.colony) domain prefixes;
 in
 {
@@ -35,6 +37,9 @@ in
 
           secrets = {
             key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPUv1ntVrZv5ripsKpcOAnyDQX2PHjowzyhqWK10Ml53";
+            files = {
+              "jackflix/photoprism-pass.txt" = {};
+            };
           };
         };
 
@@ -50,10 +55,16 @@ in
               uid = uids.jellyseerr;
               group = "jellyseerr";
             };
+            photoprism = {
+              isSystemUser = true;
+              uid = uids.photoprism;
+              group = "photoprism";
+            };
           };
           groups = {
             media.gid = 2000;
             jellyseerr.gid = gids.jellyseerr;
+            photoprism.gid = gids.photoprism;
           };
         };
 
@@ -75,6 +86,10 @@ in
             transmission.serviceConfig = {
               RootDirectoryStartOnly = lib.mkForce false;
               RootDirectory = lib.mkForce "";
+            };
+            photoprism.serviceConfig = {
+              # Needs to be able to access its data
+              DynamicUser = mkForce false;
             };
           };
         };
@@ -117,6 +132,24 @@ in
           };
 
           jellyfin.enable = true;
+
+          photoprism = {
+            enable = true;
+            address = "[::]";
+            port = 2342;
+            originalsPath = "/mnt/media/photoprism/originals";
+            importPath = "/mnt/media/photoprism/import";
+            passwordFile = config.age.secrets."jackflix/photoprism-pass.txt".path;
+            settings = {
+              PHOTOPRISM_AUTH_MODE = "password";
+              PHOTOPRISM_ADMIN_USER = "dev";
+              PHOTOPRISM_APP_NAME = "/dev/player0 Photos";
+              PHOTOPRISM_SITE_URL = "https://photos.${pubDomain}/";
+              PHOTOPRISM_SITE_TITLE = "/dev/player0 Photos";
+              PHOTOPRISM_TRUSTED_PROXY = concatStringsSep "," (with prefixes.ctrs; [ v4 v6 ]);
+              PHOTOPRISM_DATABASE_DRIVER = "sqlite";
+            };
+          };
         };
       };
     };

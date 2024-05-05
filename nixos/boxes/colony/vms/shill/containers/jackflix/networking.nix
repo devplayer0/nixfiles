@@ -37,7 +37,7 @@ in
                 tcp dport ${toString transmissionPeerPort} accept
                 iifname vpn return
 
-                tcp dport { 19999, 9091, 9117, 7878, 8989, 8096 } accept
+                tcp dport { 19999, 9091, 9117, 7878, 8989, 8096, 2342 } accept
                 return
               }
               chain input {

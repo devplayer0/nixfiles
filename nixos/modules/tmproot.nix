@@ -496,6 +496,16 @@ in
       (mkIf (config.services ? "wastebin" && config.services.wastebin.enable) {
         my.tmproot.persistence.config.directories = [ "/var/lib/private/wastebin" ];
       })
+      (mkIf config.services.photoprism.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = config.services.photoprism.storagePath;
+            mode = "0750";
+            user = "photoprism";
+            group = "photoprism";
+          }
+        ];
+      })
     ]))
   ]);
 
