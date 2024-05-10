@@ -51,6 +51,8 @@ in
           SUBSYSTEM=="usb", ATTR{idVendor}=="0955", MODE="0664", GROUP="wheel"
           # Nintendo
           SUBSYSTEM=="usb", ATTR{idVendor}=="057e", MODE="0664", GROUP="wheel"
+          # FT
+          SUBSYSTEM=="usb", ATTR{idVendor}=="0403", MODE="0664", GROUP="wheel"
         '';
       };
     };
