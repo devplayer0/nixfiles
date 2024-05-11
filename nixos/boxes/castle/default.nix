@@ -102,7 +102,7 @@ in
           };
 
           pipewire.extraConfig.pipewire = {
-            "context.properties" = {
+            "10-buffer"."context.properties" = {
               "default.clock.quantum" = 128;
               "default.clock.max-quantum" = 128;
             };
