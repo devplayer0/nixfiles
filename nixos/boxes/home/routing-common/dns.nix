@@ -61,6 +61,19 @@ in
           webserver = true;
           webserver-address = "::";
           webserver-allow-from = [ "127.0.0.1" "::1" ];
+
+          lua-dns-script = pkgs.writeText "pdns-script.lua" ''
+            -- Disney+ doesn't like our IP space...
+            function preresolve(dq)
+              local name = dq.qname:toString()
+              if dq.qtype == pdns.AAAA and (string.find(name, "disneyplus") or string.find(name, "disney-plus")) then
+                dq.rcode = 0
+                return true
+              end
+
+              return false
+            end
+          '';
         };
       };
     };
