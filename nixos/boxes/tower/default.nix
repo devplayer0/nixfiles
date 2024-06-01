@@ -129,10 +129,9 @@
             wifi = {
               backend = "wpa_supplicant";
             };
-            extraConfig = ''
-              [main]
-              no-auto-default=*
-            '';
+            settings = {
+              main.no-auto-default = "*";
+            };
           };
         };
 

@@ -19,10 +19,10 @@ let
     };
   };
 
-  cfg = config.services.swaync;
+  cfg = config.my.swaync;
 in
 {
-  options.services.swaync = with lib.types; {
+  options.my.swaync = with lib.types; {
     enable = mkEnableOption "Sway Notification Center";
     package = mkOption {
       type = package;

@@ -248,8 +248,8 @@ rec {
   in
   {
     trivial = prev.trivial // {
-      release = "24.03:u-${prev.trivial.release}";
-      codeName = "Bruh";
+      release = "24.06:u-${prev.trivial.release}";
+      codeName = "Carbrain";
       revisionWithDefault = default: self.rev or default;
       versionSuffix = ".${date}.${revCode self}:u-${revCode pkgsFlake}";
     };

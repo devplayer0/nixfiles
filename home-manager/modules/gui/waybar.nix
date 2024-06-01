@@ -146,9 +146,9 @@ in
           dnd-none = "";
         };
         return-type = "json";
-        exec = "${config.services.swaync.package}/bin/swaync-client -swb";
-        on-click = "${config.services.swaync.package}/bin/swaync-client -t -sw";
-        on-click-right = "${config.services.swaync.package}/bin/swaync-client -d -sw";
+        exec = "${config.my.swaync.package}/bin/swaync-client -swb";
+        on-click = "${config.my.swaync.package}/bin/swaync-client -t -sw";
+        on-click-right = "${config.my.swaync.package}/bin/swaync-client -d -sw";
         escape = true;
       };
     };

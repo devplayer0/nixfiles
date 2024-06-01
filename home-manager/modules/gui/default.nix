@@ -210,17 +210,10 @@ in
         };
         qt = {
           enable = true;
-          platformTheme = "gtk";
+          platformTheme.name = "gtk";
         };
 
         services = {
-          swaync = {
-            enable = true;
-            settings = {
-              widgets = [ "title" "dnd" "mpris" "notifications" ];
-            };
-          };
-
           playerctld.enable = true;
           spotifyd = {
             enable = false;
@@ -295,6 +288,15 @@ in
               "x-scheme-handler/about"
               "x-scheme-handler/unknown"
             ] (_: "chromium-browser.desktop");
+          };
+        };
+
+        my = {
+          swaync = {
+            enable = true;
+            settings = {
+              widgets = [ "title" "dnd" "mpris" "notifications" ];
+            };
           };
         };
       })

@@ -492,8 +492,7 @@ in
           }
         ];
       })
-      # TODO: Wastebin is not in 23.11, remove check when 24.04 is released
-      (mkIf (config.services ? "wastebin" && config.services.wastebin.enable) {
+      (mkIf config.services.wastebin.enable {
         my.tmproot.persistence.config.directories = [ "/var/lib/private/wastebin" ];
       })
       (mkIf config.services.photoprism.enable {
