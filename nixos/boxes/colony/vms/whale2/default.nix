@@ -108,45 +108,30 @@ in
               oci-containers = {
                 backend = "podman";
               };
-              # NixOS has switched to using netavark, which is native to podman. It's currently missing an option to
-              # disable iptables rules generation, which is very annoying.
-              containers.containersConf.settings.network.network_backend = mkForce "cni";
+              containers.containersConf.settings.network = {
+                network_backend = "netavark";
+                firewall_driver = "none";
+              };
             };
 
             environment = {
               etc = {
-                "cni/net.d/90-colony.conflist".text = toJSON {
-                  cniVersion = "0.4.0";
+                "containers/networks/colony.json".text = toJSON {
                   name = "colony";
-                  plugins = [
+                  id = "0000000000000000000000000000000000000000000000000000000000000001";
+                  driver = "bridge";
+                  network_interface = "oci";
+                  ipv6_enabled = true;
+                  internal = false;
+                  dns_enabled = false;
+                  subnets = [
                     {
-                      type = "bridge";
-                      bridge = "oci";
-                      isGateway = true;
-                      ipMasq = false;
-                      hairpinMode = true;
-                      ipam = {
-                        type = "host-local";
-                        routes = [
-                          { dst = "0.0.0.0/0"; }
-                          { dst = "::/0"; }
-                        ];
-                        ranges = [
-                          [
-                            {
-                              subnet = prefixes.oci.v4;
-                              gateway = net.cidr.host 1 prefixes.oci.v4;
-                            }
-                          ]
-                          [
-                            {
-                              subnet = prefixes.oci.v6;
-                              gateway = net.cidr.host 1 prefixes.oci.v6;
-                            }
-                          ]
-                        ];
-                      };
-                      capabilities.ips = true;
+                      subnet = prefixes.oci.v4;
+                      gateway = net.cidr.host 1 prefixes.oci.v4;
+                    }
+                    {
+                      subnet = prefixes.oci.v6;
+                      gateway = net.cidr.host 1 prefixes.oci.v6;
                     }
                   ];
                 };
