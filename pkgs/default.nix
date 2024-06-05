@@ -9,4 +9,5 @@ in
   librespeed-go = callPackage ./librespeed-go.nix { };
   modrinth-app = callPackage ./modrinth-app { };
   glfw-minecraft = callPackage ./glfw-minecraft { };
+  chocolate-doom2xx = callPackage ./chocolate-doom2xx.nix { };
 }
