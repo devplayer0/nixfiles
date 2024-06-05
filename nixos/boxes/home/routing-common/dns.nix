@@ -66,7 +66,7 @@ in
             -- Disney+ doesn't like our IP space...
             function preresolve(dq)
               local name = dq.qname:toString()
-              if dq.qtype == pdns.AAAA and (string.find(name, "disneyplus") or string.find(name, "disney-plus")) then
+              if dq.qtype == pdns.AAAA and (string.find(name, "disneyplus") or string.find(name, "disney-plus") or string.find(name , "disney.api")) then
                 dq.rcode = 0
                 return true
               end

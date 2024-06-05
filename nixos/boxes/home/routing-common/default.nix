@@ -375,6 +375,10 @@ in
 
                     # MSS clamping to workaround IPv6 PMTUD being broken...
                     tcp flags syn tcp option maxseg size set rt mtu counter
+
+                    # More Disney+ discrimination...
+                    # TODO: This prefix could change (random AWS block)
+                    ip6 daddr 2600:9000:2245::/48 drop
                   }
                   chain forward {
                     ${lib.my.c.as211024.nftTrust}
