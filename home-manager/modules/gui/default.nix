@@ -10,6 +10,15 @@ let
     name = "Monocraft";
     size = 10;
   };
+
+  doomWad = pkgs.fetchurl {
+    url = "https://distro.ibiblio.org/slitaz/sources/packages/d/doom1.wad";
+    hash = "sha256-HX1DvlAeZ9kn5BXguPPinDvzMHXoWXIYFvZSpSbKx3E=";
+  };
+  doomNcurses = pkgs.writeShellScript "doom-ncurses" ''
+    SDL_AUDIODRIVER=null SDL_VIDEODRIVER=caca CACA_DRIVER=ncurses exec ${pkgs.chocolate-doom2xx}/bin/chocolate-doom -iwad ${doomWad}
+  '';
+  lockCmd = "swaylock-plugin --command-each '${pkgs.windowtolayer}/bin/windowtolayer -- alacritty -e ${doomNcurses}'";
 in
 {
   options.my.gui = {
@@ -51,7 +60,15 @@ in
           alacritty = {
             enable = true;
             settings = {
-              font.normal.family = font.name;
+              import = [ ./alacritty-xterm.toml ];
+
+              font = {
+                size = font.size;
+                normal = {
+                  family = font.name;
+                  style = "Regular";
+                };
+              };
             };
           };
 
@@ -62,6 +79,25 @@ in
               background_opacity = "0.8";
               tab_bar_edge = "top";
               shell_integration = "no-sudo";
+            };
+          };
+
+          termite = {
+            enable = true;
+            font = "${font.name} ${toString font.size}";
+            backgroundColor = "rgba(0, 0, 0, 0.8)";
+          };
+
+          foot = {
+            enable = true;
+            settings = {
+              main = {
+                font = "${font.name}:size=${toString font.size}";
+              };
+              colors = {
+                alpha = 0.8;
+                background = "000000";
+              };
             };
           };
 
@@ -162,7 +198,7 @@ in
                   in
                   lib.mkOptionDefault {
                     "${mod}+d" = null;
-                    "${mod}+l" = "exec swaylock -i ${./lock.png} -s stretch";
+                    "${mod}+l" = "exec ${lockCmd}";
                     "${mod}+x" = "exec ${cfg.menu}";
                     "${mod}+Shift+x" = "exec rofi -show drun";
                     "${mod}+q" = "kill";

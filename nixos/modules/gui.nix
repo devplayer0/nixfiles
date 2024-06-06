@@ -23,13 +23,13 @@ in
 
     security = {
       polkit.enable = true;
-      pam.services.swaylock = {};
+      pam.services.swaylock-plugin = {};
     };
 
     environment.systemPackages = with pkgs; [
       # for pw-jack
       pipewire.jack
-      swaylock
+      swaylock-plugin
     ];
     services = {
       pipewire = {
