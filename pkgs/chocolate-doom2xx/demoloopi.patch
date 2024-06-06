@@ -1,0 +1,91 @@
+diff --git a/src/doom/d_main.c b/src/doom/d_main.c
+index 65a39a10..3f799b0f 100644
+--- a/src/doom/d_main.c
++++ b/src/doom/d_main.c
+@@ -483,6 +483,8 @@ void D_DoomLoop (void)
+ //  DEMO LOOP
+ //
+ int             demosequence;
++int             demoloopi;
++char            demoloopname[9];
+ int             pagetic;
+ char                    *pagename;
+ 
+@@ -524,6 +526,8 @@ void D_AdvanceDemo (void)
+ //
+ void D_DoAdvanceDemo (void)
+ {
++    int havedemo4;
++
+     players[consoleplayer].playerstate = PST_LIVE;  // not reborn
+     advancedemo = false;
+     usergame = false;               // no save / end game here
+@@ -539,10 +543,14 @@ void D_DoAdvanceDemo (void)
+     // However! There is an alternate version of Final Doom that
+     // includes a fixed executable.
+ 
+-    if (gameversion == exe_ultimate || gameversion == exe_final)
++    havedemo4 = gameversion == exe_ultimate || gameversion == exe_final;
++    if (havedemo4)
+       demosequence = (demosequence+1)%7;
+     else
+       demosequence = (demosequence+1)%6;
++
++    if (demoloopi < 0 || demoloopi > (havedemo4 ? 3 : 2))
++      I_Error("Invalid demo loop start %d", demoloopi);
+     
+     switch (demosequence)
+     {
+@@ -558,17 +566,11 @@ void D_DoAdvanceDemo (void)
+ 	else
+ 	  S_StartMusic (mus_intro);
+ 	break;
+-      case 1:
+-	G_DeferedPlayDemo(DEH_String("demo1"));
+-	break;
+       case 2:
+ 	pagetic = 200;
+ 	gamestate = GS_DEMOSCREEN;
+ 	pagename = DEH_String("CREDIT");
+ 	break;
+-      case 3:
+-	G_DeferedPlayDemo(DEH_String("demo2"));
+-	break;
+       case 4:
+ 	gamestate = GS_DEMOSCREEN;
+ 	if ( gamemode == commercial)
+@@ -587,12 +589,14 @@ void D_DoAdvanceDemo (void)
+ 	      pagename = DEH_String("HELP2");
+ 	}
+ 	break;
++      case 1:
++      case 3:
+       case 5:
+-	G_DeferedPlayDemo(DEH_String("demo3"));
+-	break;
+         // THE DEFINITIVE DOOM Special Edition demo
+       case 6:
+-	G_DeferedPlayDemo(DEH_String("demo4"));
++	DEH_snprintf(demoloopname, 9, "demo%d", demoloopi + 1);
++	G_DeferedPlayDemo(demoloopname);
++	demoloopi = (demoloopi+1) % (havedemo4 ? 4 : 3);
+ 	break;
+     }
+ 
+@@ -1891,7 +1895,15 @@ void D_DoomMain (void)
+ 	G_TimeDemo (demolumpname);
+ 	D_DoomLoop ();  // never returns
+     }
+-	
++
++    p = M_CheckParmWithArgs("-demoloopi", 1);
++    if (p)
++    {
++        demoloopi = atoi(myargv[p+1]);
++    } else {
++        demoloopi = 0;
++    }
++
+     if (startloadgame >= 0)
+     {
+         M_StringCopy(file, P_SaveGameFile(startloadgame), sizeof(file));

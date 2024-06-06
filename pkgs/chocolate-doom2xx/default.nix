@@ -20,6 +20,7 @@ stdenv.mkDerivation rec {
       url = "https://github.com/chocolate-doom/chocolate-doom/commit/a8fd4b1f563d24d4296c3e8225c8404e2724d4c2.patch";
       sha256 = "1dmbygn952sy5n8qqp0asg11pmygwgygl17lrj7i0fxa0nrhixhj";
     })
+    ./demoloopi.patch
   ];
 
   outputs = [ "out" "man" ];
