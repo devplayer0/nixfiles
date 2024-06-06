@@ -10,4 +10,6 @@ in
   modrinth-app = callPackage ./modrinth-app { };
   glfw-minecraft = callPackage ./glfw-minecraft { };
   chocolate-doom2xx = callPackage ./chocolate-doom2xx.nix { };
+  windowtolayer = callPackage ./windowtolayer.nix { };
+  swaylock-plugin = callPackage ./swaylock-plugin.nix { };
 }
