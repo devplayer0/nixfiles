@@ -12,4 +12,5 @@ in
   chocolate-doom2xx = callPackage ./chocolate-doom2xx { };
   windowtolayer = callPackage ./windowtolayer.nix { };
   swaylock-plugin = callPackage ./swaylock-plugin.nix { };
+  terminaltexteffects = callPackage ./terminaltexteffects.nix { };
 }
