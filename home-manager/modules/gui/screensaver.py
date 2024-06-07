@@ -40,7 +40,7 @@ class Screensaver:
 class DoomSaver(Screensaver):
     wad = '@doomWad@'
 
-    def __init__(self, demo_index, weight=3):
+    def __init__(self, demo_index, weight=1.5):
         super().__init__(
             ['@chocoDoom@/bin/chocolate-doom',
              '-iwad', self.wad,
@@ -56,11 +56,49 @@ class DoomSaver(Screensaver):
     def stop(self):
         super().stop(kill=True)
 
+class TTESaver(Screensaver):
+    effects = (
+        'beams,binarypath,blackhole,bouncyballs,bubbles,burn,colorshift,crumble,'
+        'decrypt,errorcorrect,expand,fireworks,middleout,orbittingvolley,overflow,'
+        'pour,print,rain,randomsequence,rings,scattered,slice,slide,spotlights,'
+        'spray,swarm,synthgrid,unstable,vhstape,waves,wipe'
+    ).split(',')
+
+    def __init__(self, cmd, env=None, weight=1):
+        super().__init__(cmd, env=env, weight=weight)
+        self.running = False
+
+    def start(self):
+        self.running = True
+
+    def wait(self):
+        while self.running:
+            effect_cmd = ['tte', random.choice(self.effects)]
+            print(f"$ {' '.join(self.cmd)} | {' '.join(effect_cmd)}")
+            content = subprocess.check_output(self.cmd, env=self.env, stderr=subprocess.DEVNULL)
+
+            self.proc = subprocess.Popen(effect_cmd, stdin=subprocess.PIPE)
+            self.proc.stdin.write(content)
+            self.proc.stdin.close()
+            self.proc.wait()
+
+    def stop(self):
+        self.running = False
+        self.proc.terminate()
+
 class MultiSaver:
     savers = [
         DoomSaver(0),
         DoomSaver(1),
         DoomSaver(2),
+
+        Screensaver(['cmatrix']),
+
+        TTESaver(['screenfetch', '-N']),
+        TTESaver(['fortune']),
+        TTESaver(['top', '-n1']),
+        TTESaver(['ss', '-nltu']),
+        TTESaver(['ss', '-ntu']),
     ]
     state_filename = 'screensaver.json'
 
@@ -104,7 +142,7 @@ class MultiSaver:
             with open(self.state_path, 'w') as f:
                 json.dump(state, f)
 
-        print(f'Selected saver {selected_i}')
+        # print(f'Selected saver {selected_i}')
         self.selected = self.savers[selected_i]
 
     def cleanup(self):

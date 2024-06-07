@@ -56,7 +56,13 @@ in
             nil # nix language server
             zls # zig language server
             rust-analyzer
+
+            cowsay
+            fortune
+            terminaltexteffects
+            screenfetch
             neofetch
+            cmatrix
             doomsaver
           ];
         };
