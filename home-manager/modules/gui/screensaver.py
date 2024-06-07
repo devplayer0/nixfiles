@@ -74,8 +74,8 @@ class TTESaver(Screensaver):
     def wait(self):
         while self.running:
             effect_cmd = ['tte', random.choice(self.effects)]
-            print(f"$ {' '.join(self.cmd)} | {' '.join(effect_cmd)}")
-            content = subprocess.check_output(self.cmd, env=self.env, stderr=subprocess.DEVNULL)
+            print(f"$ {self.cmd} | {' '.join(effect_cmd)}")
+            content = subprocess.check_output(self.cmd, shell=True, env=self.env, stderr=subprocess.DEVNULL)
 
             self.proc = subprocess.Popen(effect_cmd, stdin=subprocess.PIPE)
             self.proc.stdin.write(content)
@@ -94,23 +94,27 @@ class MultiSaver:
 
         Screensaver(['cmatrix']),
 
-        TTESaver(['screenfetch', '-N']),
-        TTESaver(['fortune']),
-        TTESaver(['top', '-n1']),
-        TTESaver(['ss', '-nltu']),
-        TTESaver(['ss', '-ntu']),
+        TTESaver('screenfetch -N'),
+        TTESaver('fortune'),
+        TTESaver('top -n1'),
+        TTESaver('ss -nltu'),
+        TTESaver('ss -ntu'),
+        TTESaver('jp2a --width=100 @enojy@'),
     ]
     state_filename = 'screensaver.json'
 
-    def __init__(self):
+    def __init__(self, select=None):
         self.state_path = os.path.join(f'/run/user/{os.geteuid()}', self.state_filename)
         self.lock = filelock.FileLock(f'{self.state_path}.lock')
 
-        self.selected = None
+        if select is not None:
+            assert select >= 0 and select < len(self.savers), 'Invalid screensaver index'
+            self.selected = self.savers[select]
+        else:
+            self.selected = None
         self.cleaned_up = False
 
     def select(self):
-        assert self.selected is None
         with self.lock:
             if not os.path.exists(self.state_path):
                 state = {'instances': []}
@@ -118,32 +122,33 @@ class MultiSaver:
                 with open(self.state_path) as f:
                     state = json.load(f)
 
-            available = set(range(len(self.savers)))
-            new_instances = []
-            for instance in state['instances']:
-                if not os.path.exists(f"/proc/{instance['pid']}"):
-                    continue
+            if self.selected is None:
+                available = set(range(len(self.savers)))
+                new_instances = []
+                for instance in state['instances']:
+                    if not os.path.exists(f"/proc/{instance['pid']}"):
+                        continue
 
-                new_instances.append(instance)
-                i = instance['saver']
-                assert i in available
-                available.remove(i)
-            assert available, 'No screensavers left'
-            available = list(available)
+                    new_instances.append(instance)
+                    i = instance['saver']
+                    assert i in available
+                    available.remove(i)
+                assert available, 'No screensavers left'
+                available = list(available)
 
-            weights = []
-            for i in available:
-                weights.append(self.savers[i].weight)
-            selected_i = random.choices(available, weights=weights)[0]
+                weights = []
+                for i in available:
+                    weights.append(self.savers[i].weight)
+                selected_i = random.choices(available, weights=weights)[0]
 
-            new_instances.append({'pid': os.getpid(), 'saver': selected_i})
-            state['instances'] = new_instances
+                new_instances.append({'pid': os.getpid(), 'saver': selected_i})
+                state['instances'] = new_instances
+
+                # print(f'Selected saver {selected_i}')
+                self.selected = self.savers[selected_i]
 
             with open(self.state_path, 'w') as f:
                 json.dump(state, f)
-
-        # print(f'Selected saver {selected_i}')
-        self.selected = self.savers[selected_i]
 
     def cleanup(self):
         if self.cleaned_up:
@@ -181,17 +186,22 @@ class MultiSaver:
 
 def main():
     parser = argparse.ArgumentParser(description='Wayland terminal-based lock screen')
+    parser.add_argument('-l', '--locker-cmd', default='swaylock-plugin', help='swaylock-plugin command to use')
     parser.add_argument('-t', '--terminal', default='alacritty', help='Terminal emulator to use')
     parser.add_argument('-i', '--instance', action='store_true', help='Run as instance')
+    parser.add_argument('-s', '--screensaver', type=int, help='Force use of specific screensaver')
 
     args = parser.parse_args()
     if not args.instance:
-        subprocess.check_call([
-            'swaylock-plugin', '--command-each',
-            f'@windowtolayer@/bin/windowtolayer -- {args.terminal} -e {sys.argv[0]} --instance'])
+        cmd = [
+            args.locker_cmd, '--command-each',
+            f'@windowtolayer@/bin/windowtolayer -- {args.terminal} -e {sys.argv[0]} --instance']
+        if args.screensaver is not None:
+            cmd[-1] += f' --screensaver {args.screensaver}'
+        subprocess.check_call(cmd)
         return
 
-    ms = MultiSaver()
+    ms = MultiSaver(select=args.screensaver)
     ms.select()
     ms.run()
 

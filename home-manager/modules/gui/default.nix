@@ -15,16 +15,13 @@ let
     url = "https://distro.ibiblio.org/slitaz/sources/packages/d/doom1.wad";
     hash = "sha256-HX1DvlAeZ9kn5BXguPPinDvzMHXoWXIYFvZSpSbKx3E=";
   };
-  # doomNcurses = pkgs.writeShellScript "doom-ncurses" ''
-  #   SDL_AUDIODRIVER=null SDL_VIDEODRIVER=caca CACA_DRIVER=ncurses exec ${pkgs.chocolate-doom2xx}/bin/chocolate-doom -iwad ${doomWad}
-  # '';
-  # lockCmd = "swaylock-plugin --command-each '${pkgs.windowtolayer}/bin/windowtolayer -- alacritty -e ${doomNcurses}'";
 
   doomsaver = pkgs.runCommand "doomsaver" {
     inherit (pkgs) windowtolayer;
     chocoDoom = pkgs.chocolate-doom2xx;
     python = pkgs.python3.withPackages (ps: [ ps.filelock ]);
     inherit doomWad;
+    enojy = ./enojy.jpg;
   } ''
     mkdir -p "$out"/bin
     substituteAll ${./screensaver.py} "$out"/bin/doomsaver
@@ -59,6 +56,7 @@ in
 
             cowsay
             fortune
+            jp2a
             terminaltexteffects
             screenfetch
             neofetch
