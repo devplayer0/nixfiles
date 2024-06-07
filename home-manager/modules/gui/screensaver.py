@@ -95,8 +95,8 @@ class MultiSaver:
         Screensaver(['cmatrix']),
 
         TTESaver('screenfetch -N'),
-        TTESaver('fortune'),
-        TTESaver('top -n1'),
+        TTESaver('fortune | cowsay'),
+        TTESaver('top -bn1 | head -n50'),
         TTESaver('ss -nltu'),
         TTESaver('ss -ntu'),
         TTESaver('jp2a --width=100 @enojy@'),
