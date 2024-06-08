@@ -45,9 +45,19 @@ in
                   owner = "matrix-synapse";
                   group = "matrix-synapse";
                 };
+                "chatterbox/doublepuppet.yaml" = {
+                  owner = "matrix-synapse";
+                  group = "matrix-synapse";
+                };
+
                 "chatterbox/syncv3.env" = {
                   owner = "matrix-syncv3";
                   group = "matrix-syncv3";
+                };
+
+                "chatterbox/mautrix-whatsapp.env" = {
+                  owner = "matrix-whatsapp";
+                  group = "matrix-whatsapp";
                 };
               };
             };
@@ -59,6 +69,9 @@ in
 
           users = with lib.my.c.ids; {
             users = {
+              matrix-synapse.extraGroups = [
+                "mautrix-whatsapp"
+              ];
               matrix-syncv3 = {
                 isSystemUser = true;
                 uid = uids.matrix-syncv3;
@@ -168,6 +181,8 @@ in
 
                 app_service_config_files = [
                   "/var/lib/heisenbridge/registration.yml"
+                  config.age.secrets."chatterbox/doublepuppet.yaml".path
+                  "/var/lib/mautrix-whatsapp/whatsapp-registration.yaml"
                 ];
               };
 
@@ -193,6 +208,46 @@ in
                     regex = "@irc_.*";
                   }
                 ];
+              };
+            };
+
+            mautrix-whatsapp = {
+              enable = true;
+              environmentFile = config.age.secrets."chatterbox/mautrix-whatsapp.env".path;
+              settings = {
+                homeserver = {
+                  address = "http://localhost:8008";
+                  domain = "nul.ie";
+                };
+                appservice = {
+                  database = {
+                    type = "postgres";
+                    uri = "$MAU_WAPP_PSQL_URI";
+                  };
+                  id = "whatsapp2";
+                  bot = {
+                    username = "whatsapp2";
+                    displayname = "WhatsApp Bridge Bot";
+                  };
+                };
+                bridge = {
+                  username_template = "wapp2_{{.}}";
+                  displayname_template = "{{or .BusinessName .PushName .JID}} (WA)";
+                  personal_filtering_spaces = true;
+                  delivery_receipts = true;
+                  allow_user_invite = true;
+                  url_previews = true;
+                  command_prefix = "!wa";
+                  login_shared_secret_map."nul.ie" = "$MAU_WAPP_DOUBLE_PUPPET_TOKEN";
+                  encryption = {
+                    allow = true;
+                    default = true;
+                    require = true;
+                  };
+                  permissions = {
+                    "@dev:nul.ie" = "admin";
+                  };
+                };
               };
             };
           };

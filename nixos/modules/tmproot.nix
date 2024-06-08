@@ -505,6 +505,16 @@ in
           }
         ];
       })
+      (mkIf config.services.mautrix-whatsapp.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = "/var/lib/mautrix-whatsapp";
+            mode = "0750";
+            user = "mautrix-whatsapp";
+            group = "mautrix-whatsapp";
+          }
+        ];
+      })
     ]))
   ]);
 
