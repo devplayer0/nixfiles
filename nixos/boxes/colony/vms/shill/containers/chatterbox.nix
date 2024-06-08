@@ -59,6 +59,10 @@ in
                   owner = "matrix-whatsapp";
                   group = "matrix-whatsapp";
                 };
+                "chatterbox/mautrix-messenger.env" = {
+                  owner = "matrix-meta-messenger";
+                  group = "matrix-meta";
+                };
               };
             };
 
@@ -246,6 +250,51 @@ in
                   };
                   permissions = {
                     "@dev:nul.ie" = "admin";
+                  };
+                };
+              };
+            };
+
+            mautrix-meta.instances = {
+              messenger = {
+                enable = true;
+                registerToSynapse = true;
+                dataDir = "mautrix-messenger";
+                environmentFile = config.age.secrets."chatterbox/mautrix-messenger.env".path;
+                settings = {
+                  homeserver = {
+                    address = "http://localhost:8008";
+                    domain = "nul.ie";
+                  };
+                  appservice = {
+                    database = {
+                      type = "postgres";
+                      uri = "$MAU_FBM_PSQL_URI";
+                    };
+                    id = "fbm2";
+                    bot = {
+                      username = "messenger2";
+                      displayname = "Messenger Bridge Bot";
+                      avatar = "mxc://maunium.net/ygtkteZsXnGJLJHRchUwYWak";
+                    };
+                  };
+                  meta.mode = "messenger";
+                  bridge = {
+                    username_template = "fbm2_{{.}}";
+                    displayname_template = ''{{or .DisplayName .Username "Unknown user"}} (FBM)'';
+                    personal_filtering_spaces = true;
+                    delivery_receipts = true;
+                    management_room_text.welcome = "Hello, I'm a Messenger bridge bot.";
+                    command_prefix = "!fbm";
+                    login_shared_secret_map."nul.ie" = "$MAU_FBM_DOUBLE_PUPPET_TOKEN";
+                    encryption = {
+                      allow = true;
+                      default = true;
+                      require = true;
+                    };
+                    permissions = {
+                      "@dev:nul.ie" = "admin";
+                    };
                   };
                 };
               };

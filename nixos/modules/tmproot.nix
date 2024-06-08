@@ -2,7 +2,7 @@
 let
   inherit (lib)
     optionalString concatStringsSep concatMap concatMapStringsSep mkIf mkDefault mkMerge mkForce mkVMOverride
-    mkAliasDefinitions;
+    mkAliasDefinitions mapAttrsToList filterAttrs;
   inherit (lib.my) mkOpt' mkBoolOpt' mkVMOverride';
 
   cfg = config.my.tmproot;
@@ -515,6 +515,14 @@ in
           }
         ];
       })
+      {
+        my.tmproot.persistence.config.directories = mapAttrsToList (n: i: {
+          directory = "/var/lib/${i.dataDir}";
+          mode = "0750";
+          user = "mautrix-meta-${n}";
+          group = "mautrix-meta";
+        }) (filterAttrs (_: i: i.enable) config.services.mautrix-meta.instances);
+      }
     ]))
   ]);
 
