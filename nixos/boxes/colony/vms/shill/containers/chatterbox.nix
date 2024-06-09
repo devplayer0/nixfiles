@@ -56,12 +56,16 @@ in
                 };
 
                 "chatterbox/mautrix-whatsapp.env" = {
-                  owner = "matrix-whatsapp";
-                  group = "matrix-whatsapp";
+                  owner = "mautrix-whatsapp";
+                  group = "mautrix-whatsapp";
                 };
                 "chatterbox/mautrix-messenger.env" = {
-                  owner = "matrix-meta-messenger";
-                  group = "matrix-meta";
+                  owner = "mautrix-meta-messenger";
+                  group = "mautrix-meta";
+                };
+                "chatterbox/mautrix-instagram.env" = {
+                  owner = "mautrix-meta-instagram";
+                  group = "mautrix-meta";
                 };
               };
             };
@@ -287,6 +291,55 @@ in
                     management_room_text.welcome = "Hello, I'm a Messenger bridge bot.";
                     command_prefix = "!fbm";
                     login_shared_secret_map."nul.ie" = "$MAU_FBM_DOUBLE_PUPPET_TOKEN";
+                    backfill = {
+                      history_fetch_pages = 5;
+                    };
+                    encryption = {
+                      allow = true;
+                      default = true;
+                      require = true;
+                    };
+                    permissions = {
+                      "@dev:nul.ie" = "admin";
+                    };
+                  };
+                };
+              };
+
+              instagram = {
+                enable = true;
+                registerToSynapse = true;
+                dataDir = "mautrix-instagram";
+                environmentFile = config.age.secrets."chatterbox/mautrix-instagram.env".path;
+                settings = {
+                  homeserver = {
+                    address = "http://localhost:8008";
+                    domain = "nul.ie";
+                  };
+                  appservice = {
+                    database = {
+                      type = "postgres";
+                      uri = "$MAU_IG_PSQL_URI";
+                    };
+                    id = "instagram";
+                    bot = {
+                      username = "instagram";
+                      displayname = "Instagram Bridge Bot";
+                      avatar = "mxc://maunium.net/JxjlbZUlCPULEeHZSwleUXQv";
+                    };
+                  };
+                  meta.mode = "instagram";
+                  bridge = {
+                    username_template = "ig_{{.}}";
+                    displayname_template = ''{{or .DisplayName .Username "Unknown user"}} (IG)'';
+                    personal_filtering_spaces = true;
+                    delivery_receipts = true;
+                    management_room_text.welcome = "Hello, I'm an Instagram bridge bot.";
+                    command_prefix = "!ig";
+                    login_shared_secret_map."nul.ie" = "$MAU_IG_DOUBLE_PUPPET_TOKEN";
+                    backfill = {
+                      history_fetch_pages = 5;
+                    };
                     encryption = {
                       allow = true;
                       default = true;
