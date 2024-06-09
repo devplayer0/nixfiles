@@ -1,7 +1,7 @@
 {
   nixos.systems.installer = { config, ... }: {
     system = "x86_64-linux";
-    nixpkgs = "unstable";
+    nixpkgs = "mine";
     docCustom = false;
     rendered = config.configuration.config.my.asISO;
 
