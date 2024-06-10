@@ -24,7 +24,7 @@ in
 
     configuration = { lib, pkgs, config, assignments, allAssignments, ... }:
     let
-      inherit (lib) mkMerge mkIf mkForce;
+      inherit (lib) genAttrs mkMerge mkIf mkForce;
       inherit (lib.my) networkdAssignment;
     in
     {
@@ -100,7 +100,10 @@ in
                 User = "matrix-syncv3";
                 Group = "matrix-syncv3";
               };
-            };
+            } // (genAttrs [ "mautrix-whatsapp" "mautrix-meta-messenger" "mautrix-meta-instagram" ] (_: {
+              # ffmpeg needed to convert GIFs to video
+              path = with pkgs; [ ffmpeg ];
+            }));
           };
 
           services = {
