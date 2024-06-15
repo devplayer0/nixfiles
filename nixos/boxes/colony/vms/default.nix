@@ -209,6 +209,7 @@
             drives = [
               (mkMerge [ (vm.disk "darts" "root") { frontendOpts.bootindex = 0; } ])
               (vm.lvmDisk' "media" "darts-media")
+              (vm.lvmDisk' "ext" "darts-ext")
             ];
           };
         };
