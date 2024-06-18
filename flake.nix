@@ -24,7 +24,7 @@
 
     # Stuff used by systems
     impermanence.url = "github:nix-community/impermanence";
-    boardie.url = "github:devplayer0/boardie";
+    boardie.url = "git+https://git.nul.ie/dev/boardie";
     boardie.inputs.nixpkgs.follows = "nixpkgs-unstable";
     nixGL.url = "github:nix-community/nixGL";
     nixGL.inputs.nixpkgs.follows = "nixpkgs-unstable";

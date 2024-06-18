@@ -203,10 +203,7 @@ in
                 packages = with pkgs; [
                   jacktrip
                   qpwgraph
-                  # TODO: seems to be borked (infinite recursion???)
-                  # (writeShellScriptBin "boardie" ''
-                  #   exec pw-jack ${boardie}/bin/boardie "$@"
-                  # '')
+                  boardie
                 ];
               };
 
