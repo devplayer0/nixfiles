@@ -123,18 +123,7 @@ in
           (n: _: "ve-${n}")
           (filterAttrs (_: c: c.networking.bridge == null) cfg.instances);
 
-      systemd = mkMerge ([
-        {
-          # By symlinking to the original systemd-nspawn@.service for every instance we force the unit generator to
-          # create overrides instead of replacing the unit entirely
-          packages = [
-            (pkgs.linkFarm "systemd-nspawn-containers" (map (n: {
-              name = "etc/systemd/system/systemd-nspawn@${n}.service";
-              path = "${pkgs.systemd}/example/systemd/system/systemd-nspawn@.service";
-            }) (attrNames cfg.instances)))
-          ];
-        }
-      ] ++ (mapAttrsToList (n: c: {
+      systemd = mkMerge (mapAttrsToList (n: c: {
         nspawn."${n}" = {
           execConfig = {
             Boot = true;
@@ -182,6 +171,9 @@ in
             c.containerSystem;
         in
         {
+          # To prevent creating a whole new unit file
+          overrideStrategy = "asDropin";
+
           environment = {
             # systemd.nspawn units can't set the root directory directly, but /run/machines/${n} is one of the search paths
             root = "/run/machines/${n}";
@@ -247,7 +239,7 @@ in
             Bridge = c.networking.bridge;
           };
         };
-      }) cfg.instances));
+      }) cfg.instances);
     })
 
     # Inside container
