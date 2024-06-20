@@ -49,7 +49,11 @@ in
         inherit (lib.my) networkdAssignment;
       in
       {
-        imports = [ "${modulesPath}/profiles/qemu-guest.nix" ];
+        imports = [
+          "${modulesPath}/profiles/qemu-guest.nix"
+
+          ./containers-ext.nix
+        ];
 
         config = mkMerge [
           {

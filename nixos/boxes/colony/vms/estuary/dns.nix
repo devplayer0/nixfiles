@@ -2,7 +2,7 @@
 let
   inherit (builtins) attrNames;
   inherit (lib.my) net;
-  inherit (lib.my.c.colony) prefixes;
+  inherit (lib.my.c.colony) prefixes custRouting;
 
   authZones = attrNames config.my.pdns.auth.bind.zones;
 in
@@ -161,6 +161,10 @@ in
             darts-cust IN AAAA ${net.cidr.host 1 prefixes.darts.v6}
 
             andrey-cust IN A ${allAssignments.kelder.estuary.ipv4.address}
+
+            jam-cust IN A ${net.cidr.host 0 prefixes.jam.v4}
+            jam-fwd IN A ${allAssignments.shill.internal.ipv4.address}
+            jam-cust IN AAAA ${net.cidr.host 1 prefixes.jam.v6}
 
             $TTL 3
             _acme-challenge IN LUA TXT @@FILE@@

@@ -394,6 +394,9 @@ in
                       # Safe enough to allow all SSH
                       tcp dport ssh accept
 
+                      # jam-ctr forwards
+                      ip daddr ${aa.shill.internal.ipv4.address} tcp dport 60022 accept
+
                       ip6 daddr ${aa.middleman.internal.ipv6.address} tcp dport { http, https, 8448 } accept
                       ${matchInet "tcp dport { http, https } accept" "git"}
                       ip6 daddr ${aa.simpcraft-oci.internal.ipv6.address} tcp dport { 25565, 25575 } accept

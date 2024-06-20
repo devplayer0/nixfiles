@@ -1,7 +1,7 @@
 { lib, ... }:
 let
   inherit (lib.my) net;
-  inherit (lib.my.c.colony) domain prefixes firewallForwards;
+  inherit (lib.my.c.colony) domain prefixes custRouting firewallForwards;
 in
 {
   imports = [ ./vms ];
@@ -276,6 +276,10 @@ in
                       Destination = lib.my.c.tailscale.prefix.v6;
                       Gateway = allAssignments.shill.internal.ipv6.address;
                     }
+                    {
+                      Destination = prefixes.jam.v6;
+                      Gateway = allAssignments.shill.internal.ipv6.address;
+                    }
 
                     {
                       Destination = prefixes.oci.v4;
@@ -307,7 +311,7 @@ in
               "90-vm-mail" = {
                 matchConfig.Name = "vm-mail";
                 address = [
-                  (net.cidr.subnet 8 1 prefixes.cust.v4)
+                  "${custRouting.mail-vm}/32"
                   prefixes.mail.v6
                 ];
                 networkConfig = {
@@ -330,7 +334,7 @@ in
               "90-vm-darts" = {
                 matchConfig.Name = "vm-darts";
                 address = [
-                  (net.cidr.subnet 8 2 prefixes.cust.v4)
+                  "${custRouting.darts-vm}/32"
                   prefixes.darts.v6
                 ];
                 networkConfig = {

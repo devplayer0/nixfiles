@@ -111,7 +111,7 @@ rec {
   };
 
   pubDomain = "nul.ie";
-  colony = {
+  colony = rec {
     domain = "ams1.int.${pubDomain}";
     pubV4 = "94.142.240.44";
     prefixes = with lib.my.net.cidr; rec {
@@ -148,6 +148,10 @@ rec {
         v4 = "94.142.242.255/32";
         v6 = subnet 8 1 cust.v6;
       };
+      jam = {
+        v4 = subnet 8 4 cust.v4;
+        v6 = subnet 8 2 cust.v6;
+      };
 
       vip1 = "94.142.241.224/30";
       vip2 = "94.142.242.254/31";
@@ -158,6 +162,12 @@ rec {
         v6 = "2a0e:97c0:4df::/64";
       };
       home.v6 = "2a0e:97c0:4d0::/48";
+    };
+
+    custRouting = with lib.my.net.cidr; {
+      mail-vm = host 1 prefixes.cust.v4;
+      darts-vm = host 2 prefixes.cust.v4;
+      jam-ctr = host 3 prefixes.cust.v4;
     };
 
     firewallForwards = aa: [
@@ -173,6 +183,7 @@ rec {
         port = 8448;
         dst = aa.middleman.internal.ipv4.address;
       }
+
       {
         port = 25565;
         dst = aa.simpcraft-oci.internal.ipv4.address;
@@ -181,6 +192,7 @@ rec {
         port = 25566;
         dst = aa.simpcraft-staging-oci.internal.ipv4.address;
       }
+
       {
         port = 25575;
         dst = aa.simpcraft-oci.internal.ipv4.address;
