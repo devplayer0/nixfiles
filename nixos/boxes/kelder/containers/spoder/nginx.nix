@@ -84,6 +84,7 @@ in
             c
           ];
           acquisition = "http://${allAssignments.kelder-acquisition.internal.ipv4.address}";
+          # This is kinda borked because Virgin Media filters DNS responses with local IPs...
           localRedirect = to: ''
             rewrite_by_lua_block {
               if ngx.var.remote_addr == pub_ip then
@@ -103,7 +104,7 @@ in
 
             "monitor.${domain}" = withAuth {
               serverAliases = [ "monitor-local.${domain}" ];
-              extraConfig = localRedirect "monitor-local.${domain}";
+              # extraConfig = localRedirect "monitor-local.${domain}";
               locations = {
                 "/" = {
                   proxyPass = "http://${allAssignments.kelder.ctrs.ipv4.address}:19999";
@@ -136,17 +137,17 @@ in
             };
             "torrents.${domain}" = withAuth {
               serverAliases = [ "torrents-local.${domain}" ];
-              extraConfig = localRedirect "torrents-local.${domain}";
+              # extraConfig = localRedirect "torrents-local.${domain}";
               locations."/".proxyPass = "${acquisition}:9091";
             };
             "jackett.${domain}" = withAuth {
               serverAliases = [ "jackett-local.${domain}" ];
-              extraConfig = localRedirect "jackett-local.${domain}";
+              # extraConfig = localRedirect "jackett-local.${domain}";
               locations."/".proxyPass = "${acquisition}:9117";
             };
             "radarr.${domain}" = withAuth {
               serverAliases = [ "radarr-local.${domain}" ];
-              extraConfig = localRedirect "radarr-local.${domain}";
+              # extraConfig = localRedirect "radarr-local.${domain}";
               locations."/" = {
                 proxyPass = "${acquisition}:7878";
                 proxyWebsockets = true;
@@ -155,7 +156,7 @@ in
             };
             "sonarr.${domain}" = withAuth {
               serverAliases = [ "sonarr-local.${domain}" ];
-              extraConfig = localRedirect "sonarr-local.${domain}";
+              # extraConfig = localRedirect "sonarr-local.${domain}";
               locations."/" = {
                 proxyPass = "${acquisition}:8989";
                 proxyWebsockets = true;

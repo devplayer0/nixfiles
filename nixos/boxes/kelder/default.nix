@@ -1,7 +1,7 @@
 { lib, ... }:
 let
   inherit (lib.my) net;
-  inherit (lib.my.c.kelder) domain prefixes;
+  inherit (lib.my.c.kelder) domain prefixes ipv4MTU;
 in
 {
   imports = [ ./containers ];
@@ -182,7 +182,7 @@ in
                     {
                       wireguardPeerConfig = {
                         PublicKey = "bP1XUNxp9i8NLOXhgPaIaRzRwi5APbam44/xjvYcyjU=";
-                        Endpoint = "estuary-vm.${lib.my.c.colony.domain}:${toString lib.my.c.kelder.vpn.port}";
+                        Endpoint = "${allAssignments.estuary.internal.ipv4.address}:${toString lib.my.c.kelder.vpn.port}";
                         AllowedIPs = [ "0.0.0.0/0" ];
                         PersistentKeepalive = 25;
                       };
@@ -200,6 +200,7 @@ in
                 "50-lan" = {
                   matchConfig.Name = "et1g0";
                   DHCP = "yes";
+                  linkConfig.MTUBytes = toString ipv4MTU;
                 };
                 "80-ctrs" = mkMerge [
                   (networkdAssignment "ctrs" assignments.ctrs)
@@ -272,7 +273,7 @@ in
               config.name = "kontent";
             };
 
-            #deploy.node.hostname = "10.16.9.21";
+            # deploy.node.hostname = "192.168.0.69";
             secrets = {
               key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOFvUdJshXkqmchEgkZDn5rgtZ1NO9vbd6Px+S6YioWi";
               files = {

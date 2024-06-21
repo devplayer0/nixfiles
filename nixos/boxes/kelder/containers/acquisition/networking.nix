@@ -2,6 +2,7 @@
 let
   inherit (lib) mkMerge mkIf;
   inherit (lib.my) networkdAssignment;
+  inherit (lib.my.c.kelder) ipv4MTU;
 
   wg = {
     keyFile = "kelder/acquisition/airvpn-privkey";
@@ -89,6 +90,7 @@ in
               (networkdAssignment "host0" assignments.internal)
               {
                 networkConfig.DNSDefaultRoute = false;
+                linkConfig.MTUBytes = toString ipv4MTU;
               }
             ];
             "90-vpn" = with wg; {

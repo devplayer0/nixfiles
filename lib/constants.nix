@@ -343,6 +343,7 @@ rec {
     };
 
     domain = "hentai.engineer";
+    ipv4MTU = 1460;
     vpn = {
       port = 51820;
     };
