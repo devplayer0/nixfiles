@@ -45,6 +45,7 @@ jobs:
         uses: https://gitea.com/actions/release-action@main
         with:
           title: Latest installer
+          api_key: '${{ secrets.RELEASE_TOKEN }}'
           files: |
             jackos-installer-${{ steps.setup.outputs.short_rev }}.iso
             jackos-installer-netboot-${{ steps.setup.outputs.short_rev }}.tar
