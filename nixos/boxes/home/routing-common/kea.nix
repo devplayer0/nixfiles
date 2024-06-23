@@ -1,4 +1,4 @@
-index: { lib, pkgs, assignments, ... }:
+index: { lib, pkgs, config, assignments, ... }:
 let
   inherit (lib) mkForce;
   inherit (lib.my) net;
@@ -63,6 +63,7 @@ in
               always-send = true;
             }
           ];
+          client-classes = config.my.netboot.server.keaClientClasses;
           subnet4 = [
             {
               id = 1;

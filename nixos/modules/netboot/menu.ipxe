@@ -1,0 +1,68 @@
+#!ipxe
+
+set server http://@bootHost@
+
+# Figure out if client is 64-bit capable
+cpuid --ext 29 && set arch x86_64 || set arch i386
+
+isset ${menu-default} || set menu-default exit
+
+:start
+menu Welcome to /dev/player0's humble iPXE boot menu
+item --gap --           Operating Systems
+iseq ${arch} x86_64 &&
+item --key n nixos      NixOS installer
+# iseq ${arch} x86_64 &&
+# item --key a archlinux Arch Linux (archiso x86_64)
+# iseq ${arch} x86_64 &&
+# item --key p alpine   Alpine Linux
+item --gap --           Other Options
+item --key e efi_shell  UEFI Shell
+item --key x xyz        netboot.xyz
+item --key c config     iPXE settings
+item --key s shell      Drop to iPXE shell
+item --key r reboot     Reboot
+item --key q exit       Exit (and continue to next boot device)
+choose --timeout 0 --default ${menu-default} selected || goto cancel
+goto ${selected}
+
+:cancel
+echo You cancelled the menu, dropping you to an iPXE shell
+
+:shell
+echo Type 'exit' to go back to the menu
+shell
+set menu-default nixos
+goto start
+
+:failed
+echo Booting failed, dropping to shell
+goto shell
+
+:reboot
+reboot
+
+:exit
+exit
+
+:config
+config
+set menu-default config
+goto start
+
+:efi_shell
+chain ${server}/efi-shell-${arch}.efi || goto failed
+
+:xyz
+chain --autofree https://boot.netboot.xyz || goto failed
+
+:nixos
+set cmdline nbd_export=nixos-installer
+chain ${server}/nixos-installer/boot.ipxe || goto failed
+
+:archlinux
+# set mirrorurl https://arch.nul.ie/
+chain ${server}/arch.ipxe || goto failed
+
+:alpine
+chain ${server}/alpine.ipxe || goto failed

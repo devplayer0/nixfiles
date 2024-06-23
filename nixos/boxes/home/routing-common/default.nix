@@ -148,9 +148,11 @@ in
                 };
               };
             };
+
+            nginx.enable = true;
           };
 
-          networking.domain = "h.${pubDomain}";
+          networking = { inherit domain; };
 
           systemd.services =
           let
@@ -398,6 +400,11 @@ in
                   }
                 }
               '';
+            };
+            netboot.server = {
+              enable = true;
+              ip = vips.lo.v4;
+              host = "boot.${domain}";
             };
           };
         };

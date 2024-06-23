@@ -172,6 +172,7 @@ in
             }}
             ${elemAt routers 0} IN AAAA ${net.cidr.host 1 prefixes.hi.v6}
             ${elemAt routers 1} IN AAAA ${net.cidr.host 2 prefixes.hi.v6}
+            boot IN CNAME router-hi.${config.networking.domain}.
 
             @ IN NS ns1
             @ IN NS ns2

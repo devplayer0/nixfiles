@@ -20,5 +20,6 @@
     nvme = ./nvme;
     spdk = ./spdk.nix;
     librespeed = ./librespeed;
+    netboot = ./netboot;
   };
 }

@@ -106,8 +106,8 @@ in
     {
       name = "build-netboot";
       category = "tasks";
-      help = "Build NixOS configuration as netboot archive";
-      command = ''nix build "''${@:2}" ".#nixfiles.config.nixos.systems.\"$1\".configuration.config.my.buildAs.netbootArchive"'';
+      help = "Build NixOS configuration as netboot tree";
+      command = ''nix build "''${@:2}" ".#nixfiles.config.nixos.systems.\"$1\".configuration.config.my.buildAs.netbootTree"'';
     }
     {
       name = "build-home";
