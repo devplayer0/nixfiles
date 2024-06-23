@@ -52,6 +52,8 @@
             home.shellAliases = {
               show-hw-config = "nixos-generate-config --show-hardware-config --root $INSTALL_ROOT";
             };
+
+            my.gui.enable = false;
           };
 
           services = {
