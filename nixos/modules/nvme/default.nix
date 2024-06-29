@@ -33,24 +33,43 @@ in
       etc = etc "";
     };
 
-    boot.initrd.systemd = mkIf (cfg.boot.nqn != null) {
-      contents = etc "/etc/";
-      extraBin.nvme = "${nvme-cli}/bin/nvme";
+    boot = mkIf (cfg.boot.nqn != null) {
+      initrd = {
+        availableKernelModules = [ "rdma_cm" "iw_cm" "ib_cm" "nvme_core" "nvme_rdma" ];
+        kernelModules = [ "nvme-fabrics" ];
+        systemd = {
+          contents = etc "/etc/";
+          extraBin = with pkgs; {
+            dmesg = "${util-linux}/bin/dmesg";
+            ip = "${iproute2}/bin/ip";
+            nvme = "${nvme-cli}/bin/nvme";
+          };
+          extraConfig = ''
+            DefaultTimeoutStartSec=20
+            DefaultDeviceTimeoutSec=20
+          '';
 
-      services.connect-nvme = {
-        description = "Connect NVMe-oF";
-        before = [ "initrd-root-device.target" ];
-        after = [ "systemd-networkd-wait-online.service" ];
-        requires = [ "systemd-networkd-wait-online.service" ];
+          network = {
+            enable = true;
+            wait-online.enable = true;
+          };
 
-        serviceConfig = {
-          Type = "oneshot";
-          ExecStart = "${nvme-cli}/bin/nvme connect -t rdma -a ${cfg.boot.address} -n ${cfg.boot.nqn}";
-          Restart = "on-failure";
-          RestartSec = 10;
+          services.connect-nvme = {
+            description = "Connect NVMe-oF";
+            before = [ "initrd-root-device.target" ];
+            after = [ "systemd-networkd-wait-online.service" ];
+            requires = [ "systemd-networkd-wait-online.service" ];
+
+            serviceConfig = {
+              Type = "oneshot";
+              ExecStart = "${nvme-cli}/bin/nvme connect -t rdma -a ${cfg.boot.address} -n ${cfg.boot.nqn}";
+              Restart = "on-failure";
+              RestartSec = 10;
+            };
+
+            wantedBy = [ "initrd-root-device.target" ];
+          };
         };
-
-        wantedBy = [ "initrd-root-device.target" ];
       };
     };
   };

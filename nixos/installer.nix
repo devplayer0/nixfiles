@@ -86,6 +86,7 @@
             dhcpcd
             lm_sensors
             ethtool
+            nfs-utils
           ];
 
           # Much of this onwards is yoinked from modules/profiles/installation-device.nix

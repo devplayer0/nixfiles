@@ -5,7 +5,7 @@ let
     genAttrs mapAttrsToList filterAttrsRecursive nameValuePair types
     mkOption mkOverride mkForce mkIf mergeEqualOption optional
     showWarnings concatStringsSep flatten unique optionalAttrs
-    mkBefore;
+    mkBefore toLower;
   inherit (lib.flake) defaultSystems;
 in
 rec {
@@ -254,4 +254,31 @@ rec {
       versionSuffix = ".${date}.${revCode self}:u-${revCode pkgsFlake}";
     };
   };
+
+  netbootKeaClientClasses = { tftpIP, hostname, systems }:
+  let
+    testIPXE = "substring(option[user-class].hex, 0, 4) == 'iPXE'";
+  in
+    (mapAttrsToList (name: mac: {
+      name = "nixos-${name}";
+      test = "(${testIPXE}) and (hexstring(pkt4.mac, ':') == '${toLower mac}')";
+      next-server = tftpIP;
+      server-hostname = hostname;
+      boot-file-name = "http://${hostname}/systems/${name}/menu.ipxe";
+    }) systems) ++ [
+    {
+      name = "ipxe";
+      test = testIPXE;
+      next-server = tftpIP;
+      server-hostname = hostname;
+      boot-file-name = "http://${hostname}/boot.ipxe";
+    }
+    {
+      name = "efi-x86_64";
+      test = "option[client-system].hex == 0x0007";
+      next-server = tftpIP;
+      server-hostname = hostname;
+      boot-file-name = "ipxe-x86_64.efi";
+    }
+  ];
 }

@@ -293,6 +293,8 @@ rec {
         v6 = host ((1*65536*65536*65536) + 65535) prefixes.as211024.v6;
       };
     };
+
+    roceBootModules = [ "ib_core" "ib_uverbs" "mlx5_core" "mlx5_ib" "8021q" ];
   };
 
   britway = {

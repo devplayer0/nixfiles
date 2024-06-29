@@ -2,6 +2,7 @@
   imports = [
     ./cellar
     ./river.nix
+    ./sfh
   ];
 
   nixos.systems.palace.configuration = { lib, pkgs, config, systems, allAssignments, ... }:
@@ -57,11 +58,11 @@
 
     systemd.services =
     let
-      awaitCellar = {
-        after = [ "vm@cellar.service" ];
-        bindsTo = [ "vm@cellar.service" ];
+      awaitVM = system: {
+        after = [ "vm@${system}.service" ];
+        bindsTo = [ "vm@${system}.service" ];
         preStart = ''
-          until ${pkgs.netcat}/bin/nc -w1 -z ${allAssignments.cellar.hi.ipv4.address} 22; do
+          until ${pkgs.netcat}/bin/nc -w1 -z ${allAssignments.${system}.hi.ipv4.address} 22; do
             sleep 1
           done
         '';
@@ -81,13 +82,13 @@
         vtapUnit = "sys-subsystem-net-devices-vm\\x2det1g0.device";
       in
       mkMerge [
-        awaitCellar
+        (awaitVM "cellar")
         {
           requires = [ vtapUnit ];
           after = [ vtapUnit ];
         }
       ];
-      "vm@sfh" = awaitCellar;
+      "vm@sfh" = (awaitVM "river");
     };
 
     my = {

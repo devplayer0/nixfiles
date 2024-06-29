@@ -401,11 +401,6 @@ in
                 }
               '';
             };
-            netboot.server = {
-              enable = true;
-              ip = vips.lo.v4;
-              host = "boot.${domain}";
-            };
           };
         };
       };

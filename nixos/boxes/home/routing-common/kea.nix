@@ -1,7 +1,7 @@
-index: { lib, pkgs, config, assignments, ... }:
+index: { lib, pkgs, config, assignments, allAssignments, ... }:
 let
   inherit (lib) mkForce;
-  inherit (lib.my) net;
+  inherit (lib.my) net netbootKeaClientClasses;
   inherit (lib.my.c.home) domain prefixes vips hiMTU;
 
   dns-servers = [
@@ -63,7 +63,13 @@ in
               always-send = true;
             }
           ];
-          client-classes = config.my.netboot.server.keaClientClasses;
+          client-classes = netbootKeaClientClasses {
+            tftpIP = allAssignments.river.lo.ipv4.address;
+            hostname = "boot.${domain}";
+            systems = {
+              sfh = "52:54:00:a5:7e:93";
+            };
+          };
           subnet4 = [
             {
               id = 1;

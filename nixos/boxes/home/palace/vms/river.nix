@@ -10,18 +10,7 @@
     let
       inherit (lib.my) networkdAssignment mkVLAN;
       inherit (lib.my.c) networkd;
-      inherit (lib.my.c.home) vlans;
-
-      lanLink = {
-        matchConfig = {
-          Driver = "mlx5_core";
-          PermanentMACAddress = "52:54:00:8a:8a:f2";
-        };
-        linkConfig = {
-          Name = "lan";
-          MTUBytes = toString lib.my.c.home.hiMTU;
-        };
-      };
+      inherit (lib.my.c.home) vlans domain prefixes roceBootModules;
     in
     {
       imports = [
@@ -30,29 +19,16 @@
 
       config = {
         boot = {
-          kernelModules = [ "kvm-intel" ];
+          kernelModules = [ "kvm-amd" ];
           kernelParams = [ "console=ttyS0,115200n8" ];
           initrd = {
             availableKernelModules = [
               "virtio_pci" "ahci" "sr_mod" "virtio_blk"
-              "ib_core" "ib_uverbs" "mlx5_core" "mlx5_ib" "8021q"
-              "rdma_cm" "iw_cm" "ib_cm" "nvme_core" "nvme_rdma"
-            ];
-            kernelModules = [ "dm-snapshot" "nvme-fabrics" ];
+            ] ++ roceBootModules;
+            kernelModules = [ "dm-snapshot" ];
             systemd = {
-              extraBin = with pkgs; {
-                dmesg = "${util-linux}/bin/dmesg";
-                ip = "${iproute2}/bin/ip";
-              };
-              extraConfig = ''
-                DefaultTimeoutStartSec=50
-                DefaultDeviceTimeoutSec=50
-              '';
               network = {
-                enable = true;
-                wait-online.enable = true;
-
-                links."10-lan" = lanLink;
+                # Don't need to put the link config here, they're copied from main config
                 netdevs = mkVLAN "lan-hi" vlans.hi;
                 networks = {
                   "20-lan" = {
@@ -70,9 +46,6 @@
 
         hardware = {
           enableRedistributableFirmware = true;
-          cpu = {
-            intel.updateMicrocode = true;
-          };
         };
 
         fileSystems = {
@@ -96,6 +69,7 @@
             boot.thin.enable = true;
             dmeventd.enable = true;
           };
+          fstrim.enable = true;
         };
 
         systemd.network = {
@@ -114,7 +88,16 @@
               };
             };
 
-            "10-lan" = lanLink;
+            "10-lan" = {
+              matchConfig = {
+                Driver = "mlx5_core";
+                PermanentMACAddress = "52:54:00:8a:8a:f2";
+              };
+              linkConfig = {
+                Name = "lan";
+                MTUBytes = toString lib.my.c.home.hiMTU;
+              };
+            };
           };
 
           # So we don't drop the IP we use to connect to NVMe-oF!
@@ -132,6 +115,14 @@
               nqn = "nqn.2016-06.io.spdk:river";
               address = "192.168.68.80";
             };
+          };
+
+          netboot.server = {
+            enable = true;
+            ip = assignments.lo.ipv4.address;
+            host = "boot.${domain}";
+            allowedPrefixes = with prefixes; [ hi.v4 hi.v6 lo.v4 lo.v6 ];
+            instances = [ "sfh" ];
           };
 
           deploy.node.hostname = "192.168.68.1";

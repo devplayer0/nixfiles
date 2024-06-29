@@ -66,6 +66,7 @@ in
             ];
 
             services = {
+              fstrim.enable = true;
               netdata.enable = true;
             };
 

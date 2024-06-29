@@ -129,6 +129,12 @@ in
             hostnqn =
               "nqn.2014-08.org.nvmexpress:uuid:2230b066-a674-4f45-a1dc-f7727b3a9e7b";
             serial = "SPDK00000000000002";
+          }) ++ (nvmfBdev {
+            bdev = "NVMeRaidp3";
+            nqn = "nqn.2016-06.io.spdk:sfh";
+            hostnqn =
+              "nqn.2014-08.org.nvmexpress:uuid:85d7df36-0de0-431b-b06e-51f7c0a455b4";
+            serial = "SPDK00000000000003";
           });
         };
       };
