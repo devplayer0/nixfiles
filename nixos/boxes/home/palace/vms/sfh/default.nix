@@ -71,6 +71,8 @@ in
           };
         };
 
+        networking = { inherit domain; };
+
         services = {
           lvm = {
             boot.thin.enable = true;

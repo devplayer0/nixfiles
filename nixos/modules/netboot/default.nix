@@ -56,6 +56,41 @@ in
 
   config = mkMerge [
     (mkIf cfg.client.enable {
+      systemd = {
+        services = {
+          mount-boot = {
+            description = "Mount /boot";
+            after = [ "systemd-networkd-wait-online.service" ];
+            serviceConfig = {
+              Type = "oneshot";
+              RemainAfterExit = true;
+            };
+            path = with pkgs; [ gnused ldns nfs-utils ];
+            script = ''
+              get_cmdline() {
+                sed -rn "s/^.*$1=(\\S+).*\$/\\1/p" < /proc/cmdline
+              }
+
+              host="$(get_cmdline boothost)"
+              if [ -z "$host" ]; then
+                echo "boothost kernel parameter not found!" >&2
+                exit 1
+              fi
+
+              until [ -n "$(drill -Q $host)" ]; do
+                sleep 0.1
+              done
+
+              mkdir -p /boot
+              mount.nfs $host:/srv/netboot/systems/${config.system.name} /boot
+            '';
+
+            wantedBy = [ "remote-fs.target" ];
+          };
+        };
+      };
+
+      boot.supportedFilesystems.nfs = true;
       boot.loader = {
         grub.enable = false;
         systemd-boot.enable = false;
