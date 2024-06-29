@@ -199,17 +199,20 @@ in
           file
           tree
           pwgen
+
+          minicom
           iperf3
           mosh
           wget
-          hyx
           whois
           ldns
-          minicom
           mtr
+
+          hyx
           ncdu
           jq
           yq-go
+          nix-tree
         ];
 
         sessionVariables = {
