@@ -82,11 +82,12 @@
                 ${pkgs.gawk}/bin/awk '{ print $1 }')"
             '';
 
+          boot.supportedFilesystems.nfs = true;
+
           environment.systemPackages = with pkgs; [
             dhcpcd
             lm_sensors
             ethtool
-            nfs-utils
           ];
 
           # Much of this onwards is yoinked from modules/profiles/installation-device.nix
