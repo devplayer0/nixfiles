@@ -123,7 +123,7 @@
             ip = assignments.lo.ipv4.address;
             host = "boot.${domain}";
             allowedPrefixes = with prefixes; [ hi.v4 hi.v6 lo.v4 lo.v6 ];
-            instances = [ "sfh" ];
+            instances = [ "sfh" "castle" ];
           };
 
           deploy.node.hostname = "192.168.68.1";

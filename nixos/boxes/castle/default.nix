@@ -1,7 +1,8 @@
 { lib, ... }:
 let
   inherit (lib.my) net;
-  inherit (lib.my.c.home) domain vlans prefixes;
+  inherit (lib.my.c) networkd;
+  inherit (lib.my.c.home) domain vlans prefixes vips roceBootModules;
 in
 {
   nixos.systems.castle = {
@@ -15,7 +16,7 @@ in
         ipv4 = {
           address = net.cidr.host 40 prefixes.hi.v4;
           mask = 22;
-          gateway = null;
+          gateway = vips.hi.v4;
         };
         ipv6 = {
           iid = "::3:1";
@@ -47,7 +48,7 @@ in
             timeout = 10;
           };
           kernelPackages = lib.my.c.kernel.latest pkgs;
-          kernelModules = [ "kvm-amd" ];
+          kernelModules = [ "kvm-amd" "dm-snapshot" ];
           kernelParams = [ "amd_iommu=on" "amd_pstate=passive" ];
           kernelPatches = [
             # {
@@ -57,27 +58,38 @@ in
             # }
           ];
           initrd = {
-            availableKernelModules = [ "thunderbolt" "xhci_pci" "nvme" "ahci" "usbhid" "usb_storage" "sd_mod" ];
+            availableKernelModules = [
+              "thunderbolt" "xhci_pci" "nvme" "ahci" "usbhid" "usb_storage" "sd_mod"
+              "8021q"
+            ] ++ roceBootModules;
+            systemd.network = {
+              netdevs = mkVLAN "lan-hi" vlans.hi;
+              networks = {
+                "10-et100g" = {
+                  matchConfig.Name = "et100g";
+                  vlan = [ "lan-hi" ];
+                  linkConfig.RequiredForOnline = "no";
+                  networkConfig = networkd.noL3;
+                };
+                "20-lan-hi" = networkdAssignment "lan-hi" assignments.hi;
+              };
+            };
           };
         };
 
         fileSystems = {
-          "/boot" = {
-            device = "/dev/disk/by-partuuid/8ce4248a-3ee4-f44f-801f-064a628b4d6e";
-            fsType = "vfat";
-          };
           "/nix" = {
-            device = "/dev/disk/by-partuuid/2da23a1d-2daf-d943-b91e-fc175f3dad07";
+            device = "/dev/nvmeof/nix";
             fsType = "ext4";
           };
-
           "/persist" = {
-            device = "/dev/disk/by-partuuid/f4c80d4f-a022-e941-b5d1-fe2e65e444b9";
+            device = "/dev/nvmeof/persist";
             fsType = "ext4";
             neededForBoot = true;
           };
+
           "/home" = {
-            device = "/dev/disk/by-partuuid/992a93cf-6c9c-324b-b0ce-f8eb2d1ce10d";
+            device = "/dev/nvmeof/home";
             fsType = "ext4";
           };
         };
@@ -120,7 +132,7 @@ in
         virtualisation.libvirtd.enable = true;
 
         networking = {
-          domain = "h.${lib.my.c.pubDomain}";
+          inherit domain;
           firewall.enable = false;
         };
 
@@ -144,7 +156,6 @@ in
 
         systemd = {
           network = {
-            wait-online.enable = false;
             netdevs = mkMerge [
               (mkVLAN "lan-hi" vlans.hi)
             ];
@@ -161,29 +172,20 @@ in
                 matchConfig.PermanentMACAddress = "24:8a:07:a8:fe:3a";
                 linkConfig = {
                   Name = "et100g";
-                  MTUBytes = "9000";
+                  MTUBytes = toString lib.my.c.home.hiMTU;
                 };
               };
             };
             networks = {
-              "50-lan" = {
-                matchConfig.Name = "et2.5g";
-                DHCP = "no";
-                address = [ "10.16.7.1/16" ];
-              };
-
-              "50-et100g" = {
+              "30-et100g" = {
                 matchConfig.Name = "et100g";
                 vlan = [ "lan-hi" ];
                 networkConfig.IPv6AcceptRA = false;
               };
-              "60-lan-hi" = mkMerge [
+              "40-lan-hi" = mkMerge [
                 (networkdAssignment "lan-hi" assignments.hi)
-                {
-                  DHCP = "yes";
-                  matchConfig.Name = "lan-hi";
-                  linkConfig.MTUBytes = "9000";
-                }
+                # So we don't drop the IP we use to connect to NVMe-oF!
+                { networkConfig.KeepConfiguration = "static"; }
               ];
             };
           };
@@ -238,11 +240,19 @@ in
           };
 
           #deploy.generate.system.mode = "boot";
-          deploy.node.hostname = "castle.box.${config.networking.domain}";
           secrets = {
             key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMlVuTzKObeaUuPocCF41IO/8X+443lzUJLuCIclt2vr";
           };
-          nvme.uuid = "2230b066-a674-4f45-a1dc-f7727b3a9e7b";
+          netboot.client = {
+            enable = true;
+          };
+          nvme = {
+            uuid = "2230b066-a674-4f45-a1dc-f7727b3a9e7b";
+            boot = {
+              nqn = "nqn.2016-06.io.spdk:castle";
+              address = "192.168.68.80";
+            };
+          };
 
           firewall = {
             enable = false;

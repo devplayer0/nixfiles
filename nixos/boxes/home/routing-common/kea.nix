@@ -68,6 +68,7 @@ in
             hostname = "boot.${domain}";
             systems = {
               sfh = "52:54:00:a5:7e:93";
+              castle = "c8:7f:54:6e:17:0f";
             };
           };
           subnet4 = [
