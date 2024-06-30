@@ -116,9 +116,9 @@
         nixos/installer.nix
         nixos/boxes/colony
         nixos/boxes/tower
-        nixos/boxes/castle
         nixos/boxes/home/stream.nix
         nixos/boxes/home/palace
+        nixos/boxes/home/castle
         nixos/boxes/britway
         nixos/boxes/kelder
 
