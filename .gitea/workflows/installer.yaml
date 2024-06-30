@@ -14,7 +14,7 @@ jobs:
         uses: https://github.com/actions/setup-go@v4
         with:
           go-version: '>=1.20.1'
-      - uses: cachix/install-nix-action@v23
+      - uses: cachix/install-nix-action@v27
         with:
           github_access_token: ${{ secrets.GH_PULL_TOKEN }}
           extra_nix_config: |
