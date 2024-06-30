@@ -199,7 +199,7 @@ in
             shytzel IN A ${net.cidr.host 12 prefixes.core.v4}
 
             wave IN A ${net.cidr.host 12 prefixes.hi.v4}
-            wave IN AAAA ${net.cidr.host (65536+3) prefixes.hi.v6}
+            ; wave IN AAAA ${net.cidr.host (65536+3) prefixes.hi.v6}
             vibe IN A ${net.cidr.host 13 prefixes.hi.v4}
             vibe IN AAAA ${net.cidr.host (65536+4) prefixes.hi.v6}
 

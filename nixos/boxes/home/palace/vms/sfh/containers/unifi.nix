@@ -26,7 +26,7 @@ in
       };
     };
 
-    configuration = { lib, config, assignments, ... }:
+    configuration = { lib, config, pkgs, assignments, ... }:
     let
       inherit (lib) mkMerge mkIf mkForce;
       inherit (lib.my) networkdAssignment;
@@ -41,13 +41,23 @@ in
             key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKdgcziQki/RH7E+NH2bYnzSVKaJ27905Yo5TcOjSh/U";
             files = { };
           };
+
+          firewall = {
+            tcp.allowed = [ 8443 ];
+          };
         };
 
         systemd = {
           network.networks."80-container-host0" = networkdAssignment "host0" assignments.hi;
         };
 
-        services = { };
+        services = {
+          unifi = {
+            enable = true;
+            openFirewall = true;
+            unifiPackage = pkgs.unifi8;
+          };
+        };
       };
     };
   };

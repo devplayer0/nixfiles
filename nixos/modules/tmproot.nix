@@ -523,6 +523,22 @@ in
           group = "mautrix-meta";
         }) (filterAttrs (_: i: i.enable) config.services.mautrix-meta.instances);
       }
+      (mkIf config.services.unifi.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = "/var/lib/unifi";
+            mode = "0750";
+            user = "unifi";
+            group = "unifi";
+          }
+          {
+            directory = "/var/cache/unifi";
+            mode = "0750";
+            user = "unifi";
+            group = "unifi";
+          }
+        ];
+      })
     ]))
   ]);
 
