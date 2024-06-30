@@ -183,6 +183,10 @@
                 index = 0;
                 hostBDF = "44:00.3";
               };
+              et100g0vf3 = {
+                index = 1;
+                hostBDF = "44:00.4";
+              };
             };
           };
         };

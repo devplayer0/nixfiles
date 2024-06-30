@@ -1,6 +1,6 @@
 { lib, pkgs, options, config, systems, ... }:
 let
-  inherit (builtins) attrNames attrValues all hashString toJSON;
+  inherit (builtins) attrNames attrValues all hashString toJSON any;
   inherit (lib)
     groupBy' mapAttrsToList optionalString optional concatMapStringsSep filterAttrs mkOption mkDefault mkIf mkMerge;
   inherit (lib.my) mkOpt' mkBoolOpt';
@@ -98,6 +98,7 @@ let
       };
       networking = {
         bridge = mkOpt' (nullOr str) null "Network bridge to connect to.";
+        macVLAN = mkOpt' (nullOr str) null "Network interface to make MACVLAN interface from.";
       };
     };
   };
@@ -115,13 +116,17 @@ in
           assertion = config.systemd.network.enable;
           message = "Containers currently require systemd-networkd!";
         }
+        {
+          assertion = all (i: i.networking.bridge == null || i.networking.macVLAN == null) (attrValues cfg.instances);
+          message = "Only bridge OR MACVLAN can be set";
+        }
       ];
 
       # TODO: Better security
       my.firewall.trustedInterfaces =
         mapAttrsToList
           (n: _: "ve-${n}")
-          (filterAttrs (_: c: c.networking.bridge == null) cfg.instances);
+          (filterAttrs (_: c: c.networking.bridge == null && c.networking.macVLAN == null) cfg.instances);
 
       systemd = mkMerge (mapAttrsToList (n: c: {
         nspawn."${n}" = {
@@ -154,6 +159,8 @@ in
           };
           networkConfig = if (c.networking.bridge != null) then {
             Bridge = c.networking.bridge;
+          } else if (c.networking.macVLAN != null) then {
+            MACVLAN = "${c.networking.macVLAN}:host0";
           } else {
             VirtualEthernet = true;
           };

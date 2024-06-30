@@ -94,7 +94,7 @@ in
             extraOptions = [ "-A /var/log/smartd/" "--interval=600" ];
           };
           udev.extraRules = ''
-            ACTION=="add", SUBSYSTEM=="net", ENV{ID_NET_DRIVER}=="mlx5_core", ENV{ID_PATH}=="pci-0000:44:00.0", ATTR{device/sriov_numvfs}="3"
+            ACTION=="add", SUBSYSTEM=="net", ENV{ID_NET_DRIVER}=="mlx5_core", ENV{ID_PATH}=="pci-0000:44:00.0", ATTR{device/sriov_numvfs}="4"
           '';
         };
 
@@ -188,6 +188,13 @@ in
                   VLANId=${toString vlans.hi}
                   LinkState=yes
                   MACAddress=52:54:00:ac:15:a9
+
+                  # sfh bridge
+                  [SR-IOV]
+                  VirtualFunction=3
+                  VLANId=${toString vlans.hi}
+                  LinkState=yes
+                  MACAddress=52:54:00:90:34:95
                 '';
               };
               "60-lan-hi" = networkdAssignment "lan-hi" assignments.hi;

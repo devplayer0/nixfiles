@@ -294,7 +294,7 @@ rec {
       };
     };
 
-    roceBootModules = [ "ib_core" "ib_uverbs" "mlx5_core" "mlx5_ib" "8021q" ];
+    roceBootModules = [ "ib_core" "ib_uverbs" "mlx5_core" "mlx5_ib" ];
   };
 
   britway = {

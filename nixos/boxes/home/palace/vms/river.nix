@@ -24,6 +24,7 @@
           initrd = {
             availableKernelModules = [
               "virtio_pci" "ahci" "sr_mod" "virtio_blk"
+              "8021q"
             ] ++ roceBootModules;
             kernelModules = [ "dm-snapshot" ];
             systemd = {

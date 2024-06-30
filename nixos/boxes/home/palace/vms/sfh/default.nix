@@ -1,14 +1,16 @@
 { lib, ... }:
 let
   inherit (lib.my) net;
-  inherit (lib.my.c) pubDomain;
   inherit (lib.my.c.home) domain prefixes vips hiMTU roceBootModules;
 in
 {
+  imports = [ ./containers ];
+
   config.nixos.systems.sfh = {
     system = "x86_64-linux";
     nixpkgs = "mine";
     home-manager = "mine";
+
     assignments = {
       hi = {
         inherit domain;
@@ -27,8 +29,9 @@ in
 
     configuration = { lib, modulesPath, pkgs, config, assignments, allAssignments, ... }:
     let
-      inherit (lib) mkMerge;
+      inherit (lib) mapAttrs mkMerge;
       inherit (lib.my) networkdAssignment;
+      inherit (lib.my.c) networkd;
       inherit (lib.my.c.home) domain;
     in
     {
@@ -92,13 +95,30 @@ in
                 MTUBytes = toString lib.my.c.home.hiMTU;
               };
             };
+            "10-lan-hi-ctrs" = {
+              matchConfig = {
+                Driver = "mlx5_core";
+                PermanentMACAddress = "52:54:00:90:34:95";
+              };
+              linkConfig = {
+                Name = "lan-hi-ctrs";
+                MTUBytes = toString lib.my.c.home.hiMTU;
+              };
+            };
           };
 
-          networks."30-lan-hi" = mkMerge [
-            (networkdAssignment "lan-hi" assignments.hi)
-            # So we don't drop the IP we use to connect to NVMe-oF!
-            { networkConfig.KeepConfiguration = "static"; }
-          ];
+          networks = {
+            "30-lan-hi" = mkMerge [
+              (networkdAssignment "lan-hi" assignments.hi)
+              # So we don't drop the IP we use to connect to NVMe-oF!
+              { networkConfig.KeepConfiguration = "static"; }
+            ];
+            "30-lan-hi-ctrs" = {
+              matchConfig.Name = "lan-hi-ctrs";
+              linkConfig.RequiredForOnline = "no";
+              networkConfig = networkd.noL3;
+            };
+          };
         };
 
         my = {
@@ -117,6 +137,19 @@ in
               address = "192.168.68.80";
             };
           };
+
+          containers.instances =
+          let
+            instances = {
+              unifi = {};
+            };
+          in
+          mkMerge [
+            instances
+            (mapAttrs (n: i: {
+              networking.macVLAN = "lan-hi-ctrs";
+            }) instances)
+          ];
         };
       };
     };
