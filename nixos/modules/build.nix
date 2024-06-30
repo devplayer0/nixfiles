@@ -54,6 +54,7 @@ let
           loader.grub.enable = false;
           initrd = {
             kernelModules = [ "nbd" ];
+            availableKernelModules = [ "igb" "igc" ];
 
             systemd = {
               storePaths = with pkgs; [
@@ -67,8 +68,8 @@ let
                 nbd-client = "${nbd}/bin/nbd-client";
               };
               extraConfig = ''
-                DefaultTimeoutStartSec=10
-                DefaultDeviceTimeoutSec=10
+                DefaultTimeoutStartSec=20
+                DefaultDeviceTimeoutSec=20
               '';
 
               network = {
