@@ -29,6 +29,9 @@
     };
   in
   {
+    # Kernel Same-Page Merging to attempt memory usage reduction
+    hardware.ksm.enable = true;
+
     systemd = {
       network = {
         links = {
