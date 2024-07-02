@@ -219,6 +219,7 @@ in
                     HDMI-A-1 = {
                       transform = "270";
                       position = "0 0";
+                      bg = "${./his-team-player.jpg} fill";
                     };
                     DP-1 = {
                       mode = "2560x1440@170Hz";
