@@ -92,7 +92,7 @@ in
             enable = true;
             inherit font;
             settings = {
-              background_opacity = "0.8";
+              background_opacity = "0.65";
               tab_bar_edge = "top";
               shell_integration = "no-sudo";
             };
