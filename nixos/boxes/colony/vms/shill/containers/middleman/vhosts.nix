@@ -206,7 +206,8 @@ in
           # Currently it seems like single quotes aren't escaped like they should be...
           conf = {
             brand = "/dev/player0 Matrix";
-            showLabsSettings = true;
+            show_labs_settings = true;
+            default_country_code = "IE";
             disable_guests = true;
             default_server_config = {
               "m.homeserver" = {
@@ -214,9 +215,8 @@ in
                 server_name = "nul.ie";
               };
             };
-            roomDirectory.servers = [
+            room_directory.servers = [
               "nul.ie"
-              "netsoc.ie"
               "matrix.org"
             ];
           };
