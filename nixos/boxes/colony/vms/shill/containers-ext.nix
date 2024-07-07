@@ -64,8 +64,8 @@ in
 
         serviceConfig = {
           CPUQuota = "400%";
-          MemoryHigh = "4G";
-          MemoryMax = "4.5G";
+          MemoryHigh = "infinity";
+          MemoryMax = "4G";
         };
 
         wantedBy = [ "machines.target" ];
