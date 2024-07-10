@@ -36,10 +36,6 @@ let
     virtualRouterId = routerId;
     virtualIps = vrrpIPs family;
     trackScripts = [ "${family}Alive" ];
-    extraConfig = ''
-      notify_master "${config.systemd.package}/bin/systemctl start radvd.service" root
-      notify_backup "${config.systemd.package}/bin/systemctl stop radvd.service" root
-    '';
   };
 in
 {
@@ -66,7 +62,12 @@ in
       };
       vrrpInstances = {
         v4 = mkVRRP "v4" 51;
-        v6 = mkVRRP "v6" 52;
+        v6 = (mkVRRP "v6" 52) // {
+          extraConfig = ''
+            notify_master "${config.systemd.package}/bin/systemctl start radvd.service" root
+            notify_backup "${config.systemd.package}/bin/systemctl stop radvd.service" root
+          '';
+        };
       };
       # Actually disable this for now, don't want to fault IPv4 just because IPv6 is broken...
       # extraConfig = ''
