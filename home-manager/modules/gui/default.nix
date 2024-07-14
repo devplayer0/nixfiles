@@ -178,10 +178,11 @@ in
           ];
 
           pointerCursor = {
-            package = pkgs.vanilla-dmz;
-            name = "Vanilla-DMZ";
-            size = 16;
+            package = pkgs.posy-cursors;
+            name = "Posy_Cursor";
+            size = 32;
             gtk.enable = true;
+            x11.enable = true;
           };
         };
 
