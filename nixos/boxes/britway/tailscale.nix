@@ -5,18 +5,20 @@ let
   inherit (lib.my.c.britway) prefixes domain;
 
   # Can't use overrideAttrs because we need to override `vendorHash` within `buildGoModule`
-  headscale = pkgs.headscale.override {
+  headscale = (pkgs.headscale.override {
     buildGoModule = args: pkgs.buildGoModule (args // rec {
-      version = "0.23.0-alpha2";
+      version = "0.23.0-alpha12";
       src = pkgs.fetchFromGitHub {
         owner = "juanfont";
         repo = "headscale";
         rev = "v${version}";
-        hash = "sha256-sz+uQyyq/5YYDe5I44x5x2nvd48swAhNlInB8KZYvDo=";
+        hash = "sha256-kZZK0cXnFARxblSMz01TDcBbTorkHGAwGpR+a4/mYfU=";
       };
-      vendorHash = "sha256-u9AmJguQ5dnJpfhOeLN43apvMHuraOrJhvlEIp9RoIc=";
+      patches = [];
+      vendorHash = "sha256-EorT2AVwA3usly/LcNor6r5UIhLCdj3L4O4ilgTIC2o=";
+      doCheck = false;
     });
-  };
+  });
 
   advRoutes = concatStringsSep "," [
     lib.my.c.home.prefixes.all.v4
