@@ -46,10 +46,12 @@ in
           disable_check_updates = true;
           unix_socket_permission = "0770";
           server_url = "https://ts.${pubDomain}";
-          db_type = "sqlite3";
-          db_path = "/var/lib/headscale/db.sqlite3";
+          database = {
+            type = "sqlite3";
+            sqlite.path = "/var/lib/headscale/db.sqlite3";
+          };
           noise.private_key_path = "/var/lib/headscale/noise_private.key";
-          ip_prefixes = with lib.my.c.tailscale.prefix; [ v4 v6 ];
+          prefixes = with lib.my.c.tailscale.prefix; { inherit v4 v6; };
           dns_config = {
             # Use IPs that will route inside the VPN to prevent interception
             # (e.g. DNS rebinding filtering)
