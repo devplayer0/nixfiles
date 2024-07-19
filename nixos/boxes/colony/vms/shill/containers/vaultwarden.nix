@@ -83,7 +83,7 @@ in
                 DOMAIN = "https://pass.${lib.my.c.pubDomain}";
 
                 ROCKET_ADDRESS = "::";
-                ROCKET_PORT = 80;
+                ROCKET_PORT = 8080;
 
                 SMTP_HOST = "mail.nul.ie";
                 SMTP_FROM = "pass@nul.ie";

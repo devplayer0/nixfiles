@@ -145,7 +145,7 @@ in
 
       "pass.${pubDomain}" =
       let
-        upstream = "http://vaultwarden-ctr.${domain}";
+        upstream = "http://vaultwarden-ctr.${domain}:8080";
       in
       {
         locations = {
