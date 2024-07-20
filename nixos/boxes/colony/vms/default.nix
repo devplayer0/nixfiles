@@ -133,7 +133,7 @@
 
               (vm.lvmDisk "media")
               (vm.lvmDisk "minio")
-              (vm.lvmDisk "nix-atticd")
+              (vm.lvmDisk "nix-cache")
               (vm.lvmDisk "jam")
             ]);
           };

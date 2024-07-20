@@ -94,8 +94,8 @@ in
                 device = "/dev/disk/by-label/minio";
                 fsType = "xfs";
               };
-              "/mnt/atticd" = {
-                device = "/dev/disk/by-label/atticd";
+              "/mnt/nix-cache" = {
+                device = "/dev/disk/by-label/nix-cache";
                 fsType = "ext4";
               };
             };
@@ -206,7 +206,7 @@ in
                   object = {
                     bindMounts = {
                       "/mnt/minio".readOnly = false;
-                      "/mnt/atticd".readOnly = false;
+                      "/mnt/nix-cache".readOnly = false;
                     };
                   };
                   toot = {};

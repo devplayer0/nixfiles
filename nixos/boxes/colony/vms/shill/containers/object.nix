@@ -33,7 +33,7 @@ in
         {
           fileSystems = {
             "/var/lib/harmonia" = {
-              device = "/mnt/atticd/harmonia";
+              device = "/mnt/nix-cache";
               options = [ "bind" ];
             };
           };
