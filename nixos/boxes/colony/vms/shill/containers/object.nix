@@ -31,6 +31,13 @@ in
     {
       config = mkMerge [
         {
+          fileSystems = {
+            "/var/lib/harmonia" = {
+              device = "/mnt/atticd/harmonia";
+              options = [ "bind" ];
+            };
+          };
+
           my = {
             deploy.enable = false;
             server.enable = true;
@@ -48,6 +55,7 @@ in
                   group = config.my.user.config.group;
                 };
                 "object/atticd.env" = {};
+                "nix-cache.key" = {};
                 "object/hedgedoc.env" = {};
                 "object/wastebin.env" = {};
               };
@@ -58,6 +66,7 @@ in
                 9000 9001
                 config.services.sharry.config.bind.port
                 8069
+                5000
                 config.services.hedgedoc.settings.port
                 8088
               ];
@@ -68,14 +77,26 @@ in
             };
           };
 
-          users = with lib.my.c.ids; let inherit (config.services.atticd) user group; in {
-            users."${user}" = {
-              isSystemUser = true;
-              uid = uids.atticd;
-              group = group;
-            };
-            groups."${user}".gid = gids.atticd;
-          };
+          users = with lib.my.c.ids; mkMerge [
+            (let inherit (config.services.atticd) user group; in {
+              users."${user}" = {
+                isSystemUser = true;
+                uid = uids.atticd;
+                group = group;
+              };
+              groups."${user}".gid = gids.atticd;
+            })
+            {
+              users = {
+                harmonia = {
+                  shell = pkgs.bashInteractive;
+                  openssh.authorizedKeys.keyFiles = [
+                    lib.my.c.sshKeyFiles.harmonia
+                  ];
+                };
+              };
+            }
+          ];
 
           systemd = {
             network.networks."80-container-host0" = networkdAssignment "host0" assignments.internal;
@@ -93,7 +114,9 @@ in
                   MINIO_BROWSER_REDIRECT_URL = "https://minio.nul.ie";
                 };
               };
+
               sharry = awaitPostgres;
+
               atticd = mkMerge [
                 awaitPostgres
                 {
@@ -104,6 +127,15 @@ in
                   };
                 }
               ];
+              harmonia = {
+                environment.NIX_REMOTE = "/var/lib/harmonia";
+                preStart = ''
+                  ${config.nix.package}/bin/nix store ping
+                '';
+                serviceConfig = {
+                  StateDirectory = "harmonia";
+                };
+              };
             };
           };
 
@@ -183,7 +215,7 @@ in
             };
 
             atticd = {
-              enable = true;
+              enable = false;
               credentialsFile = config.age.secrets."object/atticd.env".path;
               settings = {
                 listen = "[::]:8069";
@@ -200,6 +232,14 @@ in
                   avg-size = 65536;
                   max-size = 262144;
                 };
+              };
+            };
+
+            harmonia = {
+              enable = true;
+              signKeyPath = config.age.secrets."nix-cache.key".path;
+              settings = {
+                priority = 30;
               };
             };
 

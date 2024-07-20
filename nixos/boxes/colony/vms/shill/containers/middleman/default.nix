@@ -239,6 +239,8 @@ in
               ];
 
               recommendedTlsSettings = true;
+              recommendedBrotliSettings = true;
+              recommendedZstdSettings = true;
               clientMaxBodySize = "0";
               serverTokens = true;
               resolver = {

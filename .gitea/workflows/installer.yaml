@@ -21,14 +21,8 @@ jobs:
             # Make sure we're using sandbox
             sandbox-fallback = false
 
-            extra-substituters = https://nix-cache.nul.ie/main
-            extra-trusted-public-keys = main:mMChkG8LwXrFirVfudqjSHasK1jV31OVElYD3eImYl8=
-      - name: Set up attic
-        id: setup
-        run: |
-          nix run .#nixpkgs.mine.x86_64-linux.attic-client -- \
-            login --set-default colony https://nix-cache.nul.ie "${{ secrets.NIX_CACHE_TOKEN }}"
-          echo "short_rev=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+            extra-substituters = https://nix-cache.nul.ie
+            extra-trusted-public-keys = nix-cache.nul.ie-1:BzH5yMfF4HbzY1C977XzOxoPhEc9Zbu39ftPkUbH+m4=
 
       - name: Build installer ISO
         run: |

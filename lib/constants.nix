@@ -98,10 +98,10 @@ rec {
   nix = {
     cache = rec {
       substituters = [
-        "https://nix-cache.${pubDomain}/main"
+        "https://nix-cache.${pubDomain}"
       ];
       keys = [
-        "main:mMChkG8LwXrFirVfudqjSHasK1jV31OVElYD3eImYl8="
+        "nix-cache.nul.ie-1:BzH5yMfF4HbzY1C977XzOxoPhEc9Zbu39ftPkUbH+m4="
       ];
       conf = ''
         extra-substituters = ${concatStringsSep " " substituters}
@@ -359,6 +359,7 @@ rec {
     deploy = ../.keys/deploy.pub;
     rsyncNet = ../.keys/zh2855.rsync.net.pub;
     mailcowAcme = ../.keys/mailcow-acme.pub;
+    harmonia = ../.keys/harmonia.pub;
   };
   sshHostKeys = {
     mail-vm = ../.keys/mail-vm-host.pub;

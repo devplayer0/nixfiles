@@ -407,10 +407,13 @@ in
         ignore_invalid_headers off;
       '';
 
-      nixCacheableRegex = ''^\/(\S+\.narinfo|nar\/\S+\.nar\.\S+)$'';
+      nixCacheableRegex = ''^\/(\S+\.narinfo|nar\/\S+\.nar.*|serve\/.+)$'';
       nixCacheHeaders = ''
         add_header Cache-Control $nix_cache_control;
         add_header Expires $nix_expires;
+
+        brotli on;
+        brotli_types application/x-nix-archive;
       '';
     in
     {
@@ -452,9 +455,11 @@ in
 
       "nix-cache.${pubDomain}" = {
         locations = {
-          "/".proxyPass = "http://${host}:8069";
+          "/" = {
+            proxyPass = "http://${host}:5000";
+          };
           "~ ${nixCacheableRegex}" = {
-            proxyPass = "http://${host}:8069";
+            proxyPass = "http://${host}:5000";
             extraConfig = nixCacheHeaders;
           };
         };
