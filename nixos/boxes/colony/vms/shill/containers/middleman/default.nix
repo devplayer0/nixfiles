@@ -240,7 +240,8 @@ in
 
               recommendedTlsSettings = true;
               recommendedBrotliSettings = true;
-              recommendedZstdSettings = true;
+              # Uh so nginx is hanging with zstd enabled... maybe let's not for now
+              # recommendedZstdSettings = true;
               clientMaxBodySize = "0";
               serverTokens = true;
               resolver = {
