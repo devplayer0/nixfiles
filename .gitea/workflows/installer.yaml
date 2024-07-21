@@ -28,6 +28,7 @@ jobs:
         id: setup
         run: |
           echo "short_rev=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+          echo "date=$(date +%Y%m%d)" >> "$GITHUB_OUTPUT"
       - name: Build installer ISO
         run: |
           nix build .#nixfiles.config.nixos.systems.installer.configuration.config.my.buildAs.iso
@@ -45,5 +46,5 @@ jobs:
           title: Latest installer
           api_key: '${{ secrets.RELEASE_TOKEN }}'
           files: |
-            jackos-installer-${{ steps.setup.outputs.short_rev }}.iso
-            jackos-installer-netboot-${{ steps.setup.outputs.short_rev }}.tar.zst
+            jackos-installer-${{ steps.setup.outputs.date }}-${{ steps.setup.outputs.short_rev }}.iso
+            jackos-installer-netboot-${{ steps.setup.outputs.date }}-${{ steps.setup.outputs.short_rev }}.tar.zst
