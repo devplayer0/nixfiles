@@ -24,6 +24,10 @@ jobs:
             extra-substituters = https://nix-cache.nul.ie
             extra-trusted-public-keys = nix-cache.nul.ie-1:BzH5yMfF4HbzY1C977XzOxoPhEc9Zbu39ftPkUbH+m4=
 
+      - name: Set up vars
+        id: setup
+        run: |
+          echo "short_rev=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
       - name: Build installer ISO
         run: |
           nix build .#nixfiles.config.nixos.systems.installer.configuration.config.my.buildAs.iso
