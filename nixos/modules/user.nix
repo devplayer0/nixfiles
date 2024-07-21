@@ -82,6 +82,10 @@ in
       # NOTE: As the "outermost" module is still being evaluated in NixOS land, special params (e.g. pkgs) won't be
       # passed to it
       home-manager.users.${user'.name} = mkAliasDefinitions options.my.user.homeConfig;
+
+      systemd.services.nixfiles-mutable.script = ''
+        chown -R ${user'.name} /run/nixfiles
+      '';
     }
     (mkIf (cfg.passwordSecret != null) {
       my = {

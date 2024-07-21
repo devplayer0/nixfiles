@@ -35,7 +35,7 @@ let
       system = null;
 
       # Put the inputs in specialArgs to avoid infinite recursion when modules try to do imports
-      specialArgs = { inherit inputs pkgsFlakes pkgsFlake allAssignments; inherit (cfg) systems; };
+      specialArgs = { inherit self inputs pkgsFlakes pkgsFlake allAssignments; inherit (cfg) systems; };
 
       # `baseModules` informs the manual which modules to document
       baseModules =

@@ -1,4 +1,4 @@
-{ lib, pkgsFlake, pkgs, pkgs', inputs, config, ... }:
+{ lib, pkgsFlake, pkgs, pkgs', self, inputs, config, ... }:
 let
   inherit (lib) mkIf mkDefault mkMerge;
   inherit (lib.my) mkDefault';
@@ -127,6 +127,9 @@ in
         };
       };
 
+      environment.etc = {
+        "nixos/flake.nix".source = "/run/nixfiles/flake.nix";
+      };
       environment.systemPackages = with pkgs; mkMerge [
         [
           bash-completion
@@ -208,6 +211,29 @@ in
           netdata = mkIf config.services.netdata.enable {
             # python.d plugin script does #!/usr/bin/env bash
             path = with pkgs; [ bash ];
+          };
+
+          nixfiles-mutable = {
+            description = "Mutable nixfiles";
+            serviceConfig = {
+              Type = "oneshot";
+              RemainAfterExit = true;
+            };
+
+            path = with pkgs; [ util-linux ];
+            script = ''
+              nixfilesDir="${self}"
+
+              mkdir -p /run/nixfiles{,/.rw,/.work}
+              mount -t overlay overlay -o lowerdir="$nixfilesDir",upperdir=/run/nixfiles/.rw,workdir=/run/nixfiles/.work /run/nixfiles
+              chmod -R u+w /run/nixfiles
+            '';
+            preStop = ''
+              umount /run/nixfiles
+              rm -rf /run/nixfiles
+            '';
+
+            wantedBy = [ "multi-user.target" ];
           };
         };
       };
