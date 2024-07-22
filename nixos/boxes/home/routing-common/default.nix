@@ -1,6 +1,7 @@
 index: { lib, allAssignments, ... }:
 let
   inherit (builtins) elemAt;
+  inherit (lib) concatStringsSep;
   inherit (lib.my) net mkVLAN;
   inherit (lib.my.c) pubDomain;
   inherit (lib.my.c.home) domain vlans prefixes vips routers routersPubV4;
@@ -150,6 +151,28 @@ in
             };
 
             nginx.enable = true;
+
+            tailscale =
+            let
+              advRoutes = concatStringsSep "," [
+                prefixes.all.v4
+                prefixes.all.v6
+              ];
+            in
+            {
+              enable = true;
+              authKeyFile = config.age.secrets."tailscale-auth.key".path;
+              openFirewall = true;
+              interfaceName = "tailscale0";
+              extraUpFlags = [
+                "--operator=${config.my.user.config.name}"
+                "--login-server=https://ts.nul.ie"
+                "--netfilter-mode=off"
+                "--advertise-exit-node"
+                "--advertise-routes=${advRoutes}"
+                "--accept-routes=false"
+              ];
+            };
           };
 
           networking = { inherit domain; };
@@ -281,15 +304,6 @@ in
                         Destination = lib.my.c.colony.prefixes.all.v4;
                         Gateway = allAssignments.estuary.as211024.ipv4.address;
                       }
-
-                      {
-                        Destination = lib.my.c.tailscale.prefix.v4;
-                        Gateway = allAssignments.britway.as211024.ipv4.address;
-                      }
-                      {
-                        Destination = lib.my.c.tailscale.prefix.v6;
-                        Gateway = allAssignments.britway.as211024.ipv6.address;
-                      }
                     ];
                   }
                 ];
@@ -316,6 +330,7 @@ in
             secrets = {
               files = {
                 "l2mesh/as211024.key" = {};
+                "tailscale-auth.key" = {};
               };
             };
 
@@ -325,7 +340,7 @@ in
               };
             };
             firewall = {
-              trustedInterfaces = [ "lan-hi" "lan-lo" ];
+              trustedInterfaces = [ "lan-hi" "lan-lo" "tailscale0" ];
               udp.allowed = [ 5353 ];
               tcp.allowed = [ 5353 ];
               nat = {

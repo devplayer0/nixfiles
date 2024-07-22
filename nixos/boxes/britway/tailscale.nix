@@ -1,6 +1,5 @@
 { lib, pkgs, config, assignments, allAssignments, ... }:
 let
-  inherit (lib) concatStringsSep;
   inherit (lib.my.c) pubDomain;
   inherit (lib.my.c.britway) prefixes domain;
 
@@ -20,10 +19,6 @@ let
     });
   });
 
-  advRoutes = concatStringsSep "," [
-    lib.my.c.home.prefixes.all.v4
-    lib.my.c.home.prefixes.all.v6
-  ];
   pubNameservers = [
     "1.1.1.1"
     "1.0.0.1"
@@ -92,7 +87,6 @@ in
           "--login-server=https://ts.nul.ie"
           "--netfilter-mode=off"
           "--advertise-exit-node"
-          "--advertise-routes=${advRoutes}"
           "--accept-routes=false"
         ];
       };
