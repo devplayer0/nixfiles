@@ -170,8 +170,8 @@ in
               hostname = "${otherName}.${config.networking.domain}";
               server = net.cidr.host (otherIndex + 1) prefixes.hi.v4;
             }}
-            ${elemAt routers 0} IN AAAA ${net.cidr.host 1 prefixes.hi.v6}
-            ${elemAt routers 1} IN AAAA ${net.cidr.host 2 prefixes.hi.v6}
+            ${elemAt routers 0} IN AAAA ${allAssignments."${elemAt routers 0}".as211024.ipv6.address}
+            ${elemAt routers 1} IN AAAA ${allAssignments."${elemAt routers 1}".as211024.ipv6.address}
             boot IN CNAME river-hi.${config.networking.domain}.
 
             @ IN NS ns1
