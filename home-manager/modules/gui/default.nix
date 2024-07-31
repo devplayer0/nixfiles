@@ -62,6 +62,8 @@ in
             neofetch
             cmatrix
             doomsaver
+
+            xournalpp
           ];
         };
 
