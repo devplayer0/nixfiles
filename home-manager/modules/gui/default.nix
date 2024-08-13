@@ -1,4 +1,4 @@
-{ lib, pkgs, config, ... }:
+{ lib, pkgs', pkgs, config, ... }:
 let
   inherit (lib) genAttrs mkIf mkMerge mkForce;
   inherit (lib.my) mkBoolOpt';
@@ -319,7 +319,7 @@ in
 
           chromium = {
             enable = true;
-            package = (pkgs.chromium.override { enableWideVine = true; }).overrideAttrs (old: {
+            package = (pkgs'.unstable.chromium.override { enableWideVine = true; }).overrideAttrs (old: {
               buildCommand = ''
                 ${old.buildCommand}
 

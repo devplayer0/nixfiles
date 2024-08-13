@@ -51,7 +51,7 @@
       ...
     }:
     let
-      inherit (builtins) mapAttrs replaceStrings;
+      inherit (builtins) mapAttrs replaceStrings elem;
       inherit (lib) mapAttrs' filterAttrs nameValuePair recurseIntoAttrs evalModules;
       inherit (lib.flake) flattenTree eachDefaultSystem;
       inherit (lib.my) mkDefaultSystemsPkgs flakePackageOverlay;
@@ -107,6 +107,16 @@
             pkgsLibOverlay
             myPkgsOverlay
           ];
+
+          config = {
+            # RMS forgive me...
+            # Normally this is set modularly, but sometimes we need to use other pkgs
+            allowUnfreePredicate = p: elem (lib.getName p) [
+              "widevine-cdm"
+              "chromium-unwrapped"
+              "chromium"
+            ];
+          };
         }))
         pkgsFlakes;
 
