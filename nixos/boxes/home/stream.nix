@@ -43,6 +43,38 @@
           };
         };
 
+        services = {
+          mjpg-streamer = {
+            enable = true;
+            inputPlugin = "input_uvc.so";
+            outputPlugin = "output_http.so -w @www@ -n -p 5050";
+          };
+          octoprint = {
+            enable = true;
+            host = "::";
+            extraConfig = {
+              plugins = {
+                classicwebcam = {
+                  snapshot = "http://${config.networking.fqdn}:5050/?action=snapshot";
+                  stream = "http://${config.networking.fqdn}:5050/?action=stream";
+                  streamRatio = "4:3";
+                };
+              };
+              serial = {
+                port = "/dev/ttyACM0";
+                baudrate = 115200;
+              };
+              temperature.profiles = [
+                {
+                  bed = 60;
+                  extruder = 215;
+                  name = "PLA";
+                }
+              ];
+            };
+          };
+        };
+
         systemd.network = {
           netdevs = {
             "25-lan" = {

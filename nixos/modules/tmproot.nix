@@ -539,6 +539,7 @@ in
           }
         ];
       })
+      (persistSimpleSvc "octoprint")
     ]))
   ]);
 
