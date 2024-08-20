@@ -2,7 +2,7 @@
 let
   inherit (builtins) mapAttrs toJSON;
   inherit (lib) mkMerge mkDefault genAttrs flatten concatStringsSep;
-  inherit (lib.my.c) pubDomain;
+  inherit (lib.my.c) pubDomain home;
   inherit (lib.my.c.nginx) proxyHeaders;
   inherit (config.networking) domain;
 
@@ -396,6 +396,28 @@ in
         };
         useACMEHost = pubDomain;
       };
+
+      "pront.${pubDomain}" = mkMerge [
+        {
+          locations."/" = mkMerge [
+            {
+              proxyPass = "http://stream-hi.${home.domain}:5000";
+              proxyWebsockets = true;
+              extraConfig = proxyHeaders;
+            }
+            (ssoLoc "generic")
+          ];
+          locations."~* ^/webcam/(.*)" = mkMerge [
+            {
+              proxyPass = "http://stream-hi.${home.domain}:5050/$1$is_args$args";
+              extraConfig = proxyHeaders;
+            }
+            (ssoLoc "generic")
+          ];
+          useACMEHost = pubDomain;
+        }
+        (ssoServer "generic")
+      ];
     };
 
     minio =

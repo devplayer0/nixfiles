@@ -55,8 +55,8 @@
             extraConfig = {
               plugins = {
                 classicwebcam = {
-                  snapshot = "http://${config.networking.fqdn}:5050/?action=snapshot";
-                  stream = "http://${config.networking.fqdn}:5050/?action=stream";
+                  snapshot = "/webcam/?action=snapshot";
+                  stream = "/webcam/?action=stream";
                   streamRatio = "4:3";
                 };
               };
