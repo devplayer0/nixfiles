@@ -154,6 +154,10 @@ in
 
         nix = {
           gc.automatic = false;
+          settings = {
+            experimental-features = [ "recursive-nix" ];
+            system-features = [ "nixos-test" "benchmark" "big-parallel" "kvm" "recursive-nix" ];
+          };
         };
 
         systemd = {
