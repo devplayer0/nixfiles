@@ -17,7 +17,8 @@
     home-manager-stable.inputs.nixpkgs.follows = "nixpkgs-stable";
 
     # Stuff used by the flake for build / deployment
-    ragenix.url = "github:yaxitech/ragenix";
+    # ragenix.url = "github:yaxitech/ragenix";
+    ragenix.url = "github:devplayer0/ragenix/add-rekey-one-flag";
     ragenix.inputs.nixpkgs.follows = "nixpkgs-unstable";
     deploy-rs.url = "github:serokell/deploy-rs";
     deploy-rs.inputs.nixpkgs.follows = "nixpkgs-unstable";
