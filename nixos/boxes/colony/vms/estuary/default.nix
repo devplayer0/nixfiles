@@ -308,6 +308,11 @@ in
                           Destination = lib.my.c.tailscale.prefix.v6;
                           Gateway = allAssignments.colony.internal.ipv6.address;
                         }
+
+                        {
+                          Destination = prefixes.qclk.v4;
+                          Gateway = allAssignments.colony.routing.ipv4.address;
+                        }
                       ] ++
                       (map (pName: [
                         {

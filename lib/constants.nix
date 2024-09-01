@@ -135,6 +135,9 @@ rec {
         v4 = subnet 8 3 all.v4;
         v6 = subnet 4 3 all.v6;
       };
+      qclk = {
+        v4 = subnet 8 4 all.v4;
+      };
 
       cust = {
         v4 = subnet 8 100 all.v4; # single ip for routing only
@@ -168,6 +171,10 @@ rec {
       mail-vm = host 1 prefixes.cust.v4;
       darts-vm = host 2 prefixes.cust.v4;
       jam-ctr = host 3 prefixes.cust.v4;
+    };
+
+    qclk = {
+      wgPort = 51821;
     };
 
     firewallForwards = aa: [
@@ -218,6 +225,12 @@ rec {
       {
         port = 25565;
         dst = aa.simpcraft-oci.internal.ipv4.address;
+        proto = "udp";
+      }
+
+      {
+        port = qclk.wgPort;
+        dst = aa.qclk.internal.ipv4.address;
         proto = "udp";
       }
     ];

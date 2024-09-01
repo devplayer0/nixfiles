@@ -152,6 +152,11 @@ in
                         Destination = lib.my.c.tailscale.prefix.v6;
                         Gateway = allAssignments.waffletail.internal.ipv6.address;
                       }
+
+                      {
+                        Destination = prefixes.qclk.v4;
+                        Gateway = allAssignments.qclk.internal.ipv4.address;
+                      }
                     ];
                   }
                 ];
@@ -211,6 +216,7 @@ in
                   };
                   toot = {};
                   waffletail = {};
+                  qclk = {};
                 };
               in
               mkMerge [

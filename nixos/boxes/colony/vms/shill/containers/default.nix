@@ -8,5 +8,6 @@
     ./object.nix
     ./toot.nix
     ./waffletail.nix
+    ./qclk
   ];
 }

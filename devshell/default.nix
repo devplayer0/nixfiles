@@ -24,6 +24,7 @@ in
     coreutils
     nixVersions.stable
     rage
+    wireguard-tools
     (pkgs.writeShellScriptBin "deploy" ''
       exec ${deploy-rs.deploy-rs}/bin/deploy --skip-checks "$@"
     '')

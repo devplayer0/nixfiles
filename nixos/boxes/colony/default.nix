@@ -264,10 +264,12 @@ in
                       Destination = prefixes.ctrs.v6;
                       Gateway = allAssignments.shill.internal.ipv6.address;
                     }
+
                     {
                       Destination = allAssignments.shill.internal.ipv4.address;
                       Gateway = allAssignments.shill.routing.ipv4.address;
                     }
+
                     {
                       Destination = lib.my.c.tailscale.prefix.v4;
                       Gateway = allAssignments.shill.routing.ipv4.address;
@@ -276,6 +278,11 @@ in
                       Destination = lib.my.c.tailscale.prefix.v6;
                       Gateway = allAssignments.shill.internal.ipv6.address;
                     }
+                    {
+                      Destination = prefixes.qclk.v4;
+                      Gateway = allAssignments.shill.routing.ipv4.address;
+                    }
+
                     {
                       Destination = prefixes.jam.v6;
                       Gateway = allAssignments.shill.internal.ipv6.address;
