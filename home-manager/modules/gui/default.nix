@@ -162,6 +162,19 @@ in
               };
               Install.RequiredBy = [ "sway-session.target" ];
             };
+
+            activate-linux = {
+              Unit = {
+                Description = "Linux activation watermark";
+                After = "graphical-session.target";
+                PartOf = "graphical-session.target";
+              };
+              Service = {
+                Type = "simple";
+                ExecStart = "${pkgs.activate-linux}/bin/activate-linux";
+              };
+              Install.RequiredBy = [ "graphical-session.target" ];
+            };
           };
         };
 
