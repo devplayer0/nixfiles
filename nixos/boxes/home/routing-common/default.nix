@@ -250,7 +250,7 @@ in
                   networkConfig = networkd.noL3;
                   extraConfig = ''
                     [CAKE]
-                    Bandwidth=235M
+                    Bandwidth=490M
                     RTTSec=50ms
                     PriorityQueueingPreset=besteffort
                     # DOCSIS preset
@@ -274,7 +274,7 @@ in
                     extraConfig = ''
                       [CAKE]
                       Parent=root
-                      Bandwidth=24M
+                      Bandwidth=48M
                       RTTSec=50ms
                     '';
                   }
