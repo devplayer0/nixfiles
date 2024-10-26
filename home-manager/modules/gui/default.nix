@@ -39,6 +39,8 @@ in
       {
         home = {
           packages = with pkgs; [
+            xdg-utils
+
             font.package
             (nerdfonts.override {
               fonts = [ "DroidSansMono" "SourceCodePro" ];
