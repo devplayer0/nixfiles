@@ -190,6 +190,10 @@
                 config = {
                   input."1:1:AT_Translated_Set_2_keyboard".xkb_layout = "ie";
                   output.eDP-1.scale = "1";
+                  keybindings = lib.mkOptionDefault {
+                    "XF86MonBrightnessDown" = "exec ${pkgs.brightnessctl}/bin/brightnessctl set 5%-";
+                    "XF86MonBrightnessUp" = "exec ${pkgs.brightnessctl}/bin/brightnessctl set +5%";
+                  };
                 };
               };
 
