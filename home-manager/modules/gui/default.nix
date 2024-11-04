@@ -316,12 +316,13 @@ in
 
           waybar = import ./waybar.nix { inherit lib pkgs config font; };
           rofi = {
+            package = pkgs.rofi-wayland;
             enable = true;
             font = "${font.name} ${toString font.size}";
-            plugins = with pkgs; [
+            plugins = with pkgs; (map (p: p.override { rofi-unwrapped = rofi-wayland-unwrapped; }) [
               rofi-calc
               rofi-emoji
-            ];
+            ]);
             extraConfig = {
               modes = "window,run,ssh,filebrowser,calc,emoji";
               emoji-mode = "copy";
