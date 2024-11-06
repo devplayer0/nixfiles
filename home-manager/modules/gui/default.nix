@@ -99,6 +99,7 @@ in
               background_opacity = "0.65";
               tab_bar_edge = "top";
               shell_integration = "no-sudo";
+              font_features = "${font.name} -liga";
             };
           };
 
