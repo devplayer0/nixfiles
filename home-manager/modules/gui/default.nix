@@ -1,6 +1,6 @@
 { lib, pkgs', pkgs, config, ... }:
 let
-  inherit (lib) genAttrs mkIf mkMerge mkForce;
+  inherit (lib) genAttrs mkIf mkMerge mkForce mapAttrs mkOptionDefault;
   inherit (lib.my) mkBoolOpt';
 
   cfg = config.my.gui;
@@ -187,6 +187,7 @@ in
             wl-clipboard
             wev
             wdisplays
+            swaysome
 
             pavucontrol
             libsecret
@@ -209,9 +210,36 @@ in
         xsession.preferStatusNotifierItems = true;
         wayland = {
           windowManager = {
-            sway = {
+            sway =
+            let
+              cfg = config.wayland.windowManager.sway.config;
+              mod = cfg.modifier;
+
+              renameWs = pkgs.writeShellScript "sway-rename-ws" ''
+                focused_ws="$(swaymsg -t get_workspaces | jq ".[] | select(.focused)")"
+                focused_num="$(jq -r ".num" <<< "$focused_ws")"
+                focused_name="$(jq -r ".name" <<< "$focused_ws")"
+                placeholder="$(sed -E 's/[0-9]+: //' <<< "$focused_name")"
+
+                name="$(rofi -dmenu -p "rename ws $focused_num" -theme+entry+placeholder "\"$placeholder\"")"
+                if [ -n "$name" ]; then
+                  swaymsg rename workspace "$focused_name" to "$focused_num: $name"
+                fi
+              '';
+              clearWsName = pkgs.writeShellScript "sway-clear-ws-name" ''
+                focused_ws="$(swaymsg -t get_workspaces | jq ".[] | select(.focused)")"
+                focused_num="$(jq -r ".num" <<< "$focused_ws")"
+                focused_name="$(jq -r ".name" <<< "$focused_ws")"
+
+                swaymsg rename workspace "$focused_name" to "$focused_num"
+              '';
+            in
+            {
               enable = true;
               xwayland = true;
+              extraConfigEarly = ''
+                set $mod ${mod}
+              '';
               config = {
                 input = {
                   "type:touchpad" = {
@@ -226,31 +254,95 @@ in
 
                 modifier = "Mod4";
                 terminal = "kitty";
-                keybindings =
-                  let
-                    cfg = config.wayland.windowManager.sway.config;
-                    mod = cfg.modifier;
-                  in
-                  lib.mkOptionDefault {
-                    "${mod}+d" = null;
-                    "${mod}+l" = "exec ${doomsaver}/bin/doomsaver";
-                    "${mod}+x" = "exec ${cfg.menu}";
-                    "${mod}+Shift+x" = "exec rofi -show drun";
-                    "${mod}+q" = "kill";
-                    "${mod}+Shift+q" = "exec swaynag -t warning -m 'bruh you really wanna kill sway?' -b 'ye' 'systemctl --user stop graphical-session.target && swaymsg exit'";
-                    "${mod}+Shift+d" = ''exec grim - | swappy -f -'';
-                    "${mod}+Shift+s" = ''exec grim -g "$(slurp)" - | swappy -f -'';
-                    "${mod}+Shift+e" = "exec rofi -show emoji";
-                    # Config for this doesn't seem to work :/
-                    "${mod}+c" = ''exec rofi -show calc -calc-command "echo -n '{result}' | ${pkgs.wl-clipboard}/bin/wl-copy"'';
+                keybindings = mapAttrs (k: mkOptionDefault) {
+                  "${mod}+Left" = "focus left";
+                  "${mod}+Down" = "focus down";
+                  "${mod}+Up" = "focus up";
+                  "${mod}+Right" = "focus right";
 
-                    "XF86AudioRaiseVolume" = "exec ${pkgs.pamixer}/bin/pamixer -i 5";
-                    "XF86AudioLowerVolume" = "exec ${pkgs.pamixer}/bin/pamixer -d 5";
-                    "XF86AudioPlay" = "exec ${pkgs.playerctl}/bin/playerctl play";
-                    "XF86AudioPause" = "exec ${pkgs.playerctl}/bin/playerctl pause";
-                    "XF86AudioNext" = "exec ${pkgs.playerctl}/bin/playerctl next";
-                    "XF86AudioPrev" = "exec ${pkgs.playerctl}/bin/playerctl previous";
-                  };
+                  "${mod}+Shift+Left" = "move left";
+                  "${mod}+Shift+Down" = "move down";
+                  "${mod}+Shift+Up" = "move up";
+                  "${mod}+Shift+Right" = "move right";
+
+                  "${mod}+b" = "splith";
+                  "${mod}+v" = "splitv";
+                  "${mod}+f" = "fullscreen toggle";
+                  "${mod}+a" = "focus parent";
+
+                  "${mod}+s" = "layout stacking";
+                  "${mod}+w" = "layout tabbed";
+                  "${mod}+e" = "layout toggle split";
+
+                  "${mod}+Shift+space" = "floating toggle";
+                  "${mod}+space" = "focus mode_toggle";
+
+                  "${mod}+1" = "workspace number 1";
+                  "${mod}+2" = "workspace number 2";
+                  "${mod}+3" = "workspace number 3";
+                  "${mod}+4" = "workspace number 4";
+                  "${mod}+5" = "workspace number 5";
+                  "${mod}+6" = "workspace number 6";
+                  "${mod}+7" = "workspace number 7";
+                  "${mod}+8" = "workspace number 8";
+                  "${mod}+9" = "workspace number 9";
+                  "${mod}+0" = "workspace number 10";
+
+                  "${mod}+Shift+1" =
+                    "move container to workspace number 1";
+                  "${mod}+Shift+2" =
+                    "move container to workspace number 2";
+                  "${mod}+Shift+3" =
+                    "move container to workspace number 3";
+                  "${mod}+Shift+4" =
+                    "move container to workspace number 4";
+                  "${mod}+Shift+5" =
+                    "move container to workspace number 5";
+                  "${mod}+Shift+6" =
+                    "move container to workspace number 6";
+                  "${mod}+Shift+7" =
+                    "move container to workspace number 7";
+                  "${mod}+Shift+8" =
+                    "move container to workspace number 8";
+                  "${mod}+Shift+9" =
+                    "move container to workspace number 9";
+                  "${mod}+Shift+0" =
+                    "move container to workspace number 10";
+
+                  "${mod}+Shift+minus" = "move scratchpad";
+                  "${mod}+minus" = "scratchpad show";
+
+                  "${mod}+Return" = "exec ${cfg.terminal}";
+                  "${mod}+r" = "mode resize";
+                  "${mod}+d" = null;
+                  "${mod}+l" = "exec ${doomsaver}/bin/doomsaver";
+                  "${mod}+q" = "kill";
+                  "${mod}+Shift+c" = "reload";
+                  "${mod}+Shift+q" = "exec swaynag -t warning -m 'bruh you really wanna kill sway?' -b 'ye' 'systemctl --user stop graphical-session.target && swaymsg exit'";
+
+                  # rofi
+                  "${mod}+x" = "exec ${cfg.menu}";
+                  "${mod}+Shift+x" = "exec rofi -show drun";
+                  "${mod}+Shift+e" = "exec rofi -show emoji";
+                  # Config for this doesn't seem to work :/
+                  "${mod}+c" = ''exec rofi -show calc -calc-command "echo -n '{result}' | ${pkgs.wl-clipboard}/bin/wl-copy"'';
+                  "${mod}+Shift+r" = "exec ${renameWs}";
+                  "${mod}+Shift+n" = "exec ${clearWsName}";
+
+                  # Screenshots
+                  "${mod}+Shift+d" = ''exec grim - | swappy -f -'';
+                  "${mod}+Shift+s" = ''exec grim -g "$(slurp)" - | swappy -f -'';
+
+                  "XF86MonBrightnessDown" = "exec ${pkgs.brightnessctl}/bin/brightnessctl set 5%-";
+                  "XF86MonBrightnessUp" = "exec ${pkgs.brightnessctl}/bin/brightnessctl set +5%";
+
+                  "XF86AudioRaiseVolume" = "exec ${pkgs.pamixer}/bin/pamixer -i 5";
+                  "XF86AudioLowerVolume" = "exec ${pkgs.pamixer}/bin/pamixer -d 5";
+                  "XF86AudioPlay" = "exec ${pkgs.playerctl}/bin/playerctl play";
+                  "XF86AudioPause" = "exec ${pkgs.playerctl}/bin/playerctl pause";
+                  "XF86AudioNext" = "exec ${pkgs.playerctl}/bin/playerctl next";
+                  "XF86AudioPrev" = "exec ${pkgs.playerctl}/bin/playerctl previous";
+                };
                 keycodebindings = {
                   # keycode for XF86AudioPlayPause (no sym for some reason)
                   "172" = "exec ${pkgs.playerctl}/bin/playerctl play-pause";
@@ -259,6 +351,9 @@ in
                 menu = "rofi -show run";
                 bars = mkForce [ ];
               };
+              extraConfig = ''
+                include ${./swaysome.conf}
+              '';
 
               swaynag = {
                 enable = true;
