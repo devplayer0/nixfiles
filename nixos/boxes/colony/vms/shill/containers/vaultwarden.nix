@@ -99,6 +99,8 @@ in
             };
 
             borgbackup.jobs.vaultwarden = {
+              readWritePaths = [ "/var/lib/borgbackup" "/var/cache/borgbackup" ];
+
               paths = [ vwData ];
               repo = "zh2855@zh2855.rsync.net:borg/vaultwarden2";
               doInit = true;

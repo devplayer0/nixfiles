@@ -540,6 +540,20 @@ in
         ];
       })
       (persistSimpleSvc "octoprint")
+      (mkIf (config.services.borgbackup.jobs != { }) {
+        my.tmproot.persistence.config.directories = [
+          "/var/lib/borgbackup"
+          "/var/cache/borgbackup"
+        ];
+
+        services.borgbackup.package = pkgs.borgbackup.overrideAttrs (o: {
+          makeWrapperArgs = o.makeWrapperArgs ++ [
+            "--set-default BORG_BASE_DIR /var/lib/borgbackup"
+            "--set-default BORG_CONFIG_DIR /var/lib/borgbackup/config"
+            "--set-default BORG_CACHE_DIR /var/cache/borgbackup"
+          ];
+        });
+      })
     ]))
   ]);
 

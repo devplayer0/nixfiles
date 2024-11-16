@@ -123,6 +123,7 @@ in
           within = "12H";
           hourly = 48;
         };
+        readWritePaths = [ "/var/lib/borgbackup" "/var/cache/borgbackup" ];
 
         # Avoid Minecraft poking the files while we back up
         preHook = rconCommand "save-off";
