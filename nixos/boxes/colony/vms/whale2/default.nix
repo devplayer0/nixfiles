@@ -52,6 +52,7 @@ in
       valheim-oci = 2;
       simpcraft-oci = 3;
       simpcraft-staging-oci = 4;
+      enshrouded-oci = 5;
     };
 
     configuration = { lib, pkgs, modulesPath, config, assignments, allAssignments, ... }:
@@ -66,6 +67,7 @@ in
 
           ./valheim.nix
           ./minecraft
+          # ./enshrouded.nix
         ];
 
         config = mkMerge [

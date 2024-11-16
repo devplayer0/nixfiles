@@ -229,6 +229,17 @@ rec {
       }
 
       {
+        port = 15636;
+        dst = aa.enshrouded-oci.internal.ipv4.address;
+        proto = "udp";
+      }
+      {
+        port = 15637;
+        dst = aa.enshrouded-oci.internal.ipv4.address;
+        proto = "udp";
+      }
+
+      {
         port = qclk.wgPort;
         dst = aa.qclk.internal.ipv4.address;
         proto = "udp";

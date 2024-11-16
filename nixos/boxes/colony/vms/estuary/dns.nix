@@ -153,6 +153,7 @@ in
             simpcraft IN AAAA ${allAssignments.simpcraft-oci.internal.ipv6.address}
             simpcraft-staging IN A ${assignments.internal.ipv4.address}
             simpcraft-staging IN AAAA ${allAssignments.simpcraft-staging-oci.internal.ipv6.address}
+            enshrouded IN A ${assignments.internal.ipv4.address}
 
             mail-vm IN A ${net.cidr.host 0 prefixes.mail.v4}
             mail-vm IN AAAA ${net.cidr.host 1 prefixes.mail.v6}
