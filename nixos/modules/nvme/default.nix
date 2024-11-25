@@ -5,7 +5,15 @@ let
 
   cfg = config.my.nvme;
   nvme-cli = pkgs.nvme-cli.override {
-    libnvme = pkgs.libnvme.overrideAttrs (o: {
+    libnvme = pkgs.libnvme.overrideAttrs (o: rec {
+      # TODO: Remove when 1.11.1 releases (see https://github.com/linux-nvme/libnvme/pull/914)
+      version = "1.11.1";
+      src = pkgs.fetchFromGitHub {
+        owner = "linux-nvme";
+        repo = "libnvme";
+        rev = "v${version}";
+        hash = "sha256-CEGr7PDOVRi210XvICH8iLYDKn8S9bGruBO4tycvsT8=";
+      };
       patches = (if (o ? patches) then o.patches else [ ]) ++ [ ./libnvme-hostconf.patch ];
     });
   };
