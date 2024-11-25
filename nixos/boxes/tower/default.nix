@@ -14,7 +14,7 @@
           cpu = {
             intel.updateMicrocode = true;
           };
-          opengl.extraPackages = with pkgs; [
+          graphics.extraPackages = with pkgs; [
             intel-media-driver
           ];
           bluetooth.enable = true;
@@ -177,7 +177,7 @@
               programs = {
                 fish = {
                   shellAbbrs = {
-                    tsup = "doas tailscale up --login-server=https://ts.nul.ie --accept-routes";
+                    tsup = "doas tailscale up --login-server=https://hs.nul.ie --accept-routes";
                   };
                 };
               };

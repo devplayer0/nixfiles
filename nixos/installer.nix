@@ -61,8 +61,8 @@
           };
 
           networking = {
-            # Will be set dynamically
-            hostName = "";
+            # Will be set dynamically, but need something to satisfy `/etc/os-release` stuff
+            hostName = "installer";
             useNetworkd = false;
           };
 

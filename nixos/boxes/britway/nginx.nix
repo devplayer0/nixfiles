@@ -80,7 +80,7 @@ in
               };
             };
 
-            "ts.${pubDomain}" = {
+            "hs.${pubDomain}" = {
               locations."/" = {
                 proxyPass = "http://localhost:${toString config.services.headscale.port}";
                 proxyWebsockets = true;

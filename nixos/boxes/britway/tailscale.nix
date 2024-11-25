@@ -4,7 +4,7 @@ let
   inherit (lib.my.c.britway) prefixes domain;
 
   # Can't use overrideAttrs because we need to override `vendorHash` within `buildGoModule`
-  headscale = (pkgs.headscale.override {
+  headscale' = (pkgs.headscale.override {
     buildGoModule = args: pkgs.buildGoModule (args // rec {
       version = "0.23.0-alpha12";
       src = pkgs.fetchFromGitHub {
@@ -36,21 +36,20 @@ in
     services = {
       headscale = {
         enable = true;
-        package = headscale;
         settings = {
           disable_check_updates = true;
           unix_socket_permission = "0770";
-          server_url = "https://ts.${pubDomain}";
+          server_url = "https://hs.${pubDomain}";
           database = {
             type = "sqlite3";
             sqlite.path = "/var/lib/headscale/db.sqlite3";
           };
           noise.private_key_path = "/var/lib/headscale/noise_private.key";
           prefixes = with lib.my.c.tailscale.prefix; { inherit v4 v6; };
-          dns_config = {
+          dns = {
             # Use IPs that will route inside the VPN to prevent interception
             # (e.g. DNS rebinding filtering)
-            restricted_nameservers = {
+            nameservers.split = {
               "${domain}" = pubNameservers;
               "${lib.my.c.colony.domain}" = with allAssignments.estuary.base; [
                 ipv4.address ipv6.address
@@ -64,7 +63,6 @@ in
             };
             magic_dns = true;
             base_domain = "ts.${pubDomain}";
-            override_local_dns = false;
           };
           oidc = {
             only_start_if_oidc_is_available = true;
@@ -84,7 +82,7 @@ in
         interfaceName = "tailscale0";
         extraUpFlags = [
           "--operator=${config.my.user.config.name}"
-          "--login-server=https://ts.nul.ie"
+          "--login-server=https://hs.nul.ie"
           "--netfilter-mode=off"
           "--advertise-exit-node"
           "--accept-routes=false"

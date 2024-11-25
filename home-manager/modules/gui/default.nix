@@ -417,8 +417,9 @@ in
             font = "${font.name} ${toString font.size}";
             plugins = with pkgs; (map (p: p.override { rofi-unwrapped = rofi-wayland-unwrapped; }) [
               rofi-calc
-              rofi-emoji
-            ]);
+            ]) ++ [
+              rofi-emoji-wayland
+            ];
             extraConfig = {
               modes = "window,run,ssh,filebrowser,calc,emoji";
               emoji-mode = "copy";

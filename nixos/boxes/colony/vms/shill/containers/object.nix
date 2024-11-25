@@ -216,7 +216,7 @@ in
 
             atticd = {
               enable = false;
-              credentialsFile = config.age.secrets."object/atticd.env".path;
+              environmentFile = config.age.secrets."object/atticd.env".path;
               settings = {
                 listen = "[::]:8069";
                 allowed-hosts = [ "nix-cache.${pubDomain}" ];

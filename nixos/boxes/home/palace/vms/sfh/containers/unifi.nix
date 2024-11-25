@@ -56,6 +56,7 @@ in
             enable = true;
             openFirewall = true;
             unifiPackage = pkgs.unifi8;
+            mongodbPackage = pkgs.mongodb-6_0;
           };
         };
       };

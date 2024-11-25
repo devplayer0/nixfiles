@@ -50,11 +50,6 @@ in
                   group = "matrix-synapse";
                 };
 
-                "chatterbox/syncv3.env" = {
-                  owner = "matrix-syncv3";
-                  group = "matrix-syncv3";
-                };
-
                 "chatterbox/mautrix-whatsapp.env" = {
                   owner = "mautrix-whatsapp";
                   group = "mautrix-whatsapp";
@@ -80,31 +75,20 @@ in
               matrix-synapse.extraGroups = [
                 "mautrix-whatsapp"
               ];
-              matrix-syncv3 = {
-                isSystemUser = true;
-                uid = uids.matrix-syncv3;
-                group = "matrix-syncv3";
-              };
             };
-            groups = {
-              matrix-syncv3.gid = gids.matrix-syncv3;
-            };
+            groups = { };
           };
 
           systemd = {
             network.networks."80-container-host0" = networkdAssignment "host0" assignments.internal;
-            services = {
-              matrix-sliding-sync.serviceConfig = {
-                # Needs to be able to read its secrets
-                DynamicUser = mkForce false;
-                User = "matrix-syncv3";
-                Group = "matrix-syncv3";
-              };
-            } // (genAttrs [ "mautrix-whatsapp" "mautrix-meta-messenger" "mautrix-meta-instagram" ] (_: {
+            services = { } // (genAttrs [ "mautrix-whatsapp" "mautrix-meta-messenger" "mautrix-meta-instagram" ] (_: {
               # ffmpeg needed to convert GIFs to video
               path = with pkgs; [ ffmpeg ];
             }));
           };
+
+          # TODO/FIXME: https://github.com/NixOS/nixpkgs/issues/336052
+          nixpkgs.config.permittedInsecurePackages = [ "olm-3.2.16" ];
 
           services = {
             netdata.enable = true;
@@ -193,19 +177,9 @@ in
                 app_service_config_files = [
                   "/var/lib/heisenbridge/registration.yml"
                   config.age.secrets."chatterbox/doublepuppet.yaml".path
-                  "/var/lib/mautrix-whatsapp/whatsapp-registration.yaml"
                 ];
               };
 
-            };
-            matrix-sliding-sync = {
-              enable = true;
-              createDatabase = false;
-              environmentFile = config.age.secrets."chatterbox/syncv3.env".path;
-              settings = {
-                SYNCV3_BINDADDR = "[::]:8009";
-                SYNCV3_SERVER = "http://localhost:8008";
-              };
             };
 
             heisenbridge = {
@@ -285,10 +259,12 @@ in
                       avatar = "mxc://maunium.net/ygtkteZsXnGJLJHRchUwYWak";
                     };
                   };
-                  meta.mode = "messenger";
+                  network = {
+                    mode = "messenger";
+                    displayname_template = ''{{or .DisplayName .Username "Unknown user"}} (FBM)'';
+                  };
                   bridge = {
                     username_template = "fbm2_{{.}}";
-                    displayname_template = ''{{or .DisplayName .Username "Unknown user"}} (FBM)'';
                     personal_filtering_spaces = true;
                     delivery_receipts = true;
                     management_room_text.welcome = "Hello, I'm a Messenger bridge bot.";
@@ -331,10 +307,12 @@ in
                       avatar = "mxc://maunium.net/JxjlbZUlCPULEeHZSwleUXQv";
                     };
                   };
-                  meta.mode = "instagram";
+                  network = {
+                    mode = "instagram";
+                    displayname_template = ''{{or .DisplayName .Username "Unknown user"}} (IG)'';
+                  };
                   bridge = {
                     username_template = "ig_{{.}}";
-                    displayname_template = ''{{or .DisplayName .Username "Unknown user"}} (IG)'';
                     personal_filtering_spaces = true;
                     delivery_receipts = true;
                     management_room_text.welcome = "Hello, I'm an Instagram bridge bot.";

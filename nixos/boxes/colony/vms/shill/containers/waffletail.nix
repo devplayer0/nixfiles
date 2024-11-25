@@ -86,7 +86,7 @@ in
             interfaceName = "tailscale0";
             extraUpFlags = [
               "--operator=${config.my.user.config.name}"
-              "--login-server=https://ts.nul.ie"
+              "--login-server=https://hs.nul.ie"
               "--netfilter-mode=off"
               "--advertise-exit-node"
               "--advertise-routes=${advRoutes}"

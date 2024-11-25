@@ -7,13 +7,13 @@
     devshell.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
     nixpkgs-unstable.url = "nixpkgs/nixos-unstable";
-    nixpkgs-stable.url = "nixpkgs/nixos-23.11";
+    nixpkgs-stable.url = "nixpkgs/nixos-24.05";
     nixpkgs-mine.url = "github:devplayer0/nixpkgs/devplayer0";
     nixpkgs-mine-stable.url = "github:devplayer0/nixpkgs/devplayer0-stable";
 
     home-manager-unstable.url = "home-manager";
     home-manager-unstable.inputs.nixpkgs.follows = "nixpkgs-unstable";
-    home-manager-stable.url = "home-manager/release-23.11";
+    home-manager-stable.url = "home-manager/release-24.05";
     home-manager-stable.inputs.nixpkgs.follows = "nixpkgs-stable";
 
     # Stuff used by the flake for build / deployment
@@ -35,9 +35,6 @@
     sharry.inputs.nixpkgs.follows = "nixpkgs-unstable";
     borgthin.url = "github:devplayer0/borg";
     borgthin.inputs.nixpkgs.follows = "nixpkgs-mine";
-    attic.url = "github:zhaofengli/attic";
-    attic.inputs.nixpkgs.follows = "nixpkgs-unstable";
-    attic.inputs.nixpkgs-stable.follows = "nixpkgs-stable";
   };
 
   outputs =
@@ -96,7 +93,6 @@
             inputs.ragenix.overlays.default
             inputs.deploy-rs.overlay
             (flakePackageOverlay inputs.home-manager-unstable system)
-            inputs.attic.overlays.default
           ];
         }))
         pkgsFlakes;

@@ -12,7 +12,6 @@ in
     inputs.impermanence.nixosModule
     inputs.ragenix.nixosModules.age
     inputs.sharry.nixosModules.default
-    inputs.attic.nixosModules.atticd
   ];
 
   config = mkMerge [
