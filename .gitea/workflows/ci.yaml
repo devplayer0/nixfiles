@@ -32,9 +32,9 @@ jobs:
           HARMONIA_SSH_KEY: ${{ secrets.HARMONIA_SSH_KEY }}
         run: |
           nix eval --json --apply "builtins.attrNames" .#ci.x86_64-linux | jq -cr '.[]' | while read job; do
-            echo "Building $job"
+            echo "Building CI job $job"
             path="$(nix build --no-link .#ci.x86_64-linux."$job" --json | jq -r .[0].outputs.out)"
-            echo "Caching $job"
+            echo "Caching CI job $job"
             ci/push-to-cache.sh "$path"
           done
 
