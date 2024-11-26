@@ -80,7 +80,7 @@ in
           alacritty = {
             enable = true;
             settings = {
-              import = [ ./alacritty-xterm.toml ];
+              general.import = [ ./alacritty-xterm.toml ];
 
               font = {
                 size = font.size;
