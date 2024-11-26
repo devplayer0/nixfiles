@@ -5,10 +5,19 @@ let
 
   cfg = config.my.netboot;
 
+  ipxe = pkgs.ipxe.overrideAttrs (o: rec {
+    version = "1.21.1-unstable-2024-06-27";
+    src = pkgs.fetchFromGitHub {
+      owner = "ipxe";
+      repo = "ipxe";
+      rev = "b66e27d9b29a172a097c737ab4d378d60fe01b05";
+      hash = "sha256-TKZ4WjNV2oZIYNefch7E7m1JpeoC/d7O1kofoNv8G40=";
+    };
+  });
   tftpRoot = pkgs.linkFarm "tftp-root" [
     {
       name = "ipxe-x86_64.efi";
-      path = "${pkgs.ipxe}/ipxe.efi";
+      path = "${ipxe}/ipxe.efi";
     }
   ];
   menuFile = pkgs.runCommand "menu.ipxe" {
