@@ -25,15 +25,19 @@ jobs:
             extra-trusted-public-keys = nix-cache.nul.ie-1:BzH5yMfF4HbzY1C977XzOxoPhEc9Zbu39ftPkUbH+m4=
 
       - name: Check flake
-        run: nix flake check
-      - name: Build the world
+        run: nix flake check --no-build
+      - name: Build (and cache) the world
         id: build
-        run: |
-          path=$(nix build --no-link .#ci.x86_64-linux --json | jq -r .[0].outputs.out)
-          echo "path=$path" >> "$GITHUB_OUTPUT"
-
-      - name: Push to cache
         env:
           HARMONIA_SSH_KEY: ${{ secrets.HARMONIA_SSH_KEY }}
         run: |
-          ci/push-to-cache.sh "${{ steps.build.outputs.path }}"
+          nix eval --json --apply "builtins.attrNames" .#ci.x86_64-linux | jq -cr '.[]' | while read job; do
+            echo "Building $job"
+            path="$(nix build --no-link .#ci.x86_64-linux."$job" --json | jq -r .[0].outputs.out)"
+            echo "Caching $job"
+            ci/push-to-cache.sh "$path"
+          done
+
+          echo "Building and caching CI derivation"
+          path="$(nix build --no-link .#ciDrv.x86_64-linux --json | jq -r .[0].outputs.out)"
+          UPDATE_PROFILE=1 ci/push-to-cache.sh "$path"

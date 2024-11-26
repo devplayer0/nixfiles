@@ -22,8 +22,10 @@ path="$1"
 echo "Pushing $path to cache..."
 nix copy --no-check-sigs --to "$STORE_URI" "$path"
 
-echo "Updating profile..."
-remote_cmd nix-env -p "$REMOTE_STORE"/nix/var/nix/profiles/nixfiles --set "$path"
+if [ -n "$UPDATE_PROFILE" ]; then
+  echo "Updating profile..."
+  remote_cmd nix-env -p "$REMOTE_STORE"/nix/var/nix/profiles/nixfiles --set "$path"
 
-echo "Collecting garbage..."
-remote_cmd nix-collect-garbage --delete-older-than 30d
+  echo "Collecting garbage..."
+  remote_cmd nix-collect-garbage --delete-older-than 60d
+fi

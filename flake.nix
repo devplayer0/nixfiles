@@ -204,8 +204,9 @@
         systems' = mapAttrs' (n: v: nameValuePair "system-${n}" v) systems;
         packages' = mapAttrs' (n: v: nameValuePair "package-${n}" v) packages;
       in
-        pkgs.linkFarm "ci" (homes' // systems' // packages' // {
+        homes' // systems' // packages' // {
           inherit shell;
-        });
+        };
+      ciDrv = pkgs.linkFarm "ci" ci;
     }));
 }
