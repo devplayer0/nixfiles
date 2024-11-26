@@ -33,11 +33,12 @@ jobs:
         run: |
           nix eval --json --apply "builtins.attrNames" .#ci.x86_64-linux | jq -cr '.[]' | while read job; do
             echo "Building CI job $job"
-            path="$(nix build --no-link .#ci.x86_64-linux."$job" --json | jq -r .[0].outputs.out)"
+            nix build --no-link .#ci.x86_64-linux."$job"
+
             echo "Caching CI job $job"
-            ci/push-to-cache.sh "$path"
+            ci/push-to-cache.sh "$(nix eval --raw .#ci.x86_64-linux."$job")"
           done
 
           echo "Building and caching CI derivation"
-          path="$(nix build --no-link .#ciDrv.x86_64-linux --json | jq -r .[0].outputs.out)"
-          UPDATE_PROFILE=1 ci/push-to-cache.sh "$path"
+          nix build --no-link .#ciDrv.x86_64-linux
+          UPDATE_PROFILE=1 ci/push-to-cache.sh "$(nix eval --raw .#ciDrv.x86_64-linux)"
