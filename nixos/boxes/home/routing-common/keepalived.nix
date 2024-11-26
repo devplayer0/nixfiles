@@ -61,12 +61,7 @@ in
         v6Alive = pingScriptFor "v6" [ "2606:4700:4700::1111" "2001:4860:4860::8888" "2600::" ];
       };
       vrrpInstances = {
-        v4 = mkVRRP "v4" 51 // {
-          extraConfig = ''
-            notify_master "${config.systemd.package}/bin/systemctl start tailscaled.service" root
-            notify_backup "${config.systemd.package}/bin/systemctl stop tailscaled.service" root
-          '';
-        };
+        v4 = mkVRRP "v4" 51;
         v6 = (mkVRRP "v6" 52) // {
           extraConfig = ''
             notify_master "${config.systemd.package}/bin/systemctl start radvd.service" root
