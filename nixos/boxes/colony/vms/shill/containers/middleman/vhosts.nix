@@ -35,7 +35,6 @@ let
       # For clients
       (mkWellKnown "matrix/client" (toJSON {
         "m.homeserver".base_url = "https://matrix.nul.ie";
-        "org.matrix.msc3575.proxy".url = "https://matrix-syncv3.nul.ie";
       }))
     ];
   };
@@ -180,10 +179,6 @@ in
           }
           wellKnown
         ];
-        useACMEHost = pubDomain;
-      };
-      "matrix-syncv3.${pubDomain}" = {
-        locations."/".proxyPass = "http://chatterbox-ctr.${domain}:8009";
         useACMEHost = pubDomain;
       };
 
