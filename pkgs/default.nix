@@ -8,7 +8,6 @@ in
   vfio-pci-bind = callPackage ./vfio-pci-bind.nix { };
   librespeed-go = callPackage ./librespeed-go.nix { };
   # modrinth-app = callPackage ./modrinth-app { };
-  glfw-minecraft = callPackage ./glfw-minecraft { };
   chocolate-doom2xx = callPackage ./chocolate-doom2xx { };
   windowtolayer = callPackage ./windowtolayer.nix { };
   swaylock-plugin = callPackage ./swaylock-plugin.nix { };
