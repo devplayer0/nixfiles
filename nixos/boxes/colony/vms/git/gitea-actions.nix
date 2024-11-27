@@ -35,6 +35,11 @@ in
           ];
           url = "https://git.${pubDomain}";
           tokenFile = config.age.secrets."gitea/actions-runner.env".path;
+          settings = {
+            runner = {
+              timeout = "8h";
+            };
+          };
         };
       };
     };
