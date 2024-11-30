@@ -12,7 +12,7 @@ in
 
   config = mkIf cfg.enable {
     hardware = {
-      opengl.enable = mkDefault true;
+      graphics.enable = mkDefault true;
     };
 
     systemd = {

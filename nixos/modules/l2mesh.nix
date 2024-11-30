@@ -44,10 +44,8 @@ let
       toString (mesh.baseMTU - overhead);
 
       bridgeFDBs = mapAttrsToList (n: peer: {
-        bridgeFDBConfig = {
-          MACAddress = "00:00:00:00:00:00";
-          Destination = peer.addr;
-        };
+        MACAddress = "00:00:00:00:00:00";
+        Destination = peer.addr;
       }) otherPeers;
     };
   };

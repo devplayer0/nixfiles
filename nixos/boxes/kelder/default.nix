@@ -121,8 +121,7 @@ in
 
             samba = {
               enable = true;
-              enableNmbd = true;
-              shares = {
+              settings = {
                 storage = {
                   path = "/mnt/storage";
                   browseable = "yes";
@@ -131,6 +130,8 @@ in
                   "directory mask" = "0775";
                 };
               };
+
+              nmbd.enable = true;
             };
             samba-wsdd.enable = true;
 
@@ -180,12 +181,10 @@ in
                   };
                   wireguardPeers = [
                     {
-                      wireguardPeerConfig = {
-                        PublicKey = "bP1XUNxp9i8NLOXhgPaIaRzRwi5APbam44/xjvYcyjU=";
-                        Endpoint = "${allAssignments.estuary.internal.ipv4.address}:${toString lib.my.c.kelder.vpn.port}";
-                        AllowedIPs = [ "0.0.0.0/0" ];
-                        PersistentKeepalive = 25;
-                      };
+                      PublicKey = "bP1XUNxp9i8NLOXhgPaIaRzRwi5APbam44/xjvYcyjU=";
+                      Endpoint = "${allAssignments.estuary.internal.ipv4.address}:${toString lib.my.c.kelder.vpn.port}";
+                      AllowedIPs = [ "0.0.0.0/0" ];
+                      PersistentKeepalive = 25;
                     }
                   ];
                 };
@@ -213,7 +212,7 @@ in
                   address = with assignments.estuary; [
                     (with ipv4; "${address}/${toString mask}")
                   ];
-                  routingPolicyRules = map (r: { routingPolicyRuleConfig = r; }) [
+                  routingPolicyRules = [
                     {
                       Family = "both";
                       SuppressPrefixLength = 0;

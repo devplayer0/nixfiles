@@ -237,7 +237,7 @@ in
 
             harmonia = {
               enable = true;
-              signKeyPath = config.age.secrets."nix-cache.key".path;
+              signKeyPaths = [ config.age.secrets."nix-cache.key".path ];
               settings = {
                 priority = 30;
               };

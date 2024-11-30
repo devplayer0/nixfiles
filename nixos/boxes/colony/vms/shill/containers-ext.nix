@@ -47,10 +47,10 @@ in
         };
         ipv6Prefixes = [
           {
-            ipv6PrefixConfig.Prefix = prefixes.jam.v6;
+            Prefix = prefixes.jam.v6;
           }
         ];
-        routes = map (r: { routeConfig = r; }) [
+        routes = [
           {
             Destination = prefixes.jam.v4;
             Scope = "link";

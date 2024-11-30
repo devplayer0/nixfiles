@@ -147,6 +147,15 @@ in
             "/var/lib/systemd"
 
             { directory = "/root/.cache/nix"; mode = "0700"; }
+            # Including these unconditionally due to infinite recursion problems...
+            {
+              directory = "/etc/lvm/archive";
+              mode = "0700";
+            }
+            {
+              directory = "/etc/lvm/backup";
+              mode = "0700";
+            }
           ];
           files = [
             "/etc/machine-id"
@@ -259,18 +268,6 @@ in
       (mkIf config.services.openssh.enable {
         my.tmproot.persistence.config.files =
           concatMap (k: [ k.path "${k.path}.pub" ]) config.services.openssh.hostKeys;
-      })
-      (mkIf config.services.lvm.enable {
-        my.tmproot.persistence.config.directories = [
-          {
-            directory = "/etc/lvm/archive";
-            mode = "0700";
-          }
-          {
-            directory = "/etc/lvm/backup";
-            mode = "0700";
-          }
-        ];
       })
       (mkIf (config.security.acme.certs != { }) {
         my.tmproot.persistence.config.directories = [

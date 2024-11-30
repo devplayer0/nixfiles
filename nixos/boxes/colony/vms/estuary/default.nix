@@ -164,11 +164,9 @@ in
                     };
                     wireguardPeers = [
                       {
-                        wireguardPeerConfig = {
-                          PublicKey = "7N9YdQaCMWWIwAnW37vrthm9ZpbnG4Lx3gheHeRYz2E=";
-                          AllowedIPs = [ allAssignments.kelder.estuary.ipv4.address ];
-                          PersistentKeepalive = 25;
-                        };
+                        PublicKey = "7N9YdQaCMWWIwAnW37vrthm9ZpbnG4Lx3gheHeRYz2E=";
+                        AllowedIPs = [ allAssignments.kelder.estuary.ipv4.address ];
+                        PersistentKeepalive = 25;
                       }
                     ];
                   };
@@ -278,52 +276,51 @@ in
                     };
                     ipv6Prefixes = [
                       {
-                        ipv6PrefixConfig.Prefix = prefixes.base.v6;
+                        Prefix = prefixes.base.v6;
                       }
                     ];
-                    routes = map (r: { routeConfig = r; }) (flatten
-                      ([
-                        {
-                          Destination = prefixes.vip1;
-                          Gateway = allAssignments.colony.routing.ipv4.address;
-                        }
-                        {
-                          Destination = prefixes.vip3;
-                          Gateway = allAssignments.colony.routing.ipv4.address;
-                        }
-                        {
-                          Destination = prefixes.darts.v4;
-                          Gateway = allAssignments.colony.routing.ipv4.address;
-                        }
-                        {
-                          Destination = prefixes.cust.v6;
-                          Gateway = allAssignments.colony.internal.ipv6.address;
-                        }
+                    routes = flatten ([
+                      {
+                        Destination = prefixes.vip1;
+                        Gateway = allAssignments.colony.routing.ipv4.address;
+                      }
+                      {
+                        Destination = prefixes.vip3;
+                        Gateway = allAssignments.colony.routing.ipv4.address;
+                      }
+                      {
+                        Destination = prefixes.darts.v4;
+                        Gateway = allAssignments.colony.routing.ipv4.address;
+                      }
+                      {
+                        Destination = prefixes.cust.v6;
+                        Gateway = allAssignments.colony.internal.ipv6.address;
+                      }
 
-                        {
-                          Destination = lib.my.c.tailscale.prefix.v4;
-                          Gateway = allAssignments.colony.routing.ipv4.address;
-                        }
-                        {
-                          Destination = lib.my.c.tailscale.prefix.v6;
-                          Gateway = allAssignments.colony.internal.ipv6.address;
-                        }
+                      {
+                        Destination = lib.my.c.tailscale.prefix.v4;
+                        Gateway = allAssignments.colony.routing.ipv4.address;
+                      }
+                      {
+                        Destination = lib.my.c.tailscale.prefix.v6;
+                        Gateway = allAssignments.colony.internal.ipv6.address;
+                      }
 
-                        {
-                          Destination = prefixes.qclk.v4;
-                          Gateway = allAssignments.colony.routing.ipv4.address;
-                        }
-                      ] ++
-                      (map (pName: [
-                        {
-                          Gateway = allAssignments.colony.routing.ipv4.address;
-                          Destination = prefixes."${pName}".v4;
-                        }
-                        {
-                          Destination = prefixes."${pName}".v6;
-                          Gateway = allAssignments.colony.internal.ipv6.address;
-                        }
-                      ]) [ "vms" "ctrs" "oci" ])));
+                      {
+                        Destination = prefixes.qclk.v4;
+                        Gateway = allAssignments.colony.routing.ipv4.address;
+                      }
+                    ] ++
+                    (map (pName: [
+                      {
+                        Gateway = allAssignments.colony.routing.ipv4.address;
+                        Destination = prefixes."${pName}".v4;
+                      }
+                      {
+                        Destination = prefixes."${pName}".v6;
+                        Gateway = allAssignments.colony.internal.ipv6.address;
+                      }
+                    ]) [ "vms" "ctrs" "oci" ]));
                   }
                 ];
 
@@ -332,7 +329,7 @@ in
                   {
                     matchConfig.Name = "as211024";
                     networkConfig.IPv6AcceptRA = mkForce false;
-                    routes = map (r: { routeConfig = r; }) [
+                    routes = [
                       {
                         Destination = lib.my.c.home.prefixes.all.v4;
                         Gateway = lib.my.c.home.vips.as211024.v4;
@@ -344,10 +341,8 @@ in
                   matchConfig.Name = "kelder";
                   routes = [
                     {
-                      routeConfig = {
-                        Destination = allAssignments.kelder.estuary.ipv4.address;
-                        Scope = "link";
-                      };
+                      Destination = allAssignments.kelder.estuary.ipv4.address;
+                      Scope = "link";
                     }
                   ];
                 };

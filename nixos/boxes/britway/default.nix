@@ -106,7 +106,7 @@ in
                   {
                     matchConfig.Name = "as211024";
                     networkConfig.IPv6AcceptRA = mkForce false;
-                    routes = map (r: { routeConfig = r; }) [
+                    routes = [
                       {
                         Destination = lib.my.c.colony.prefixes.all.v4;
                         Gateway = allAssignments.estuary.as211024.ipv4.address;
@@ -123,7 +123,7 @@ in
                         Table = "ts-extra";
                       }
                     ];
-                    routingPolicyRules = map (r: { routingPolicyRuleConfig = r; }) [
+                    routingPolicyRules = [
                       {
                         IncomingInterface = "tailscale0";
                         To = lib.my.c.colony.prefixes.all.v6;

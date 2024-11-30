@@ -94,6 +94,14 @@ in
           };
         };
 
+        nixpkgs.config.permittedInsecurePackages = [
+          # FIXME: This is needed for Sonarr
+          "aspnetcore-runtime-wrapped-6.0.36"
+          "aspnetcore-runtime-6.0.36"
+          "dotnet-sdk-wrapped-6.0.428"
+          "dotnet-sdk-6.0.428"
+        ];
+
         services = {
           netdata.enable = true;
 

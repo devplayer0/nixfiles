@@ -144,7 +144,10 @@ in
         fish.enable = mkDefault true;
         # TODO: This is expecting to look up the channel for the database...
         command-not-found.enable = mkDefault false;
-        vim.defaultEditor = true;
+        vim = {
+          enable = true;
+          defaultEditor = true;
+        };
       };
 
       services = {
@@ -239,9 +242,7 @@ in
     }
     (mkIf config.services.kmscon.enable {
       fonts.fonts = with pkgs; [
-        (nerdfonts.override {
-          fonts = [ "SourceCodePro" ];
-        })
+        nerd-fonts.sauce-code-pro
       ];
     })
   ];

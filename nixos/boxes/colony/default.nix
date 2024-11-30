@@ -252,10 +252,10 @@ in
                   };
                   ipv6Prefixes = [
                     {
-                      ipv6PrefixConfig.Prefix = prefixes.vms.v6;
+                      Prefix = prefixes.vms.v6;
                     }
                   ];
-                  routes = map (r: { routeConfig = r; }) [
+                  routes = [
                     {
                       Destination = prefixes.ctrs.v4;
                       Gateway = allAssignments.shill.routing.ipv4.address;
@@ -327,10 +327,10 @@ in
                 };
                 ipv6Prefixes = [
                   {
-                    ipv6PrefixConfig.Prefix = prefixes.mail.v6;
+                    Prefix = prefixes.mail.v6;
                   }
                 ];
-                routes = map (r: { routeConfig = r; }) [
+                routes = [
                   {
                     Destination = prefixes.mail.v4;
                     Scope = "link";
@@ -350,10 +350,10 @@ in
                 };
                 ipv6Prefixes = [
                   {
-                    ipv6PrefixConfig.Prefix = prefixes.darts.v6;
+                    Prefix = prefixes.darts.v6;
                   }
                 ];
-                routes = map (r: { routeConfig = r; }) [
+                routes = [
                   {
                     Destination = prefixes.darts.v4;
                     Scope = "link";

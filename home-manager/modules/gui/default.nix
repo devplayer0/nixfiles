@@ -42,9 +42,8 @@ in
             xdg-utils
 
             font.package
-            (nerdfonts.override {
-              fonts = [ "DroidSansMono" "SourceCodePro" ];
-            })
+            nerd-fonts.sauce-code-pro
+            nerd-fonts.droid-sans-mono
             noto-fonts-emoji
 
             grim

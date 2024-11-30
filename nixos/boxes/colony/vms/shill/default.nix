@@ -140,10 +140,10 @@ in
                     };
                     ipv6Prefixes = [
                       {
-                        ipv6PrefixConfig.Prefix = prefixes.ctrs.v6;
+                        Prefix = prefixes.ctrs.v6;
                       }
                     ];
-                    routes = map (r: { routeConfig = r; }) [
+                    routes = [
                       {
                         Destination = lib.my.c.tailscale.prefix.v4;
                         Gateway = allAssignments.waffletail.internal.ipv4.address;

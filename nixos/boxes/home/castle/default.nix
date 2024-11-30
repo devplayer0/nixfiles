@@ -36,7 +36,7 @@ in
           cpu = {
             amd.updateMicrocode = true;
           };
-          opengl.extraPackages = with pkgs; [
+          graphics.extraPackages = with pkgs; [
             intel-media-driver
           ];
           bluetooth.enable = true;

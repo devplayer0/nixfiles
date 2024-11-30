@@ -26,7 +26,7 @@ in
 
       config = {
         # Hardware acceleration for Jellyfin
-        hardware.opengl = {
+        hardware.graphics = {
           enable = true;
           extraPackages = with pkgs; [
             vaapiIntel
@@ -77,6 +77,14 @@ in
             sonarr.serviceConfig.UMask = "0002";
           };
         };
+
+        nixpkgs.config.permittedInsecurePackages = [
+          # FIXME: This is needed for Sonarr
+          "aspnetcore-runtime-wrapped-6.0.36"
+          "aspnetcore-runtime-6.0.36"
+          "dotnet-sdk-wrapped-6.0.428"
+          "dotnet-sdk-6.0.428"
+        ];
 
         services = {
           transmission = {

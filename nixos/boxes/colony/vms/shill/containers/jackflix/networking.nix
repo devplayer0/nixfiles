@@ -71,14 +71,12 @@ in
               RouteTable = routeTable;
             };
             wireguardPeers = [
+              # AirVPN NL
               {
-                # AirVPN NL
-                wireguardPeerConfig = {
-                  Endpoint = "2a00:1678:1337:2329:e5f:35d4:4404:ef9f:1637";
-                  PublicKey = "PyLCXAQT8KkM4T+dUsOQfn+Ub3pGxfGlxkIApuig+hk=";
-                  PresharedKeyFile = config.age.secrets."${pskFile}".path;
-                  AllowedIPs = [ "0.0.0.0/0" "::/0" ];
-                };
+                Endpoint = "2a00:1678:1337:2329:e5f:35d4:4404:ef9f:1637";
+                PublicKey = "PyLCXAQT8KkM4T+dUsOQfn+Ub3pGxfGlxkIApuig+hk=";
+                PresharedKeyFile = config.age.secrets."${pskFile}".path;
+                AllowedIPs = [ "0.0.0.0/0" "::/0" ];
               }
             ];
           };
@@ -94,7 +92,7 @@ in
               matchConfig.Name = "vpn";
               address = [ "10.182.97.37/32" "fd7d:76ee:e68f:a993:735d:ef5e:6907:b122/128" ];
               dns = [ "10.128.0.1" "fd7d:76ee:e68f:a993::1" ];
-              routingPolicyRules = map (r: { routingPolicyRuleConfig = r; }) [
+              routingPolicyRules = [
                 {
                   Family = "both";
                   SuppressPrefixLength = 0;

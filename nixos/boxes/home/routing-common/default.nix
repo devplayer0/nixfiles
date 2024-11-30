@@ -276,7 +276,7 @@ in
                   {
                     matchConfig.Name = "as211024";
                     networkConfig.IPv6AcceptRA = mkForce false;
-                    routes = map (r: { routeConfig = r; }) [
+                    routes = [
                       {
                         Destination = lib.my.c.colony.prefixes.all.v4;
                         Gateway = allAssignments.estuary.as211024.ipv4.address;
@@ -301,7 +301,7 @@ in
 
               {
                 "60-lan-hi" = {
-                  routes = map (r: { routeConfig = r; }) [
+                  routes = [
                     {
                       Destination = elemAt routersPubV4 otherIndex;
                       Gateway = net.cidr.host (otherIndex + 1) prefixes.hi.v4;
