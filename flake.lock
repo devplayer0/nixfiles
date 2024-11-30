@@ -56,11 +56,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1692446555,
-        "narHash": "sha256-Uzl8TiGKVBCjwYhkprSwbcu8xlcQwnDNIqsk9rM+P9w=",
+        "lastModified": 1732994213,
+        "narHash": "sha256-3v8cTsPB+TIdWmc1gmRNd0Mi0elpfi39CXRsA/2x/Oo=",
         "owner": "devplayer0",
         "repo": "borg",
-        "rev": "44a3dc19b014ebc8d33db0b3e145ed7bfc9a0cb7",
+        "rev": "795f5009445987d42f32de1b49fdeb2d88326a64",
         "type": "github"
       },
       "original": {
