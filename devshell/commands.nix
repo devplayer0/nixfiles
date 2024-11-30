@@ -116,28 +116,16 @@ in
       command = ''nix build "''${@:2}" ".#homeConfigurations.\"$1\".activationPackage"'';
     }
     {
-      name = "update-inputs";
-      category = "tasks";
-      help = "Update flake inputs";
-      command = ''
-        args=()
-        for f in "$@"; do
-          args+=(--update-input "$f")
-        done
-        nix flake lock "''${args[@]}"
-      '';
-    }
-    {
       name = "update-nixpkgs";
       category = "tasks";
       help = "Update nixpkgs flake inputs";
-      command = ''update-inputs nixpkgs-{unstable,stable,mine,mine-stable}'';
+      command = ''nix flake update nixpkgs-{unstable,stable,mine,mine-stable}'';
     }
     {
       name = "update-home-manager";
       category = "tasks";
       help = "Update home-manager flake inputs";
-      command = ''update-inputs home-manager-{unstable,stable}'';
+      command = ''nix flake update home-manager-{unstable,stable}'';
     }
     {
       name = "update-installer";
