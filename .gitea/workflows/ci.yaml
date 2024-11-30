@@ -6,7 +6,7 @@ on:
 
 jobs:
   check:
-    name: Check, build and cache Nix flake
+    name: Check, build and cache nixfiles
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -26,17 +26,20 @@ jobs:
 
       - name: Check flake
         run: nix flake check --no-build
+
       - name: Build (and cache) the world
         id: build
         env:
           HARMONIA_SSH_KEY: ${{ secrets.HARMONIA_SSH_KEY }}
         run: |
           nix eval --json --apply "builtins.attrNames" .#ci.x86_64-linux | jq -cr '.[]' | while read job; do
-            echo "Building CI job $job"
+            echo "::group::Build $job"
             nix build --no-link .#ci.x86_64-linux."$job"
+            echo "::endgroup::"
 
-            echo "Caching CI job $job"
+            echo "::group::Cache $job"
             ci/push-to-cache.sh "$(nix eval --raw .#ci.x86_64-linux."$job")"
+            echo "::endgroup::"
           done
 
           echo "Building and caching CI derivation"
