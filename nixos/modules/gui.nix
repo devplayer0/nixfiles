@@ -53,6 +53,8 @@ in
           SUBSYSTEM=="usb", ATTR{idVendor}=="057e", MODE="0664", GROUP="wheel"
           # FT
           SUBSYSTEM=="usb", ATTR{idVendor}=="0403", MODE="0664", GROUP="wheel"
+          # /dev/player0
+          SUBSYSTEM=="usb", ATTR{idVendor}=="6969", MODE="0664", GROUP="wheel"
         '';
       };
     };
