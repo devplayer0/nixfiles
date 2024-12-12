@@ -40,6 +40,7 @@ in
 
       nix = {
         package = pkgs'.mine.nix;
+        channel.enable = false;
         settings = with lib.my.c.nix; {
           trusted-users = [ "@wheel" ];
           experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
