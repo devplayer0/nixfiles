@@ -77,7 +77,12 @@ in
       name = "build-n-switch";
       category = "tasks";
       help = "Shortcut to nixos-rebuild for this flake";
-      command = ''doas nixos-rebuild --flake . "$@"'';
+      command = ''
+        # HACK: Upstream changes in Git + Nix makes this necessary
+        # https://github.com/NixOS/nix/issues/10202
+        doas git config --global --add safe.directory "$PWD"
+        doas nixos-rebuild --flake . "$@"
+      '';
     }
     {
       name = "run-vm";
