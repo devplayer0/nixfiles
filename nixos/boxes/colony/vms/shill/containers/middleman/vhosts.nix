@@ -79,6 +79,10 @@ in
                   sha256 = "018wh6ps19n7323fi44njzj9yd4wqslc90dykbwfyscv7bgxhlar";
                 };
               }
+              {
+                name = "ssh.pub";
+                path = lib.my.c.sshKeyFiles.me;
+              }
             ];
           }
           wellKnown
@@ -343,6 +347,8 @@ in
         useACMEHost = pubDomain;
       };
       "public.${pubDomain}" = {
+        onlySSL = false;
+        addSSL = true;
         serverAliases = [ "p.${pubDomain}" ];
         locations."/" = {
           root = "/mnt/media/public";
