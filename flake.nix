@@ -126,6 +126,7 @@
         nixos/boxes/home/palace
         nixos/boxes/home/castle
         nixos/boxes/britway
+        nixos/boxes/britnet.nix
         nixos/boxes/kelder
 
         # Homes

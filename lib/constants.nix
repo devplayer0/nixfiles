@@ -334,6 +334,11 @@ rec {
     assignedV6 = "2001:19f0:7402:128b:5400:04ff:feac:6e06";
   };
 
+  britnet = {
+    domain = "bhx1.int.${pubDomain}";
+    pubV4 = "77.74.199.67";
+  };
+
   tailscale = {
     prefix = {
       v4 = "100.64.0.0/10";
