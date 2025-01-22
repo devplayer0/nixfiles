@@ -337,6 +337,15 @@ rec {
   britnet = {
     domain = "bhx1.int.${pubDomain}";
     pubV4 = "77.74.199.67";
+    vpn = {
+      port = 51820;
+    };
+    prefixes = with lib.my.net.cidr; rec {
+      vpn = {
+        v4 = "10.200.0.0/24";
+        v6 = "fdfb:5ebf:6e84::/64";
+      };
+    };
   };
 
   tailscale = {

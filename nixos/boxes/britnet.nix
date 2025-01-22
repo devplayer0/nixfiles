@@ -2,7 +2,7 @@
 let
   inherit (lib.my) net;
   inherit (lib.my.c) pubDomain;
-  inherit (lib.my.c.britnet) domain pubV4;
+  inherit (lib.my.c.britnet) domain pubV4 prefixes;
 in
 {
   nixos.systems.britnet = {
@@ -21,6 +21,13 @@ in
           address = "2a12:ab46:5344:99::a";
           gateway = "2a12:ab46:5344::1";
         };
+      };
+      vpn = {
+        ipv4 = {
+          address = net.cidr.host 1 prefixes.vpn.v4;
+          gateway = null;
+        };
+        ipv6.address = net.cidr.host 1 prefixes.vpn.v6;
       };
     };
 
@@ -65,6 +72,12 @@ in
               };
             };
 
+            environment = {
+              systemPackages = with pkgs; [
+                wireguard-tools
+              ];
+            };
+
             services = {
               iperf3 = {
                 enable = true;
@@ -89,6 +102,28 @@ in
             networking = { inherit domain; };
 
             systemd.network = {
+              netdevs = {
+                "30-wg0" = {
+                  netdevConfig = {
+                    Name = "wg0";
+                    Kind = "wireguard";
+                  };
+                  wireguardConfig = {
+                    PrivateKeyFile = config.age.secrets."britnet/wg.key".path;
+                    ListenPort = lib.my.c.britnet.vpn.port;
+                  };
+                  wireguardPeers = [
+                    {
+                      PublicKey = "EfPwREfZ/q3ogHXBIqFZh4k/1NRJRyq4gBkBXtegNkE=";
+                      AllowedIPs = [
+                        (net.cidr.host 10 prefixes.vpn.v4)
+                        (net.cidr.host 10 prefixes.vpn.v6)
+                      ];
+                    }
+                  ];
+                };
+              };
+
               links = {
                 "10-veth0" = {
                   matchConfig.PermanentMACAddress = "00:db:d9:62:68:1a";
@@ -110,6 +145,12 @@ in
                     ];
                   }
                 ];
+                "30-wg0" = mkMerge [
+                  (networkdAssignment "wg0" assignments.vpn)
+                  {
+                    networkConfig.IPv6AcceptRA = mkForce false;
+                  }
+                ];
               };
             };
 
@@ -119,16 +160,25 @@ in
                 key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJIEx+1EC/lN6WKIaOB+O5LJgVHRK962YpZEPQg/m78O";
                 files = {
                   "tailscale-auth.key" = {};
+                  "britnet/wg.key" = {
+                    owner = "systemd-network";
+                  };
                 };
               };
 
               firewall = {
+                udp.allowed = [ lib.my.c.britnet.vpn.port ];
                 trustedInterfaces = [ "tailscale0" ];
                 extraRules = ''
+                  table inet filter {
+                    chain forward {
+                      iifname wg0 oifname veth0 accept
+                    }
+                  }
                   table inet nat {
                     chain postrouting {
-                      iifname tailscale0 oifname veth0 snat ip to ${assignments.allhost.ipv4.address}
-                      iifname tailscale0 oifname veth0 snat ip6 to ${assignments.allhost.ipv6.address}
+                      iifname { tailscale0, wg0 } oifname veth0 snat ip to ${assignments.allhost.ipv4.address}
+                      iifname { tailscale0, wg0 } oifname veth0 snat ip6 to ${assignments.allhost.ipv6.address}
                     }
                   }
                 '';
