@@ -150,6 +150,7 @@ in
           mstflint
           qperf
           ethtool
+          android-tools
         ];
 
         nix = {

@@ -14,7 +14,7 @@
     network = ./network.nix;
     pdns = ./pdns.nix;
     nginx-sso = ./nginx-sso.nix;
-    gui = ./gui.nix;
+    gui = ./gui;
     l2mesh = ./l2mesh.nix;
     borgthin = ./borgthin.nix;
     nvme = ./nvme;

@@ -4,6 +4,12 @@ let
   inherit (lib.my) mkBoolOpt';
 
   cfg = config.my.gui;
+
+  androidUdevRules = pkgs.runCommand "udev-rules-android" {
+    rulesFile = ./android-udev.rules;
+  } ''
+    install -D "$rulesFile" "$out"/lib/udev/rules.d/51-android.rules
+  '';
 in
 {
   options.my.gui = with lib.types; {
@@ -26,6 +32,12 @@ in
       pam.services.swaylock-plugin = {};
     };
 
+    users = {
+      groups = {
+        adbusers.gid = lib.my.c.ids.gids.adbusers;
+      };
+    };
+
     environment.systemPackages = with pkgs; [
       # for pw-jack
       pipewire.jack
@@ -46,6 +58,9 @@ in
       };
 
       udev = {
+        packages = [
+          androidUdevRules
+        ];
         extraRules = ''
           # Nvidia
           SUBSYSTEM=="usb", ATTR{idVendor}=="0955", MODE="0664", GROUP="wheel"
@@ -86,6 +101,14 @@ in
             org.freedesktop.impl.portal.ScreenCast=wlr
           '')
         ];
+      };
+    };
+
+    my = {
+      user = {
+        config = {
+          extraGroups = [ "adbusers" ];
+        };
       };
     };
   };

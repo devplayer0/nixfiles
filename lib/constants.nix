@@ -22,6 +22,7 @@ rec {
       kea = 404;
       keepalived_script = 405;
       photoprism = 406;
+      adbusers = 407;
     };
   };
 
