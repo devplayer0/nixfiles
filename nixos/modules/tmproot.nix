@@ -551,6 +551,16 @@ in
           ];
         });
       })
+      (mkIf config.services.pds.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = "/var/lib/pds";
+            mode = "0750";
+            user = "pds";
+            group = "pds";
+          }
+        ];
+      })
     ]))
   ]);
 

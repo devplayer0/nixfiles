@@ -49,6 +49,7 @@ let
     "/.well-known/webfinger".return = "301 https://toot.nul.ie$request_uri";
     "/.well-known/nodeinfo".return = "301 https://toot.nul.ie$request_uri";
     "/.well-known/host-meta".return = "301 https://toot.nul.ie$request_uri";
+    "/.well-known/atproto-did".return = "301 https://pds.nul.ie$request_uri";
   };
 in
 {
@@ -320,6 +321,15 @@ in
       "toot.nul.ie" = {
         locations."/" = {
           proxyPass = "http://toot-ctr.${domain}:80";
+          proxyWebsockets = true;
+          extraConfig = proxyHeaders;
+        };
+        useACMEHost = pubDomain;
+      };
+
+      "pds.nul.ie" = {
+        locations."/" = {
+          proxyPass = "http://toot-ctr.${domain}:3000";
           proxyWebsockets = true;
           extraConfig = proxyHeaders;
         };

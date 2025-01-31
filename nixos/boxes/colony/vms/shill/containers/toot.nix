@@ -26,6 +26,8 @@ in
     let
       inherit (lib) mkMerge mkIf genAttrs;
       inherit (lib.my) networkdAssignment systemdAwaitPostgres;
+
+      pdsPort = 3000;
     in
     {
       config = mkMerge [
@@ -36,7 +38,7 @@ in
 
             secrets = {
               key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILSslLkDe54AKYzxdtKD70zcU72W0EpYsfbdJ6UFq0QK";
-              files = genAttrs
+              files = (genAttrs
                 (map (f: "toot/${f}") [
                   "postgres-password.txt"
                   "secret-key.txt"
@@ -48,7 +50,12 @@ in
                 (_: with config.services.mastodon; {
                   owner = user;
                   inherit group;
-                });
+                })) // {
+                  "toot/pds.env" = {
+                    owner = "pds";
+                    group = "pds";
+                  };
+                };
             };
 
             firewall = {
@@ -56,6 +63,7 @@ in
                 19999
 
                 "http"
+                pdsPort
               ];
             };
           };
@@ -153,6 +161,32 @@ in
                   "@proxy" = { inherit extraConfig; };
                   "/api/v1/streaming/" = { inherit extraConfig; };
                 };
+              };
+            };
+
+            pds = {
+              enable = true;
+              environmentFiles = [ config.age.secrets."toot/pds.env".path ];
+              settings = {
+                PDS_HOSTNAME = "pds.nul.ie";
+                PDS_PORT = pdsPort;
+
+                PDS_BLOBSTORE_DISK_LOCATION = null;
+                PDS_BLOBSTORE_S3_BUCKET = "pds";
+                PDS_BLOBSTORE_S3_ENDPOINT = "https://s3.nul.ie/";
+                PDS_BLOBSTORE_S3_REGION = "eu-central-1";
+                PDS_BLOBSTORE_S3_ACCESS_KEY_ID = "pds";
+                PDS_BLOB_UPLOAD_LIMIT = "52428800";
+
+                PDS_EMAIL_FROM_ADDRESS = "pds@nul.ie";
+
+                PDS_DID_PLC_URL = "https://plc.directory";
+                PDS_INVITE_REQUIRED = 1;
+                PDS_BSKY_APP_VIEW_URL = "https://api.bsky.app";
+                PDS_BSKY_APP_VIEW_DID = "did:web:api.bsky.app";
+                PDS_REPORT_SERVICE_URL = "https://mod.bsky.app";
+                PDS_REPORT_SERVICE_DID = "did:plc:ar7c4by46qjdydhdevvrndac";
+                PDS_CRAWLERS = "https://bsky.network";
               };
             };
           };
