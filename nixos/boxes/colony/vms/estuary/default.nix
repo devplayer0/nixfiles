@@ -399,8 +399,9 @@ in
 
                       ip6 daddr ${aa.middleman.internal.ipv6.address} tcp dport { http, https, 8448 } accept
                       ${matchInet "tcp dport { http, https } accept" "git"}
-                      ip6 daddr ${aa.simpcraft-oci.internal.ipv6.address} tcp dport { 25565, 25575 } accept
+                      ip6 daddr ${aa.simpcraft-oci.internal.ipv6.address} tcp dport 25565 accept
                       ip6 daddr ${aa.simpcraft-staging-oci.internal.ipv6.address} tcp dport 25565 accept
+                      ip6 daddr ${aa.kevcraft-oci.internal.ipv6.address} tcp dport 25567 accept
                       return
                     }
                     chain routing-udp {
@@ -408,6 +409,7 @@ in
                       ip6 daddr ${aa.waffletail.internal.ipv6.address} udp dport 41641 accept
                       ip6 daddr ${aa.simpcraft-oci.internal.ipv6.address} udp dport 25565 accept
                       ip6 daddr ${aa.enshrouded-oci.internal.ipv6.address} udp dport { 15636-15637 } accept
+                      ip6 daddr ${aa.kevcraft-oci.internal.ipv6.address} udp dport 25567 accept
                       return
                     }
                     chain filter-routing {

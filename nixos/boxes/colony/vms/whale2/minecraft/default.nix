@@ -104,6 +104,46 @@ in
       #     ''--network=colony:${dockerNetAssignment allAssignments "simpcraft-staging-oci"}''
       #   ];
       # };
+
+      kevcraft = {
+        # 2025.2.1-java21-alpine
+        image = "itzg/minecraft-server@sha256:57e319c15e9fee63f61029a65a33acc3de85118b21a2b4bb29f351cf4a915027";
+
+        environment = {
+          TYPE = "VANILLA";
+          VERSION = "1.20.1";
+          SERVER_PORT = "25567";
+          QUERY_PORT = "25567";
+
+          EULA = "true";
+          ENABLE_QUERY = "true";
+          ENABLE_RCON = "true";
+          MOTD = "§4§k----- §9K§ae§bv§cc§dr§ea§ff§6t §4§k-----";
+          ICON = "/ext/icon.png";
+
+          EXISTING_WHITELIST_FILE = "SYNCHRONIZE";
+          WHITELIST = whitelist;
+          EXISTING_OPS_FILE = "SYNCHRONIZE";
+          OPS = op;
+          DIFFICULTY = "normal";
+          SPAWN_PROTECTION = "0";
+          # VIEW_DISTANCE = "20";
+
+          MAX_MEMORY = "4G";
+
+          TZ = "Europe/Dublin";
+        };
+        environmentFiles = [ config.age.secrets."whale2/simpcraft.env".path ];
+
+        volumes = [
+          "kevcraft_data:/data"
+          "${./kev.png}:/ext/icon.png:ro"
+        ];
+
+        extraOptions = [
+          ''--network=colony:${dockerNetAssignment allAssignments "kevcraft-oci"}''
+        ];
+      };
     };
 
     services = {

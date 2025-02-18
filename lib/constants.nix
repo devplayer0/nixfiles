@@ -200,11 +200,16 @@ rec {
         port = 25566;
         dst = aa.simpcraft-staging-oci.internal.ipv4.address;
       }
-
       {
-        port = 25575;
-        dst = aa.simpcraft-oci.internal.ipv4.address;
+        port = 25567;
+        dst = aa.kevcraft-oci.internal.ipv4.address;
       }
+
+      # RCON... unsafe?
+      # {
+      #   port = 25575;
+      #   dst = aa.simpcraft-oci.internal.ipv4.address;
+      # }
 
       {
         port = 2456;
@@ -227,6 +232,10 @@ rec {
         port = 25565;
         dst = aa.simpcraft-oci.internal.ipv4.address;
         proto = "udp";
+      }
+      {
+        port = 25567;
+        dst = aa.kevcraft-oci.internal.ipv4.address;
       }
 
       {
