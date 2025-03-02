@@ -277,8 +277,8 @@ rec {
       "stream"
     ];
     routersPubV4 = [
-      "109.255.31.155"
-      "109.255.252.63"
+      "109.255.108.88"
+      "109.255.108.121"
     ];
 
     prefixes = with lib.my.net.cidr; rec {
