@@ -45,12 +45,12 @@
 
         services = {
           mjpg-streamer = {
-            enable = true;
+            enable = false;
             inputPlugin = "input_uvc.so";
             outputPlugin = "output_http.so -w @www@ -n -p 5050";
           };
           octoprint = {
-            enable = true;
+            enable = false;
             host = "::";
             extraConfig = {
               plugins = {
