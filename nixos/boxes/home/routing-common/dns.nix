@@ -63,15 +63,34 @@ in
           webserver-allow-from = [ "127.0.0.1" "::1" ];
 
           lua-dns-script = pkgs.writeText "pdns-script.lua" ''
-            -- Disney+ doesn't like our IP space...
+            blocklist = newDS()
+
             function preresolve(dq)
               local name = dq.qname:toString()
+
+              -- Disney+ doesn't like our IP space...
               if dq.qtype == pdns.AAAA and (string.find(name, "disneyplus") or string.find(name, "disney-plus") or string.find(name , "disney.api")) then
                 dq.rcode = 0
                 return true
               end
 
+              if blocklist:check(dq.qname) then
+                if dq.qtype == pdns.A then
+                  dq:addAnswer(dq.qtype, "127.0.0.1")
+                elseif dq.qtype == pdns.AAAA then
+                  dq:addAnswer(dq.qtype, "::1")
+                end
+                return true
+              end
+
               return false
+            end
+
+            for line in io.lines("${./dns-blocklist.txt}") do
+              entry = line:gsub("%s+", "")
+              if entry ~= "" and string.sub(entry, 1, 1) ~= "#" then
+                blocklist:add(entry)
+              end
             end
           '';
         };
