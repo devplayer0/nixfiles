@@ -23,7 +23,7 @@ let
       pkgs = pkgs'.${config'.nixpkgs}.${config'.system};
       allPkgs = mapAttrs (_: p: p.${config'.system}) pkgs';
 
-      modules' = [ hmFlakes.${config'.home-manager}.nixosModule ] ++ (attrValues cfg.modules);
+      modules' = [ hmFlakes.${config'.home-manager}.nixosModules.default ] ++ (attrValues cfg.modules);
     in
     # Import eval-config ourselves since the flake now force-sets lib
     import "${pkgsFlake}/nixos/lib/eval-config.nix" {

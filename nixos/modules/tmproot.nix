@@ -551,7 +551,7 @@ in
           ];
         });
       })
-      (mkIf config.services.pds.enable {
+      (mkIf (config.services ? "pds" && config.services.pds.enable) {
         my.tmproot.persistence.config.directories = [
           {
             directory = "/var/lib/pds";

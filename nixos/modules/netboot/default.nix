@@ -5,6 +5,7 @@ let
 
   cfg = config.my.netboot;
 
+  # Newer releases don't boot on desktop?
   ipxe = pkgs.ipxe.overrideAttrs (o: rec {
     version = "1.21.1-unstable-2024-06-27";
     src = pkgs.fetchFromGitHub {
@@ -17,7 +18,7 @@ let
   tftpRoot = pkgs.linkFarm "tftp-root" [
     {
       name = "ipxe-x86_64.efi";
-      path = "${ipxe}/ipxe.efi";
+      path = "${pkgs.ipxe}/ipxe.efi";
     }
   ];
   menuFile = pkgs.runCommand "menu.ipxe" {

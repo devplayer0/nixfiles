@@ -8,8 +8,9 @@ in
 {
   config = {
     services = {
-      bird2 = {
+      bird = {
         enable = true;
+        package = pkgs.bird2;
         # TODO: Clean up and modularise
         config = ''
           define OWNAS = 211024;

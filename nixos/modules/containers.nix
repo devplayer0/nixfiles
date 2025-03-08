@@ -15,6 +15,7 @@ let
     passAsFile = [ "code" ];
     code = ''
       #include <stdio.h>
+      #include <stdlib.h>
       #include <signal.h>
       #include <unistd.h>
       #include <systemd/sd-daemon.h>

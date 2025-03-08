@@ -11,23 +11,24 @@ in
   config = {
     my = {
       secrets.files."britway/bgp-password-vultr.conf" = {
-        owner = "bird2";
-        group = "bird2";
+        owner = "bird";
+        group = "bird";
       };
     };
 
     environment.etc."bird/vultr-password.conf".source = config.age.secrets."britway/bgp-password-vultr.conf".path;
 
     systemd = {
-      services.bird2.after = [ "systemd-networkd-wait-online@veth0.service" ];
+      services.bird.after = [ "systemd-networkd-wait-online@veth0.service" ];
       network = {
         config.networkConfig.ManageForeignRoutes = false;
       };
     };
 
     services = {
-      bird2 = {
+      bird = {
         enable = true;
+        package = pkgs.bird2;
         preCheckConfig = ''
           echo '"dummy"' > vultr-password.conf
         '';

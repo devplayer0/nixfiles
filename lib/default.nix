@@ -53,7 +53,7 @@ rec {
     in mkApp "${app}/bin/${app.meta.mainProgram}";
   flakePackageOverlay' = flake: pkg: system: (final: prev:
     let
-      pkg' = if pkg != null then flake.packages.${system}.${pkg} else flake.defaultPackage.${system};
+      pkg' = if pkg != null then flake.packages.${system}.${pkg} else flake.packages.${system}.default;
       name = if pkg != null then pkg else pkg'.name;
     in
     {
@@ -248,8 +248,8 @@ rec {
   in
   {
     trivial = prev.trivial // {
-      release = "24.12:u-${prev.trivial.release}";
-      codeName = "Epic";
+      release = "25.03:u-${prev.trivial.release}";
+      codeName = "Frick";
       revisionWithDefault = default: self.rev or default;
       versionSuffix = ".${date}.${revCode self}:u-${revCode pkgsFlake}";
     };

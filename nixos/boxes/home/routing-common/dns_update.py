@@ -2,7 +2,7 @@
 import argparse
 import subprocess
 
-import CloudFlare
+import cloudflare
 
 def main():
     parser = argparse.ArgumentParser(description='Cloudflare DNS update script')
@@ -19,17 +19,22 @@ def main():
     if args.api_token_file:
         with open(args.api_token_file) as f:
             cf_token = f.readline().strip()
+    cf = cloudflare.Cloudflare(api_token=cf_token)
 
-    cf = CloudFlare.CloudFlare(token=cf_token)
-    zones = cf.zones.get(params={'name': args.zone})
+    zones = list(cf.zones.list(name=args.zone))
     assert zones, f'Zone {args.zone} not found'
-    records = cf.zones.dns_records.get(zones[0]['id'], params={'name': args.record})
+    assert len(zones) == 1, f'More than one zone found for {args.zone}'
+    zone = zones[0]
+
+    records = list(cf.dns.records.list(zone_id=zone.id, name=args.record, type='A'))
     assert records, f'Record {args.record} not found in zone {args.zone}'
+    assert len(records) == 1, f'More than one record found for {args.record}'
+    record = records[0]
 
     print(f'Updating {args.record} -> {address}')
-    cf.zones.dns_records.patch(
-        zones[0]['id'], records[0]['id'],
-        data={'type': 'A', 'name': args.record, 'content': address})
+    cf.dns.records.edit(
+        zone_id=zone.id, dns_record_id=record.id,
+        type='A', content=address)
 
 if __name__ == '__main__':
     main()

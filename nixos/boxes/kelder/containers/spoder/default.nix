@@ -98,6 +98,7 @@ in
             https = true;
             config = {
               adminpassFile = config.age.secrets."kelder/nextcloud-root.txt".path;
+              dbtype = "sqlite";
             };
             settings = {
               updatechecker = false;
