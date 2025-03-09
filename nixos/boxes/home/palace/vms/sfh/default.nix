@@ -83,6 +83,12 @@ in
           };
         };
 
+        environment = {
+          systemPackages = with pkgs; [
+            usbutils
+          ];
+        };
+
         systemd.network = {
           links = {
             "10-lan-hi" = {
@@ -142,6 +148,11 @@ in
           let
             instances = {
               # unifi = {};
+              hass = {
+                bindMounts = {
+                  "/dev/bus/usb/001/002".readOnly = false;
+                };
+              };
             };
           in
           mkMerge [

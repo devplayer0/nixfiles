@@ -188,6 +188,11 @@
                 hostBDF = "44:00.4";
               };
             };
+            qemuFlags = [
+              "device qemu-xhci,id=xhci"
+              # Front-right port?
+              "device usb-host,hostbus=1,hostport=4"
+            ];
           };
         };
       };
