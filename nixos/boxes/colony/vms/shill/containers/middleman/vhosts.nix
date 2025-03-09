@@ -429,6 +429,14 @@ in
         }
         (ssoServer "generic")
       ];
+      "hass.${pubDomain}" = {
+        locations."/" = {
+          proxyPass = "http://hass-ctr.${home.domain}:8123";
+          proxyWebsockets = true;
+          extraConfig = proxyHeaders;
+        };
+        useACMEHost = pubDomain;
+      };
     };
 
     minio =

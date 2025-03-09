@@ -29,7 +29,7 @@ in
 
     configuration = { lib, modulesPath, pkgs, config, assignments, allAssignments, ... }:
     let
-      inherit (lib) mapAttrs mkMerge;
+      inherit (lib) mapAttrs mkMerge mkForce;
       inherit (lib.my) networkdAssignment;
       inherit (lib.my.c) networkd;
       inherit (lib.my.c.home) domain;
@@ -111,6 +111,13 @@ in
                 MTUBytes = toString lib.my.c.home.hiMTU;
               };
             };
+            "10-lan-lo-ctrs" = {
+              matchConfig = {
+                Driver = "virtio_net";
+                PermanentMACAddress = "52:54:00:a5:7e:93";
+              };
+              linkConfig.Name = "lan-lo-ctrs";
+            };
           };
 
           networks = {
@@ -124,7 +131,26 @@ in
               linkConfig.RequiredForOnline = "no";
               networkConfig = networkd.noL3;
             };
+            "30-lan-lo-ctrs" = {
+              matchConfig.Name = "lan-lo-ctrs";
+              linkConfig.RequiredForOnline = "no";
+              networkConfig = networkd.noL3;
+            };
           };
+        };
+
+        systemd.nspawn = {
+          hass = {
+            networkConfig = {
+              MACVLAN = mkForce "lan-hi-ctrs:host0 lan-lo-ctrs:lan-lo";
+            };
+          };
+        };
+
+        systemd.services = {
+          "systemd-nspawn@hass".serviceConfig.DeviceAllow = [
+            "char-ttyUSB rw"
+          ];
         };
 
         my = {
@@ -151,6 +177,10 @@ in
               hass = {
                 bindMounts = {
                   "/dev/bus/usb/001/002".readOnly = false;
+                  "/dev/serial/by-id/usb-Nabu_Casa_Home_Assistant_Connect_ZBT-1_ce549704fe38ef11a2c2e5d154516304-if00-port0" = {
+                    readOnly = false;
+                    mountPoint = "/dev/ttyUSB0";
+                  };
                 };
               };
             };

@@ -561,6 +561,16 @@ in
           }
         ];
       })
+      (mkIf config.services.home-assistant.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = config.services.home-assistant.configDir;
+            mode = "0750";
+            user = "hass";
+            group = "hass";
+          }
+        ];
+      })
     ]))
   ]);
 
