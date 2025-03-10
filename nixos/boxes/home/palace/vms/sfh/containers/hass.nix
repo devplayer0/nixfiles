@@ -87,7 +87,26 @@ in
         };
 
         services = {
-          home-assistant = {
+          home-assistant =
+          let
+            cfg = config.services.home-assistant;
+
+            pyirishrail = ps: ps.buildPythonPackage rec {
+              pname = "pyirishrail";
+              version = "0.0.2";
+              src = pkgs.fetchFromGitHub {
+                owner = "ttroy50";
+                repo = "pyirishrail";
+                tag = version;
+                hash = "sha256-NgARqhcXP0lgGpgBRiNtQaSn9JcRNtCcZPljcL7t3Xc=";
+              };
+
+              dependencies = with ps; [
+                requests
+              ];
+            };
+          in
+          {
             enable = true;
             config = {
               default_config = {};
@@ -98,7 +117,7 @@ in
                 country = "IE";
                 time_zone = "Europe/Dublin";
                 external_url = "https://hass.${pubDomain}";
-                internal_url = "http://hass-ctr.${domain}:${toString config.services.home-assistant.config.http.server_port}";
+                internal_url = "http://hass-ctr.${domain}:${toString cfg.config.http.server_port}";
               };
               http = {
                 use_x_forwarded_for = true;
@@ -108,6 +127,23 @@ in
                 ];
               };
               automation = "!include automations.yaml";
+
+              sensor = [
+                {
+                  platform = "irish_rail_transport";
+                  name = "To Work from Home";
+                  station = "Glenageary";
+                  stops_at = "Dublin Connolly";
+                  direction = "Northbound";
+                }
+                {
+                  platform = "irish_rail_transport";
+                  name = "To Home from Work";
+                  station = "Dublin Connolly";
+                  stops_at = "Glenageary";
+                  direction = "Southbound";
+                }
+              ];
             };
             extraComponents = [
               "default_config"
@@ -124,6 +160,7 @@ in
               isal
 
               gtts
+              (pyirishrail python3Packages)
             ];
             configWritable = false;
             openFirewall = true;
