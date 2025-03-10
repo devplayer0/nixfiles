@@ -45,6 +45,12 @@ in
     let
       inherit (lib) mkMerge mkIf mkForce;
       inherit (lib.my) networkdAssignment;
+
+      hassCli = pkgs.writeShellScriptBin "hass-cli" ''
+        export HASS_SERVER="http://localhost:${toString config.services.home-assistant.config.http.server_port}"
+        export HASS_TOKEN="$(< ${config.age.secrets."hass/cli-token.txt".path})"
+        exec ${pkgs.home-assistant-cli}/bin/hass-cli "$@"
+      '';
     in
     {
       config = {
@@ -54,7 +60,11 @@ in
 
           secrets = {
             key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGpYX2WbYwUqHp8bFFf0eHFrqrR8xp8IheguA054F8V4";
-            files = { };
+            files = {
+              "hass/cli-token.txt" = {
+                owner = config.my.user.config.name;
+              };
+            };
           };
 
           firewall = {
@@ -65,6 +75,7 @@ in
         environment = {
           systemPackages = with pkgs; [
             usbutils
+            hassCli
           ];
         };
 
@@ -96,6 +107,7 @@ in
                   ipv6.address
                 ];
               };
+              automation = "!include automations.yaml";
             };
             extraComponents = [
               "default_config"
