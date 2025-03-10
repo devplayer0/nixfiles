@@ -1,0 +1,48 @@
+From 7f75d320f6d8ac7ec5185b2145da87f698aec273 Mon Sep 17 00:00:00 2001
+From: Michael Brown <mcb30@ipxe.org>
+Date: Mon, 2 Sep 2024 12:24:57 +0100
+Subject: [PATCH] [etherfabric] Fix use of uninitialised variable in
+ falcon_xaui_link_ok()
+
+The link status check in falcon_xaui_link_ok() reads from the
+FCN_XX_CORE_STAT_REG_MAC register only on production hardware (where
+the FPGA version reads as zero), but modifies the value and writes
+back to this register unconditionally.  This triggers an uninitialised
+variable warning on newer versions of gcc.
+
+Fix by assuming that the register exists only on production hardware,
+and so moving the "modify-write" portion of the "read-modify-write"
+operation to also be covered by the same conditional check.
+
+Signed-off-by: Michael Brown <mcb30@ipxe.org>
+---
+ src/drivers/net/etherfabric.c | 15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
+
+diff --git a/src/drivers/net/etherfabric.c b/src/drivers/net/etherfabric.c
+index b40596beae7..be30b71f79f 100644
+--- a/src/drivers/net/etherfabric.c
++++ b/src/drivers/net/etherfabric.c
+@@ -2225,13 +2225,16 @@ falcon_xaui_link_ok ( struct efab_nic *efab )
+ 		sync = ( sync == FCN_XX_SYNC_STAT_DECODE_SYNCED );
+ 		
+ 		link_ok = align_done && sync;
+-	}
+ 
+-	/* Clear link status ready for next read */
+-	EFAB_SET_DWORD_FIELD ( reg, FCN_XX_COMMA_DET, FCN_XX_COMMA_DET_RESET );
+-	EFAB_SET_DWORD_FIELD ( reg, FCN_XX_CHARERR, FCN_XX_CHARERR_RESET);
+-	EFAB_SET_DWORD_FIELD ( reg, FCN_XX_DISPERR, FCN_XX_DISPERR_RESET);
+-	falcon_xmac_writel ( efab, &reg, FCN_XX_CORE_STAT_REG_MAC );
++		/* Clear link status ready for next read */
++		EFAB_SET_DWORD_FIELD ( reg, FCN_XX_COMMA_DET,
++				       FCN_XX_COMMA_DET_RESET );
++		EFAB_SET_DWORD_FIELD ( reg, FCN_XX_CHARERR,
++				       FCN_XX_CHARERR_RESET );
++		EFAB_SET_DWORD_FIELD ( reg, FCN_XX_DISPERR,
++				       FCN_XX_DISPERR_RESET );
++		falcon_xmac_writel ( efab, &reg, FCN_XX_CORE_STAT_REG_MAC );
++	}
+ 
+ 	has_phyxs = ( efab->phy_op->mmds & ( 1 << MDIO_MMD_PHYXS ) );
+ 	if ( link_ok && has_phyxs ) {

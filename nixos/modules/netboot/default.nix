@@ -14,11 +14,14 @@ let
       rev = "b66e27d9b29a172a097c737ab4d378d60fe01b05";
       hash = "sha256-TKZ4WjNV2oZIYNefch7E7m1JpeoC/d7O1kofoNv8G40=";
     };
+
+    # This upstream patch (in newer versions) is needed for newer GCC
+    patches = (if (o ? patches) then o.patches else []) ++ [ ./fix-uninitialised-var.patch ];
   });
   tftpRoot = pkgs.linkFarm "tftp-root" [
     {
       name = "ipxe-x86_64.efi";
-      path = "${pkgs.ipxe}/ipxe.efi";
+      path = "${ipxe}/ipxe.efi";
     }
   ];
   menuFile = pkgs.runCommand "menu.ipxe" {
