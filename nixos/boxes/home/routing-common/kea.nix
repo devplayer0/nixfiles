@@ -132,6 +132,22 @@ in
                   hw-address = "24:8a:07:a8:fe:3a";
                   ip-address = net.cidr.host 40 prefixes.lo.v4;
                 }
+
+                {
+                  # avr
+                  hw-address = "8c:a9:6f:30:03:6b";
+                  ip-address = net.cidr.host 41 prefixes.lo.v4;
+                }
+                {
+                  # tv
+                  hw-address = "00:a1:59:b8:4d:86";
+                  ip-address = net.cidr.host 42 prefixes.lo.v4;
+                }
+                {
+                  # android tv
+                  hw-address = "b8:7b:d4:95:c6:74";
+                  ip-address = net.cidr.host 43 prefixes.lo.v4;
+                }
               ];
             }
           ];
