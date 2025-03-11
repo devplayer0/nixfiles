@@ -108,6 +108,31 @@ in
           in
           {
             enable = true;
+
+            extraComponents = [
+              "default_config"
+              "esphome"
+              "google_translate"
+
+              "met"
+              "zha"
+              "denonavr"
+              "webostv"
+              "androidtv_remote"
+            ];
+            extraPackages = python3Packages: with python3Packages; [
+              zlib-ng
+              isal
+
+              gtts
+              (pyirishrail python3Packages)
+            ];
+            customComponents = with pkgs.home-assistant-custom-components; [
+              alarmo
+            ];
+
+            configWritable = false;
+            openFirewall = true;
             config = {
               default_config = {};
               homeassistant = {
@@ -145,25 +170,6 @@ in
                 }
               ];
             };
-            extraComponents = [
-              "default_config"
-              "esphome"
-              "google_translate"
-
-              "met"
-              "zha"
-              "denonavr"
-              "webostv"
-            ];
-            extraPackages = python3Packages: with python3Packages; [
-              zlib-ng
-              isal
-
-              gtts
-              (pyirishrail python3Packages)
-            ];
-            configWritable = false;
-            openFirewall = true;
           };
         };
       };
