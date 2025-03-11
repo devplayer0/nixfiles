@@ -152,6 +152,7 @@ in
                 ];
               };
               automation = "!include automations.yaml";
+              script = "!include scripts.yaml";
 
               sensor = [
                 {
