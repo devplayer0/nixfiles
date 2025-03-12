@@ -119,6 +119,7 @@ in
               "denonavr"
               "webostv"
               "androidtv_remote"
+              "heos"
             ];
             extraPackages = python3Packages: with python3Packages; [
               zlib-ng
@@ -150,6 +151,7 @@ in
                   ipv4.address
                   ipv6.address
                 ];
+                ip_ban_enabled = false;
               };
               automation = "!include automations.yaml";
               script = "!include scripts.yaml";
