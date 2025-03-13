@@ -148,6 +148,11 @@ in
                   hw-address = "b8:7b:d4:95:c6:74";
                   ip-address = net.cidr.host 43 prefixes.lo.v4;
                 }
+                {
+                  # hass-panel
+                  hw-address = "80:30:49:cd:d7:51";
+                  ip-address = net.cidr.host 44 prefixes.lo.v4;
+                }
               ];
             }
           ];
