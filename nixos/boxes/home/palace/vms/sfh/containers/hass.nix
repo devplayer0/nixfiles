@@ -155,6 +155,7 @@ in
               };
               automation = "!include automations.yaml";
               script = "!include scripts.yaml";
+              scene = "!include scenes.yaml";
 
               sensor = [
                 {
