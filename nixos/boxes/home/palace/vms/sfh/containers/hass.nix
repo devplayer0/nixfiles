@@ -108,6 +108,9 @@ in
                   # "http://reolink-living-room.${domain}/flv?port=1935&app=bcs&stream=channel0_main.bcs&user=admin#video=copy#audio=copy#audio=opus"
                   "rtsp://admin:@reolink-living-room:554/h264Preview_01_main"
                 ];
+                webcam_office = [
+                  "ffmpeg:device?video=/dev/video0&video_size=1024x576#video=h264"
+                ];
               };
             };
           };
@@ -134,6 +137,21 @@ in
                   detect = {
                     enabled = false;
                   };
+                  record = {
+                    enabled = true;
+                    retain.days = 1;
+                  };
+                };
+
+                webcam_office = {
+                  ffmpeg.inputs = [
+                    {
+                      path = "rtsp://127.0.0.1:8554/webcam_office";
+                      input_args = "preset-rtsp-restream";
+                      roles = [ "record" "detect" ];
+                    }
+                  ];
+                  detect.enabled = false;
                   record = {
                     enabled = true;
                     retain.days = 1;

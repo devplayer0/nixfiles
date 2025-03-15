@@ -192,6 +192,8 @@
               "device qemu-xhci,id=xhci"
               # Front-right port?
               "device usb-host,hostbus=1,hostport=4"
+              # Front-left port
+              "device usb-host,hostbus=1,hostport=3"
             ];
           };
         };
