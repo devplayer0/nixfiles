@@ -225,6 +225,8 @@ in
             ups IN A ${net.cidr.host 20 prefixes.lo.v4}
             palace-kvm IN A ${net.cidr.host 21 prefixes.lo.v4}
 
+            reolink-living-room IN A ${net.cidr.host 45 prefixes.lo.v4}
+
             ${lib.my.dns.fwdRecords {
               inherit allAssignments names;
               domain = config.networking.domain;

@@ -153,6 +153,11 @@ in
                   hw-address = "80:30:49:cd:d7:51";
                   ip-address = net.cidr.host 44 prefixes.lo.v4;
                 }
+                {
+                  # reolink-living-room
+                  hw-address = "ec:71:db:30:69:a4";
+                  ip-address = net.cidr.host 45 prefixes.lo.v4;
+                }
               ];
             }
           ];

@@ -571,6 +571,22 @@ in
           }
         ];
       })
+      (mkIf config.services.frigate.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = "/var/lib/frigate";
+            mode = "0755";
+            user = "frigate";
+            group = "frigate";
+          }
+          {
+            directory = "/var/cache/frigate";
+            mode = "0755";
+            user = "frigate";
+            group = "frigate";
+          }
+        ];
+      })
     ]))
   ]);
 

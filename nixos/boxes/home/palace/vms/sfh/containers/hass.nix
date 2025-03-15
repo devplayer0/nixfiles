@@ -13,6 +13,7 @@ in
     assignments = {
       hi = {
         name = "hass-ctr";
+        altNames = [ "frigate" ];
         inherit domain;
         mtu = hiMTU;
         ipv4 = {
@@ -68,7 +69,7 @@ in
           };
 
           firewall = {
-            tcp.allowed = [ ];
+            tcp.allowed = [ "http" 1883 ];
           };
         };
 
@@ -87,6 +88,61 @@ in
         };
 
         services = {
+          mosquitto = {
+            enable = true;
+            listeners = [
+              {
+                omitPasswordAuth = true;
+                settings = {
+                  allow_anonymous = true;
+                };
+              }
+            ];
+          };
+
+          go2rtc = {
+            enable = true;
+            settings = {
+              streams = {
+                reolink_living_room = [
+                  # "http://reolink-living-room.${domain}/flv?port=1935&app=bcs&stream=channel0_main.bcs&user=admin#video=copy#audio=copy#audio=opus"
+                  "rtsp://admin:@reolink-living-room:554/h264Preview_01_main"
+                ];
+              };
+            };
+          };
+
+          frigate = {
+            enable = true;
+            hostname = "frigate.${domain}";
+            settings = {
+              mqtt = {
+                enabled = true;
+                host = "localhost";
+                topic_prefix = "frigate";
+              };
+
+              cameras = {
+                reolink_living_room = {
+                  ffmpeg.inputs = [
+                    {
+                      path = "rtsp://127.0.0.1:8554/reolink_living_room";
+                      input_args = "preset-rtsp-restream";
+                      roles = [ "record" "detect" ];
+                    }
+                  ];
+                  detect = {
+                    enabled = false;
+                  };
+                  record = {
+                    enabled = true;
+                    retain.days = 1;
+                  };
+                };
+              };
+            };
+          };
+
           home-assistant =
           let
             cfg = config.services.home-assistant;
@@ -120,6 +176,7 @@ in
               "webostv"
               "androidtv_remote"
               "heos"
+              "mqtt"
             ];
             extraPackages = python3Packages: with python3Packages; [
               zlib-ng
@@ -130,6 +187,7 @@ in
             ];
             customComponents = with pkgs.home-assistant-custom-components; [
               alarmo
+              frigate
             ];
 
             configWritable = false;
