@@ -86,6 +86,22 @@ class TTESaver(Screensaver):
         self.running = False
         self.proc.terminate()
 
+class FFmpegCACASaver(Screensaver):
+    def __init__(self, video, weight=1.5):
+        super().__init__(
+            ['@ffmpeg@/bin/ffmpeg', '-hide_banner', '-loglevel', 'error',
+             '-i', video,
+             '-pix_fmt', 'rgb24', '-window_size', '80x80',
+             '-f', 'caca', '-'],
+            env={
+                'CACA_DRIVER': 'ncurses',
+            },
+            weight=weight,
+        )
+
+    def stop(self):
+        super().stop(kill=True)
+
 class MultiSaver:
     savers = [
         DoomSaver(0),
@@ -100,6 +116,9 @@ class MultiSaver:
         TTESaver('ss -nltu'),
         TTESaver('ss -ntu'),
         TTESaver('jp2a --width=100 @enojy@'),
+
+        FFmpegCACASaver('@subwaySurfers@'),
+        FFmpegCACASaver('@minecraftParkour@'),
     ]
     state_filename = 'screensaver.json'
 

@@ -2,6 +2,7 @@
 let
   inherit (lib) genAttrs mkIf mkMerge mkForce mapAttrs mkOptionDefault;
   inherit (lib.my) mkBoolOpt';
+  inherit (lib.my.c) pubDomain;
 
   cfg = config.my.gui;
 
@@ -15,13 +16,24 @@ let
     url = "https://distro.ibiblio.org/slitaz/sources/packages/d/doom1.wad";
     hash = "sha256-HX1DvlAeZ9kn5BXguPPinDvzMHXoWXIYFvZSpSbKx3E=";
   };
+  subwaySurfers = pkgs.fetchurl {
+    url = "https://p.${pubDomain}/video/subway-surfers.mkv";
+    hash = "sha256-apn/0DPeihXj+nP6ytVkH/SlZRelxIpRXOUOfxHczl8=";
+  };
+  minecraftParkour = pkgs.fetchurl {
+    url = "https://p.${pubDomain}/video/minecraft-parkour.mkv";
+    hash = "sha256-1fJZyi9N4g/QyoL1Pk7akL0jTDjxReYmN31EOUHhHXk=";
+  };
 
   doomsaver = pkgs.runCommand "doomsaver" {
     inherit (pkgs) windowtolayer;
     chocoDoom = pkgs.chocolate-doom2xx;
+    ffmpeg = pkgs.ffmpeg-full;
     python = pkgs.python3.withPackages (ps: [ ps.filelock ]);
+
     inherit doomWad;
     enojy = ./enojy.jpg;
+    inherit subwaySurfers minecraftParkour;
   } ''
     mkdir -p "$out"/bin
     substituteAll ${./screensaver.py} "$out"/bin/doomsaver
