@@ -17,12 +17,12 @@ let
     hash = "sha256-HX1DvlAeZ9kn5BXguPPinDvzMHXoWXIYFvZSpSbKx3E=";
   };
   subwaySurfers = pkgs.fetchurl {
-    url = "https://p.${pubDomain}/video/subway-surfers.mkv";
-    hash = "sha256-apn/0DPeihXj+nP6ytVkH/SlZRelxIpRXOUOfxHczl8=";
+    url = "https://p.${pubDomain}/video/subway-surfers-smol.mkv";
+    hash = "sha256-fMe7TDRNTymRHIJOi7qG3trzu4GP8a3gCDz+FMkX1dY=";
   };
   minecraftParkour = pkgs.fetchurl {
-    url = "https://p.${pubDomain}/video/minecraft-parkour.mkv";
-    hash = "sha256-1fJZyi9N4g/QyoL1Pk7akL0jTDjxReYmN31EOUHhHXk=";
+    url = "https://p.${pubDomain}/video/minecraft-parkour-smol.mkv";
+    hash = "sha256-723pRm4AsIjY/WFUyAHzTJp+JvH4Pn5hvzF9wHTnOPA=";
   };
 
   doomsaver = pkgs.runCommand "doomsaver" {

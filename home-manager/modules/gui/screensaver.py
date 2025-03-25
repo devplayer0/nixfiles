@@ -87,11 +87,14 @@ class TTESaver(Screensaver):
         self.proc.terminate()
 
 class FFmpegCACASaver(Screensaver):
-    def __init__(self, video, weight=1.5):
+    def __init__(self, video, weight=2):
+        cols, lines = os.get_terminal_size()
+        # IDK if it's reasonable to do this as "1:1"
+        size = lines - 4
         super().__init__(
             ['@ffmpeg@/bin/ffmpeg', '-hide_banner', '-loglevel', 'error',
-             '-i', video,
-             '-pix_fmt', 'rgb24', '-window_size', '80x80',
+             '-stream_loop', '-1', '-i', video,
+             '-pix_fmt', 'rgb24', '-window_size', f'{size}x{size}',
              '-f', 'caca', '-'],
             env={
                 'CACA_DRIVER': 'ncurses',
