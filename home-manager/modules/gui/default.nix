@@ -1,7 +1,7 @@
 { lib, pkgs', pkgs, config, ... }:
 let
   inherit (lib) genAttrs mkIf mkMerge mkForce mapAttrs mkOptionDefault;
-  inherit (lib.my) mkBoolOpt';
+  inherit (lib.my) mkOpt' mkBoolOpt';
   inherit (lib.my.c) pubDomain;
 
   cfg = config.my.gui;
@@ -25,26 +25,33 @@ let
     hash = "sha256-723pRm4AsIjY/WFUyAHzTJp+JvH4Pn5hvzF9wHTnOPA=";
   };
 
-  doomsaver = pkgs.runCommand "doomsaver" {
-    inherit (pkgs) windowtolayer;
+  genLipsum = pkgs.writeScript "lipsum" ''
+    #!${pkgs.python3.withPackages (ps: [ ps.python-lorem ])}/bin/python
+    import lorem
+    print(lorem.get_paragraph(count=5, sep='\n\n'))
+  '';
+  doomsaver' = brainrotTextCommand: pkgs.runCommand "doomsaver" {
+    inherit (pkgs) windowtolayer tmux terminaltexteffects;
     chocoDoom = pkgs.chocolate-doom2xx;
     ffmpeg = pkgs.ffmpeg-full;
     python = pkgs.python3.withPackages (ps: [ ps.filelock ]);
 
     inherit doomWad;
     enojy = ./enojy.jpg;
-    inherit subwaySurfers minecraftParkour;
+    inherit brainrotTextCommand subwaySurfers minecraftParkour;
   } ''
     mkdir -p "$out"/bin
     substituteAll ${./screensaver.py} "$out"/bin/doomsaver
     chmod +x "$out"/bin/doomsaver
   '';
+  doomsaver = doomsaver' cfg.screensaver.brainrotTextCommand;
 in
 {
-  options.my.gui = {
+  options.my.gui = with lib.types; {
     enable = mkBoolOpt' true "Enable settings and packages meant for graphical systems";
     manageGraphical = mkBoolOpt' false "Configure the graphical session";
     standalone = mkBoolOpt' false "Enable settings for fully Nix managed systems";
+    screensaver.brainrotTextCommand = mkOpt' (either path str) genLipsum "Command to generate brainrot text.";
   };
 
   config = mkIf cfg.enable (mkMerge [

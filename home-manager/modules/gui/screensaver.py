@@ -73,7 +73,7 @@ class TTESaver(Screensaver):
 
     def wait(self):
         while self.running:
-            effect_cmd = ['tte', random.choice(self.effects)]
+            effect_cmd = ['@terminaltexteffects@/bin/tte', random.choice(self.effects)]
             print(f"$ {self.cmd} | {' '.join(effect_cmd)}")
             content = subprocess.check_output(self.cmd, shell=True, env=self.env, stderr=subprocess.DEVNULL)
 
@@ -87,17 +87,42 @@ class TTESaver(Screensaver):
         self.proc.terminate()
 
 class FFmpegCACASaver(Screensaver):
+    @staticmethod
+    def command(video, size):
+        return ['@ffmpeg@/bin/ffmpeg', '-hide_banner', '-loglevel', 'error',
+                '-stream_loop', '-1', '-i', video,
+                '-pix_fmt', 'rgb24', '-window_size', f'{size}x{size}',
+                '-f', 'caca', '-']
+
     def __init__(self, video, weight=2):
         cols, lines = os.get_terminal_size()
         # IDK if it's reasonable to do this as "1:1"
         size = lines - 4
         super().__init__(
-            ['@ffmpeg@/bin/ffmpeg', '-hide_banner', '-loglevel', 'error',
-             '-stream_loop', '-1', '-i', video,
-             '-pix_fmt', 'rgb24', '-window_size', f'{size}x{size}',
-             '-f', 'caca', '-'],
+            self.command(video, size),
+            env={'CACA_DRIVER': 'ncurses'},
+            weight=weight,
+        )
+
+    def stop(self):
+        super().stop(kill=True)
+
+class BrainrotStorySaver(Screensaver):
+    def __init__(self, video, text_command, weight=2):
+        cols, lines = os.get_terminal_size()
+        video_size = lines - 1
+        video_command = ' '.join(FFmpegCACASaver.command(video, video_size))
+        text_command = (
+            f'while true; do {text_command} | '
+            f'@terminaltexteffects@/bin/tte --wrap-text --canvas-width=80 --canvas-height={video_size//2} --anchor-canvas=c '
+            'print --final-gradient-stops=ffffff; clear; done' )
+        super().__init__(
+            ['@tmux@/bin/tmux', 'new-session', '-s', f'screensaver-{os.urandom(4).hex()}', '-n', 'brainrot',
+             text_command, ';', 'split-window', '-hbl', str(lines), video_command],
+            # ['sh', '-c', text_command],
             env={
                 'CACA_DRIVER': 'ncurses',
+                'SHELL': '/bin/sh',
             },
             weight=weight,
         )
@@ -120,8 +145,8 @@ class MultiSaver:
         TTESaver('ss -ntu'),
         TTESaver('jp2a --width=100 @enojy@'),
 
-        FFmpegCACASaver('@subwaySurfers@'),
-        FFmpegCACASaver('@minecraftParkour@'),
+        BrainrotStorySaver('@subwaySurfers@', '@brainrotTextCommand@'),
+        BrainrotStorySaver('@minecraftParkour@', '@brainrotTextCommand@'),
     ]
     state_filename = 'screensaver.json'
 
