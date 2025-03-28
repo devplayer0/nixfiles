@@ -251,6 +251,9 @@ in
               proxyResolveWhileRunning = true;
               sslDhparam = config.age.secrets."dhparams.pem".path;
 
+              appendConfig = ''
+                worker_processes auto;
+              '';
               # Based on recommended*Settings, but probably better to be explicit about these
               appendHttpConfig = ''
                 ${baseHttpConfig}
