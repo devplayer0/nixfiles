@@ -56,6 +56,7 @@ in
       gnome = {
         gnome-keyring.enable = true;
       };
+      udisks2.enable = true;
 
       udev = {
         packages = [
