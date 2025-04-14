@@ -116,8 +116,9 @@ class BrainrotStorySaver(Screensaver):
             f'while true; do {text_command} | '
             f'@terminaltexteffects@/bin/tte --wrap-text --canvas-width=80 --canvas-height={video_size//2} --anchor-canvas=c '
             'print --final-gradient-stops=ffffff; clear; done' )
+        self.tmux_session = f'screensaver-{os.urandom(4).hex()}'
         super().__init__(
-            ['@tmux@/bin/tmux', 'new-session', '-s', f'screensaver-{os.urandom(4).hex()}', '-n', 'brainrot',
+            ['@tmux@/bin/tmux', 'new-session', '-s', self.tmux_session, '-n', 'brainrot',
              text_command, ';', 'split-window', '-hbl', str(lines), video_command],
             # ['sh', '-c', text_command],
             env={
@@ -128,7 +129,7 @@ class BrainrotStorySaver(Screensaver):
         )
 
     def stop(self):
-        super().stop(kill=True)
+        subprocess.check_call(['@tmux@/bin/tmux', 'kill-session', '-t', self.tmux_session])
 
 class MultiSaver:
     savers = [
