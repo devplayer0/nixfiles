@@ -5,12 +5,13 @@ let
 
   # devplayer0
   op = "6d7d971b-ce10-435b-85c5-c99c0d8d288c";
+  kev = "703b378a-09f9-4c1d-9876-1c9305728c49";
   whitelist = concatStringsSep "," [
     op
     "dcd2ecb9-2b5e-49cb-9d4f-f5a76162df56" # Elderlypug
     "fcb26db2-c3ce-41aa-b588-efec79d37a8a" # Jesthral_
     "1d366062-12c0-4e29-aba7-6ab5d8c6bb05" # shr3kas0ras
-    "703b378a-09f9-4c1d-9876-1c9305728c49" # OROURKEIRE
+    kev
     "f105bbe6-eda6-4a13-a8cf-894e77cab77b" # Adzerq
     "1fc94979-41fb-497a-81e9-34ae24ca537a" # johnnyscrims
     "d53c91df-b6e6-4463-b106-e8427d7a8d01" # BossLonus
@@ -124,7 +125,7 @@ in
           EXISTING_WHITELIST_FILE = "SYNCHRONIZE";
           WHITELIST = whitelist;
           EXISTING_OPS_FILE = "SYNCHRONIZE";
-          OPS = op;
+          OPS = concatStringsSep "," [ op kev ];
           DIFFICULTY = "normal";
           SPAWN_PROTECTION = "0";
           # VIEW_DISTANCE = "20";
