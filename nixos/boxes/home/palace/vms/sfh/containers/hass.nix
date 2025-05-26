@@ -195,6 +195,7 @@ in
               "androidtv_remote"
               "heos"
               "mqtt"
+              "wled"
             ];
             extraPackages = python3Packages: with python3Packages; [
               zlib-ng

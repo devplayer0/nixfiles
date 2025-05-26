@@ -158,6 +158,11 @@ in
                   hw-address = "ec:71:db:30:69:a4";
                   ip-address = net.cidr.host 45 prefixes.lo.v4;
                 }
+                {
+                  # nixlight
+                  hw-address = "00:4b:12:3b:d3:14";
+                  ip-address = net.cidr.host 46 prefixes.lo.v4;
+                }
               ];
             }
           ];
