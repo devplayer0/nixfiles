@@ -156,6 +156,8 @@ in
             enshrouded IN A ${assignments.internal.ipv4.address}
             kevcraft IN A ${assignments.internal.ipv4.address}
             kevcraft IN AAAA ${allAssignments.kevcraft-oci.internal.ipv6.address}
+            kinkcraft IN A ${assignments.internal.ipv4.address}
+            kinkcraft IN AAAA ${allAssignments.kinkcraft-oci.internal.ipv6.address}
 
             mail-vm IN A ${net.cidr.host 0 prefixes.mail.v4}
             mail-vm IN AAAA ${net.cidr.host 1 prefixes.mail.v6}

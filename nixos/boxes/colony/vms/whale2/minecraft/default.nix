@@ -145,6 +145,47 @@ in
           ''--network=colony:${dockerNetAssignment allAssignments "kevcraft-oci"}''
         ];
       };
+
+      kinkcraft = {
+        # 2025.5.1-java21-alpine
+        image = "itzg/minecraft-server@sha256:de26c7128e3935f3be48fd30283f0b5a6da1b3d9f1a10c9f92502ee1ba072f7b";
+
+        environment = {
+          TYPE = "MODRINTH";
+          SERVER_PORT = "25568";
+          QUERY_PORT = "25568";
+
+          EULA = "true";
+          ENABLE_QUERY = "true";
+          ENABLE_RCON = "true";
+          MOTD = "§4§k----- §9K§ai§bn§ck§dc§er§fa§6f§5t §4§k-----";
+          ICON = "/ext/icon.png";
+
+          EXISTING_WHITELIST_FILE = "SYNCHRONIZE";
+          WHITELIST = whitelist;
+          EXISTING_OPS_FILE = "SYNCHRONIZE";
+          OPS = op;
+          DIFFICULTY = "normal";
+          SPAWN_PROTECTION = "0";
+          VIEW_DISTANCE = "20";
+
+          MAX_MEMORY = "6G";
+          MODRINTH_MODPACK = "https://cdn.modrinth.com/data/CIYf3Hk8/versions/NGutsQSd/Simpcraft-0.2.1.mrpack";
+
+          TZ = "Europe/Dublin";
+        };
+        environmentFiles = [ config.age.secrets."whale2/simpcraft.env".path ];
+
+        volumes = [
+          "kinkcraft_data:/data"
+          "${./icon.png}:/ext/icon.png:ro"
+        ];
+
+        extraOptions = [
+          ''--network=colony:${dockerNetAssignment allAssignments "kinkcraft-oci"}''
+        ];
+      };
+
     };
 
     services = {

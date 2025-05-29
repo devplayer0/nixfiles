@@ -54,6 +54,7 @@ in
       simpcraft-staging-oci = 4;
       enshrouded-oci = 5;
       kevcraft-oci = 6;
+      kinkcraft-oci = 7;
     };
 
     configuration = { lib, pkgs, modulesPath, config, assignments, allAssignments, ... }:

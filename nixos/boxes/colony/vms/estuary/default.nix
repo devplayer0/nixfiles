@@ -402,6 +402,7 @@ in
                       ip6 daddr ${aa.simpcraft-oci.internal.ipv6.address} tcp dport 25565 accept
                       ip6 daddr ${aa.simpcraft-staging-oci.internal.ipv6.address} tcp dport 25565 accept
                       ip6 daddr ${aa.kevcraft-oci.internal.ipv6.address} tcp dport 25567 accept
+                      ip6 daddr ${aa.kinkcraft-oci.internal.ipv6.address} tcp dport 25568 accept
                       return
                     }
                     chain routing-udp {
@@ -410,6 +411,7 @@ in
                       ip6 daddr ${aa.simpcraft-oci.internal.ipv6.address} udp dport 25565 accept
                       ip6 daddr ${aa.enshrouded-oci.internal.ipv6.address} udp dport { 15636-15637 } accept
                       ip6 daddr ${aa.kevcraft-oci.internal.ipv6.address} udp dport 25567 accept
+                      ip6 daddr ${aa.kinkcraft-oci.internal.ipv6.address} udp dport 25568 accept
                       return
                     }
                     chain filter-routing {
