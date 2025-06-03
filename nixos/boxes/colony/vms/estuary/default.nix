@@ -219,6 +219,9 @@ in
               mkMerge
               [
                 (mkIXPConfig "frys-ix" "185.1.203.196/24" "2001:7f8:10f::3:3850:196/64")
+                # FrysIX is migrating to a /23
+                { "85-frys-ix".address = [ "185.1.160.196/23" ]; }
+
                 (mkIXPConfig "nl-ix" "193.239.116.145/22" "2001:7f8:13::a521:1024:1/64")
                 (mkIXPConfig "fogixp" "185.1.147.159/24" "2001:7f8:ca:1::159/64")
               {
