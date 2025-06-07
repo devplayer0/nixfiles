@@ -379,6 +379,11 @@ in
         useACMEHost = pubDomain;
       };
 
+      "mc-map-kink.${pubDomain}" = {
+        locations."/".proxyPass = "http://kinkcraft-oci.${domain}:8100";
+        useACMEHost = pubDomain;
+      };
+
       "librespeed.${domain}" = {
         locations."/".proxyPass = "http://localhost:8989";
       };
