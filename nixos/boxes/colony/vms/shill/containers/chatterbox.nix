@@ -328,6 +328,7 @@ in
                     };
                     permissions = {
                       "@dev:nul.ie" = "admin";
+                      "@adzerq:nul.ie" = "user";
                     };
                   };
                 };
