@@ -24,8 +24,8 @@ in
         onState = [ "routable" ];
         script = ''
           #!${pkgs.runtimeShell}
-          if [ $IFACE = "lan" ]; then
-            ${mstpd}/sbin/mstpctl setforcevers $IFACE rstp
+          if [ "$IFACE" = "lan" ]; then
+            ${mstpd}/sbin/mstpctl setforcevers "$IFACE" rstp
           fi
         '';
       };
