@@ -4,7 +4,7 @@ let
   inherit (lib) mkMerge mkDefault;
   inherit (lib.my) net;
   inherit (lib.my.c) pubDomain;
-  inherit (lib.my.c.colony) domain prefixes;
+  inherit (lib.my.c.colony) domain prefixes firewallForwards;
   inherit (lib.my.c.nginx) baseHttpConfig proxyHeaders;
 in
 {
@@ -197,6 +197,7 @@ in
 
               firewall = {
                 tcp.allowed = [ 19999 "http" "https" ];
+                nat.forwardPorts."${allAssignments.estuary.internal.ipv4.address}" = firewallForwards allAssignments;
                 extraRules = ''
                   table inet filter {
                     chain forward {
