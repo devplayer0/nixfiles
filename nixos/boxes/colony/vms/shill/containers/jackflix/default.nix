@@ -131,6 +131,7 @@ in
             };
           };
 
+          flaresolverr.enable = true;
           jackett.enable = true;
           radarr.enable = true;
           sonarr.enable = true;
