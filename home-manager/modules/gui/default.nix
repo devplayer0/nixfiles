@@ -83,6 +83,7 @@ in
             cmatrix
             doomsaver
 
+            ffmpeg-full
             xournalpp
           ];
         };
