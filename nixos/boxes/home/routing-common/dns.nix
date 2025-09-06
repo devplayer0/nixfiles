@@ -19,7 +19,7 @@ in
           owner = "pdns";
           group = "pdns";
         };
-        "home/pdns/recursor.conf" = {
+        "home/pdns/recursor.yml" = {
           owner = "pdns-recursor";
           group = "pdns-recursor";
         };
@@ -28,71 +28,78 @@ in
 
       pdns.recursor = {
         enable = true;
-        extraSettingsFile = config.age.secrets."home/pdns/recursor.conf".path;
+        extraSettingsFile = config.age.secrets."home/pdns/recursor.yml".path;
       };
     };
 
     services = {
       pdns-recursor = {
-        dns = {
-          address = [
-            "127.0.0.1" "::1"
-            assignments.hi.ipv4.address assignments.hi.ipv6.address
-            assignments.lo.ipv4.address assignments.lo.ipv6.address
-          ];
-          allowFrom = [
-            "127.0.0.0/8" "::1/128"
-            prefixes.hi.v4 prefixes.hi.v6
-            prefixes.lo.v4 prefixes.lo.v6
-          ] ++ (with lib.my.c.tailscale.prefix; [ v4 v6 ]);
-        };
+        yaml-settings = {
+          incoming = {
+            listen = [
+              "127.0.0.1" "::1"
+              assignments.hi.ipv4.address assignments.hi.ipv6.address
+              assignments.lo.ipv4.address assignments.lo.ipv6.address
+            ];
+            allow_from = [
+              "127.0.0.0/8" "::1/128"
+              prefixes.hi.v4 prefixes.hi.v6
+              prefixes.lo.v4 prefixes.lo.v6
+            ] ++ (with lib.my.c.tailscale.prefix; [ v4 v6 ]);
 
-        settings = {
-          query-local-address = [
-            "0.0.0.0"
-            "::"
-          ];
-          forward-zones = map (z: "${z}=127.0.0.1:5353") authZones;
+            # DNS NOTIFY messages override TTL
+            allow_notify_for = authZones;
+            allow_notify_from = [ "127.0.0.0/8" "::1/128" ];
+          };
 
-          # DNS NOTIFY messages override TTL
-          allow-notify-for = authZones;
-          allow-notify-from = [ "127.0.0.0/8" "::1/128" ];
+          outgoing = {
+            source_address = [ "0.0.0.0" "::" ];
+          };
 
-          webserver = true;
-          webserver-address = "::";
-          webserver-allow-from = [ "127.0.0.1" "::1" ];
+          recursor = {
+            forward_zones = map (z: {
+              zone = z;
+              forwarders = [ "127.0.0.1:5353" ];
+            }) authZones;
 
-          lua-dns-script = pkgs.writeText "pdns-script.lua" ''
-            blocklist = newDS()
+            lua_dns_script = pkgs.writeText "pdns-script.lua" ''
+              blocklist = newDS()
 
-            function preresolve(dq)
-              local name = dq.qname:toString()
+              function preresolve(dq)
+                local name = dq.qname:toString()
 
-              -- Disney+ doesn't like our IP space...
-              if dq.qtype == pdns.AAAA and (string.find(name, "disneyplus") or string.find(name, "disney-plus") or string.find(name , "disney.api")) then
-                dq.rcode = 0
-                return true
-              end
-
-              if blocklist:check(dq.qname) then
-                if dq.qtype == pdns.A then
-                  dq:addAnswer(dq.qtype, "127.0.0.1")
-                elseif dq.qtype == pdns.AAAA then
-                  dq:addAnswer(dq.qtype, "::1")
+                -- Disney+ doesn't like our IP space...
+                if dq.qtype == pdns.AAAA and (string.find(name, "disneyplus") or string.find(name, "disney-plus") or string.find(name , "disney.api")) then
+                  dq.rcode = 0
+                  return true
                 end
-                return true
+
+                if blocklist:check(dq.qname) then
+                  if dq.qtype == pdns.A then
+                    dq:addAnswer(dq.qtype, "127.0.0.1")
+                  elseif dq.qtype == pdns.AAAA then
+                    dq:addAnswer(dq.qtype, "::1")
+                  end
+                  return true
+                end
+
+                return false
               end
 
-              return false
-            end
-
-            for line in io.lines("${./dns-blocklist.txt}") do
-              entry = line:gsub("%s+", "")
-              if entry ~= "" and string.sub(entry, 1, 1) ~= "#" then
-                blocklist:add(entry)
+              for line in io.lines("${./dns-blocklist.txt}") do
+                entry = line:gsub("%s+", "")
+                if entry ~= "" and string.sub(entry, 1, 1) ~= "#" then
+                  blocklist:add(entry)
+                end
               end
-            end
-          '';
+            '';
+          };
+
+          webservice = {
+            webserver = true;
+            address = "::";
+            allow_from = [ "127.0.0.1" "::1" ];
+          };
         };
       };
     };

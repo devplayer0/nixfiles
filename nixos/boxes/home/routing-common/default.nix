@@ -141,8 +141,8 @@ in
                   onState = [ "configured" ];
                   script = ''
                   #!${pkgs.runtimeShell}
-                  if [ $IFACE = "wan-ifb" ]; then
-                    ${pkgs.iproute2}/bin/tc filter add dev wan parent ffff: matchall action mirred egress redirect dev $IFACE
+                  if [ "$IFACE" = "wan-ifb" ]; then
+                    ${pkgs.iproute2}/bin/tc filter add dev wan parent ffff: matchall action mirred egress redirect dev "$IFACE"
                   fi
                   '';
                 };

@@ -221,8 +221,8 @@ in
       memorySize = dummyOption;
       qemu.options = dummyOption;
     };
+    image.baseName = dummyOption;
     isoImage = {
-      isoBaseName = dummyOption;
       volumeID = dummyOption;
       edition = dummyOption;
       appendToMenuLabel = dummyOption;

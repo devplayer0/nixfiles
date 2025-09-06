@@ -65,9 +65,10 @@ in
       };
       nixpkgs = {
         overlays = [
-          inputs.deploy-rs.overlay
+          inputs.deploy-rs.overlays.default
           inputs.sharry.overlays.default
-          inputs.borgthin.overlays.default
+          # TODO: Re-enable when borgthin is updated
+          # inputs.borgthin.overlays.default
           inputs.boardie.overlays.default
         ];
         config = {

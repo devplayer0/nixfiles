@@ -66,7 +66,7 @@ in
 
         lsd = {
           enable = mkDefault true;
-          enableAliases = mkDefault true;
+          enableFishIntegration = mkDefault true;
         };
 
         starship = {
@@ -132,6 +132,8 @@ in
 
         ssh = {
           enable = mkDefault true;
+          # TODO: Set after 25.11 releases
+          # enableDefaultConfig = false;
           matchBlocks = {
             nix-dev-vm = {
               user = "dev";
@@ -226,6 +228,8 @@ in
       # Note: If globalPkgs mode is on, then these will be overridden by the NixOS equivalents of these options
       nixpkgs = {
         overlays = [
+          inputs.libnet.overlays.default
+
           inputs.deploy-rs.overlay
           inputs.boardie.overlays.default
           inputs.nixGL.overlays.default

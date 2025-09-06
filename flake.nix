@@ -3,17 +3,22 @@
 
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
+    # libnet.url = "github:reo101/nix-lib-net";
+    libnetRepo = {
+      url = "github:oddlama/nixos-extra-modules";
+      flake = false;
+    };
     devshell.url = "github:numtide/devshell";
     devshell.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
     nixpkgs-unstable.url = "nixpkgs/nixos-unstable";
-    nixpkgs-stable.url = "nixpkgs/nixos-24.11";
+    nixpkgs-stable.url = "nixpkgs/nixos-25.05";
     nixpkgs-mine.url = "github:devplayer0/nixpkgs/devplayer0";
     nixpkgs-mine-stable.url = "github:devplayer0/nixpkgs/devplayer0-stable";
 
     home-manager-unstable.url = "home-manager";
     home-manager-unstable.inputs.nixpkgs.follows = "nixpkgs-unstable";
-    home-manager-stable.url = "home-manager/release-24.11";
+    home-manager-stable.url = "home-manager/release-25.05";
     home-manager-stable.inputs.nixpkgs.follows = "nixpkgs-stable";
 
     # Stuff used by the flake for build / deployment
@@ -25,7 +30,7 @@
 
     # Stuff used by systems
     impermanence.url = "github:nix-community/impermanence";
-    boardie.url = "git+https://git.nul.ie/dev/boardie";
+    boardie.url = "github:devplayer0/boardie";
     boardie.inputs.nixpkgs.follows = "nixpkgs-unstable";
     nixGL.url = "github:nix-community/nixGL";
     nixGL.inputs.nixpkgs.follows = "nixpkgs-unstable";
@@ -34,7 +39,8 @@
     sharry.url = "github:eikek/sharry";
     sharry.inputs.nixpkgs.follows = "nixpkgs-unstable";
     borgthin.url = "github:devplayer0/borg";
-    borgthin.inputs.nixpkgs.follows = "nixpkgs-mine";
+    # TODO: Update borgthin so this works
+    # borgthin.inputs.nixpkgs.follows = "nixpkgs-mine";
   };
 
   outputs =
@@ -57,7 +63,7 @@
       # Extend a lib with extras that _must not_ internally reference private nixpkgs. flake-utils doesn't, but many
       # other flakes (e.g. home-manager) probably do internally.
       libOverlay = final: prev: {
-        my = import ./lib { lib = final; };
+        my = import ./lib { inherit inputs; lib = final; };
         flake = flake-utils.lib;
       };
       pkgsLibOverlay = final: prev: { lib = prev.lib.extend libOverlay; };
@@ -88,10 +94,11 @@
         (_: path: mkDefaultSystemsPkgs path (system: {
           overlays = [
             pkgsLibOverlay
+
             myPkgsOverlay
             inputs.devshell.overlays.default
             inputs.ragenix.overlays.default
-            inputs.deploy-rs.overlay
+            inputs.deploy-rs.overlays.default
             (flakePackageOverlay inputs.home-manager-unstable system)
           ];
         }))
@@ -102,6 +109,7 @@
         (_: path: mkDefaultSystemsPkgs path (_: {
           overlays = [
             pkgsLibOverlay
+
             myPkgsOverlay
           ];
 
@@ -157,7 +165,7 @@
     # Platform independent stuff
     {
       nixpkgs = pkgs';
-      inherit lib nixfiles;
+      inherit inputs lib nixfiles;
 
       overlays.default = myPkgsOverlay;
 

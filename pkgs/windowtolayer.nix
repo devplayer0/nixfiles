@@ -1,18 +1,25 @@
 { lib
 , fetchFromGitLab
 , rustPlatform
+, python3
+, rustfmt
 }:
 rustPlatform.buildRustPackage rec {
   pname = "windowtolayer";
-  version = "a5b89c3c";
+  version = "97ebd079";
+
+  nativeBuildInputs = [
+    python3
+    rustfmt
+  ];
 
   src = fetchFromGitLab {
     domain = "gitlab.freedesktop.org";
     owner = "mstoeckl";
     repo = pname;
-    rev = "a5b89c3c047297fd574932860a6c89e9ea02ba5d";
-    hash = "sha256-rssL2XkbTqUvJqfUFhzULeE4/VBzjeBC5iZWSJ8MJ+M=";
+    rev = "97ebd0790b13bf00afb0c53a768397882fd2e831";
+    hash = "sha256-XjbhZEoE5NPBofyJe7OSsE7MWgzjyRjBqiEzaQEuRrU=";
   };
 
-  cargoHash = "sha256-XHmLsx9qdjlBz4xJFFiO24bR9CMw1o5368K+YMpMIBA=";
+  cargoHash = "sha256-M0BVSUEFGvjgX+vSpwzvaEGs0i80XOTCzvbV4SzYpLc=";
 }

@@ -87,7 +87,7 @@ in
             netdata.enable = true;
             mastodon = mkMerge [
               rec {
-                enable = true;
+                enable = false;
                 localDomain = extraConfig.WEB_DOMAIN; # for nginx config
                 extraConfig = {
                   LOCAL_DOMAIN = "nul.ie";
@@ -95,7 +95,9 @@ in
                 };
 
                 secretKeyBaseFile = config.age.secrets."toot/secret-key.txt".path;
-                otpSecretFile = config.age.secrets."toot/otp-secret.txt".path;
+                # TODO: This was removed at some point.
+                # If we want to bring Mastodon back, this will probably need to be addressd.
+                # otpSecretFile = config.age.secrets."toot/otp-secret.txt".path;
                 vapidPrivateKeyFile = config.age.secrets."toot/vapid-key.txt".path;
                 vapidPublicKeyFile = toString (pkgs.writeText
                   "vapid-pubkey.txt"
@@ -164,7 +166,7 @@ in
               };
             };
 
-            pds = {
+            bluesky-pds = {
               enable = true;
               environmentFiles = [ config.age.secrets."toot/pds.env".path ];
               settings = {

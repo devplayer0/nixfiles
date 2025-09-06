@@ -1,4 +1,4 @@
-{ lib, pkgs, config, ... }:
+{ inputs, lib, pkgs, config, ... }:
 let
   inherit (builtins) substring match;
   inherit (lib)
@@ -127,7 +127,9 @@ in
     enable = mkBoolOpt' false "Whether to enable borgthin jobs";
     lvmPackage = mkOpt' package pkgs.lvm2 "Packge containing LVM tools";
     thinToolsPackage = mkOpt' package pkgs.thin-provisioning-tools "Package containing thin-provisioning-tools";
-    package = mkOpt' package pkgs.borgthin "borgthin package";
+    # Really we should use the version from the overlay, but the package is quite far behind...
+    # Not bothering to update until Borg 2.0 releases
+    package = mkOpt' package inputs.borgthin.packages.${config.nixpkgs.system}.borgthin "borgthin package";
     jobs = mkOpt' (attrsOf jobType) { } "borgthin jobs";
   };
 

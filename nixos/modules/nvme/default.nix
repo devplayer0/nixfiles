@@ -4,19 +4,6 @@ let
   inherit (lib.my) mkOpt';
 
   cfg = config.my.nvme;
-  nvme-cli = pkgs.nvme-cli.override {
-    libnvme = pkgs.libnvme.overrideAttrs (o: rec {
-      # TODO: Remove when 1.11.1 releases (see https://github.com/linux-nvme/libnvme/pull/914)
-      version = "1.11.1";
-      src = pkgs.fetchFromGitHub {
-        owner = "linux-nvme";
-        repo = "libnvme";
-        rev = "v${version}";
-        hash = "sha256-CEGr7PDOVRi210XvICH8iLYDKn8S9bGruBO4tycvsT8=";
-      };
-      patches = (if (o ? patches) then o.patches else [ ]) ++ [ ./libnvme-hostconf.patch ];
-    });
-  };
 
   hostNQN = "nqn.2014-08.org.nvmexpress:uuid:${cfg.uuid}";
   etc = prefix: {
@@ -36,7 +23,7 @@ in
   config = mkIf (cfg.uuid != null) {
     environment = {
       systemPackages = [
-        nvme-cli
+        pkgs.nvme-cli
       ];
       etc = etc "";
     };
@@ -52,10 +39,6 @@ in
             ip = "${iproute2}/bin/ip";
             nvme = "${nvme-cli}/bin/nvme";
           };
-          extraConfig = ''
-            DefaultTimeoutStartSec=20
-            DefaultDeviceTimeoutSec=20
-          '';
 
           network = {
             enable = true;
@@ -70,14 +53,25 @@ in
 
             serviceConfig = {
               Type = "oneshot";
-              ExecStart = "${nvme-cli}/bin/nvme connect -t rdma -a ${cfg.boot.address} -n ${cfg.boot.nqn}";
+              ExecStart = "${pkgs.nvme-cli}/bin/nvme connect -t rdma -a ${cfg.boot.address} -n ${cfg.boot.nqn}";
               Restart = "on-failure";
               RestartSec = 10;
             };
 
             wantedBy = [ "initrd-root-device.target" ];
           };
-        };
+        # TODO: Remove when 25.11 releases
+        } // (if (lib.versionAtLeast lib.my.upstreamRelease "25.11") then {
+          settings.Manager = {
+            DefaultTimeoutStartSec = 20;
+            DefaultDeviceTimeoutSec = 20;
+          };
+        } else {
+          extraConfig = ''
+            DefaultTimeoutStartSec=20
+            DefaultDeviceTimeoutSec=20
+          '';
+        });
       };
     };
   };

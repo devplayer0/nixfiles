@@ -178,6 +178,9 @@ in
               dependencies = with ps; [
                 requests
               ];
+
+              pyproject = true;
+              build-system = [ ps.setuptools ];
             };
           in
           {

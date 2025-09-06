@@ -1,4 +1,4 @@
-{ lib, stdenv, autoreconfHook, pkg-config, SDL, SDL_mixer, SDL_net
+{ lib, stdenv, autoreconfHook, pkg-config, SDL1, SDL_mixer, SDL_net
 , fetchFromGitHub, fetchpatch, python3 }:
 
 stdenv.mkDerivation rec {
@@ -35,7 +35,7 @@ stdenv.mkDerivation rec {
     # for documentation
     python3
   ];
-  buildInputs = [ (SDL.override { cacaSupport = true; }) SDL_mixer SDL_net ];
+  buildInputs = [ (SDL1.override { cacaSupport = true; }) SDL_mixer SDL_net ];
   enableParallelBuilding = true;
 
   meta = {

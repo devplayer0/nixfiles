@@ -1,7 +1,7 @@
 { lib, pkgs, config, ... }:
 let
   inherit (builtins) isList;
-  inherit (lib) mkMerge mkIf mkDefault mapAttrsToList concatMapStringsSep concatStringsSep;
+  inherit (lib) mkMerge mkIf mkDefault mapAttrsToList concatMapStringsSep concatStringsSep getExe;
   inherit (lib.my) mkBoolOpt' mkOpt';
 
   # Yoinked from nixos/modules/services/networking/pdns-recursor.nix
@@ -165,11 +165,19 @@ let
 
   extraSettingsOpt = with lib.types; mkOpt' (nullOr str) null "Path to extra settings (e.g. for secrets).";
   baseAuthSettings = pkgs.writeText "pdns.conf" (settingsToLines cfg.auth.settings);
-  baseRecursorSettings = pkgs.writeText "pdns-recursor.conf" (settingsToLines config.services.pdns-recursor.settings);
+  baseRecursorSettings = (pkgs.formats.yaml { }).generate "pdns-recursor.yaml" config.services.pdns-recursor.yaml-settings;
   generateSettings = type: base: dst: if (cfg."${type}".extraSettingsFile != null) then ''
     oldUmask="$(umask)"
     umask 006
     cat "${base}" "${cfg."${type}".extraSettingsFile}" > "${dst}"
+    umask "$oldUmask"
+  '' else ''
+    cp "${base}" "${dst}"
+  '';
+  generateYamlSettings = type: base: dst: if (cfg."${type}".extraSettingsFile != null) then ''
+    oldUmask="$(umask)"
+    umask 006
+    ${getExe pkgs.yaml-merge} "${base}" "${cfg."${type}".extraSettingsFile}" > "${dst}"
     umask "$oldUmask"
   '' else ''
     cp "${base}" "${dst}"
@@ -315,9 +323,9 @@ in
     (mkIf cfg.recursor.enable {
       systemd.services.pdns-recursor = {
         preStart = ''
-          ${generateSettings "recursor" baseRecursorSettings "/run/pdns-recursor/recursor.conf"}
+          ${generateYamlSettings "recursor" baseRecursorSettings "/run/pdns-recursor/recursor.yml"}
         '';
-        serviceConfig.ExecStart = [ "" "${pkgs.pdns-recursor}/bin/pdns_recursor --config-dir=/run/pdns-recursor" ];
+        serviceConfig.ExecStart = [ "" "${pkgs.pdns-recursor}/bin/pdns_recursor --config-dir=/run/pdns-recursor --daemon=no --write-pid=no --disable-syslog --log-timestamp=no" ];
       };
 
       services.pdns-recursor = {

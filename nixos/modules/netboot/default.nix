@@ -30,23 +30,25 @@ let
     substituteAll ${./menu.ipxe} "$out"
   '';
 
-  bootBuilder = pkgs.substituteAll {
+  bootBuilder = pkgs.replaceVarsWith {
     src = ./netboot-loader-builder.py;
     isExecutable = true;
 
-    inherit (pkgs) python3;
-    bootspecTools = pkgs.bootspec;
-    nix = config.nix.package.out;
+    replacements = {
+      inherit (pkgs) python3;
+      bootspecTools = pkgs.bootspec;
+      nix = config.nix.package.out;
 
-    inherit (config.system.nixos) distroName;
-    systemName = config.system.name;
-    inherit (cfg.client) configurationLimit;
-    checkMountpoints = pkgs.writeShellScript "check-mountpoints" ''
-      if ! ${pkgs.util-linuxMinimal}/bin/findmnt /boot > /dev/null; then
-        echo "/boot is not a mounted partition. Is the path configured correctly?" >&2
-        exit 1
-      fi
-    '';
+      inherit (config.system.nixos) distroName;
+      systemName = config.system.name;
+      inherit (cfg.client) configurationLimit;
+      checkMountpoints = pkgs.writeShellScript "check-mountpoints" ''
+        if ! ${pkgs.util-linuxMinimal}/bin/findmnt /boot > /dev/null; then
+          echo "/boot is not a mounted partition. Is the path configured correctly?" >&2
+          exit 1
+        fi
+      '';
+    };
   };
 in
 {

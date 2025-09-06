@@ -14,7 +14,7 @@ in
           owner = "pdns";
           group = "pdns";
         };
-        "estuary/pdns/recursor.conf" = {
+        "estuary/pdns/recursor.yml" = {
           owner = "pdns-recursor";
           group = "pdns-recursor";
         };
@@ -31,7 +31,7 @@ in
 
       pdns.recursor = {
         enable = true;
-        extraSettingsFile = config.age.secrets."estuary/pdns/recursor.conf".path;
+        extraSettingsFile = config.age.secrets."estuary/pdns/recursor.yml".path;
       };
     };
 
@@ -44,45 +44,55 @@ in
       };
 
       pdns-recursor = {
-        dns = {
-          address = [
-            "127.0.0.1" "::1"
-            assignments.base.ipv4.address assignments.base.ipv6.address
-          ];
-          allowFrom = [
-            "127.0.0.0/8" "::1/128"
-            prefixes.all.v4 prefixes.all.v6
-          ] ++ (with lib.my.c.tailscale.prefix; [ v4 v6 ]);
-        };
+        yaml-settings = {
+          incoming = {
+            listen = [
+              "127.0.0.1" "::1"
+              assignments.base.ipv4.address assignments.base.ipv6.address
+            ];
+            allow_from = [
+              "127.0.0.0/8" "::1/128"
+              prefixes.all.v4 prefixes.all.v6
+            ] ++ (with lib.my.c.tailscale.prefix; [ v4 v6 ]);
 
-        settings = {
-          query-local-address = [
-            assignments.internal.ipv4.address
-            assignments.internal.ipv6.address
-            assignments.base.ipv6.address
-          ];
-          forward-zones = map (z: "${z}=127.0.0.1:5353") authZones;
+            # DNS NOTIFY messages override TTL
+            allow_notify_for = authZones;
+            allow_notify_from = [ "127.0.0.0/8" "::1/128" ];
+          };
 
-          # DNS NOTIFY messages override TTL
-          allow-notify-for = authZones;
-          allow-notify-from = [ "127.0.0.0/8" "::1/128" ];
+          outgoing = {
+            source_address = [
+              assignments.internal.ipv4.address
+              assignments.internal.ipv6.address
+              assignments.base.ipv6.address
+            ];
+          };
 
-          webserver = true;
-          webserver-address = "::";
-          webserver-allow-from = [ "127.0.0.1" "::1" ];
+          recursor = {
+            forward_zones = map (z: {
+              zone = z;
+              forwarders = [ "127.0.0.1:5353" ];
+            }) authZones;
 
-          lua-dns-script = pkgs.writeText "pdns-script.lua" ''
-            function preresolve(dq)
-              if dq.qname:equal("nix-cache.nul.ie") then
-                dq:addAnswer(pdns.CNAME, "http.${config.networking.domain}.")
-                dq.rcode = 0
-                dq.followupFunction = "followCNAMERecords"
-                return true
+            lua_dns_script = pkgs.writeText "pdns-script.lua" ''
+              function preresolve(dq)
+                if dq.qname:equal("nix-cache.nul.ie") then
+                  dq:addAnswer(pdns.CNAME, "http.${config.networking.domain}.")
+                  dq.rcode = 0
+                  dq.followupFunction = "followCNAMERecords"
+                  return true
+                end
+
+                return false
               end
+            '';
+          };
 
-              return false
-            end
-          '';
+          webservice = {
+            webserver = true;
+            address = "::";
+            allow_from = [ "127.0.0.1" "::1" ];
+          };
         };
       };
     };

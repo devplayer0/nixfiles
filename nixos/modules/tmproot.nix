@@ -551,7 +551,7 @@ in
           ];
         });
       })
-      (mkIf (config.services ? "pds" && config.services.pds.enable) {
+      (mkIf (config.services ? "bluesky-pds" && config.services.bluesky-pds.enable) {
         my.tmproot.persistence.config.directories = [
           {
             directory = "/var/lib/pds";

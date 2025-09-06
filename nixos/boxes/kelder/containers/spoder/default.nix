@@ -92,7 +92,8 @@ in
 
           nextcloud = {
             enable = true;
-            package = pkgs.nextcloud29;
+            # TODO: Might need to do some bullshit to go from Nextcloud 28 (?) to 30
+            package = pkgs.nextcloud30;
             datadir = "/mnt/storage/nextcloud";
             hostName = "cloud.${domain}";
             https = true;

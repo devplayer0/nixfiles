@@ -1,11 +1,11 @@
-{ lib }:
+{ inputs, lib }:
 let
   inherit (builtins) length match elemAt filter replaceStrings substring;
   inherit (lib)
     genAttrs mapAttrsToList filterAttrsRecursive nameValuePair types
     mkOption mkOverride mkForce mkIf mergeEqualOption optional
     showWarnings concatStringsSep flatten unique optionalAttrs
-    mkBefore toLower;
+    mkBefore toLower splitString last;
   inherit (lib.flake) defaultSystems;
 in
 rec {
@@ -23,7 +23,7 @@ rec {
 
   attrsToNVList = mapAttrsToList nameValuePair;
 
-  inherit (import ./net.nix { inherit lib; }) net;
+  inherit ((import "${inputs.libnetRepo}/lib/netu.nix" { inherit lib; }).lib) net;
   dns = import ./dns.nix { inherit lib; };
   c = import ./constants.nix { inherit lib; };
 
@@ -248,12 +248,13 @@ rec {
   in
   {
     trivial = prev.trivial // {
-      release = "25.03:u-${prev.trivial.release}";
-      codeName = "Frick";
+      release = "25.09:u-${prev.trivial.release}";
+      codeName = "Giving";
       revisionWithDefault = default: self.rev or default;
       versionSuffix = ".${date}.${revCode self}:u-${revCode pkgsFlake}";
     };
   };
+  upstreamRelease = last (splitString "-" lib.trivial.release);
 
   netbootKeaClientClasses = { tftpIP, hostname, systems }:
   let
