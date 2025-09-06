@@ -53,7 +53,7 @@ in
 
             serviceConfig = {
               Type = "oneshot";
-              ExecStart = "${pkgs.nvme-cli}/bin/nvme connect -t rdma -a ${cfg.boot.address} -n ${cfg.boot.nqn}";
+              ExecStart = "${pkgs.nvme-cli}/bin/nvme connect -t rdma -a ${cfg.boot.address} -n ${cfg.boot.nqn} -q ${hostNQN}";
               Restart = "on-failure";
               RestartSec = 10;
             };
