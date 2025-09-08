@@ -13,6 +13,7 @@ rec {
       kea = 404;
       keepalived_script = 405;
       photoprism = 406;
+      copyparty = 408;
     };
     gids = {
       matrix-syncv3 = 400;
@@ -23,6 +24,7 @@ rec {
       keepalived_script = 405;
       photoprism = 406;
       adbusers = 407;
+      copyparty = 408;
     };
   };
 

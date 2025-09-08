@@ -41,6 +41,8 @@
     borgthin.url = "github:devplayer0/borg";
     # TODO: Update borgthin so this works
     # borgthin.inputs.nixpkgs.follows = "nixpkgs-mine";
+    copyparty.url = "github:9001/copyparty";
+    copyparty.inputs.nixpkgs.follows = "nixpkgs-unstable";
   };
 
   outputs =

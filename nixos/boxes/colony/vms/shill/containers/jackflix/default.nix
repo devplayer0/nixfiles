@@ -23,7 +23,7 @@ in
       };
     };
 
-    configuration = { lib, pkgs, config, ... }:
+    configuration = { lib, pkgs, config, allAssignments, ... }:
     let
       inherit (lib) mkForce;
     in
@@ -39,7 +39,17 @@ in
             key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPUv1ntVrZv5ripsKpcOAnyDQX2PHjowzyhqWK10Ml53";
             files = {
               "jackflix/photoprism-pass.txt" = {};
+              "jackflix/copyparty-pass.txt" = {
+                owner = "copyparty";
+                group = "copyparty";
+              };
             };
+          };
+
+          firewall = {
+            tcp.allowed = [
+              3923
+            ];
           };
         };
 
@@ -60,11 +70,16 @@ in
               uid = uids.photoprism;
               group = "photoprism";
             };
+            copyparty = {
+              uid = uids.copyparty;
+              extraGroups = [ "media" ];
+            };
           };
           groups = {
             media.gid = 2000;
             jellyseerr.gid = gids.jellyseerr;
             photoprism.gid = gids.photoprism;
+            copyparty.gid = gids.copyparty;
           };
         };
 
@@ -157,6 +172,50 @@ in
               PHOTOPRISM_SITE_TITLE = "/dev/player0 Photos";
               PHOTOPRISM_TRUSTED_PROXY = concatStringsSep "," (with prefixes.ctrs; [ v4 v6 ]);
               PHOTOPRISM_DATABASE_DRIVER = "sqlite";
+            };
+          };
+
+          copyparty = {
+            enable = true;
+            package = pkgs.copyparty.override {
+              withMagic = true;
+            };
+            settings = {
+              name = "dev-stuff";
+              no-reload = true;
+              j = 8; # cores
+              http-only = true;
+              xff-src =
+                with allAssignments.middleman.internal;
+                [ "${ipv4.address}/32" prefixes.ctrs.v6 ];
+              rproxy = 1; # get if from x-forwarded-for
+              magic = true; # enable checking file magic on upload
+              hist = "/var/cache/copyparty";
+              shr = "/share"; # enable share creation
+              ed = true; # enable dotfiles
+              chmod-f = 664;
+              chmod-d = 775;
+              e2dsa = true; # file indexing
+              e2t = true; # metadata indexing
+              og-ua = "(Discord|Twitter|Slack)bot"; # embeds
+              theme = 6;
+            };
+            accounts.dev.passwordFile = config.age.secrets."jackflix/copyparty-pass.txt".path;
+            volumes = {
+              "/" = {
+                path = "/mnt/media/stuff";
+                access.A = "dev"; # dev has admin access
+              };
+              "/pub" = {
+                path = "/mnt/media/public";
+                access = {
+                  A = "dev";
+                  "r." = "*";
+                };
+                flags = {
+                  shr_who = "no"; # no reason to have shares here
+                };
+              };
             };
           };
         };

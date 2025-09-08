@@ -347,12 +347,7 @@ in
 
       "stuff.${pubDomain}" = {
         locations."/" = {
-          basicAuthFile = config.age.secrets."middleman/htpasswd".path;
-          root = "/mnt/media/stuff";
-          extraConfig = ''
-            fancyindex on;
-            fancyindex_show_dotfiles on;
-          '';
+          proxyPass = "http://jackflix-ctr.${domain}:3923";
         };
         useACMEHost = pubDomain;
       };

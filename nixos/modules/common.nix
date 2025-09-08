@@ -12,6 +12,7 @@ in
     inputs.impermanence.nixosModule
     inputs.ragenix.nixosModules.age
     inputs.sharry.nixosModules.default
+    inputs.copyparty.nixosModules.default
   ];
 
   config = mkMerge [
@@ -70,6 +71,7 @@ in
           # TODO: Re-enable when borgthin is updated
           # inputs.borgthin.overlays.default
           inputs.boardie.overlays.default
+          inputs.copyparty.overlays.default
         ];
         config = {
           allowUnfree = true;

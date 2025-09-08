@@ -587,6 +587,22 @@ in
           }
         ];
       })
+      (mkIf config.services.copyparty.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = "/var/lib/copyparty";
+            mode = "0755";
+            user = "copyparty";
+            group = "copyparty";
+          }
+          {
+            directory = "/var/cache/copyparty";
+            mode = "0755";
+            user = "copyparty";
+            group = "copyparty";
+          }
+        ];
+      })
     ]))
   ]);
 
