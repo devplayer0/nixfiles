@@ -4,22 +4,6 @@ let
   inherit (lib.my.c) pubDomain;
   inherit (lib.my.c.britway) prefixes domain;
 
-  # Can't use overrideAttrs because we need to override `vendorHash` within `buildGoModule`
-  headscale' = (pkgs.headscale.override {
-    buildGoModule = args: pkgs.buildGoModule (args // rec {
-      version = "0.23.0-alpha12";
-      src = pkgs.fetchFromGitHub {
-        owner = "juanfont";
-        repo = "headscale";
-        rev = "v${version}";
-        hash = "sha256-kZZK0cXnFARxblSMz01TDcBbTorkHGAwGpR+a4/mYfU=";
-      };
-      patches = [];
-      vendorHash = "sha256-EorT2AVwA3usly/LcNor6r5UIhLCdj3L4O4ilgTIC2o=";
-      doCheck = false;
-    });
-  });
-
   advRoutes = concatStringsSep "," [
     lib.my.c.home.prefixes.all.v4
     lib.my.c.home.prefixes.all.v6
@@ -52,6 +36,7 @@ in
           noise.private_key_path = "/var/lib/headscale/noise_private.key";
           prefixes = with lib.my.c.tailscale.prefix; { inherit v4 v6; };
           dns = {
+            override_local_dns = false;
             # Use IPs that will route inside the VPN to prevent interception
             # (e.g. DNS rebinding filtering)
             nameservers.split = {
