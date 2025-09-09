@@ -195,10 +195,6 @@ in
             accounts.dev.passwordFile = config.age.secrets."jackflix/copyparty-pass.txt".path;
             volumes = {
               "/" = {
-                path = "/mnt/media/stuff";
-                access.A = "dev"; # dev has admin access
-              };
-              "/pub" = {
                 path = "/mnt/media/public";
                 access = {
                   A = "dev";
@@ -207,6 +203,10 @@ in
                 flags = {
                   shr_who = "no"; # no reason to have shares here
                 };
+              };
+              "/priv" = {
+                path = "/mnt/media/stuff";
+                access.A = "dev"; # dev has admin access
               };
             };
           };
