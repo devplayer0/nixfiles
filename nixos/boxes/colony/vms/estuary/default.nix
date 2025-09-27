@@ -171,6 +171,25 @@ in
                     ];
                   };
                 }
+                {
+                  "30-hillcrest" = {
+                    netdevConfig = {
+                      Name = "hillcrest";
+                      Kind = "wireguard";
+                    };
+                    wireguardConfig = {
+                      PrivateKeyFile = config.age.secrets."estuary/hillcrest-wg.key".path;
+                      ListenPort = lib.my.c.hillcrest.vpn.port;
+                    };
+                    wireguardPeers = [
+                      {
+                        PublicKey = "+67Ks+ZRk1ssNCfg5BFKmIE9NtLasAxRE6XMqufx5GY=";
+                        AllowedIPs = [ (net.cidr.host 2 prefixes.hillcrest.v4) ];
+                        PersistentKeepalive = 25;
+                      }
+                    ];
+                  };
+                }
               ];
 
               links = {
@@ -349,6 +368,16 @@ in
                     }
                   ];
                 };
+                "95-hillcrest" = {
+                  matchConfig.Name = "hillcrest";
+                  address = [ (net.cidr.host 1 prefixes.hillcrest.v4) ];
+                  routes = [
+                    {
+                      Destination = net.cidr.host 2 prefixes.hillcrest.v4;
+                      Scope = "link";
+                    }
+                  ];
+                };
               } ];
             };
 
@@ -357,6 +386,9 @@ in
                 key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF9up7pXu6M/OWCKufTOfSiGcxMUk4VqUe7fLuatNFFA";
                 files = {
                   "estuary/kelder-wg.key" = {
+                    owner = "systemd-network";
+                  };
+                  "estuary/hillcrest-wg.key" = {
                     owner = "systemd-network";
                   };
                   "l2mesh/as211024.key" = {};
@@ -370,7 +402,7 @@ in
                 };
               };
               firewall = {
-                udp.allowed = [ 5353 lib.my.c.kelder.vpn.port ];
+                udp.allowed = [ 5353 lib.my.c.kelder.vpn.port lib.my.c.hillcrest.vpn.port ];
                 tcp.allowed = [ 5353 "bgp" ];
                 nat = {
                   enable = true;
@@ -435,7 +467,7 @@ in
                       iifname { wan, as211024, $ixps } oifname base jump filter-routing
                       oifname $ixps jump ixp
                       iifname base oifname { base, wan, $ixps } accept
-                      oifname { as211024, kelder } accept
+                      oifname { as211024, kelder, hillcrest } accept
                     }
                     chain output {
                       oifname ifog ether type != vlan reject
@@ -447,6 +479,7 @@ in
                       ${matchInet "meta l4proto { udp, tcp } th dport domain redirect to :5353" "estuary"}
                     }
                     chain postrouting {
+                      oifname hillcrest snat ip to ${net.cidr.host 1 prefixes.hillcrest.v4}
                       ip saddr ${prefixes.all.v4} oifname != as211024 snat to ${assignments.internal.ipv4.address}
                     }
                   }

@@ -142,6 +142,13 @@ rec {
         v4 = subnet 8 4 all.v4;
       };
 
+      p2pTunnels = {
+        v4 = subnet 8 5 all.v4;
+      };
+      hillcrest = {
+        v4 = subnet 6 0 p2pTunnels.v4;
+      };
+
       cust = {
         v4 = subnet 8 100 all.v4; # single ip for routing only
         v6 = "2a0e:97c0:4d2:2000::/56";
@@ -414,6 +421,11 @@ rec {
       ctrs.v4 = subnet 4 0 all.v4;
     };
   };
+
+  hillcrest = {
+    vpn.port = 51822;
+  };
+
   sshKeyFiles = {
     me = ../.keys/me.pub;
     deploy = ../.keys/deploy.pub;
