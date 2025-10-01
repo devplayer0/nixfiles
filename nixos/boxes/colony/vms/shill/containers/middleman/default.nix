@@ -72,6 +72,13 @@ in
 
             firewall = {
               tcp.allowed = [ "http" "https" 8448 ];
+              extraRules = ''
+                table inet nat {
+                  chain postrouting {
+                    oifname host0 snat ip6 to ${assignments.internal.ipv6.address}
+                  }
+                }
+              '';
             };
 
             nginx-sso = {
