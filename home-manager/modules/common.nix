@@ -228,9 +228,7 @@ in
       # Note: If globalPkgs mode is on, then these will be overridden by the NixOS equivalents of these options
       nixpkgs = {
         overlays = [
-          inputs.libnet.overlays.default
-
-          inputs.deploy-rs.overlay
+          inputs.deploy-rs.overlays.default
           inputs.boardie.overlays.default
           inputs.nixGL.overlays.default
         ];
