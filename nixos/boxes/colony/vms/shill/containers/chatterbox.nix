@@ -198,44 +198,70 @@ in
 
             mautrix-whatsapp = {
               enable = true;
+              package = pkgs.mautrix-whatsapp.overrideAttrs (o: {
+                # TODO: Remove when upgrading nixpkgs
+                src = pkgs.fetchFromGitHub {
+                  owner = "mautrix";
+                  repo = "whatsapp";
+                  tag = "v0.2511.0";
+                  hash = "sha256-0Jpod9/mZ9eGFvPxki6Yz0KL1XQ4HTtZ7Zv7WvamuC0=";
+                };
+                vendorHash = "sha256-n25j2uM3e5/5PYs2jwH+iclaU/p/MhctCAhPninz2HI=";
+              });
               environmentFile = config.age.secrets."chatterbox/mautrix-whatsapp.env".path;
               settings = {
+                database = {
+                  type = "postgres";
+                  uri = "$MAU_WAPP_PSQL_URI";
+                };
                 homeserver = {
                   address = "http://localhost:8008";
                   domain = "nul.ie";
                 };
                 appservice = {
-                  database = {
-                    type = "postgres";
-                    uri = "$MAU_WAPP_PSQL_URI";
-                  };
                   id = "whatsapp2";
                   bot = {
                     username = "whatsapp2";
                     displayname = "WhatsApp Bridge Bot";
                   };
+                  username_template = "wapp2_{{.}}";
                 };
                 bridge = {
-                  username_template = "wapp2_{{.}}";
-                  displayname_template = "{{or .BusinessName .PushName .JID}} (WA)";
                   personal_filtering_spaces = true;
-                  delivery_receipts = true;
-                  allow_user_invite = true;
-                  url_previews = true;
                   command_prefix = "!wa";
-                  login_shared_secret_map."nul.ie" = "$MAU_WAPP_DOUBLE_PUPPET_TOKEN";
-                  encryption = {
-                    allow = true;
-                    default = true;
-                    require = true;
-                  };
                   permissions = {
                     "@dev:nul.ie" = "admin";
                   };
                 };
+                double_puppet = {
+                  secrets."nul.ie" = "$MAU_WAPP_DOUBLE_PUPPET_TOKEN";
+                };
+                encryption = {
+                  allow = true;
+                  default = true;
+                  require = true;
+                  pickle_key = "maunium.net/go/mautrix-whatsapp";
+                };
+                matrix = {
+                  delivery_receipts = true;
+                };
+                network = {
+                  # displayname_template = "{{or .BusinessName .PushName .JID}} (WA)";
+                  url_previews = true;
+                };
               };
             };
 
+            # TODO: Remove when upgrading nixpkgs
+            mautrix-meta.package = pkgs.mautrix-meta.overrideAttrs (o: {
+              src = pkgs.fetchFromGitHub {
+                owner = "mautrix";
+                repo = "meta";
+                rev = "v0.2511.0";
+                hash = "sha256-Ke5b1Q1QIB2u5fbDmhvwe/HaZX1oycNSIor/9gdmdWA=";
+              };
+              vendorHash = "sha256-vbXV9xa0Q+Sml21QQZ3YUmPzXgrIZRJx0tQx0O4JcHs=";
+            });
             mautrix-meta.instances = {
               messenger = {
                 enable = true;
@@ -243,44 +269,48 @@ in
                 dataDir = "mautrix-messenger";
                 environmentFile = config.age.secrets."chatterbox/mautrix-messenger.env".path;
                 settings = {
+                  database = {
+                    type = "postgres";
+                    uri = "$MAU_FBM_PSQL_URI";
+                  };
                   homeserver = {
                     address = "http://localhost:8008";
                     domain = "nul.ie";
                   };
                   appservice = {
-                    database = {
-                      type = "postgres";
-                      uri = "$MAU_FBM_PSQL_URI";
-                    };
                     id = "fbm2";
                     bot = {
                       username = "messenger2";
                       displayname = "Messenger Bridge Bot";
                       avatar = "mxc://maunium.net/ygtkteZsXnGJLJHRchUwYWak";
                     };
+                    username_template = "fbm2_{{.}}";
                   };
                   network = {
                     mode = "messenger";
                     displayname_template = ''{{or .DisplayName .Username "Unknown user"}} (FBM)'';
                   };
                   bridge = {
-                    username_template = "fbm2_{{.}}";
                     personal_filtering_spaces = true;
-                    delivery_receipts = true;
-                    management_room_text.welcome = "Hello, I'm a Messenger bridge bot.";
+                    # management_room_text.welcome = "Hello, I'm a Messenger bridge bot.";
                     command_prefix = "!fbm";
-                    login_shared_secret_map."nul.ie" = "$MAU_FBM_DOUBLE_PUPPET_TOKEN";
                     backfill = {
-                      history_fetch_pages = 5;
-                    };
-                    encryption = {
-                      allow = true;
-                      default = true;
-                      require = true;
+                      enabled = true;
                     };
                     permissions = {
                       "@dev:nul.ie" = "admin";
                     };
+                  };
+                  double_puppet = {
+                    secrets."nul.ie" = "$MAU_FBM_DOUBLE_PUPPET_TOKEN";
+                  };
+                  encryption = {
+                    allow = true;
+                    default = true;
+                    require = true;
+                  };
+                  matrix = {
+                    delivery_receipts = true;
                   };
                 };
               };
@@ -291,45 +321,49 @@ in
                 dataDir = "mautrix-instagram";
                 environmentFile = config.age.secrets."chatterbox/mautrix-instagram.env".path;
                 settings = {
+                  database = {
+                    type = "postgres";
+                    uri = "$MAU_IG_PSQL_URI";
+                  };
                   homeserver = {
                     address = "http://localhost:8008";
                     domain = "nul.ie";
                   };
                   appservice = {
-                    database = {
-                      type = "postgres";
-                      uri = "$MAU_IG_PSQL_URI";
-                    };
                     id = "instagram";
                     bot = {
                       username = "instagram";
                       displayname = "Instagram Bridge Bot";
                       avatar = "mxc://maunium.net/JxjlbZUlCPULEeHZSwleUXQv";
                     };
+                    username_template = "ig_{{.}}";
                   };
                   network = {
                     mode = "instagram";
                     displayname_template = ''{{or .DisplayName .Username "Unknown user"}} (IG)'';
                   };
                   bridge = {
-                    username_template = "ig_{{.}}";
                     personal_filtering_spaces = true;
-                    delivery_receipts = true;
-                    management_room_text.welcome = "Hello, I'm an Instagram bridge bot.";
+                    # management_room_text.welcome = "Hello, I'm an Instagram bridge bot.";
                     command_prefix = "!ig";
-                    login_shared_secret_map."nul.ie" = "$MAU_IG_DOUBLE_PUPPET_TOKEN";
                     backfill = {
-                      history_fetch_pages = 5;
-                    };
-                    encryption = {
-                      allow = true;
-                      default = true;
-                      require = true;
+                      enabled = true;
                     };
                     permissions = {
                       "@dev:nul.ie" = "admin";
                       "@adzerq:nul.ie" = "user";
                     };
+                  };
+                  double_puppet = {
+                    secrets."nul.ie" = "$MAU_IG_DOUBLE_PUPPET_TOKEN";
+                  };
+                  encryption = {
+                    allow = true;
+                    default = true;
+                    require = true;
+                  };
+                  matrix = {
+                    delivery_receipts = true;
                   };
                 };
               };
