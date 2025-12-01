@@ -233,24 +233,6 @@ in
             neighbor 2a07:cd40:1::9 as 202413;
           }
 
-          protocol bgp ixp4_frysix_rs1 from ixp_bgp4 {
-            description "Frys-IX route server 1 (IPv4)";
-            neighbor 185.1.203.253 as 56393;
-          }
-          protocol bgp ixp6_frysix_rs1 from ixp_bgp6 {
-            description "Frys-IX route server 1 (IPv6)";
-            neighbor 2001:7f8:10f::dc49:253 as 56393;
-          }
-
-          protocol bgp ixp4_frysix_rs2 from ixp_bgp4 {
-            description "Frys-IX route server 2 (IPv4)";
-            neighbor 185.1.203.254 as 56393;
-          }
-          protocol bgp ixp6_frysix_rs2 from ixp_bgp6 {
-            description "Frys-IX route server 2 (IPv6)";
-            neighbor 2001:7f8:10f::dc49:254 as 56393;
-          }
-
           protocol bgp ixp4_frysix_rs3 from ixp_bgp4 {
             description "Frys-IX route server 3 (IPv4)";
             neighbor 185.1.160.255 as 56393;
@@ -283,14 +265,6 @@ in
             neighbor 185.1.160.154 as 6939;
           }
 
-          protocol bgp peer4_frysix_cloudflare1_old from peer_bgp4 {
-            description "Cloudflare 1 (on Frys-IX, IPv4)";
-            neighbor 185.1.203.217 as 13335;
-          }
-          protocol bgp peer4_frysix_cloudflare2_old from peer_bgp4 {
-            description "Cloudflare 2 (on Frys-IX, IPv4)";
-            neighbor 185.1.203.109 as 13335;
-          }
           protocol bgp peer4_frysix_cloudflare1 from peer_bgp4 {
             description "Cloudflare 1 (on Frys-IX, IPv4)";
             neighbor 185.1.160.217 as 13335;
@@ -317,14 +291,6 @@ in
             neighbor 2001:7f8:10f::3:3e9b:134 as 212635;
           }
 
-          protocol bgp peer4_frysix_meta1_old from peer_bgp4 {
-            description "Meta 1 (on Frys-IX, IPv4)";
-            neighbor 185.1.203.225 as 32934;
-          }
-          protocol bgp peer4_frysix_meta2_old from peer_bgp4 {
-            description "Meta 2 (on Frys-IX, IPv4)";
-            neighbor 185.1.203.226 as 32934;
-          }
           protocol bgp peer4_frysix_meta1 from peer_bgp4 {
             description "Meta 1 (on Frys-IX, IPv4)";
             neighbor 185.1.160.225 as 32934;
