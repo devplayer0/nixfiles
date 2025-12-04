@@ -63,7 +63,7 @@ in
             font.package
             nerd-fonts.sauce-code-pro
             nerd-fonts.droid-sans-mono
-            noto-fonts-emoji
+            noto-fonts-color-emoji
 
             grim
             slurp
@@ -420,24 +420,24 @@ in
         programs = {
           git = {
             enable = true;
-            diff-so-fancy.enable = true;
-            userEmail = "jackos1998@gmail.com";
-            userName = "Jack O'Sullivan";
-            lfs.enable = true;
-            extraConfig = {
+            settings = {
+              user = {
+                email = "jackos1998@gmail.com";
+                name = "Jack O'Sullivan";
+              };
               pull.rebase = true;
             };
+            lfs.enable = true;
           };
+          diff-so-fancy.enable = true;
 
           waybar = import ./waybar.nix { inherit lib pkgs config font; };
           rofi = {
-            package = pkgs.rofi-wayland;
             enable = true;
             font = "${font.name} ${toString font.size}";
-            plugins = with pkgs; (map (p: p.override { rofi-unwrapped = rofi-wayland-unwrapped; }) [
+            plugins = with pkgs; [
               rofi-calc
-            ]) ++ [
-              rofi-emoji-wayland
+              rofi-emoji
             ];
             extraConfig = {
               modes = "window,run,ssh,filebrowser,calc,emoji";

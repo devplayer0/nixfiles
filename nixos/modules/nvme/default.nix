@@ -45,6 +45,11 @@ in
             wait-online.enable = true;
           };
 
+          settings.Manager = {
+            DefaultTimeoutStartSec = 20;
+            DefaultDeviceTimeoutSec = 20;
+          };
+
           services.connect-nvme = {
             description = "Connect NVMe-oF";
             before = [ "initrd-root-device.target" ];
@@ -60,18 +65,7 @@ in
 
             wantedBy = [ "initrd-root-device.target" ];
           };
-        # TODO: Remove when 25.11 releases
-        } // (if (lib.versionAtLeast lib.my.upstreamRelease "25.11") then {
-          settings.Manager = {
-            DefaultTimeoutStartSec = 20;
-            DefaultDeviceTimeoutSec = 20;
-          };
-        } else {
-          extraConfig = ''
-            DefaultTimeoutStartSec=20
-            DefaultDeviceTimeoutSec=20
-          '';
-        });
+        };
       };
     };
   };

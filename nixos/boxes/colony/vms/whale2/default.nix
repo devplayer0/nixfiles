@@ -114,7 +114,7 @@ in
               };
               containers.containersConf.settings.network = {
                 network_backend = "netavark";
-                firewall_driver = "none";
+                firewall_driver = mkForce "none";
               };
             };
 

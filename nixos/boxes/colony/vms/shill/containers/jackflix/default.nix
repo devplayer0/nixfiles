@@ -114,6 +114,7 @@ in
 
           transmission = {
             enable = true;
+            package = pkgs.transmission_4;
             downloadDirPermissions = null;
             performanceNetParameters = true;
             settings = {
@@ -185,8 +186,8 @@ in
               hist = "/var/cache/copyparty";
               shr = "/share"; # enable share creation
               ed = true; # enable dotfiles
-              chmod-f = 664;
-              chmod-d = 775;
+              chmod-f = "664";
+              chmod-d = "775";
               e2dsa = true; # file indexing
               e2t = true; # metadata indexing
               og-ua = "(Discord|Twitter|Slack)bot"; # embeds

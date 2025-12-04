@@ -132,8 +132,7 @@ in
 
         ssh = {
           enable = mkDefault true;
-          # TODO: Set after 25.11 releases
-          # enableDefaultConfig = false;
+          enableDefaultConfig = false;
           matchBlocks = {
             nix-dev-vm = {
               user = "dev";
@@ -159,13 +158,14 @@ in
               host = "cube spoon napalm gandalf saruman";
               user = "root";
             };
+
+            "*" = {
+              identityFile = [
+                "~/.ssh/id_rsa"
+                "~/.ssh/borg"
+              ];
+            };
           };
-          extraConfig =
-            ''
-              IdentityFile ~/.ssh/id_rsa
-              IdentityFile ~/.ssh/netsoc
-              IdentityFile ~/.ssh/borg
-            '';
         };
 
         direnv = {

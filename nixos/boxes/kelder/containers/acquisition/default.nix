@@ -29,7 +29,7 @@ in
         hardware.graphics = {
           enable = true;
           extraPackages = with pkgs; [
-            vaapiIntel
+            intel-vaapi-driver
             intel-ocl
           ];
         };
@@ -89,6 +89,7 @@ in
         services = {
           transmission = {
             enable = true;
+            package = pkgs.transmission_4;
             downloadDirPermissions = null;
             performanceNetParameters = true;
             settings = {
