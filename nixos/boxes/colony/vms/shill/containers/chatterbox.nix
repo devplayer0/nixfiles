@@ -246,7 +246,7 @@ in
                   delivery_receipts = true;
                 };
                 network = {
-                  # displayname_template = "{{or .BusinessName .PushName .JID}} (WA)";
+                  displayname_template = ''{{or .BusinessName .PushName .FullName .Phone "Unknown user"}} (WA)'';
                   url_previews = true;
                 };
               };
