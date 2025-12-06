@@ -89,11 +89,16 @@ in
             {
               users = {
                 harmonia = {
+                isSystemUser = true;
+                group = "harmonia";
                   shell = pkgs.bashInteractive;
                   openssh.authorizedKeys.keyFiles = [
                     lib.my.c.sshKeyFiles.harmonia
                   ];
                 };
+              };
+              groups = {
+                harmonia = { };
               };
             }
           ];
@@ -127,13 +132,24 @@ in
                   };
                 }
               ];
-              harmonia = {
-                environment.NIX_REMOTE = "/var/lib/harmonia";
+
+              harmonia-dev = {
+                # environment.RUST_LOG = mkForce "trace";
+                # serviceConfig = {
+                #   StateDirectory = "harmonia";
+                #   DynamicUser = mkForce false;
+                # };
+              };
+              harmonia-daemon = {
+                # environment.RUST_LOG = mkForce "trace";
                 preStart = ''
-                  ${config.nix.package}/bin/nix store ping
+                  ${config.nix.package}/bin/nix store info --store /var/lib/harmonia
                 '';
                 serviceConfig = {
+                  User = "harmonia";
+                  Group = "harmonia";
                   StateDirectory = "harmonia";
+                  DynamicUser = mkForce false;
                 };
               };
             };
@@ -235,11 +251,20 @@ in
               };
             };
 
-            harmonia = {
-              enable = true;
-              signKeyPaths = [ config.age.secrets."nix-cache.key".path ];
-              settings = {
-                priority = 30;
+            harmonia-dev = {
+              daemon = {
+                enable = true;
+                storeDir = "/nix/store";
+                dbPath = "/var/lib/harmonia/nix/var/nix/db/db.sqlite";
+              };
+              cache = {
+                enable = true;
+                signKeyPaths = [ config.age.secrets."nix-cache.key".path ];
+                settings = {
+                  priority = 30;
+                  daemon_store = "/nix/store";
+                  real_nix_store = "/var/lib/harmonia/nix/store";
+                };
               };
             };
 

@@ -9,10 +9,11 @@ in
   };
 
   imports = [
-    inputs.impermanence.nixosModule
+    inputs.impermanence.nixosModules.default
     inputs.ragenix.nixosModules.age
     inputs.sharry.nixosModules.default
     inputs.copyparty.nixosModules.default
+    inputs.harmonia.nixosModules.harmonia
   ];
 
   config = mkMerge [
