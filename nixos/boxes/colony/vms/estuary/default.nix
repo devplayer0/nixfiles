@@ -104,11 +104,9 @@ in
               lvm = {
                 dmeventd.enable = true;
               };
-              resolved = {
-                llmnr = "false";
-                extraConfig = ''
-                  MulticastDNS=false
-                '';
+              resolved.settings.Resolve = {
+                LLMNR = false;
+                MulticastDNS = false;
               };
               netdata.enable = true;
 

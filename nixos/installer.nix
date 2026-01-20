@@ -99,7 +99,7 @@
 
           # Enable wpa_supplicant, but don't start it by default.
           networking.wireless.enable = mkDefault true;
-          networking.wireless.userControlled.enable = true;
+          networking.wireless.userControlled = true;
           systemd.services.wpa_supplicant.wantedBy = mkForce [];
 
           # Tell the Nix evaluator to garbage collect more aggressively.

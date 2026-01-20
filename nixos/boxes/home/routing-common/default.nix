@@ -121,11 +121,9 @@ in
           };
 
           services = {
-            resolved = {
-              llmnr = "false";
-              extraConfig = ''
-                MulticastDNS=false
-              '';
+            resolved.settings.Resolve = {
+              LLMNR = false;
+              MulticastDNS = false;
             };
 
             iperf3 = {

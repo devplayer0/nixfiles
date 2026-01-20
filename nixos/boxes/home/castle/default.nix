@@ -109,11 +109,7 @@ in
           };
           fstrim.enable = true;
 
-          resolved = {
-            enable = true;
-            extraConfig = mkForce "";
-            dnssec = "false";
-          };
+          resolved.settings.Resolve.LLMNR = mkForce true;
 
           pipewire.extraConfig.pipewire = {
             "10-buffer"."context.properties" = {

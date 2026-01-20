@@ -88,7 +88,7 @@ in
         };
 
         services = {
-          resolved.extraConfig = mkForce "";
+          resolved.settings.Resolve = mkForce { };
 
           nextcloud = {
             enable = true;

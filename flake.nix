@@ -30,6 +30,7 @@
 
     # Stuff used by systems
     impermanence.url = "github:nix-community/impermanence";
+    impermanence.inputs.home-manager.follows = "home-manager-unstable";
     boardie.url = "github:devplayer0/boardie";
     boardie.inputs.nixpkgs.follows = "nixpkgs-unstable";
     nixGL.url = "github:nix-community/nixGL";

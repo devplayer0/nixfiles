@@ -23,6 +23,10 @@ stdenv.mkDerivation rec {
     ./demoloopi.patch
   ];
 
+  configureFlags = [
+    "CFLAGS=-std=gnu17"
+  ];
+
   outputs = [ "out" "man" ];
 
   postPatch = ''

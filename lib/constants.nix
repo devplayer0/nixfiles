@@ -30,7 +30,7 @@ rec {
 
   kernel = {
     lts = pkgs: pkgs.linuxKernel.packages.linux_6_12;
-    latest = pkgs: pkgs.linuxKernel.packages.linux_6_17;
+    latest = pkgs: pkgs.linuxKernel.packages.linux_6_18;
   };
 
   nginx = rec {

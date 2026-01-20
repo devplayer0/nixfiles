@@ -1,6 +1,6 @@
 { lib, pkgs, config, ... }:
 let
-  inherit (lib) optional mkIf mkDefault mkMerge;
+  inherit (lib) optional mkIf mkDefault mkMerge mkOverride;
   inherit (lib.my) mkBoolOpt';
 
   cfg = config.my.gui;
@@ -44,6 +44,18 @@ in
       swaylock-plugin
     ];
     services = {
+      # TODO: Remove if-else when 26.05 releases
+      resolved = if (config.system.nixos.release == "25.11:u-26.05") then {
+        settings.Resolve = {
+          FallbackDNS = mkOverride 99 (
+            "1.1.1.1#cloudflare-dns.com 8.8.8.8#dns.google " +
+            "1.0.0.1#cloudflare-dns.com 8.8.4.4#dns.google " +
+            "2606:4700:4700::1111#cloudflare-dns.com 2001:4860:4860::8888#dns.google " +
+            "2606:4700:4700::1001#cloudflare-dns.com 2001:4860:4860::8844#dns.google" );
+          LLMNR = "resolve";
+        };
+      } else { };
+
       pipewire = {
         enable = true;
         alsa.enable = true;
