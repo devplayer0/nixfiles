@@ -45,8 +45,9 @@ let
 
         journalctl -o cat --no-pager -n 0 -f -u "$unit" &
         jPid=$!
+
+        # shellcheck disable=SC2329
         cleanup() {
-          # shellcheck disable=SC2317
           kill "$jPid"
         }
         trap cleanup EXIT
