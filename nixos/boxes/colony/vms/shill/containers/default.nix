@@ -9,5 +9,6 @@
     ./toot.nix
     ./waffletail.nix
     ./qclk
+    ./gam.nix
   ];
 }

@@ -217,6 +217,7 @@ in
                   toot = {};
                   waffletail = {};
                   qclk = {};
+                  gam = {};
                 };
               in
               mkMerge [

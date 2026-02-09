@@ -603,6 +603,16 @@ in
           }
         ];
       })
+      (mkIf config.services.terraria.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = config.services.terraria.dataDir;
+            mode = "0755";
+            user = "terraria";
+            group = "terraria";
+          }
+        ];
+      })
     ]))
   ]);
 

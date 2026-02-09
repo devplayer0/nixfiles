@@ -225,6 +225,11 @@ rec {
       # }
 
       {
+        port = 7777;
+        dst = aa.gam.internal.ipv4.address;
+      }
+
+      {
         port = 2456;
         dst = aa.valheim-oci.internal.ipv4.address;
         proto = "udp";
@@ -271,6 +276,12 @@ rec {
       {
         port = qclk.wgPort;
         dst = aa.qclk.internal.ipv4.address;
+        proto = "udp";
+      }
+
+      {
+        port = 7777;
+        dst = aa.gam.internal.ipv4.address;
         proto = "udp";
       }
     ];
