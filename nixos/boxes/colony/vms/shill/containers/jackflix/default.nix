@@ -89,7 +89,9 @@ in
             transmission.bindsTo = [ "systemd-networkd-wait-online@vpn.service" ];
 
             radarr.serviceConfig.UMask = "0002";
+            radarr.path = with pkgs; [ ffmpeg ];
             sonarr.serviceConfig.UMask = "0002";
+            sonarr.path = with pkgs; [ ffmpeg ];
             jellyseerr.serviceConfig = {
               # Needs to be able to read its secrets
               DynamicUser = mkForce false;
