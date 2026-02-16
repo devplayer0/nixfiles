@@ -217,6 +217,10 @@ rec {
         port = 25568;
         dst = aa.kinkcraft-oci.internal.ipv4.address;
       }
+      {
+        port = 25569;
+        dst = aa.graeme-oci.internal.ipv4.address;
+      }
 
       # RCON... unsafe?
       # {
@@ -259,6 +263,11 @@ rec {
       {
         port = 25568;
         dst = aa.kinkcraft-oci.internal.ipv4.address;
+        proto = "udp";
+      }
+      {
+        port = 25569;
+        dst = aa.graeme-oci.internal.ipv4.address;
         proto = "udp";
       }
 

@@ -186,6 +186,46 @@ in
         ];
       };
 
+      graeme = {
+        # 2026.2.1-java21-alpine
+        image = "itzg/minecraft-server@sha256:82adaddfe0156f07c34228f1c1065cdbd298abc174de0a9961abb068b11beebb";
+
+        environment = {
+          TYPE = "VANILLA";
+          SERVER_PORT = "25569";
+          QUERY_PORT = "25569";
+
+          EULA = "true";
+          ENABLE_QUERY = "true";
+          ENABLE_RCON = "false";
+          MOTD = "§4§k----- §9G§ar§ba§ce§dm§ee §4§k-----";
+          ICON = "/ext/icon.png";
+
+          EXISTING_WHITELIST_FILE = "SYNCHRONIZE";
+          WHITELIST = concatStringsSep "," [
+            op
+            # ... :(
+          ];
+          EXISTING_OPS_FILE = "SYNCHRONIZE";
+          OPS = op;
+          DIFFICULTY = "normal";
+          SPAWN_PROTECTION = "0";
+          VIEW_DISTANCE = "20";
+
+          MAX_MEMORY = "4G";
+
+          TZ = "Europe/Dublin";
+        };
+
+        volumes = [
+          "graeme_data:/data"
+          "${./graeme.png}:/ext/icon.png:ro"
+        ];
+
+        extraOptions = [
+          ''--network=colony:${dockerNetAssignment allAssignments "graeme-oci"}''
+        ];
+      };
     };
 
     services = {

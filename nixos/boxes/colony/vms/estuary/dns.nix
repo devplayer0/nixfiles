@@ -168,6 +168,8 @@ in
             kevcraft IN AAAA ${allAssignments.kevcraft-oci.internal.ipv6.address}
             kinkcraft IN A ${assignments.internal.ipv4.address}
             kinkcraft IN AAAA ${allAssignments.kinkcraft-oci.internal.ipv6.address}
+            graeme IN A ${assignments.internal.ipv4.address}
+            graeme IN AAAA ${allAssignments.graeme-oci.internal.ipv6.address}
             terraria IN A ${assignments.internal.ipv4.address}
             terraria IN AAAA ${allAssignments.gam.internal.ipv6.address}
 

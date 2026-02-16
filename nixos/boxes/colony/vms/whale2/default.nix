@@ -55,6 +55,7 @@ in
       enshrouded-oci = 5;
       kevcraft-oci = 6;
       kinkcraft-oci = 7;
+      graeme-oci = 8;
     };
 
     configuration = { lib, pkgs, modulesPath, config, assignments, allAssignments, ... }:
