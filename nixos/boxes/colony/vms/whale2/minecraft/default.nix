@@ -204,7 +204,10 @@ in
           EXISTING_WHITELIST_FILE = "SYNCHRONIZE";
           WHITELIST = concatStringsSep "," [
             op
-            # ... :(
+            "fffa146c-0bc8-421c-9e3a-3635c0aca2ea" # Scarlehh
+            "1ea05f48-76cc-4034-bcd3-2fa1fc5a7375" # Dario
+            "4bf837b1-01db-4491-a0e0-700d98542833" # JoeSpencer
+            "d07a9554-1b05-4b0b-b558-27e4a86e1f53" # AmyClover
           ];
           EXISTING_OPS_FILE = "SYNCHRONIZE";
           OPS = op;
