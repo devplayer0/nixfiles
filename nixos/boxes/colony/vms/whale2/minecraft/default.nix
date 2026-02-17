@@ -211,7 +211,7 @@ in
           ];
           EXISTING_OPS_FILE = "SYNCHRONIZE";
           OPS = op;
-          DIFFICULTY = "normal";
+          DIFFICULTY = "hard";
           SPAWN_PROTECTION = "0";
           VIEW_DISTANCE = "20";
 
