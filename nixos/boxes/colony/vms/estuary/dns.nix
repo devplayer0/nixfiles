@@ -185,6 +185,9 @@ in
             jam-fwd IN A ${allAssignments.shill.internal.ipv4.address}
             jam-cust IN AAAA ${net.cidr.host 1 prefixes.jam.v6}
 
+            hillcrest-tun IN A ${net.cidr.host 2 prefixes.hillcrest.v4}
+            john-valorant-tun IN A ${net.cidr.host 2 prefixes.john-valorant.v4}
+
             $TTL 3
             _acme-challenge IN LUA TXT @@FILE@@
 

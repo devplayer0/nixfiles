@@ -188,6 +188,25 @@ in
                     ];
                   };
                 }
+                {
+                  "30-john-valorant" = {
+                    netdevConfig = {
+                      Name = "john-valorant";
+                      Kind = "wireguard";
+                    };
+                    wireguardConfig = {
+                      PrivateKeyFile = config.age.secrets."estuary/john-valorant-wg.key".path;
+                      ListenPort = lib.my.c.john-valorant.vpn.port;
+                    };
+                    wireguardPeers = [
+                      {
+                        PublicKey = "xyqKF0yOAv1bObN1paL2vATFh77pdFfvN+JmuAxaTCk=";
+                        AllowedIPs = [ (net.cidr.host 2 prefixes.john-valorant.v4) ];
+                        PersistentKeepalive = 25;
+                      }
+                    ];
+                  };
+                }
               ];
 
               links = {
@@ -365,10 +384,20 @@ in
                 };
                 "95-hillcrest" = {
                   matchConfig.Name = "hillcrest";
-                  address = [ (net.cidr.host 1 prefixes.hillcrest.v4) ];
+                  address = [ "${net.cidr.host 1 prefixes.hillcrest.v4}/32" ];
                   routes = [
                     {
                       Destination = net.cidr.host 2 prefixes.hillcrest.v4;
+                      Scope = "link";
+                    }
+                  ];
+                };
+                "95-john-valorant" = {
+                  matchConfig.Name = "john-valorant";
+                  address = [ "${net.cidr.host 1 prefixes.john-valorant.v4}/32" ];
+                  routes = [
+                    {
+                      Destination = net.cidr.host 2 prefixes.john-valorant.v4;
                       Scope = "link";
                     }
                   ];
@@ -386,6 +415,9 @@ in
                   "estuary/hillcrest-wg.key" = {
                     owner = "systemd-network";
                   };
+                  "estuary/john-valorant-wg.key" = {
+                    owner = "systemd-network";
+                  };
                   "l2mesh/as211024.key" = {};
                 };
               };
@@ -397,7 +429,13 @@ in
                 };
               };
               firewall = {
-                udp.allowed = [ 5353 lib.my.c.kelder.vpn.port lib.my.c.hillcrest.vpn.port ];
+                udp.allowed = [
+                  5353
+
+                  lib.my.c.kelder.vpn.port
+                  lib.my.c.hillcrest.vpn.port
+                  lib.my.c.john-valorant.vpn.port
+                ];
                 tcp.allowed = [ 5353 "bgp" ];
                 nat = {
                   enable = true;
@@ -466,7 +504,7 @@ in
                       iifname { wan, as211024, $ixps } oifname base jump filter-routing
                       oifname $ixps jump ixp
                       iifname base oifname { base, wan, $ixps } accept
-                      oifname { as211024, kelder, hillcrest } accept
+                      oifname { as211024, kelder, hillcrest, john-valorant } accept
                     }
                     chain output {
                       oifname ifog ether type != vlan reject
@@ -479,6 +517,7 @@ in
                     }
                     chain postrouting {
                       oifname hillcrest snat ip to ${net.cidr.host 1 prefixes.hillcrest.v4}
+                      oifname john-valorant snat ip to ${net.cidr.host 1 prefixes.john-valorant.v4}
                       ip saddr ${prefixes.all.v4} oifname != as211024 snat to ${assignments.internal.ipv4.address}
                     }
                   }

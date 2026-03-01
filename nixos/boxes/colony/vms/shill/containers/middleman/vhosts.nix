@@ -437,6 +437,14 @@ in
         };
         useACMEHost = pubDomain;
       };
+      "hass-john.${pubDomain}" = {
+        locations."/" = {
+          proxyPass = "http://john-valorant-tun.${domain}:8123";
+          proxyWebsockets = true;
+          extraConfig = proxyHeaders;
+        };
+        useACMEHost = pubDomain;
+      };
     };
 
     minio =

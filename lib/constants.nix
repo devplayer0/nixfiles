@@ -148,6 +148,9 @@ rec {
       hillcrest = {
         v4 = subnet 6 0 p2pTunnels.v4;
       };
+      john-valorant = {
+        v4 = subnet 6 1 p2pTunnels.v4;
+      };
 
       cust = {
         v4 = subnet 8 100 all.v4; # single ip for routing only
@@ -444,6 +447,10 @@ rec {
 
   hillcrest = {
     vpn.port = 51822;
+  };
+
+  john-valorant = {
+    vpn.port = 51823;
   };
 
   sshKeyFiles = {
