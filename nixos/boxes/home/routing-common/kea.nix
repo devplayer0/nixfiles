@@ -165,6 +165,28 @@ in
                 }
               ];
             }
+            {
+              id = 3;
+              subnet = prefixes.untrusted.v4;
+              interface = "lan-untrusted";
+              option-data = [
+                {
+                  name = "routers";
+                  data = vips.untrusted.v4;
+                }
+                {
+                  name = "domain-name-servers";
+                  data = "1.1.1.1, 1.0.0.1";
+                }
+              ];
+              pools = [
+                {
+                  pool = if index == 0
+                    then "192.168.80.10 - 192.168.80.127"
+                    else "192.168.80.128 - 192.168.80.250";
+                }
+              ];
+            }
           ];
           ddns-send-updates = true;
           ddns-replace-client-name = "when-not-present";
