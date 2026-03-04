@@ -118,6 +118,7 @@ in
             };
           };
           blueman.enable = true;
+          avahi.enable = true;
         };
 
         programs = {
@@ -161,6 +162,7 @@ in
           network = {
             netdevs = mkMerge [
               (mkVLAN "lan-hi" vlans.hi)
+              (mkVLAN "lan-lo" vlans.lo)
             ];
             links = {
               "10-et2.5g" = {
@@ -182,7 +184,7 @@ in
             networks = {
               "30-et100g" = {
                 matchConfig.Name = "et100g";
-                vlan = [ "lan-hi" ];
+                vlan = [ "lan-hi" "lan-lo" ];
                 networkConfig.IPv6AcceptRA = false;
               };
               "40-lan-hi" = mkMerge [
@@ -190,6 +192,22 @@ in
                 # So we don't drop the IP we use to connect to NVMe-oF!
                 { networkConfig.KeepConfiguration = "static"; }
               ];
+              "45-lan-lo" = {
+                matchConfig.Name = "lan-lo";
+                networkConfig = {
+                  DHCP = "ipv4";
+                  IPv6AcceptRA = true;
+                  UseDomains = false;
+                };
+                dhcpV4Config = {
+                  UseDNS = false;
+                  UseGateway = false;
+                };
+                ipv6AcceptRAConfig = {
+                  UseDNS = false;
+                  UseGateway = false;
+                };
+              };
             };
           };
         };
