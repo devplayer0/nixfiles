@@ -35,8 +35,8 @@
     boardie.inputs.nixpkgs.follows = "nixpkgs-unstable";
     nixGL.url = "github:nix-community/nixGL";
     nixGL.inputs.nixpkgs.follows = "nixpkgs-unstable";
-    # harmonia.url = "github:nix-community/harmonia";
-    harmonia.url = "github:devplayer0/harmonia/cache-config-daemon-store";
+    harmonia.url = "github:nix-community/harmonia";
+    # harmonia.url = "github:devplayer0/harmonia/cache-config-daemon-store";
     harmonia.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
     # Packages not in nixpkgs

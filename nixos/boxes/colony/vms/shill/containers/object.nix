@@ -262,7 +262,7 @@ in
                 signKeyPaths = [ config.age.secrets."nix-cache.key".path ];
                 settings = {
                   priority = 30;
-                  daemon_store = "/nix/store";
+                  virtual_nix_store = "/nix/store";
                   real_nix_store = "/var/lib/harmonia/nix/store";
                 };
               };
