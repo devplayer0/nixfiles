@@ -139,6 +139,7 @@ in
           bash-completion
           git
           unzip
+          tcpdump
         ]
         (mkIf config.services.netdata.enable [ netdata ])
       ];

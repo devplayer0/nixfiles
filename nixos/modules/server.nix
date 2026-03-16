@@ -36,10 +36,6 @@ in
     };
 
     documentation.nixos.enable = mkDefault' false;
-
-    environment.systemPackages = with pkgs; [
-      tcpdump
-    ];
   };
 
   meta.buildDocsInSandbox = false;
