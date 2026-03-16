@@ -20,10 +20,7 @@ let
   };
 
   vlanIface = vlan: if vlan == "as211024" then vlan else "lan-${vlan}";
-  vrrpIPs = family: concatMap (vlan: (optional (family == "v6") {
-      addr = "fe80::1/64";
-      dev = vlanIface vlan;
-    }) ++ [
+  vrrpIPs = family: concatMap (vlan: [
     {
       addr = "${vips.${vlan}.${family}}/${toString (net.cidr.length prefixes.${vlan}.${family})}";
       dev = vlanIface vlan;
@@ -64,6 +61,9 @@ in
         v4 = mkVRRP "v4" 51;
         v6 = (mkVRRP "v6" 52) // {
           extraConfig = ''
+            virtual_ipaddress_excluded {
+              ${concatMapStringsSep "\n" (vlan: "fe80::1/64 dev ${vlanIface vlan}") (attrNames vips)}
+            }
             notify_master "${config.systemd.package}/bin/systemctl start radvd.service" root
             notify_backup "${config.systemd.package}/bin/systemctl stop radvd.service" root
           '';
