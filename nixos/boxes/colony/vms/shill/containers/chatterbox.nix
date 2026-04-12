@@ -198,15 +198,17 @@ in
 
             mautrix-whatsapp = {
               enable = true;
-              package = pkgs.mautrix-whatsapp.overrideAttrs (o: {
+              package = pkgs.mautrix-whatsapp.overrideAttrs (o: rec {
                 # TODO: Remove when upgrading nixpkgs
+                version = "26.03";
+                tag = "v0.2603.0";
                 src = pkgs.fetchFromGitHub {
                   owner = "mautrix";
                   repo = "whatsapp";
-                  tag = "v0.2511.0";
-                  hash = "sha256-0Jpod9/mZ9eGFvPxki6Yz0KL1XQ4HTtZ7Zv7WvamuC0=";
+                  inherit tag;
+                  hash = "sha256-iLPcMi/6262r+jq3RIkiUckniwTFsaajy5EwYFRaenU=";
                 };
-                vendorHash = "sha256-n25j2uM3e5/5PYs2jwH+iclaU/p/MhctCAhPninz2HI=";
+                vendorHash = "sha256-+B/WF0tt7cqfvM07jHpPZHzI5frQOKhxYMFl4asSPqg=";
               });
               environmentFile = config.age.secrets."chatterbox/mautrix-whatsapp.env".path;
               settings = {
