@@ -35,7 +35,7 @@ in
             isNormalUser = true;
             uid = mkDefault 1000;
             extraGroups =
-              [ "wheel" "kvm" "dialout" ] ++
+              [ "wheel" "kvm" "dialout" "disk" ] ++
               (optional config.networking.networkmanager.enable "networkmanager") ++
               (optional config.virtualisation.libvirtd.enable "libvirtd") ++
               (optional config.programs.wireshark.enable "wireshark") ++
