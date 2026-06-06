@@ -12,7 +12,7 @@ let
   };
 
   # Forwarded in AirVPN config
-  transmissionPeerPort = 47016;
+  transmissionPeerPort = 28457;
 in
 {
   config = mkMerge [
