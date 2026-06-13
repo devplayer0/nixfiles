@@ -145,6 +145,7 @@ in
             # Also the script runs before impermanence does.
             "/var/lib/nixos"
             "/var/lib/systemd"
+            "/var/cache/man"
 
             { directory = "/root/.cache/nix"; mode = "0700"; }
             # Including these unconditionally due to infinite recursion problems...
