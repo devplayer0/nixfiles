@@ -232,6 +232,10 @@ in
 
               services = {
                 blueman-applet.enable = true;
+                easyeffects = {
+                  enable = true;
+                  preset = "moar-bass";
+                };
               };
 
               wayland.windowManager.sway = {

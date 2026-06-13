@@ -1,6 +1,6 @@
 { lib, pkgs', pkgs, config, ... }:
 let
-  inherit (lib) genAttrs mkIf mkMerge mkForce mapAttrs mkOptionDefault;
+  inherit (lib) genAttrs mkIf mkMerge mkForce mapAttrs mkOptionDefault mkDefault;
   inherit (lib.my) mkOpt' mkBoolOpt';
   inherit (lib.my.c) pubDomain;
 
@@ -411,6 +411,30 @@ in
               backend = "pulseaudio";
               bitrate = 320;
               device_type = "computer";
+            };
+          };
+
+          easyeffects = {
+            enable = mkDefault false;
+            preset = mkDefault "moar-bass";
+            extraPresets = {
+              moar-bass = {
+                output = {
+                  "bass_enhancer#0" = {
+                    amount = 3;
+                    blend = 0;
+                    bypass = false;
+                    floor = 20;
+                    floor-active = false;
+                    harmonics = 8.5;
+                    input-gain = 0;
+                    output-gain = 0;
+                    scope = 100;
+                  };
+                  blocklist = [ ];
+                  plugins_order = [ "bass_enhancer#0" ];
+                };
+              };
             };
           };
         };
