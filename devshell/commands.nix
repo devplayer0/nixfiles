@@ -144,7 +144,11 @@ in
       help = "Deploy multiple flakes at once";
       command = ''
         for f in $@; do
-          deploy "$O" $f
+          if [ -n "''${O:-}" ]; then
+            deploy "$O" $f
+          else
+            deploy $f
+          fi
         done
       '';
     }
