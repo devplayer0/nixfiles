@@ -183,7 +183,7 @@ in
                 PDS_EMAIL_FROM_ADDRESS = "pds@nul.ie";
 
                 PDS_DID_PLC_URL = "https://plc.directory";
-                PDS_INVITE_REQUIRED = 1;
+                PDS_INVITE_REQUIRED = "true";
                 PDS_BSKY_APP_VIEW_URL = "https://api.bsky.app";
                 PDS_BSKY_APP_VIEW_DID = "did:web:api.bsky.app";
                 PDS_REPORT_SERVICE_URL = "https://mod.bsky.app";

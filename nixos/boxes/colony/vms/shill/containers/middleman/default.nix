@@ -40,11 +40,6 @@ in
             secrets = {
               key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAQM9U1e/XcUCyMJITrpAHjAGahpqkZCmtX6pJkYzuks";
               files = {
-                "dhparams.pem" = {
-                  owner = "acme";
-                  group = "acme";
-                  mode = "440";
-                };
                 "pdns-file-records.key" = {
                   owner = "acme";
                   group = "acme";
@@ -176,7 +171,7 @@ in
                     "*.${config.networking.domain}"
                   ];
                   dnsProvider = "exec";
-                  credentialsFile =
+                  environmentFile =
                   let
                     script = pkgs.writeShellScript "lego-update-int.sh" ''
                       case "$1" in
@@ -207,7 +202,7 @@ in
                     "*.s3.${pubDomain}"
                   ];
                   dnsProvider = "cloudflare";
-                  credentialsFile = config.age.secrets."middleman/cloudflare-credentials.conf".path;
+                  environmentFile = config.age.secrets."middleman/cloudflare-credentials.conf".path;
                   postRun =
                   let
                     sshKey = config.age.secrets."middleman/mailcow-ssh.key".path;
@@ -256,7 +251,6 @@ in
                 valid = "5s";
               };
               proxyResolveWhileRunning = true;
-              sslDhparam = config.age.secrets."dhparams.pem".path;
 
               appendConfig = ''
                 worker_processes auto;

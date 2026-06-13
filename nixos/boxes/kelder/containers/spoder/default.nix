@@ -60,7 +60,7 @@ in
                 "*.${domain}"
               ];
               dnsProvider = "cloudflare";
-              credentialsFile = config.age.secrets."kelder/cloudflare-credentials.conf".path;
+              environmentFile = config.age.secrets."kelder/cloudflare-credentials.conf".path;
             };
           };
         };

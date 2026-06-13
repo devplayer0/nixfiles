@@ -38,6 +38,15 @@ in
           enable = mkDefault true;
           wheelNeedsPassword = mkDefault false;
         };
+
+        # TODO: Add this to fix login 
+        # pam = {
+        #   services = {
+        #     kmscon.rules. = mkIf config.services.kmscon.config.libseat {
+              
+        #     };
+        #   };
+        # };
       };
 
       nix = {
@@ -157,16 +166,14 @@ in
       };
 
       services = {
-        kmscon = {
-          # As it turns out, kmscon hasn't been updated in years and has some bugs...
+        # TODO: Remove if-else when 26.11 releases
+        kmscon = if (config.system.nixos.release == "26.06:u-26.11") then {
           enable = mkDefault false;
-          hwRender = mkDefault true;
-          extraOptions = "--verbose";
-          extraConfig =
-            ''
-              font-name=SauceCodePro Nerd Font Mono
-            '';
-        };
+          config = {
+            hwaccel = config.hardware.graphics.enable;
+            font-name = "SauceCodePro Nerd Font Mono";
+          };
+        } else { };
         getty.greetingLine = mkDefault' ''<<< Welcome to ${config.system.nixos.distroName} ${config.system.nixos.label} (\m) - \l >>>'';
 
         openssh = {
@@ -247,7 +254,7 @@ in
       };
     }
     (mkIf config.services.kmscon.enable {
-      fonts.fonts = with pkgs; [
+      fonts.packages = with pkgs; [
         nerd-fonts.sauce-code-pro
       ];
     })

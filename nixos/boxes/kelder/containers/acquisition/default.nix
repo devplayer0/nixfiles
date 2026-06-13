@@ -73,8 +73,8 @@ in
               RootDirectory = lib.mkForce "";
             };
 
-            radarr.serviceConfig.UMask = "0002";
-            sonarr.serviceConfig.UMask = "0002";
+            radarr.serviceConfig.UMask = lib.mkForce "0002";
+            sonarr.serviceConfig.UMask = lib.mkForce "0002";
           };
         };
 

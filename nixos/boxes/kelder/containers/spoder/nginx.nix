@@ -13,11 +13,6 @@ in
           owner = "nginx";
           group = "nginx";
         };
-        "dhparams.pem" = {
-          owner = "acme";
-          group = "acme";
-          mode = "440";
-        };
       };
 
       firewall = {
@@ -35,7 +30,6 @@ in
         recommendedTlsSettings = true;
         clientMaxBodySize = "0";
         serverTokens = true;
-        sslDhparam = config.age.secrets."dhparams.pem".path;
 
         # Based on recommended*Settings, but probably better to be explicit about these
         appendHttpConfig = ''

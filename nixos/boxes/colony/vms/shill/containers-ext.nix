@@ -13,6 +13,7 @@ in
     "/var/lib/machines/jam" = {
       device = "/mnt/jam";
       options = [ "bind" ];
+      fsType = "none";
     };
   };
 

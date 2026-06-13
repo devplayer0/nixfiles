@@ -11,9 +11,7 @@ in
   config = mkIf cfg.enable {
     services = {
       getty.autologinUser = mkDefault uname;
-      kmscon.autologinUser = mkDefault uname;
-      # TODO: Update to Setings.Resolve.LLMNR when 26.05 releases
-      resolved.llmnr = mkDefault "false";
+      resolved.settings.Resolve.LLMNR = mkDefault "false";
     };
     systemd = {
       timers = {

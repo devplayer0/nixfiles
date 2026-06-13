@@ -34,7 +34,7 @@ in
 
     services = {
       pdns-recursor = {
-        yaml-settings = {
+        settings = {
           incoming = {
             listen = [
               "127.0.0.1" "::1"

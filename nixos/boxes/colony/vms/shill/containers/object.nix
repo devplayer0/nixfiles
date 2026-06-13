@@ -35,6 +35,7 @@ in
             "/var/lib/harmonia" = {
               device = "/mnt/nix-cache";
               options = [ "bind" ];
+              fsType = "none";
             };
           };
 
@@ -160,6 +161,9 @@ in
               minio-client
             ];
           };
+
+          # TODO/FIXME: this is bad...
+          nixpkgs.config.permittedInsecurePackages = [ "minio-2025-10-15T17-29-55Z" ];
 
           services = {
             minio = {

@@ -9,11 +9,6 @@ in
   config = {
     my = {
       secrets.files = {
-        "dhparams.pem" = {
-          owner = "acme";
-          group = "acme";
-          mode = "440";
-        };
         "britway/cloudflare-credentials.conf" = {
           owner = "acme";
           group = "acme";
@@ -45,7 +40,7 @@ in
             "*.${pubDomain}"
           ];
           dnsProvider = "cloudflare";
-          credentialsFile = config.age.secrets."britway/cloudflare-credentials.conf".path;
+          environmentFile = config.age.secrets."britway/cloudflare-credentials.conf".path;
         };
       };
     };
@@ -58,7 +53,6 @@ in
         logError = "stderr info";
         recommendedTlsSettings = true;
         serverTokens = true;
-        sslDhparam = config.age.secrets."dhparams.pem".path;
 
         # Based on recommended*Settings, but probably better to be explicit about these
         appendHttpConfig = ''

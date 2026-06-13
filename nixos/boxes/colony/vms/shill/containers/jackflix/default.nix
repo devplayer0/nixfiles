@@ -60,10 +60,10 @@ in
             transmission.extraGroups = [ "media" ];
             radarr.extraGroups = [ "media" ];
             sonarr.extraGroups = [ "media" ];
-            jellyseerr = {
+            seerr = {
               isSystemUser = true;
               uid = uids.jellyseerr;
-              group = "jellyseerr";
+              group = "seerr";
             };
             photoprism = {
               isSystemUser = true;
@@ -77,7 +77,7 @@ in
           };
           groups = {
             media.gid = 2000;
-            jellyseerr.gid = gids.jellyseerr;
+            seerr.gid = gids.jellyseerr;
             photoprism.gid = gids.photoprism;
             copyparty.gid = gids.copyparty;
           };
@@ -88,15 +88,15 @@ in
             jackett.bindsTo = [ "systemd-networkd-wait-online@vpn.service" ];
             transmission.bindsTo = [ "systemd-networkd-wait-online@vpn.service" ];
 
-            radarr.serviceConfig.UMask = "0002";
+            radarr.serviceConfig.UMask = mkForce "0002";
             radarr.path = with pkgs; [ ffmpeg ];
-            sonarr.serviceConfig.UMask = "0002";
+            sonarr.serviceConfig.UMask = mkForce "0002";
             sonarr.path = with pkgs; [ ffmpeg ];
-            jellyseerr.serviceConfig = {
+            seerr.serviceConfig = {
               # Needs to be able to read its secrets
               DynamicUser = mkForce false;
-              User = "jellyseerr";
-              Group = "jellyseerr";
+              User = "seerr";
+              Group = "seerr";
             };
 
             # https://github.com/NixOS/nixpkgs/issues/258793#issuecomment-1748168206
@@ -145,7 +145,7 @@ in
           jackett.enable = true;
           radarr.enable = true;
           sonarr.enable = true;
-          jellyseerr = {
+          seerr = {
             enable = true;
             openFirewall = true;
           };

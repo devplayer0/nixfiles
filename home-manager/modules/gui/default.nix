@@ -79,7 +79,7 @@ in
             jp2a
             terminaltexteffects
             screenfetch
-            neofetch
+            fastfetch
             cmatrix
             doomsaver
 
@@ -120,12 +120,6 @@ in
               shell_integration = "no-sudo";
               font_features = "${font.name} -liga";
             };
-          };
-
-          termite = {
-            enable = true;
-            font = "${font.name} ${toString font.size}";
-            backgroundColor = "rgba(0, 0, 0, 0.8)";
           };
 
           foot = {
@@ -387,6 +381,10 @@ in
             name = "Numix";
             package = pkgs.numix-gtk-theme;
           };
+          gtk4.theme = {
+            name = "Numix";
+            package = pkgs.numix-gtk-theme;
+          };
           iconTheme = {
             name = "Numix";
             package = pkgs.numix-icon-theme;
@@ -494,6 +492,7 @@ in
           userDirs = {
             enable = true;
             createDirectories = true;
+            setSessionVariables = true;
             desktop = "$HOME/desktop";
             documents = "$HOME/documents";
             download = "$HOME/downloads";

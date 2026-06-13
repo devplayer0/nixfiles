@@ -133,34 +133,32 @@ in
         ssh = {
           enable = mkDefault true;
           enableDefaultConfig = false;
-          matchBlocks = {
+          settings = {
             nix-dev-vm = {
-              user = "dev";
-              hostname = "localhost";
-              port = 2222;
-              extraOptions = {
-                StrictHostKeyChecking = "no";
-                UserKnownHostsFile = "/dev/null";
-              };
+              User = "dev";
+              HostName = "localhost";
+              Port = 2222;
+              StrictHostKeyChecking = "no";
+              UserKnownHostsFile = "/dev/null";
             };
 
             "rsync.net" = {
-              host = "rsyncnet";
-              user = "16413";
-              hostname = "ch-s010.rsync";
+              Host = "rsyncnet";
+              User = "16413";
+              HostName = "ch-s010.rsync";
             };
 
             shoe = {
-              host = "shoe.netsoc.tcd.ie shoe";
-              user = "netsoc";
+              Host = "shoe.netsoc.tcd.ie shoe";
+              User = "netsoc";
             };
             netsocBoxes = {
-              host = "cube spoon napalm gandalf saruman";
-              user = "root";
+              Host = "cube spoon napalm gandalf saruman";
+              User = "root";
             };
 
             "*" = {
-              identityFile = [
+              IdentityFile = [
                 "~/.ssh/id_rsa"
                 "~/.ssh/borg"
               ];

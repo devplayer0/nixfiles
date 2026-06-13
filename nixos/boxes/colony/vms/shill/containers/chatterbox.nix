@@ -198,18 +198,17 @@ in
 
             mautrix-whatsapp = {
               enable = true;
-              package = pkgs.mautrix-whatsapp.overrideAttrs (o: rec {
-                # TODO: Remove when upgrading nixpkgs
-                version = "26.05";
-                tag = "v0.2605.0";
-                src = pkgs.fetchFromGitHub {
-                  owner = "mautrix";
-                  repo = "whatsapp";
-                  inherit tag;
-                  hash = "sha256-WlVfGQoP9e/wl98hUJei8O2JMcOKijoEY8XuU/z69Qk=";
-                };
-                vendorHash = "sha256-Hi/dZHJHoTTCnxLXgbkcYzuzis4fl5kxb5wMd9fKTY8=";
-              });
+              # package = pkgs.mautrix-whatsapp.overrideAttrs (o: rec {
+              #   version = "26.05";
+              #   tag = "v0.2605.0";
+              #   src = pkgs.fetchFromGitHub {
+              #     owner = "mautrix";
+              #     repo = "whatsapp";
+              #     inherit tag;
+              #     hash = "sha256-WlVfGQoP9e/wl98hUJei8O2JMcOKijoEY8XuU/z69Qk=";
+              #   };
+              #   vendorHash = "sha256-Hi/dZHJHoTTCnxLXgbkcYzuzis4fl5kxb5wMd9fKTY8=";
+              # });
               environmentFile = config.age.secrets."chatterbox/mautrix-whatsapp.env".path;
               settings = {
                 database = {
@@ -254,18 +253,17 @@ in
               };
             };
 
-            # TODO: Remove when upgrading nixpkgs
-            mautrix-meta.package = pkgs.mautrix-meta.overrideAttrs (o: rec {
-              version = "26.05.1";
-              tag = "v0.2605.1";
-              src = pkgs.fetchFromGitHub {
-                owner = "mautrix";
-                repo = "meta";
-                inherit tag;
-                hash = "sha256-zpolDtwGulDTiojJPnkj9O0D5b4rgPYQX6A28rvuvM0=";
-              };
-              vendorHash = "sha256-+i45bXBhlXPXX24VMS9IJLLX+i4VPnqy5RAH4j88sTA=";
-            });
+            # mautrix-meta.package = pkgs.mautrix-meta.overrideAttrs (o: rec {
+            #   version = "26.05.1";
+            #   tag = "v0.2605.1";
+            #   src = pkgs.fetchFromGitHub {
+            #     owner = "mautrix";
+            #     repo = "meta";
+            #     inherit tag;
+            #     hash = "sha256-zpolDtwGulDTiojJPnkj9O0D5b4rgPYQX6A28rvuvM0=";
+            #   };
+            #   vendorHash = "sha256-+i45bXBhlXPXX24VMS9IJLLX+i4VPnqy5RAH4j88sTA=";
+            # });
             mautrix-meta.instances = {
               messenger = {
                 enable = true;

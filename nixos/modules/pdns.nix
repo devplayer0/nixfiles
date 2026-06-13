@@ -165,7 +165,7 @@ let
 
   extraSettingsOpt = with lib.types; mkOpt' (nullOr str) null "Path to extra settings (e.g. for secrets).";
   baseAuthSettings = pkgs.writeText "pdns.conf" (settingsToLines cfg.auth.settings);
-  baseRecursorSettings = (pkgs.formats.yaml { }).generate "pdns-recursor.yaml" config.services.pdns-recursor.yaml-settings;
+  baseRecursorSettings = (pkgs.formats.yaml { }).generate "pdns-recursor.yaml" config.services.pdns-recursor.settings;
   generateSettings = type: base: dst: if (cfg."${type}".extraSettingsFile != null) then ''
     oldUmask="$(umask)"
     umask 006

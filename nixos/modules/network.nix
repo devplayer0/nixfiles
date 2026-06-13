@@ -13,21 +13,13 @@ in
       };
 
       services.resolved = {
-      # Explicitly unset fallback DNS (Nix module will not allow for a blank config)
-      # TODO: Remove if-else when 26.05 releases
-      } // (if config.system.nixos.release == "25.11:u-25.11" then {
-        domains = [ config.networking.domain ];
-        extraConfig = ''
-          FallbackDNS=
-          Cache=no-negative
-        '';
-      } else {
         settings.Resolve = {
           Domains = [ config.networking.domain ];
+          # Explicitly unset fallback DNS (Nix module will not allow for a blank config)
           FallbackDNS = "";
           Cache = "no-negative";
         };
-      });
+      };
     }
 
     (mkIf config.my.build.isDevVM {

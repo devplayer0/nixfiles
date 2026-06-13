@@ -336,13 +336,13 @@ in
       (persistSimpleSvc "jackett")
       (persistSimpleSvc "radarr")
       (persistSimpleSvc "sonarr")
-      (mkIf config.services.jellyseerr.enable {
+      (mkIf config.services.seerr.enable {
         my.tmproot.persistence.config.directories = [
           {
-            directory = "/var/lib/jellyseerr";
+            directory = "/var/lib/seerr";
             mode = "0750";
-            user = "jellyseerr";
-            group = "jellyseerr";
+            user = "seerr";
+            group = "seerr";
           }
         ];
       })
