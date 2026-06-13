@@ -230,12 +230,15 @@ in
                 ];
               };
 
+              programs = {
+                claude-code = {
+                  enable = true;
+                };
+              };
+
               services = {
                 blueman-applet.enable = true;
-                easyeffects = {
-                  enable = true;
-                  preset = "moar-bass";
-                };
+                easyeffects.enable = true;
               };
 
               wayland.windowManager.sway = {
