@@ -1,19 +1,7 @@
 { lib, pkgs, config, ... }:
 let
-  inherit (builtins) toJSON;
   inherit (lib) mkForce;
   inherit (lib.my.c) pubDomain;
-
-  cfgFile = pkgs.writeText "gitea-actions-runner.yaml" (toJSON {
-    container = {
-      network = "podman";
-      privileged = true;
-    };
-    cache = {
-      enabled = true;
-      dir = "/var/cache/gitea-runner";
-    };
-  });
 in
 {
   config = {
@@ -30,14 +18,22 @@ in
           enable = true;
           name = "main-docker";
           labels = [
-            "debian-node-bullseye:docker://node:18-bullseye"
-            "ubuntu-22.04:docker://git.nul.ie/dev/actions-ubuntu:22.04"
+            "debian-node-trixie:docker://node:24-trixie"
+            "ubuntu-26.04:docker://git.nul.ie/dev/actions-ubuntu:26.04"
           ];
           url = "https://git.${pubDomain}";
           tokenFile = config.age.secrets."gitea/actions-runner.env".path;
           settings = {
             runner = {
               timeout = "8h";
+            };
+            container = {
+              network = "podman";
+              privileged = true;
+            };
+            cache = {
+              enabled = true;
+              dir = "/var/cache/gitea-runner";
             };
           };
         };
@@ -66,7 +62,6 @@ in
           DynamicUser = mkForce false;
           User = "gitea-runner";
           Group = "gitea-runner";
-          ExecStart = mkForce "${config.services.gitea-actions-runner.package}/bin/act_runner -c ${cfgFile} daemon";
         };
       };
     };
