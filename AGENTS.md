@@ -21,7 +21,17 @@ Common ones:
 - `build-home <name>` / `home-switch` — build / switch a home-manager config.
 - `run-vm <host>` — build & boot a system as a dev VM (installs `.keys/dev.key` into the VM).
 - `build-iso` / `build-kexec` / `build-netboot <host>` — alternate build outputs via `config.my.buildAs.*`.
+- `check-system <host> [nix args]` — evaluate a system (catches eval errors without a full build).
+  **Prefer this over `build-system` to validate a config change** — evaluation surfaces module/option
+  errors quickly and cheaply; only do a full build when you specifically need the built artifact.
 - `deploy <host>` and `deploy-multi <hosts...>` — deploy-rs deployment (uses `.keys/deploy.key`, `--skip-checks`).
+  Pass the flake-qualified node, e.g. `deploy .#git`. The deploy node name is **always** the system
+  name (`deploy-rs.nix` keys nodes directly off `nixos.systems` / `home-manager.homes`); a system is
+  only a deploy target when `config.my.deploy.enable` is true (defaults true; auto-disabled for dev
+  VMs and containers).
+- `ssh-machine <name> [cmd]` — SSH to a NixOS system or home-manager config by name. Resolves the
+  target and ssh options (identity, port) from its deploy-rs node, so it needs `my.deploy.enable`
+  (same gate as `deploy`).
 - `ragenix` — edit age secrets using `.keys/dev.key` as identity (see Secrets).
 - `repl` — `nix repl .#`.
 - `update-nixpkgs` / `update-home-manager` — bump pinned inputs.
@@ -99,3 +109,5 @@ private keys) is required for editing secrets, deploying, and running dev VMs.
 - New host → box file under `nixos/boxes/` + entry in the `configs` list in `flake.nix`.
 - Custom packages live in `pkgs/` and are registered in `pkgs/default.nix`; the overlay is exposed
   as `overlays.default`.
+- In prose and commit messages, quote code-like identifiers (commands, options, paths, package and
+  attribute names) in backticks.

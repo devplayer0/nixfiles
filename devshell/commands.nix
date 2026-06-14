@@ -49,6 +49,25 @@ in
       command = "${pkgs.openssh}/bin/ssh-keyscan -t ed25519 \"$1\" 2> /dev/null | awk '{ print $2 \" \" $3 }'";
     }
     {
+      name = "ssh-machine";
+      category = "utilities";
+      help = "SSH to a machine by NixOS system or home-manager config name";
+      command = ''
+        name="$1"
+        shift
+        # Run from the project root so deploy's relative identity path (.keys/deploy.key) resolves
+        cd "$PRJ_ROOT"
+        # deploy-rs node names are the system/home name, with `@` mangled to `-at-`
+        node="''${name//@/-at-}"
+        # Single eval: resolve `user@host` plus merged (global + node) deploy-rs ssh options
+        info="$(nix eval --raw .#deploy --apply 'd: let n = d.nodes."'"$node"'"; in "''${n.sshUser}@''${n.hostname} ''${builtins.concatStringsSep " " (d.sshOpts ++ n.sshOpts)}"')"
+        target="''${info%% *}"
+        opts="''${info#* }"
+        # shellcheck disable=SC2086
+        exec ${pkgs.openssh}/bin/ssh $opts "$target" "$@"
+      '';
+    }
+    {
       name = "json2nix";
       category = "utilities";
       help = "Convert JSON to formatted Nix";
@@ -72,6 +91,12 @@ in
       category = "tasks";
       help = "Build NixOS configuration";
       command = ''nix build "''${@:2}" ".#nixosConfigurations.\"$1\".config.system.build.toplevel"'';
+    }
+    {
+      name = "check-system";
+      category = "utilities";
+      help = "Evaluate NixOS configuration (check validity without building)";
+      command = ''nix eval "''${@:2}" ".#nixosConfigurations.\"$1\".config.system.build.toplevel.drvPath"'';
     }
     {
       name = "build-n-switch";
