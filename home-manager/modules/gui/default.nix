@@ -155,6 +155,19 @@ in
               };
             };
           };
+
+          claude-code = {
+            enable = true;
+            settings = {
+              model = "opus";
+              theme = "auto";
+              statusLine = {
+                type = "command";
+                command = ./claude-statusline.sh;
+                padding = 0;
+              };
+            };
+          };
         };
       }
 
