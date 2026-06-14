@@ -210,6 +210,7 @@ in
             customComponents = with pkgs.home-assistant-custom-components; [
               alarmo
               frigate
+              west_wood_club
             ];
 
             configWritable = false;

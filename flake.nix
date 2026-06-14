@@ -47,6 +47,8 @@
     # borgthin.inputs.nixpkgs.follows = "nixpkgs-mine";
     copyparty.url = "github:9001/copyparty";
     copyparty.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    hass-west-wood.url = "github:devplayer0/hass-west-wood";
+    hass-west-wood.inputs.nixpkgs.follows = "nixpkgs-unstable";
   };
 
   outputs =

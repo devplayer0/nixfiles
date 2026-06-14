@@ -82,6 +82,7 @@ in
           # inputs.borgthin.overlays.default
           inputs.boardie.overlays.default
           inputs.copyparty.overlays.default
+          inputs.hass-west-wood.overlays.default
         ];
         config = {
           allowUnfree = true;
