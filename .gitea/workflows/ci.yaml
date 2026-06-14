@@ -7,10 +7,10 @@ on:
 jobs:
   check:
     name: Check, build and cache nixfiles
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-26.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v27
+      - uses: actions/checkout@v6
+      - uses: cachix/install-nix-action@v31
         with:
           # Gitea will supply a token in GITHUB_TOKEN, which this action will
           # try to pass to Nix when downloading from GitHub
