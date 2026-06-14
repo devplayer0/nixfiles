@@ -291,6 +291,23 @@ in
             neighbor 2001:7f8:10f::3:3e9b:134 as 212635;
           }
 
+          protocol bgp peer4_nlix_meta1 from peer_bgp4 {
+            description "Meta 1 (on NL-ix, IPv4)";
+            neighbor 193.239.116.147 as 32934;
+          }
+          protocol bgp peer4_nlix_meta2 from peer_bgp4 {
+            description "Meta 2 (on NL-ix, IPv4)";
+            neighbor 193.239.116.148 as 32934;
+          }
+          protocol bgp peer6_nlix_meta1 from peer_bgp6 {
+            description "Meta 1 (on NL-ix, IPv6)";
+            neighbor 2001:7f8:13::a503:2934:1 as 32934;
+          }
+          protocol bgp peer6_nlix_meta2 from peer_bgp6 {
+            description "Meta 2 (on NL-ix, IPv6)";
+            neighbor 2001:7f8:13::a503:2934:2 as 32934;
+          }
+
           protocol bgp peer4_frysix_meta1 from peer_bgp4 {
             description "Meta 1 (on Frys-IX, IPv4)";
             neighbor 185.1.160.225 as 32934;
