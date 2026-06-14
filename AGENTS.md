@@ -4,8 +4,8 @@ This file provides guidance to coding agents when working with code in this repo
 
 ## Overview
 
-Personal Nix flake managing NixOS systems and home-manager configurations for a fleet of
-machines (servers, home boxes, routers). It is built around a **custom module system** layered
+Personal Nix flake managing NixOS systems and home-manager configurations for a set of
+machines ("boxes": servers, home machines, routers). It is built around a **custom module system** layered
 on top of NixOS/home-manager, not the stock flake `nixosConfigurations` pattern.
 
 ## Commands
@@ -90,6 +90,11 @@ module) and there is an assertion that fails on duplicate IPs. Host networking
 Per-host configs live under `nixos/boxes/<host>` (some are single `.nix` files, some directories
 with nested VMs/containers under e.g. `colony/vms`). Many "systems" are VMs or containers managed
 via the `vms` / `containers` modules and the `l2mesh` VXLAN module.
+
+For a human-readable map of what is actually deployed (per-machine roles, services and networking),
+see `README.md` and the per-machine docs under `docs/boxes/` (grouped `docs/boxes/colony/`,
+`docs/boxes/home/`, `docs/boxes/misc/`). Keep these in sync when adding, removing or repurposing
+a machine or service.
 
 ## Secrets
 
