@@ -3,11 +3,14 @@ let
   # TODO: Move into nixpkgs
   mstpd = pkgs.mstpd.overrideAttrs {
     patches = [ ./mstpd.patch ];
+    # Delete postInstall since it nukes the bridge-stp script we need
+    postInstall = "";
   };
 in
 {
   environment = {
     systemPackages = [
+      # For kernel to call bridge-stp (see ./pkgs/os-specific/linux/kernel/bridge-stp-helper.patch)
       mstpd
     ];
     etc = {
@@ -39,8 +42,8 @@ in
         before = [ "network-pre.target" ];
         serviceConfig = {
           Type = "forking";
-          ExecStart = "${mstpd}/sbin/bridge-stp restart";
-          ExecReload = "${mstpd}/sbin/bridge-stp restart_config";
+          ExecStart = "${mstpd}/bin/bridge-stp restart";
+          ExecReload = "${mstpd}/bin/bridge-stp restart_config";
           PIDFile = "/run/mstpd.pid";
           Restart = "always";
           PrivateTmp = true;
