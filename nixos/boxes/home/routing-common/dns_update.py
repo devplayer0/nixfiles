@@ -33,7 +33,7 @@ def main():
 
     print(f'Updating {args.record} -> {address}')
     cf.dns.records.edit(
-        zone_id=zone.id, dns_record_id=record.id, name=args.record,
+        zone_id=zone.id, dns_record_id=record.id, name=args.record, ttl=60,
         type='A', content=address)
 
 if __name__ == '__main__':
