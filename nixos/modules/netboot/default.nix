@@ -8,7 +8,7 @@ let
   tftpRoot = pkgs.linkFarm "tftp-root" [
     {
       name = "ipxe-x86_64.efi";
-      path = "${pkgs.ipxe}/ipxe.efi";
+      path = "${pkgs.ipxe}/snp.efi";
     }
   ];
   menuFile = pkgs.runCommand "menu.ipxe" {
