@@ -111,6 +111,13 @@ in
                 MTUBytes = toString lib.my.c.home.hiMTU;
               };
             };
+            "10-lan-core-ctrs" = {
+              matchConfig = {
+                Driver = "virtio_net";
+                PermanentMACAddress = "52:54:00:72:67:51";
+              };
+              linkConfig.Name = "lan-core-ctrs";
+            };
             "10-lan-lo-ctrs" = {
               matchConfig = {
                 Driver = "virtio_net";
@@ -131,6 +138,11 @@ in
               linkConfig.RequiredForOnline = "no";
               networkConfig = networkd.noL3;
             };
+            "30-lan-core-ctrs" = {
+              matchConfig.Name = "lan-core-ctrs";
+              linkConfig.RequiredForOnline = "no";
+              networkConfig = networkd.noL3;
+            };
             "30-lan-lo-ctrs" = {
               matchConfig.Name = "lan-lo-ctrs";
               linkConfig.RequiredForOnline = "no";
@@ -143,6 +155,11 @@ in
           hass = {
             networkConfig = {
               MACVLAN = mkForce "lan-hi-ctrs:host0 lan-lo-ctrs:lan-lo";
+            };
+          };
+          unifi = {
+            networkConfig = {
+              MACVLAN = mkForce "lan-hi-ctrs:host0 lan-core-ctrs:lan-core";
             };
           };
         };
@@ -174,7 +191,7 @@ in
           containers.instances =
           let
             instances = {
-              # unifi = {};
+              unifi = {};
               hass = {
                 bindMounts = {
                   "/dev/bus/usb/001/002".readOnly = false;

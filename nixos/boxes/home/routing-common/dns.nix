@@ -223,6 +223,7 @@ in
             dave-lo IN AAAA ${net.cidr.host (65536+2) prefixes.lo.v6}
 
             shytzel IN A ${net.cidr.host 12 prefixes.core.v4}
+            brian IN A ${net.cidr.host 13 prefixes.core.v4}
 
             wave IN A ${net.cidr.host 12 prefixes.hi.v4}
             ; wave IN AAAA ${net.cidr.host (65536+3) prefixes.hi.v6}

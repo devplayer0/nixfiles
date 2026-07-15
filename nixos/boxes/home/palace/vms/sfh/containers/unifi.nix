@@ -24,6 +24,15 @@ in
           address = net.cidr.host (65536*5+1) prefixes.hi.v6;
         };
       };
+      core = {
+        inherit domain;
+        name = "unifi-ctr-core";
+        mtu = 1500;
+        ipv4 = {
+          address = net.cidr.host 21 prefixes.core.v4;
+          gateway = null;
+        };
+      };
     };
 
     configuration = { lib, config, pkgs, assignments, ... }:
@@ -48,7 +57,10 @@ in
         };
 
         systemd = {
-          network.networks."80-container-host0" = networkdAssignment "host0" assignments.hi;
+          network.networks = {
+            "80-container-host0" = networkdAssignment "host0" assignments.hi;
+            "80-lan-core" = networkdAssignment "lan-core" assignments.core;
+          };
         };
 
         services = {

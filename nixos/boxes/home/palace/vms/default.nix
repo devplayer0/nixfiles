@@ -172,11 +172,19 @@
             };
             memory = 32768;
             cleanShutdown.timeout = 120;
-            networks.netboot = {
-              bridge = "lan-lo";
-              waitOnline = "carrier";
-              mac = "52:54:00:a5:7e:93";
-              extraOptions.bootindex = 1;
+            networks = {
+              netboot = {
+                bridge = "lan-lo";
+                waitOnline = "carrier";
+                mac = "52:54:00:a5:7e:93";
+                extraOptions.bootindex = 1;
+              };
+              core = {
+                bridge = "lan-core";
+                ifname = "vm-sfh-core";
+                waitOnline = "carrier";
+                mac = "52:54:00:72:67:51";
+              };
             };
             hostDevices = {
               et100g0vf2 = {

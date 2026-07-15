@@ -126,9 +126,9 @@ in
                 };
                 linkConfig.Name = "et1g0";
               };
-              "10-lan-core" = {
+              "10-lan-core-phy" = {
                 matchConfig.PermanentMACAddress = "e0:d5:5e:68:0c:70";
-                linkConfig.Name = "lan-core";
+                linkConfig.Name = "lan-core-phy";
               };
               "10-et100g" = {
                 matchConfig = {
@@ -145,6 +145,12 @@ in
             netdevs = mkMerge [
               (mkVLAN "lan-hi" vlans.hi)
               (mkVLAN "lan-lo-phy" vlans.lo)
+              {
+                "25-lan-core".netdevConfig = {
+                  Name = "lan-core";
+                  Kind = "bridge";
+                };
+              }
               {
                 "25-lan-lo".netdevConfig = {
                   Name = "lan-lo";
@@ -199,6 +205,12 @@ in
               };
               "60-lan-hi" = networkdAssignment "lan-hi" assignments.hi;
 
+              "50-lan-core-phy" = {
+                matchConfig.Name = "lan-core-phy";
+                networkConfig = {
+                  Bridge = "lan-core";
+                } // networkd.noL3;
+              };
               "50-lan-lo-phy" = {
                 matchConfig.Name = "lan-lo-phy";
                 networkConfig = {
