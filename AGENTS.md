@@ -4,9 +4,9 @@ This file provides guidance to coding agents when working with code in this repo
 
 ## Overview
 
-Personal Nix flake managing NixOS systems and home-manager configurations for a fleet of
-machines (servers, home boxes, routers). It is built around a **custom module system** layered
-on top of NixOS/home-manager, not the stock flake `nixosConfigurations` pattern.
+Personal Nix flake managing NixOS systems and home-manager configurations for a set of
+machines — always called **"boxes"**, never "fleet". It is built around a **custom module
+system** layered on top of NixOS/home-manager, not the stock flake `nixosConfigurations` pattern.
 
 ## Commands
 
@@ -31,7 +31,8 @@ Common ones:
   VMs and containers).
 - `ssh-machine <name> [cmd]` — SSH to a NixOS system or home-manager config by name. Resolves the
   target and ssh options (identity, port) from its deploy-rs node, so it needs `my.deploy.enable`
-  (same gate as `deploy`).
+  (same gate as `deploy`). Boxes default to the `fish` login shell, so pipe multi-statement remote
+  scripts through `bash` (e.g. `ssh-machine <name> bash -s < script.sh`) rather than `&&`/`for`.
 - `ragenix` — edit age secrets using `.keys/dev.key` as identity (see Secrets).
 - `repl` — `nix repl .#`.
 - `update-nixpkgs` / `update-home-manager` — bump pinned inputs.
@@ -91,6 +92,29 @@ Per-host configs live under `nixos/boxes/<host>` (some are single `.nix` files, 
 with nested VMs/containers under e.g. `colony/vms`). Many "systems" are VMs or containers managed
 via the `vms` / `containers` modules and the `l2mesh` VXLAN module.
 
+### Home routers (`nixos/boxes/home/routing-common`)
+The two home routers, `river` and `stream`, share `routing-common`, which is a **function of an
+`index`** (`import ../../routing-common 0` for river, `1` for stream). The index derives per-box
+addresses, keepalived VRRP priorities/state, DNS `ns` numbering, etc., so the two boxes are an
+active/backup HA pair from one definition. They differ where hardware/uplink differ: `stream` has a
+DHCP WAN, `river` runs PPPoE (`services.pppd`, Digiweb) — box-specific bits live in the respective
+box file, not `routing-common`.
+
+- **HA is VRRP (`keepalived`).** Per-VLAN floating **VIPs** (`lib.my.c.home.vips`) are what clients
+  use as both gateway *and* DNS server. `kea` (DHCP) and `radvd` (RAs; started only on the master)
+  hand out the VIP, and `pdns-recursor` binds the VIPs (with `net.ipv*.ip_nonlocal_bind` so the
+  backup can pre-bind). Point client-facing services at the VIP, not a box's real address, so
+  failover follows the master instead of relying on client resolver timeouts.
+- **`wan-online.target`** is a shared abstract target meaning "the public WAN/IPv4 route is up".
+  `routing-common` only declares it; each box wires *how it is reached* (`stream`: a oneshot that
+  waits for the DHCP default route; `river`: the pppd `ip-up`/`ip-down` hooks). Services that need
+  the WAN attach **to** it via `wantedBy` + `partOf` + `after` (not `requires`/`wants`), so an empty
+  target is never pulled in and prematurely activated, and they re-load on WAN flap.
+- networkd helpers used heavily here: `lib.my.networkdAssignment` and `lib.my.mkVLAN` live under
+  **`lib.my`**, while networkd snippet constants like `networkd.noL3` live under **`lib.my.c`** —
+  easy to mix up. Set an interface MTU via the `.network`'s `linkConfig.MTUBytes` (`[Link]`), not
+  `netdevConfig` (`[NetDev]` rejects `MTUBytes`).
+
 ## Secrets
 
 age-encrypted secrets in `secrets/`, managed with **ragenix**. Each module declares
@@ -111,3 +135,6 @@ private keys) is required for editing secrets, deploying, and running dev VMs.
   as `overlays.default`.
 - In prose and commit messages, quote code-like identifiers (commands, options, paths, package and
   attribute names) in backticks.
+- Call the machines **"boxes"**, never "fleet".
+- Commit subjects follow `area/scope: Capitalized summary` (e.g. `nixos/home: ...`); keep logically
+  distinct changes in separate commits.
