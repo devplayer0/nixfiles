@@ -6,9 +6,11 @@
     nixpkgs = "mine";
     home-manager = "mine";
 
-    configuration = { lib, pkgs, config, ... }:
+    configuration = { lib, pkgs, config, assignments, ... }:
     let
-      inherit (lib);
+      inherit (lib) mkMerge;
+      inherit (lib.my) networkdAssignment;
+      inherit (lib.my.c) networkd;
     in
     {
       imports = [ ./routing-common/mstpd.nix ];
@@ -73,6 +75,14 @@
               ];
             };
           };
+        };
+
+        # WAN is a plain networkd-managed DHCP link here; gate the shared wan-online
+        # target on networkd reporting it online.
+        systemd.targets.wan-online = {
+          requires = [ "systemd-networkd-wait-online@wan.service" ];
+          after = [ "systemd-networkd-wait-online@wan.service" ];
+          wantedBy = [ "multi-user.target" ];
         };
 
         systemd.network = {
@@ -147,6 +157,41 @@
               matchConfig.Name = "lan-dave";
               networkConfig.Bridge = "lan";
             };
+
+            "50-wan-ifb" = {
+              matchConfig.Name = "wan-ifb";
+              networkConfig = networkd.noL3;
+              extraConfig = ''
+                [CAKE]
+                Bandwidth=490M
+                RTTSec=50ms
+                PriorityQueueingPreset=besteffort
+                # DOCSIS preset
+                OverheadBytes=18
+                MPUBytes=64
+                CompensationMode=none
+              '';
+            };
+            "50-wan" = mkMerge [
+              (networkdAssignment "wan" assignments.modem)
+              {
+                matchConfig.Name = "wan";
+                DHCP = "ipv4";
+                dns = [ "127.0.0.1" "::1" ];
+                dhcpV4Config.UseDNS = false;
+
+                qdiscConfig = {
+                  Parent = "ingress";
+                  Handle = "0xffff";
+                };
+                extraConfig = ''
+                  [CAKE]
+                  Parent=root
+                  Bandwidth=48M
+                  RTTSec=50ms
+                '';
+              }
+            ];
           };
         };
 

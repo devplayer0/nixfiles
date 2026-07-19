@@ -8,6 +8,7 @@
 
     configuration = { lib, modulesPath, pkgs, config, assignments, allAssignments, ... }:
     let
+      inherit (lib) mkForce mkMerge;
       inherit (lib.my) networkdAssignment mkVLAN;
       inherit (lib.my.c) networkd;
       inherit (lib.my.c.home) vlans domain prefixes roceBootModules;
@@ -71,11 +72,72 @@
             dmeventd.enable = true;
           };
           fstrim.enable = true;
+
+          # TODO: re-enable once scheduling is tested
+          networkd-dispatcher.enable = mkForce false;
+
+          pppd = {
+            enable = true;
+            peers.digiweb = {
+              autostart = true;
+              enable = true;
+              # Password is shared across all Digiweb customers, so no need for a secret
+              config = ''
+                plugin pppoe.so wan-vlan-inner
+                name "digiweb@nga.digiweb.ie"
+                password "digiweb"
+                noipdefault
+                # no usepeerdns: we ignore Digiweb's resolvers and use the local recursive resolver
+                lcp-echo-interval 1
+                lcp-echo-failure 4
+                noauth
+                persist
+                maxfail 0
+                holdoff 5
+                mtu 1500
+                mru 1500
+                noaccomp
+                default-asyncmap
+                ifname wan
+              '';
+            };
+          };
+        };
+
+        # PPPoE WAN (Digiweb): pppd owns the `wan` interface on top of VLAN 10, and its
+        # ip-up/ip-down hooks toggle the shared wan-online.target. Nothing else Wants the
+        # target, so it stays inactive until the link is actually up.
+        systemd.targets.wan-online.unitConfig.DefaultDependencies = false;
+
+        environment.etc = {
+          ppp-up = {
+            target = "ppp/ip-up";
+            mode = "0755";
+            text = ''
+              #!${pkgs.runtimeShell}
+              ${pkgs.iproute2}/bin/ip route add default dev wan scope link metric 100
+              ${config.systemd.package}/bin/systemctl --no-block start wan-online.target
+            '';
+          };
+          ppp-down = {
+            target = "ppp/ip-down";
+            mode = "0755";
+            text = ''
+              #!${pkgs.runtimeShell}
+              ${config.systemd.package}/bin/systemctl --no-block stop wan-online.target
+              ${pkgs.iproute2}/bin/ip route del default dev wan scope link metric 100
+            '';
+          };
         };
 
         systemd.network = {
+          netdevs = mkMerge [
+            (mkVLAN "wan-vlan-outer" vlans.wan-pon)
+            (mkVLAN "wan-vlan-inner" vlans.pon-isp)
+          ];
+
           links = {
-            "10-wan" = {
+            "10-wan-old" = {
               matchConfig = {
                 # Matching against MAC address seems to break VLAN interfaces
                 # (since they share the same MAC address)
@@ -83,7 +145,7 @@
                 PermanentMACAddress = "e0:d5:5e:68:0c:6e";
               };
               linkConfig = {
-                Name = "wan";
+                Name = "wan-old";
                 RxBufferSize = 4096;
                 TxBufferSize = 4096;
               };
@@ -101,8 +163,31 @@
             };
           };
 
-          # So we don't drop the IP we use to connect to NVMe-oF!
-          networks."60-lan-hi".networkConfig.KeepConfiguration = "static";
+          networks = {
+            "55-lan" = {
+              vlan = [ "wan-vlan-outer" ];
+            };
+            # So we don't drop the IP we use to connect to NVMe-oF!
+            "60-lan-hi".networkConfig.KeepConfiguration = "static";
+
+            "70-wan-vlan-outer" = {
+              matchConfig.Name = "wan-vlan-outer";
+              vlan = [ "wan-vlan-inner" ];
+              networkConfig = networkd.noL3;
+              # baby jumbo: 1508 so the inner VLAN below can also carry it
+              linkConfig.MTUBytes = "1508";
+            };
+            # pppd attaches PPPoE to this; just needs to be up with no L3
+            "71-wan-vlan-inner" = {
+              matchConfig.Name = "wan-vlan-inner";
+              linkConfig = {
+                RequiredForOnline = "no";
+                # baby jumbo: PPPoE's 8B overhead leaves a clean 1500 on ppp
+                MTUBytes = "1508";
+              };
+              networkConfig = networkd.noL3;
+            };
+          };
         };
 
         my = {

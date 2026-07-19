@@ -312,6 +312,9 @@ rec {
       lo = 110;
       untrusted = 120;
       wan = 130;
+      wan-pon = 131;
+
+      pon-isp = 10;
     };
     hiMTU = 9000;
     routers = [

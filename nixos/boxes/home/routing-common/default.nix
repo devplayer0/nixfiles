@@ -152,26 +152,29 @@ in
 
           networking = { inherit domain; };
 
-          systemd.services =
-          let
-            waitOnline = "systemd-networkd-wait-online@wan.service";
-          in
-          {
+          # Uniform "WAN is up" gate. Consumers attach to this target (via wantedBy +
+          # partOf) rather than depending on it, so it is never pulled in / prematurely
+          # activated. Each box wires up how the target actually gets reached: stream
+          # gates it on networkd's wait-online, river drives it from the pppd hooks.
+          systemd.targets.wan-online.description = "WAN is online";
+
+          systemd.services = {
             ipsec = {
-              after = [ waitOnline ];
-              requires = [ waitOnline ];
+              after = [ "wan-online.target" ];
+              wantedBy = [ "wan-online.target" ];
+              partOf = [ "wan-online.target" ];
             };
 
             ipv6-clear-default-route = {
               description = "Clear IPv6 RA default route";
-              after = [ waitOnline ];
-              requires = [ waitOnline ];
+              after = [ "wan-online.target" ];
+              wantedBy = [ "wan-online.target" ];
+              partOf = [ "wan-online.target" ];
               script = ''
                 # Seems like we can sometimes pick up a default route somehow...
                 ${pkgs.iproute2}/bin/ip -6 route del default via fe80::1 || true
               '';
               serviceConfig.Type = "oneshot";
-              wantedBy = [ "multi-user.target" ];
             };
           };
 
@@ -220,41 +223,6 @@ in
             in
             mkMerge [
               {
-                "50-wan-ifb" = {
-                  matchConfig.Name = "wan-ifb";
-                  networkConfig = networkd.noL3;
-                  extraConfig = ''
-                    [CAKE]
-                    Bandwidth=490M
-                    RTTSec=50ms
-                    PriorityQueueingPreset=besteffort
-                    # DOCSIS preset
-                    OverheadBytes=18
-                    MPUBytes=64
-                    CompensationMode=none
-                  '';
-                };
-                "50-wan" = mkMerge [
-                  (networkdAssignment "wan" assignments.modem)
-                  {
-                    matchConfig.Name = "wan";
-                    DHCP = "ipv4";
-                    dns = [ "127.0.0.1" "::1" ];
-                    dhcpV4Config.UseDNS = false;
-
-                    qdiscConfig = {
-                      Parent = "ingress";
-                      Handle = "0xffff";
-                    };
-                    extraConfig = ''
-                      [CAKE]
-                      Parent=root
-                      Bandwidth=48M
-                      RTTSec=50ms
-                    '';
-                  }
-                ];
-
                 "55-lan" = {
                   matchConfig.Name = "lan";
                   vlan = [ "lan-hi" "lan-lo" "lan-untrusted" "wan-tunnel" ];
