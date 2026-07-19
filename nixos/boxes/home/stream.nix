@@ -77,11 +77,29 @@
           };
         };
 
-        # WAN is a plain networkd-managed DHCP link here; gate the shared wan-online
-        # target on networkd reporting it online.
+        # wan carries a permanent static modem-management address (assignments.modem)
+        # alongside the DHCP public IP, so wait-online@wan reports "online" as soon as
+        # the static address is up - before the DHCP lease arrives. ipsec's left= is the
+        # public IP, so gating on wait-online lets it start unoriented and never connect.
+        # Gate instead on the DHCP default route, which only exists once the public lease
+        # is up (the static modem address has no gateway).
+        systemd.services.wan-wait-online = {
+          description = "Wait for the wan default route (public DHCP lease)";
+          after = [ "systemd-networkd.service" ];
+          serviceConfig = {
+            Type = "oneshot";
+            RemainAfterExit = true;
+            TimeoutStartSec = "300";
+          };
+          script = ''
+            until [ -n "$(${pkgs.iproute2}/bin/ip -4 route show default dev wan)" ]; do
+              sleep 1
+            done
+          '';
+        };
         systemd.targets.wan-online = {
-          requires = [ "systemd-networkd-wait-online@wan.service" ];
-          after = [ "systemd-networkd-wait-online@wan.service" ];
+          requires = [ "wan-wait-online.service" ];
+          after = [ "wan-wait-online.service" ];
           wantedBy = [ "multi-user.target" ];
         };
 

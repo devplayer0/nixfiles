@@ -161,7 +161,12 @@ in
           systemd.services = {
             ipsec = {
               after = [ "wan-online.target" ];
-              wantedBy = [ "wan-online.target" ];
+              # strongswan/libreswan force wantedBy=multi-user.target; drop it so the
+              # target is a true gate rather than mere ordering. This matters most on
+              # river, where the target is hook-driven and not in the boot transaction,
+              # so plain ordering wouldn't hold ipsec back at all. partOf re-loads ipsec
+              # (re-orienting its connections) whenever the WAN drops and returns.
+              wantedBy = mkForce [ "wan-online.target" ];
               partOf = [ "wan-online.target" ];
             };
 

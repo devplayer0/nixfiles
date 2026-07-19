@@ -13,6 +13,13 @@ let
 in
 {
   config = {
+    # Let pdns-recursor bind the VRRP VIPs even on the backup, where the addresses
+    # aren't present locally
+    boot.kernel.sysctl = {
+      "net.ipv4.ip_nonlocal_bind" = 1;
+      "net.ipv6.ip_nonlocal_bind" = 1;
+    };
+
     my = {
       secrets.files = {
         "home/pdns/auth.conf" = {
@@ -40,6 +47,10 @@ in
               "127.0.0.1" "::1"
               assignments.hi.ipv4.address assignments.hi.ipv6.address
               assignments.lo.ipv4.address assignments.lo.ipv6.address
+              # VRRP VIPs: DNS follows the master, so clients only ever have one
+              # (always-live) resolver address and never hang on a dead router
+              vips.hi.v4 vips.hi.v6
+              vips.lo.v4 vips.lo.v6
             ];
             allow_from = [
               "127.0.0.0/8" "::1/128"

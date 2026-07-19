@@ -83,7 +83,8 @@ in
                 }
                 {
                   name = "domain-name-servers";
-                  data = "${net.cidr.host 1 prefixes.hi.v4}, ${net.cidr.host 2 prefixes.hi.v4}";
+                  # VRRP VIP so DNS follows the master and clients never hit a dead router
+                  data = vips.hi.v4;
                 }
                 {
                   name = "interface-mtu";
@@ -116,7 +117,8 @@ in
                 }
                 {
                   name = "domain-name-servers";
-                  data = "${net.cidr.host 1 prefixes.lo.v4}, ${net.cidr.host 2 prefixes.lo.v4}";
+                  # VRRP VIP so DNS follows the master and clients never hit a dead router
+                  data = vips.lo.v4;
                 }
               ];
               pools = [
