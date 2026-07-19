@@ -72,6 +72,10 @@ in
             fsType = "ext4";
             neededForBoot = true;
           };
+          "/mnt/frigate" = {
+            device = "/dev/disk/by-label/frigate";
+            fsType = "ext4";
+          };
         };
 
         networking = { inherit domain; };
@@ -194,6 +198,10 @@ in
               unifi = {};
               hass = {
                 bindMounts = {
+                  "/mnt/frigate" = {
+                    mountPoint = "/var/lib/frigate";
+                    readOnly = false;
+                  };
                   "/dev/bus/usb/001/002".readOnly = false;
                   "/dev/video0".readOnly = false;
                   "/dev/serial/by-id/usb-Nabu_Casa_Home_Assistant_Connect_ZBT-1_ce549704fe38ef11a2c2e5d154516304-if00-port0" = {

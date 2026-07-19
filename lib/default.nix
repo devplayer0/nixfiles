@@ -175,11 +175,11 @@ rec {
   };
 
   vm = rec {
-    lvmDisk' = name: lv: {
+    lvmDisk'' = name: vg: lv: {
       inherit name;
       backend = {
         driver = "host_device";
-        filename = "/dev/main/${lv}";
+        filename = "/dev/${vg}/${lv}";
         # It appears this needs to be set on the backend _and_ the format
         discard = "unmap";
       };
@@ -189,7 +189,8 @@ rec {
       };
       frontend = "virtio-blk";
     };
-    lvmDisk = lv: lvmDisk' lv lv;
+    lvmDisk' = vg: lv: lvmDisk'' lv vg lv;
+    lvmDisk = lvmDisk' "main";
     disk = vm: lv: lvmDisk' lv "vm-${vm}-${lv}";
   };
 

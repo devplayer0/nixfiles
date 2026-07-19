@@ -186,6 +186,9 @@
                 mac = "52:54:00:72:67:51";
               };
             };
+            drives = [
+              (vm.lvmDisk' "hdds" "frigate")
+            ];
             hostDevices = {
               et100g0vf2 = {
                 index = 0;

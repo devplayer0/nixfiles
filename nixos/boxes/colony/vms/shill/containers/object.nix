@@ -95,6 +95,7 @@ in
                   shell = pkgs.bashInteractive;
                   openssh.authorizedKeys.keyFiles = [
                     lib.my.c.sshKeyFiles.harmonia
+                    lib.my.c.sshKeyFiles.me
                   ];
                 };
               };

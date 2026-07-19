@@ -53,7 +53,7 @@ in
               };
             };
           });
-          kernelModules = [ "kvm-amd" ];
+          kernelModules = [ "dm-raid" "kvm-amd" ];
           kernelParams = [ "amd_iommu=on" ];
           initrd = {
             availableKernelModules = [ "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" "sr_mod" ];
