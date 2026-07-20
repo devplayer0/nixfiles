@@ -174,8 +174,9 @@
               matchConfig.Name = "wan-vlan-outer";
               vlan = [ "wan-vlan-inner" ];
               networkConfig = networkd.noL3;
-              # baby jumbo: 1508 so the inner VLAN below can also carry it
-              linkConfig.MTUBytes = "1508";
+              # baby jumbo: carries the inner VLAN's frames, whose 4B tag counts as payload
+              # at this layer, so it needs 1512 (inner's 1508B payload + the inner 802.1Q tag)
+              linkConfig.MTUBytes = "1512";
             };
             # pppd attaches PPPoE to this; just needs to be up with no L3
             "71-wan-vlan-inner" = {
