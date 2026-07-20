@@ -64,7 +64,13 @@ in
           };
 
           outgoing = {
-            source_address = [ "0.0.0.0" "::" ];
+            # Query authoritative servers over IPv4 only. Our IPv6 default route runs over the
+            # as211024 mesh (`ip -6 route show default`), a proto-static route that isn't
+            # withdrawn when the mesh flaps (e.g. during ipsec churn) — it just blackholes. With
+            # "::" here the recursor keeps picking IPv6 to reach NS, stalls on timeouts, and
+            # takes recursion down with it. IPv4 upstream goes out the WAN directly and stays up;
+            # we still serve AAAA records regardless of transport.
+            source_address = [ "0.0.0.0" ];
           };
 
           recursor = {
