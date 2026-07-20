@@ -8,10 +8,16 @@
 
     configuration = { lib, modulesPath, pkgs, config, assignments, allAssignments, ... }:
     let
-      inherit (lib) mkForce mkMerge;
+      inherit (lib) mkForce mkMerge mkIf;
       inherit (lib.my) networkdAssignment mkVLAN;
       inherit (lib.my.c) networkd;
       inherit (lib.my.c.home) vlans domain prefixes roceBootModules;
+
+      # Digiweb currently delivers the ISP VLAN (pon-isp, 10) single-tagged, so PPPoE runs on a
+      # VLAN 10 sitting directly on the physical WAN link. Flip this to true to nest it back
+      # inside the wan-pon (131) transport VLAN — double-stacking also needs QinQ (tag-stacking)
+      # on the switch feeding the ONT, or the BRAS never answers PADI.
+      wanStacked = false;
     in
     {
       imports = [
@@ -132,7 +138,7 @@
 
         systemd.network = {
           netdevs = mkMerge [
-            (mkVLAN "wan-vlan-outer" vlans.wan-pon)
+            (mkIf wanStacked (mkVLAN "wan-vlan-outer" vlans.wan-pon))
             (mkVLAN "wan-vlan-inner" vlans.pon-isp)
           ];
 
@@ -165,12 +171,13 @@
 
           networks = {
             "55-lan" = {
-              vlan = [ "wan-vlan-outer" ];
+              # outer transport VLAN when stacked, otherwise the ISP VLAN directly on lan
+              vlan = [ (if wanStacked then "wan-vlan-outer" else "wan-vlan-inner") ];
             };
             # So we don't drop the IP we use to connect to NVMe-oF!
             "60-lan-hi".networkConfig.KeepConfiguration = "static";
 
-            "70-wan-vlan-outer" = {
+            "70-wan-vlan-outer" = mkIf wanStacked {
               matchConfig.Name = "wan-vlan-outer";
               vlan = [ "wan-vlan-inner" ];
               networkConfig = networkd.noL3;
@@ -178,7 +185,8 @@
               # at this layer, so it needs 1512 (inner's 1508B payload + the inner 802.1Q tag)
               linkConfig.MTUBytes = "1512";
             };
-            # pppd attaches PPPoE to this; just needs to be up with no L3
+            # pppd attaches PPPoE to this; just needs to be up with no L3. Hangs off
+            # wan-vlan-outer when stacked, otherwise directly off lan (see "55-lan").
             "71-wan-vlan-inner" = {
               matchConfig.Name = "wan-vlan-inner";
               linkConfig = {
