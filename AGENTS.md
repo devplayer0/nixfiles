@@ -127,6 +127,9 @@ private keys) is required for editing secrets, deploying, and running dev VMs.
 ## Conventions
 
 - Format with `nixpkgs-fmt` (`fmt`). 2-space indent, `inherit (...)` blocks at the top of `let`.
+  **Ask before running `fmt`** — some files aren't canonically formatted, so `fmt` can reindent a
+  whole file and bury a logical change in whitespace churn. Match the surrounding style by hand and
+  leave formatting to the user unless they ask.
 - Prefer `lib.my` helpers (`mkOpt'`, `mkBoolOpt'`, `mkDefault'`) and `lib.my.c` constants over
   reimplementing.
 - New shared functionality → a module in `*/modules/` + entry in `_list.nix`, options under `my.*`.
