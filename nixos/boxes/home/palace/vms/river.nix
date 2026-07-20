@@ -8,16 +8,20 @@
 
     configuration = { lib, modulesPath, pkgs, config, assignments, allAssignments, ... }:
     let
+      inherit (builtins) elemAt;
       inherit (lib) mkForce mkMerge mkIf;
       inherit (lib.my) networkdAssignment mkVLAN;
       inherit (lib.my.c) networkd;
-      inherit (lib.my.c.home) vlans domain prefixes roceBootModules;
+      inherit (lib.my.c.home) vlans domain prefixes roceBootModules routersPubV4;
 
       # Digiweb currently delivers the ISP VLAN (pon-isp, 10) single-tagged, so PPPoE runs on a
       # VLAN 10 sitting directly on the physical WAN link. Flip this to true to nest it back
       # inside the wan-pon (131) transport VLAN — double-stacking also needs QinQ (tag-stacking)
       # on the switch feeding the ONT, or the BRAS never answers PADI.
       wanStacked = false;
+
+      # river is routing-common index 0; the Digiweb static IP we request via IPCP
+      pubV4 = elemAt routersPubV4 0;
     in
     {
       imports = [
@@ -92,7 +96,8 @@
                 plugin pppoe.so wan-vlan-inner
                 name "digiweb@nga.digiweb.ie"
                 password "digiweb"
-                noipdefault
+                # request our static IP as the local address in IPCP (local:remote, remote left open)
+                ${pubV4}:
                 # no usepeerdns: we ignore Digiweb's resolvers and use the local recursive resolver
                 lcp-echo-interval 1
                 lcp-echo-failure 4

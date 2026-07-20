@@ -322,7 +322,7 @@ rec {
       "stream"
     ];
     routersPubV4 = [
-      "109.255.108.88"
+      "84.203.124.128" # river: Digiweb static
       "109.255.108.121"
     ];
 
