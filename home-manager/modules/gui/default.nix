@@ -71,8 +71,10 @@ in
 
             python3Packages.python-lsp-server
             nil # nix language server
+            nixd # another nix language server
             zls # zig language server
             rust-analyzer
+            pyright
 
             cowsay
             fortune
