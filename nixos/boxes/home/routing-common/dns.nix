@@ -206,7 +206,7 @@ in
             ${name} IN LUA ${lib.my.dns.ifaceA {
               inherit pkgs;
               iface = "wan";
-              skipBroadcasts = [ (lib.my.netBroadcast prefixes.modem.v4) ];
+              skipBroadcasts = config.my.homeRouter.dns.wanSkipBroadcasts;
             }}
             ${otherName} IN LUA ${lib.my.dns.lookupIP {
               inherit pkgs;

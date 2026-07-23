@@ -6,11 +6,16 @@
     nixpkgs = "mine";
     home-manager = "mine";
 
-    configuration = { lib, pkgs, config, assignments, ... }:
+    configuration = { lib, pkgs, config, ... }:
     let
       inherit (lib) mkMerge;
-      inherit (lib.my) networkdAssignment;
+      inherit (lib.my) net;
       inherit (lib.my.c) networkd;
+      inherit (lib.my.c.home) prefixes;
+
+      # Static address on the Virgin Media modem's management subnet. Kept as a plain interface
+      # address (not a network assignment) since it's local to this box's WAN uplink.
+      modemV4 = net.cidr.host 100 prefixes.modem.v4;
     in
     {
       imports = [ ./routing-common/mstpd.nix ];
@@ -77,7 +82,7 @@
           };
         };
 
-        # wan carries a permanent static modem-management address (assignments.modem)
+        # wan carries a permanent static modem-management address (modemV4)
         # alongside the DHCP public IP, so wait-online@wan reports "online" as soon as
         # the static address is up - before the DHCP lease arrives. ipsec's left= is the
         # public IP, so gating on wait-online lets it start unoriented and never connect.
@@ -190,26 +195,28 @@
                 CompensationMode=none
               '';
             };
-            "50-wan" = mkMerge [
-              (networkdAssignment "wan" assignments.modem)
-              {
-                matchConfig.Name = "wan";
-                DHCP = "ipv4";
-                dns = [ "127.0.0.1" "::1" ];
-                dhcpV4Config.UseDNS = false;
+            "50-wan" = {
+              matchConfig.Name = "wan";
+              # Static modem-management address alongside the DHCP public lease. It has no
+              # gateway, so the wan-wait-online gate keys off the DHCP default route instead.
+              address = [ "${modemV4}/24" ];
+              DHCP = "ipv4";
+              dns = [ "127.0.0.1" "::1" ];
+              dhcpV4Config.UseDNS = false;
+              # IPv4-only WAN (public IPv6 arrives over the tunnel, not this link).
+              networkConfig.IPv6AcceptRA = false;
 
-                qdiscConfig = {
-                  Parent = "ingress";
-                  Handle = "0xffff";
-                };
-                extraConfig = ''
-                  [CAKE]
-                  Parent=root
-                  Bandwidth=48M
-                  RTTSec=50ms
-                '';
-              }
-            ];
+              qdiscConfig = {
+                Parent = "ingress";
+                Handle = "0xffff";
+              };
+              extraConfig = ''
+                [CAKE]
+                Parent=root
+                Bandwidth=48M
+                RTTSec=50ms
+              '';
+            };
           };
         };
 
@@ -218,6 +225,12 @@
             key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPYTB4zeAqotrEJ8M+AiGm/s9PFsWlAodz3hYSROGuDb";
           };
           server.enable = true;
+          # The modem's management subnet shares the `wan` interface: skip its address when
+          # picking our own wan A record, and reject untrusted clients from reaching it.
+          homeRouter = {
+            dns.wanSkipBroadcasts = [ (lib.my.netBroadcast prefixes.modem.v4) ];
+            firewall.untrustedRejectV4 = [ prefixes.modem.v4 ];
+          };
           # deploy.node.hostname = "192.168.68.2";
         };
       };

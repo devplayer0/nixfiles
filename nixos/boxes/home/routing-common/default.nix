@@ -11,12 +11,6 @@ in
 {
   nixos.systems."${name}" = {
     assignments = {
-      modem = {
-        ipv4 = {
-          address = net.cidr.host (254 - index) prefixes.modem.v4;
-          gateway = null;
-        };
-      };
       core = {
         name = "${name}-core";
         inherit domain;
@@ -100,9 +94,11 @@ in
 
     configuration = { lib, pkgs, config, assignments, allAssignments, ... }:
       let
-        inherit (lib) mkIf mkMerge mkForce;
-        inherit (lib.my) networkdAssignment;
+        inherit (lib) mkIf mkMerge mkForce optionalString concatStringsSep;
+        inherit (lib.my) mkOpt' networkdAssignment;
         inherit (lib.my.c) networkd;
+
+        cfg = config.my.homeRouter;
       in
       {
         imports = map (m: import m index) [
@@ -111,6 +107,20 @@ in
           ./radvd.nix
           ./kea.nix
         ];
+
+        # Per-box WAN-management specifics: the Virgin Media modem on stream lives on the `wan`
+        # interface itself, whereas river's ONT sits on its own interface. Declared as options the
+        # box sets so routing-common itself carries no modem/ONT knowledge.
+        options.my.homeRouter = with lib.types; {
+          dns.wanSkipBroadcasts = mkOpt' (listOf str) [ ] ''
+            Broadcast addresses to exclude when auto-selecting the router's own `wan` A record,
+            for extra static subnets that share the `wan` interface.
+          '';
+          firewall.untrustedRejectV4 = mkOpt' (listOf str) [ ] ''
+            IPv4 prefixes untrusted clients must be explicitly rejected from reaching. Only needed
+            for subnets sharing the `wan` interface, since `wan` egress is otherwise accepted.
+          '';
+        };
 
         config = {
           environment = {
@@ -338,7 +348,7 @@ in
                     return
                   }
                   chain filter-untrusted {
-                    ip daddr ${prefixes.modem.v4} reject
+                    ${optionalString (cfg.firewall.untrustedRejectV4 != [ ]) "ip daddr { ${concatStringsSep ", " cfg.firewall.untrustedRejectV4} } reject"}
                     oifname wan accept
                     return
                   }
