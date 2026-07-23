@@ -7,7 +7,7 @@ tools refuse to write through a symlink and will error on `CLAUDE.md`).
 
 **Prefer this file over agent memory.** When you learn something durable about this repo — a
 convention, a workflow gotcha, a design rationale — record it here (or in a repo doc this file points
-to, e.g. `home-switches.md`), not in agent memory. AGENTS.md is versioned and shared; memory is not.
+to, e.g. `docs/sites/home/switches.md`), not in agent memory. AGENTS.md is versioned and shared; memory is not.
 
 ## Overview
 
@@ -51,9 +51,16 @@ Common ones:
 
 Check everything (what CI runs): `nix flake check --no-build`.
 CI builds each attr of `.#ci.x86_64-linux` (systems, homes, packages, shell) and pushes to the
-Harmonia binary cache; see `.gitea/workflows/ci.yaml` and `ci/push-to-cache.sh`.
+Harmonia binary cache; see `.gitea/workflows/ci.yaml` and `ci/push-to-cache.sh`. A separate
+workflow (`.gitea/workflows/update-docs.yaml`) regenerates the network-assignment tables in `docs/`
+via `nix run .#update-docs-assignments`.
 
 ## Architecture
+
+The mechanics in this section have expanded human-readable write-ups under `docs/`:
+`docs/architecture.md` (module system), `docs/networking.md` (assignments, topology, meshes) and
+`docs/deployment.md` (deploy-rs, devshell, secrets, CI). This section stays the terse agent
+version; consult those for depth.
 
 ### The custom module system
 `flake.nix` does **not** call `nixosSystem` per host directly. Instead it `evalModules` over
@@ -104,6 +111,12 @@ Per-host configs live under `nixos/boxes/<host>` (some are single `.nix` files, 
 with nested VMs/containers under e.g. `colony/vms`). Many "systems" are VMs or containers managed
 via the `vms` / `containers` modules and the `l2mesh` VXLAN module.
 
+For a human-readable map of what is actually deployed (per-box roles, services and networking),
+see `README.md` and `docs/` (index at `docs/README.md`; box pages under `docs/sites/`,
+`docs/remote/`, `docs/mobile/`). Keep these in sync when adding, removing or repurposing a box or
+service. The network-assignment tables in box pages are CI-generated from `allAssignments` (the
+`<!-- assignments: <name> -->` markers) — write the prose and let the updater refresh the tables.
+
 ### Home routers (`nixos/boxes/home/routing-common`)
 The two home routers, `river` and `stream`, share `routing-common`, which is a **function of an
 `index`** (`import ../../routing-common 0` for river, `1` for stream). The index derives per-box
@@ -130,7 +143,7 @@ box file, not `routing-common`.
 ### Home switches (`jim` / `dave` / `brian`)
 The home boxes and the Digiweb WAN hang off hand-configured switches that are **not** managed by
 this flake: `jim` and `dave` (MikroTik, RouterOS) and `brian` (Ubiquiti, UniFi). The full topology,
-VLAN map, and the ONT/WAN path live in **`home-switches.md`** at the repo root — read it before
+VLAN map, and the ONT/WAN path live in **`docs/sites/home/switches.md`** — read it before
 touching anything WAN/VLAN-related, and update it when the switch layout changes.
 - **Access:** the switches resolve by **short hostname** on the home network (the routers serve
   their records in the home zone — `routing-common/dns.nix`: `jim`/`dave`/`brian`). From a home box,
@@ -139,7 +152,7 @@ touching anything WAN/VLAN-related, and update it when the switch layout changes
 - **Changing switch config is out-of-band and hard to revert — always confirm before applying:**
   print the affected menu, make the change, then re-verify. The nix config and the switches must
   agree on VLAN numbering (e.g. `lib.my.c.home.vlans`), so a switch-side change usually pairs with a
-  box change; `home-switches.md` documents the switch layout and per-switch config for the WAN design.
+  box change; `docs/sites/home/switches.md` documents the switch layout and per-switch config for the WAN design.
 
 ## Secrets
 

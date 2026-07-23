@@ -20,7 +20,7 @@
       # collision, so the switches simply trunk the ISP's VLAN 10 straight through to river (PPPoE
       # runs directly on it) and PVID the ONT's untagged management port onto wan-pon-ont (140).
       # river takes .100 in the ONT's /24 (matching stream's modem-mgmt .100) to reach its web
-      # UI at 192.168.100.1. (See home-switches.md for the switch side and the multi-ONT plan.)
+      # UI at 192.168.100.1. (See docs/sites/home/switches.md for the switch side and the multi-ONT plan.)
       ontV4 = net.cidr.host 100 prefixes.ont.v4;
 
       # river is routing-common index 0; the Digiweb static IP we request via IPCP
