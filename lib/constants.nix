@@ -314,9 +314,11 @@ rec {
       wan = 130;
 
       # Digiweb delivers the ISP VLAN (pon-isp, 10) single-tagged at the ONT alongside the ONT's
-      # own untagged management traffic. The switch feeding river tags the untagged ONT port as
-      # wan-pon-ont (140) and swaps ingress VLAN 10 to wan-pon-isp (141), so river sees both
-      # single-tagged and never has to touch VLAN 10 itself (PPPoE runs on wan-pon-isp).
+      # own untagged management traffic. With a single ONT we trunk pon-isp (10) straight through
+      # the switches to river (PPPoE runs directly on it), and the switch at the ONT edge PVIDs the
+      # untagged management port onto wan-pon-ont (140). wan-pon-isp (141) is reserved for the
+      # future multi-ONT case, where per-port VLAN translation on a dedicated switch swaps each
+      # ONT's VLAN 10 to a distinct fabric VLAN (see home-switches.md).
       pon-isp = 10;
       wan-pon-ont = 140;
       wan-pon-isp = 141;

@@ -15,12 +15,12 @@
       inherit (lib.my.c.home) vlans domain prefixes roceBootModules routersPubV4;
 
       # river reaches the ONT over its 100G `lan` uplink to the dave switch (which downlinks to
-      # jim, where the ONT's fibre lands). Digiweb delivers the ISP VLAN (pon-isp, 10) single-tagged
-      # at the ONT alongside the ONT's untagged management traffic. The switch tags the ONT's
-      # untagged port as wan-pon-ont (140) and swaps the ISP's VLAN 10 to wan-pon-isp (141) on
-      # ingress, so both arrive at river single-tagged and PPPoE runs directly on wan-pon-isp.
+      # brian, where the ONT lands). Digiweb delivers the ISP VLAN (pon-isp, 10) single-tagged at
+      # the ONT alongside the ONT's untagged management traffic. With a single ONT there's no VLAN
+      # collision, so the switches simply trunk the ISP's VLAN 10 straight through to river (PPPoE
+      # runs directly on it) and PVID the ONT's untagged management port onto wan-pon-ont (140).
       # river takes .100 in the ONT's /24 (matching stream's modem-mgmt .100) to reach its web
-      # UI at 192.168.100.1.
+      # UI at 192.168.100.1. (See home-switches.md for the switch side and the multi-ONT plan.)
       ontV4 = net.cidr.host 100 prefixes.ont.v4;
 
       # river is routing-common index 0; the Digiweb static IP we request via IPCP
@@ -148,7 +148,8 @@
         systemd.network = {
           netdevs = mkMerge [
             (mkVLAN "wan-pon-ont" vlans.wan-pon-ont)
-            (mkVLAN "wan-pon-isp" vlans.wan-pon-isp)
+            # The ISP VLAN is trunked through untranslated, so this is the raw pon-isp (10)
+            (mkVLAN "wan-pon-isp" vlans.pon-isp)
           ];
 
           links = {
@@ -180,13 +181,15 @@
 
           networks = {
             "55-lan" = {
-              # both WAN VLANs arrive single-tagged on the 100G uplink to dave
+              # both WAN VLANs arrive single-tagged on the 100G uplink to dave: wan-pon-ont (140,
+              # the ONT's management, PVID-tagged at the brian edge) and the ISP's VLAN 10, trunked
+              # straight through
               vlan = [ "wan-pon-ont" "wan-pon-isp" ];
             };
             # So we don't drop the IP we use to connect to NVMe-oF!
             "60-lan-hi".networkConfig.KeepConfiguration = "static";
 
-            # ONT management: the switch tags the ONT's untagged port as wan-pon-ont, so give
+            # ONT management: the brian edge PVIDs the ONT's untagged port onto wan-pon-ont, so give
             # ourselves an address in its /24 to reach the ONT's web UI at 192.168.100.1.
             "70-wan-pon-ont" = {
               matchConfig.Name = "wan-pon-ont";
@@ -196,8 +199,8 @@
                 MTUBytes = "1500";
               };
             };
-            # pppd attaches PPPoE to this; just needs to be up with no L3. Carries the ISP's
-            # VLAN 10, swapped to wan-pon-isp by the switch (see "55-lan").
+            # pppd attaches PPPoE to this; just needs to be up with no L3. This is the ISP's
+            # VLAN 10 trunked straight through from the ONT (no switch translation; see "55-lan").
             "71-wan-pon-isp" = {
               matchConfig.Name = "wan-pon-isp";
               linkConfig = {
