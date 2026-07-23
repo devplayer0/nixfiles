@@ -312,9 +312,14 @@ rec {
       lo = 110;
       untrusted = 120;
       wan = 130;
-      wan-pon = 131;
 
+      # Digiweb delivers the ISP VLAN (pon-isp, 10) single-tagged at the ONT alongside the ONT's
+      # own untagged management traffic. The switch feeding river tags the untagged ONT port as
+      # wan-pon-ont (140) and swaps ingress VLAN 10 to wan-pon-isp (141), so river sees both
+      # single-tagged and never has to touch VLAN 10 itself (PPPoE runs on wan-pon-isp).
       pon-isp = 10;
+      wan-pon-ont = 140;
+      wan-pon-isp = 141;
     };
     hiMTU = 9000;
     routers = [
@@ -329,6 +334,9 @@ rec {
     prefixes = with lib.my.net.cidr; rec {
       modem = {
         v4 = "192.168.0.0/24";
+      };
+      ont = {
+        v4 = "192.168.100.0/24";
       };
       all = {
         v4 = "192.168.64.0/18";

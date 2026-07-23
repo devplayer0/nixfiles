@@ -9,16 +9,19 @@
     configuration = { lib, modulesPath, pkgs, config, assignments, allAssignments, ... }:
     let
       inherit (builtins) elemAt;
-      inherit (lib) mkForce mkMerge mkIf;
-      inherit (lib.my) networkdAssignment mkVLAN;
+      inherit (lib) mkForce mkMerge;
+      inherit (lib.my) net networkdAssignment mkVLAN;
       inherit (lib.my.c) networkd;
       inherit (lib.my.c.home) vlans domain prefixes roceBootModules routersPubV4;
 
-      # Digiweb currently delivers the ISP VLAN (pon-isp, 10) single-tagged, so PPPoE runs on a
-      # VLAN 10 sitting directly on the physical WAN link. Flip this to true to nest it back
-      # inside the wan-pon (131) transport VLAN — double-stacking also needs QinQ (tag-stacking)
-      # on the switch feeding the ONT, or the BRAS never answers PADI.
-      wanStacked = false;
+      # river reaches the ONT over its 100G `lan` uplink to the dave switch (which downlinks to
+      # jim, where the ONT's fibre lands). Digiweb delivers the ISP VLAN (pon-isp, 10) single-tagged
+      # at the ONT alongside the ONT's untagged management traffic. The switch tags the ONT's
+      # untagged port as wan-pon-ont (140) and swaps the ISP's VLAN 10 to wan-pon-isp (141) on
+      # ingress, so both arrive at river single-tagged and PPPoE runs directly on wan-pon-isp.
+      # river takes .100 in the ONT's /24 (matching stream's modem-mgmt .100) to reach its web
+      # UI at 192.168.100.1.
+      ontV4 = net.cidr.host 100 prefixes.ont.v4;
 
       # river is routing-common index 0; the Digiweb static IP we request via IPCP
       pubV4 = elemAt routersPubV4 0;
@@ -93,7 +96,7 @@
               enable = true;
               # Password is shared across all Digiweb customers, so no need for a secret
               config = ''
-                plugin pppoe.so wan-vlan-inner
+                plugin pppoe.so wan-pon-isp
                 name "digiweb@nga.digiweb.ie"
                 password "digiweb"
                 # request our static IP as the local address in IPCP (local:remote, remote left open)
@@ -115,9 +118,10 @@
           };
         };
 
-        # PPPoE WAN (Digiweb): pppd owns the `wan` interface on top of VLAN 10, and its
-        # ip-up/ip-down hooks toggle the shared wan-online.target. Nothing else Wants the
-        # target, so it stays inactive until the link is actually up.
+        # PPPoE WAN (Digiweb): pppd owns the `wan` interface on top of wan-pon-isp (the switch's
+        # swap of the ISP's VLAN 10), and its ip-up/ip-down hooks toggle the shared
+        # wan-online.target. Nothing else Wants the target, so it stays inactive until the link
+        # is actually up.
         systemd.targets.wan-online.unitConfig.DefaultDependencies = false;
 
         environment.etc = {
@@ -143,8 +147,8 @@
 
         systemd.network = {
           netdevs = mkMerge [
-            (mkIf wanStacked (mkVLAN "wan-vlan-outer" vlans.wan-pon))
-            (mkVLAN "wan-vlan-inner" vlans.pon-isp)
+            (mkVLAN "wan-pon-ont" vlans.wan-pon-ont)
+            (mkVLAN "wan-pon-isp" vlans.wan-pon-isp)
           ];
 
           links = {
@@ -176,24 +180,26 @@
 
           networks = {
             "55-lan" = {
-              # outer transport VLAN when stacked, otherwise the ISP VLAN directly on lan
-              vlan = [ (if wanStacked then "wan-vlan-outer" else "wan-vlan-inner") ];
+              # both WAN VLANs arrive single-tagged on the 100G uplink to dave
+              vlan = [ "wan-pon-ont" "wan-pon-isp" ];
             };
             # So we don't drop the IP we use to connect to NVMe-oF!
             "60-lan-hi".networkConfig.KeepConfiguration = "static";
 
-            "70-wan-vlan-outer" = mkIf wanStacked {
-              matchConfig.Name = "wan-vlan-outer";
-              vlan = [ "wan-vlan-inner" ];
-              networkConfig = networkd.noL3;
-              # baby jumbo: carries the inner VLAN's frames, whose 4B tag counts as payload
-              # at this layer, so it needs 1512 (inner's 1508B payload + the inner 802.1Q tag)
-              linkConfig.MTUBytes = "1512";
+            # ONT management: the switch tags the ONT's untagged port as wan-pon-ont, so give
+            # ourselves an address in its /24 to reach the ONT's web UI at 192.168.100.1.
+            "70-wan-pon-ont" = {
+              matchConfig.Name = "wan-pon-ont";
+              address = [ "${ontV4}/24" ];
+              linkConfig = {
+                RequiredForOnline = "no";
+                MTUBytes = "1500";
+              };
             };
-            # pppd attaches PPPoE to this; just needs to be up with no L3. Hangs off
-            # wan-vlan-outer when stacked, otherwise directly off lan (see "55-lan").
-            "71-wan-vlan-inner" = {
-              matchConfig.Name = "wan-vlan-inner";
+            # pppd attaches PPPoE to this; just needs to be up with no L3. Carries the ISP's
+            # VLAN 10, swapped to wan-pon-isp by the switch (see "55-lan").
+            "71-wan-pon-isp" = {
+              matchConfig.Name = "wan-pon-isp";
               linkConfig = {
                 RequiredForOnline = "no";
                 # baby jumbo: PPPoE's 8B overhead leaves a clean 1500 on ppp
