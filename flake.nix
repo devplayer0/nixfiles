@@ -49,6 +49,8 @@
     copyparty.inputs.nixpkgs.follows = "nixpkgs-unstable";
     hass-west-wood.url = "github:devplayer0/hass-west-wood";
     hass-west-wood.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    pi-agent.url = "github:lukasl-dev/pi.nix";
+    pi-agent.inputs.nixpkgs.follows = "nixpkgs-unstable";
   };
 
   outputs =

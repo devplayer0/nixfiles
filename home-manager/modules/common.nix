@@ -8,6 +8,8 @@ let
   inherit (lib.my) mkOpt' dummyOption;
 in
 {
+  imports = [ inputs.pi-agent.homeModules.default ];
+
   options = with lib.types; {
     my = {
       isStandalone = mkOption {
@@ -27,6 +29,7 @@ in
       };
     };
   };
+
   config = mkMerge [
     {
       my = {
@@ -229,6 +232,7 @@ in
           inputs.deploy-rs.overlays.default
           inputs.boardie.overlays.default
           inputs.nixGL.overlays.default
+          inputs.pi-agent.overlays.default
         ];
         config = {
           allowUnfree = true;

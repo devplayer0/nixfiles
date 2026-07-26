@@ -83,6 +83,7 @@ in
           inputs.boardie.overlays.default
           inputs.copyparty.overlays.default
           inputs.hass-west-wood.overlays.default
+          inputs.pi-agent.overlays.default
         ];
         config = {
           allowUnfree = true;
