@@ -53,6 +53,12 @@ Check everything (what CI runs): `nix flake check --no-build`.
 CI builds each attr of `.#ci.x86_64-linux` (systems, homes, packages, shell) and pushes to the
 Harmonia binary cache; see `.gitea/workflows/ci.yaml` and `ci/push-to-cache.sh`.
 
+For DNS lookups use **`drill`** (ldns) — `dig` isn't installed in this environment (it fails with
+exit 127, which is easy to miss if stderr is redirected). E.g. `drill -Q @<resolver> <name> A`.
+
+For privilege escalation use **`doas`**, not `sudo` — the boxes don't install `sudo` (it fails with
+`command not found`). E.g. `doas ip link set <if> up`.
+
 ## Architecture
 
 ### The custom module system
@@ -140,6 +146,14 @@ touching anything WAN/VLAN-related, and update it when the switch layout changes
   print the affected menu, make the change, then re-verify. The nix config and the switches must
   agree on VLAN numbering (e.g. `lib.my.c.home.vlans`), so a switch-side change usually pairs with a
   box change; `home-switches.md` documents the switch layout and per-switch config for the WAN design.
+
+### Home wireless APs (`vibe` / `wave`)
+The home Wi-Fi APs are also **not** managed by this flake: `vibe` (MikroTik cAP ax, RouterOS) and
+`wave` (Cudy AX3000 running OpenWrt/UCI). They are dumb APs — bridge clients onto the right VLAN,
+routers do DHCP/RA/firewall. The trunk/VLAN design, the OpenWrt flash + config for `wave`, and the
+per-AP management addressing live in **`home-aps.md`** at the repo root — read it before touching AP
+config, and update it when an AP changes. Only the DNS records live in the flake
+(`routing-common/dns.nix`).
 
 ## Secrets
 
