@@ -216,6 +216,7 @@ in
           jq
           yq-go
           nix-tree
+          treemd
         ];
 
         sessionVariables = {
