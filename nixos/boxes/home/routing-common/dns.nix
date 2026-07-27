@@ -242,10 +242,14 @@ in
             shytzel IN A ${net.cidr.host 12 prefixes.core.v4}
             brian IN A ${net.cidr.host 13 prefixes.core.v4}
 
-            wave IN A ${net.cidr.host 12 prefixes.hi.v4}
-            ; wave IN AAAA ${net.cidr.host (65536+3) prefixes.hi.v6}
-            vibe IN A ${net.cidr.host 13 prefixes.hi.v4}
-            vibe IN AAAA ${net.cidr.host (65536+4) prefixes.hi.v6}
+            vibe-core IN A ${net.cidr.host 15 prefixes.core.v4}
+            vibe IN A ${net.cidr.host 15 prefixes.hi.v4}
+            vibe IN AAAA ${net.cidr.host (65536+6) prefixes.hi.v6}
+            vibe-lo IN A ${net.cidr.host 15 prefixes.lo.v4}
+            vibe-lo IN AAAA ${net.cidr.host (65536+6) prefixes.lo.v6}
+            wave-core IN A ${net.cidr.host 14 prefixes.core.v4}
+            wave IN A ${net.cidr.host 14 prefixes.lo.v4}
+            wave IN AAAA ${net.cidr.host (65536+5) prefixes.lo.v6}
 
             ups IN A ${net.cidr.host 20 prefixes.lo.v4}
             palace-kvm IN A ${net.cidr.host 21 prefixes.lo.v4}
