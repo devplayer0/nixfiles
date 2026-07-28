@@ -9,6 +9,11 @@ tools refuse to write through a symlink and will error on `CLAUDE.md`).
 convention, a workflow gotcha, a design rationale — record it here (or in a repo doc this file points
 to, e.g. `home-switches.md`), not in agent memory. AGENTS.md is versioned and shared; memory is not.
 
+Claude Code permissions live in two files: `.claude/settings.json` (versioned, shared — the
+committed allow list of safe-to-auto-approve commands) and `.claude/settings.local.json` (personal,
+gitignored — where interactive "always allow" grants accumulate). Put durable, generally-safe
+commands in the shared file; leave one-off or machine-specific grants in the local one.
+
 ## Overview
 
 Personal Nix flake managing NixOS systems and home-manager configurations for a set of

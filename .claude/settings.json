@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(nix eval:*)",
+      "Bash(nix flake check:*)",
+      "Bash(nix build:*)",
+      "Bash(check-system:*)",
+      "Bash(build-system:*)",
+      "Bash(build-home:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(drill:*)",
+      "Bash(ping:*)"
+    ]
+  }
+}

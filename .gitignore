@@ -4,3 +4,4 @@ result*
 !/.vms/.gitkeep
 /.keys/*.key
 *.swp
+/.claude/settings.local.json
