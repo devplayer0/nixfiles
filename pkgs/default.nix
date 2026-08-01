@@ -11,4 +11,8 @@ in
   chocolate-doom2xx = callPackage ./chocolate-doom2xx { };
   windowtolayer = callPackage ./windowtolayer.nix { };
   swaylock-plugin = callPackage ./swaylock-plugin.nix { };
+
+  update-docs-assignments = pkgs.writeShellScriptBin "update-docs-assignments" ''
+    exec ${pkgs.python3}/bin/python3 ${../ci/update-docs-assignments.py} "$@"
+  '';
 }

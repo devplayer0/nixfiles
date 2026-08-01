@@ -52,18 +52,183 @@ edit prose there, never the other generated cells.
 
 <!-- assignments: colony -->
 <!-- assignments-start -->
+#### `internal`
+
+| Box | IPv4 | IPv6 | Domain | Notes |
+|---|---|---|---|---|
+| [`chatterbox`](sites/colony/shill/containers/chatterbox.md) | `10.100.2.5/24 gw 10.100.2.1` | `2a0e:97c0:4d2:12::5/64` | ams1.int.nul.ie |  |
+| [`colony`](sites/colony/colony.md) | `94.142.241.224/32` | `2a0e:97c0:4d2:10::2/64` | ams1.int.nul.ie |  |
+| [`colony-psql`](sites/colony/shill/containers/colony-psql.md) | `10.100.2.4/24 gw 10.100.2.1` | `2a0e:97c0:4d2:12::4/64` | ams1.int.nul.ie |  |
+| `enshrouded-oci` | `10.100.3.5/24 gw 10.100.3.1` | `2a0e:97c0:4d2:13::5/64` | ams1.int.nul.ie | Enshrouded OCI container on [`whale2`](sites/colony/whale2.md#game-servers); disabled |
+| [`estuary`](sites/colony/estuary.md) | `94.142.240.44/24 gw 94.142.240.254` | `2a02:898:0:20::329:1/64 gw 2a02:898:0:20::1` | ams1.int.nul.ie |  |
+| [`gam`](sites/colony/shill/containers/gam.md) | `10.100.2.11/24 gw 10.100.2.1` | `2a0e:97c0:4d2:12::b/64` | ams1.int.nul.ie |  |
+| [`git`](sites/colony/git.md) | `94.142.241.117/32` | `2a0e:97c0:4d2:11::4/64` | ams1.int.nul.ie |  |
+| `graeme-oci` | `10.100.3.8/24 gw 10.100.3.1` | `2a0e:97c0:4d2:13::8/64` | ams1.int.nul.ie | Minecraft OCI container on [`whale2`](sites/colony/whale2.md#game-servers) |
+| [`jackflix`](sites/colony/shill/containers/jackflix.md) | `10.100.2.6/24 gw 10.100.2.1` | `2a0e:97c0:4d2:12::6/64` | ams1.int.nul.ie |  |
+| `kevcraft-oci` | `10.100.3.6/24 gw 10.100.3.1` | `2a0e:97c0:4d2:13::6/64` | ams1.int.nul.ie | Minecraft OCI container on [`whale2`](sites/colony/whale2.md#game-servers) |
+| `kinkcraft-oci` | `10.100.3.7/24 gw 10.100.3.1` | `2a0e:97c0:4d2:13::7/64` | ams1.int.nul.ie | Minecraft OCI container on [`whale2`](sites/colony/whale2.md#game-servers) |
+| [`middleman`](sites/colony/shill/containers/middleman.md) | `10.100.2.2/24 gw 10.100.2.1` | `2a0e:97c0:4d2:12::2/64` | ams1.int.nul.ie |  |
+| [`object`](sites/colony/shill/containers/object.md) | `10.100.2.7/24 gw 10.100.2.1` | `2a0e:97c0:4d2:12::7/64` | ams1.int.nul.ie |  |
+| [`qclk`](sites/colony/shill/containers/qclk.md) | `10.100.2.10/24 gw 10.100.2.1` | `2a0e:97c0:4d2:12::a/64` | ams1.int.nul.ie |  |
+| [`shill`](sites/colony/shill/README.md) | `94.142.241.225/32` | `2a0e:97c0:4d2:11::2/64` | ams1.int.nul.ie |  |
+| `simpcraft-oci` | `10.100.3.3/24 gw 10.100.3.1` | `2a0e:97c0:4d2:13::3/64` | ams1.int.nul.ie | Minecraft OCI container on [`whale2`](sites/colony/whale2.md#game-servers) |
+| `simpcraft-staging-oci` | `10.100.3.4/24 gw 10.100.3.1` | `2a0e:97c0:4d2:13::4/64` | ams1.int.nul.ie | Minecraft staging OCI container on [`whale2`](sites/colony/whale2.md#game-servers); disabled |
+| [`toot`](sites/colony/shill/containers/toot.md) | `10.100.2.8/24 gw 10.100.2.1` | `2a0e:97c0:4d2:12::8/64` | ams1.int.nul.ie |  |
+| `valheim-oci` | `10.100.3.2/24 gw 10.100.3.1` | `2a0e:97c0:4d2:13::2/64` | ams1.int.nul.ie | Valheim OCI container on [`whale2`](sites/colony/whale2.md#game-servers) |
+| [`vaultwarden`](sites/colony/shill/containers/vaultwarden.md) | `10.100.2.3/24 gw 10.100.2.1` | `2a0e:97c0:4d2:12::3/64` | ams1.int.nul.ie |  |
+| [`waffletail`](sites/colony/shill/containers/waffletail.md) | `10.100.2.9/24 gw 10.100.2.1` | `2a0e:97c0:4d2:12::9/64` | ams1.int.nul.ie |  |
+| [`whale2`](sites/colony/whale2.md) | `94.142.241.226/32` | `2a0e:97c0:4d2:11::3/64` | ams1.int.nul.ie |  |
+
+#### `as211024`
+
+| Box | IPv4 | IPv6 | Domain | Notes |
+|---|---|---|---|---|
+| [`estuary`](sites/colony/estuary.md) | `10.100.50.1/24` | `2a0e:97c0:4df::1/64` | — |  |
+
+#### `base`
+
+| Box | IPv4 | IPv6 | Domain | Notes |
+|---|---|---|---|---|
+| [`estuary`](sites/colony/estuary.md) | `10.100.0.1/24` | `2a0e:97c0:4d2:10::1/64` | ams1.int.nul.ie |  |
+
+#### `ctrs`
+
+| Box | IPv4 | IPv6 | Domain | Notes |
+|---|---|---|---|---|
+| [`shill`](sites/colony/shill/README.md) | `10.100.2.1/24` | `2a0e:97c0:4d2:12::1/64` | ams1.int.nul.ie |  |
+
+#### `oci`
+
+| Box | IPv4 | IPv6 | Domain | Notes |
+|---|---|---|---|---|
+| [`whale2`](sites/colony/whale2.md) | `10.100.3.1/24` | `2a0e:97c0:4d2:13::1/64` | ams1.int.nul.ie |  |
+
+#### `qclk`
+
+| Box | IPv4 | IPv6 | Domain | Notes |
+|---|---|---|---|---|
+| [`qclk`](sites/colony/shill/containers/qclk.md) | `10.100.4.1/24` | — | — |  |
+
+#### `routing`
+
+| Box | IPv4 | IPv6 | Domain | Notes |
+|---|---|---|---|---|
+| [`colony`](sites/colony/colony.md) | `10.100.0.2/24 gw 10.100.0.1` | — | ams1.int.nul.ie |  |
+| [`git`](sites/colony/git.md) | `10.100.1.4/24 gw 10.100.1.1` | — | ams1.int.nul.ie |  |
+| [`shill`](sites/colony/shill/README.md) | `10.100.1.2/24 gw 10.100.1.1` | — | ams1.int.nul.ie |  |
+| [`whale2`](sites/colony/whale2.md) | `10.100.1.3/24 gw 10.100.1.1` | — | ams1.int.nul.ie |  |
+
+#### `tailscale`
+
+| Box | IPv4 | IPv6 | Domain | Notes |
+|---|---|---|---|---|
+| [`waffletail`](sites/colony/shill/containers/waffletail.md) | `100.64.0.5/32` | `fd7a:115c:a1e0::5/128` | — |  |
+
+#### `vms`
+
+| Box | IPv4 | IPv6 | Domain | Notes |
+|---|---|---|---|---|
+| [`colony`](sites/colony/colony.md) | `10.100.1.1/24` | `2a0e:97c0:4d2:11::1/64` | ams1.int.nul.ie |  |
 <!-- assignments-end -->
 
 ### home
 
 <!-- assignments: home -->
 <!-- assignments-start -->
+#### `as211024`
+
+| Box | IPv4 | IPv6 | Domain | Notes |
+|---|---|---|---|---|
+| [`river`](sites/home/river.md) | `10.100.50.2/24` | `2a0e:97c0:4df:0:1::1/64 gw 2a0e:97c0:4df:0:2::1` | — |  |
+| [`stream`](sites/home/stream.md) | `10.100.50.3/24` | `2a0e:97c0:4df:0:1::2/64 gw 2a0e:97c0:4df:0:2::1` | — |  |
+
+#### `core`
+
+| Box | IPv4 | IPv6 | Domain | Notes |
+|---|---|---|---|---|
+| [`palace`](sites/home/palace.md) | `192.168.64.20/24` | — | h.nul.ie |  |
+| [`river`](sites/home/river.md) | `192.168.64.1/24` | — | h.nul.ie |  |
+| [`stream`](sites/home/stream.md) | `192.168.64.2/24` | — | h.nul.ie |  |
+| [`unifi`](sites/home/sfh/containers/unifi.md) | `192.168.64.21/24` | — | h.nul.ie |  |
+
+#### `hi`
+
+| Box | IPv4 | IPv6 | Domain | Notes |
+|---|---|---|---|---|
+| [`castle`](sites/home/castle.md) | `192.168.68.40/22 gw 192.168.71.254` | `2a0e:97c0:4d0:1::3:1/64` | h.nul.ie |  |
+| [`cellar`](sites/home/cellar.md) | `192.168.68.80/22 gw 192.168.71.254` | `2a0e:97c0:4d0:1::4:1/64` | h.nul.ie |  |
+| [`hass`](sites/home/sfh/containers/hass.md) | `192.168.68.103/22 gw 192.168.71.254` | `2a0e:97c0:4d0:1::5:3/64` | h.nul.ie |  |
+| [`palace`](sites/home/palace.md) | `192.168.68.22/22 gw 192.168.71.254` | `2a0e:97c0:4d0:1::2:1/64` | h.nul.ie |  |
+| [`river`](sites/home/river.md) | `192.168.68.1/22` | `2a0e:97c0:4d0:1::1/64` | h.nul.ie |  |
+| `router-hi` | `192.168.71.254/22 gw 192.168.68.1` | `2a0e:97c0:4d0:1::ffff/64` | h.nul.ie | Floating VIP shared by [`river`](sites/home/river.md) and [`stream`](sites/home/stream.md) |
+| [`sfh`](sites/home/sfh/README.md) | `192.168.68.81/22 gw 192.168.71.254` | `2a0e:97c0:4d0:1::4:2/64` | h.nul.ie |  |
+| [`stream`](sites/home/stream.md) | `192.168.68.2/22` | `2a0e:97c0:4d0:1::2/64` | h.nul.ie |  |
+| [`unifi`](sites/home/sfh/containers/unifi.md) | `192.168.68.100/22 gw 192.168.71.254` | `2a0e:97c0:4d0:1::5:1/64` | h.nul.ie |  |
+
+#### `lo`
+
+| Box | IPv4 | IPv6 | Domain | Notes |
+|---|---|---|---|---|
+| [`hass`](sites/home/sfh/containers/hass.md) | `192.168.72.103/21` | `2a0e:97c0:4d0:2::5:3/64` | h.nul.ie |  |
+| [`river`](sites/home/river.md) | `192.168.72.1/21` | `2a0e:97c0:4d0:2::1/64` | h.nul.ie |  |
+| `router-lo` | `192.168.79.254/21 gw 192.168.72.1` | `2a0e:97c0:4d0:2::ffff/64` | h.nul.ie | Floating VIP shared by [`river`](sites/home/river.md) and [`stream`](sites/home/stream.md) |
+| [`stream`](sites/home/stream.md) | `192.168.72.2/21` | `2a0e:97c0:4d0:2::2/64` | h.nul.ie |  |
+
+#### `untrusted`
+
+| Box | IPv4 | IPv6 | Domain | Notes |
+|---|---|---|---|---|
+| [`river`](sites/home/river.md) | `192.168.80.1/24` | `2a0e:97c0:4d0:3::1/64` | h.nul.ie |  |
+| `router-ut` | `192.168.80.254/24 gw 192.168.80.1` | `2a0e:97c0:4d0:3::ffff/64` | h.nul.ie | Floating VIP shared by [`river`](sites/home/river.md) and [`stream`](sites/home/stream.md) |
+| [`stream`](sites/home/stream.md) | `192.168.80.2/24` | `2a0e:97c0:4d0:3::2/64` | h.nul.ie |  |
 <!-- assignments-end -->
 
 ### remote
 
 <!-- assignments: remote -->
 <!-- assignments-start -->
+#### `internal`
+
+| Box | IPv4 | IPv6 | Domain | Notes |
+|---|---|---|---|---|
+| [`kelder-acquisition`](remote/kelder/containers/kelder-acquisition.md) | `172.16.64.2/24 gw 172.16.64.1` | — | hentai.engineer |  |
+| [`kelder-spoder`](remote/kelder/containers/kelder-spoder.md) | `172.16.64.3/24 gw 172.16.64.1` | — | hentai.engineer |  |
+
+#### `allhost`
+
+| Box | IPv4 | IPv6 | Domain | Notes |
+|---|---|---|---|---|
+| [`britnet`](remote/britnet.md) | `77.74.199.67/24 gw 77.74.199.1` | `2a12:ab46:5344:99::a/64 gw 2a12:ab46:5344::1` | bhx1.int.nul.ie |  |
+
+#### `as211024`
+
+| Box | IPv4 | IPv6 | Domain | Notes |
+|---|---|---|---|---|
+| [`britway`](remote/britway.md) | `10.100.50.5/24` | `2a0e:97c0:4df:0:2::1/64` | — |  |
+
+#### `ctrs`
+
+| Box | IPv4 | IPv6 | Domain | Notes |
+|---|---|---|---|---|
+| [`kelder`](remote/kelder/README.md) | `172.16.64.1/24` | — | hentai.engineer |  |
+
+#### `estuary`
+
+| Box | IPv4 | IPv6 | Domain | Notes |
+|---|---|---|---|---|
+| [`kelder`](remote/kelder/README.md) | `94.142.242.254/32` | — | — |  |
+
+#### `vpn`
+
+| Box | IPv4 | IPv6 | Domain | Notes |
+|---|---|---|---|---|
+| [`britnet`](remote/britnet.md) | `10.200.0.1/24` | `fdfb:5ebf:6e84::1/64` | — |  |
+
+#### `vultr`
+
+| Box | IPv4 | IPv6 | Domain | Notes |
+|---|---|---|---|---|
+| [`britway`](remote/britway.md) | `45.76.141.188/23 gw 45.76.140.1` | `2001:19f0:7402:128b::1/64` | lon1.int.nul.ie |  |
 <!-- assignments-end -->
 
 ## Domains
