@@ -6,18 +6,24 @@ This file provides guidance to coding agents when working with code in this repo
 tools refuse to write through a symlink and will error on `CLAUDE.md`).
 
 **Prefer this file over agent memory.** When you learn something durable about this repo — a
-convention, a workflow gotcha, a design rationale — record it here (or in a repo doc this file points
-to, e.g. `home-switches.md`), not in agent memory. AGENTS.md is versioned and shared; memory is not.
+convention, a workflow gotcha, a design rationale — record it here (or in a repo doc this file
+points to, e.g. `docs/sites/home/switches.md`), not in agent memory. AGENTS.md is versioned and
+shared; memory is not.
+
+Keep this file lean: it should contain only rules, workflows, safety constraints and sharp gotchas
+an agent needs before starting work. Detailed inventories, topology, service operation and design
+rationale belong in the canonical document under `docs/`; summarize only the essential constraint
+here and link to that document instead of maintaining a second copy.
 
 Claude Code permissions live in two files: `.claude/settings.json` (versioned, shared — the
 committed allow list of safe-to-auto-approve commands) and `.claude/settings.local.json` (personal,
 gitignored — where interactive "always allow" grants accumulate). Put durable, generally-safe
-commands in the shared file; leave one-off or machine-specific grants in the local one.
+commands in the shared file; leave one-off or workstation-specific grants in the local one.
 
 ## Overview
 
 Personal Nix flake managing NixOS systems and home-manager configurations for a set of
-machines — always called **"boxes"**, never "fleet". It is built around a **custom module
+**boxes**, never a "fleet". It is built around a **custom module
 system** layered on top of NixOS/home-manager, not the stock flake `nixosConfigurations` pattern.
 
 ## Commands
@@ -54,9 +60,14 @@ Common ones:
 - `repl` — `nix repl .#`.
 - `update-nixpkgs` / `update-home-manager` — bump pinned inputs.
 
-Check everything (what CI runs): `nix flake check --no-build`.
+Use the narrowest relevant evaluation while iterating: `check-system <host>` for a box config,
+`nix eval .#nixfiles.config.nixos.allAssignments --json` for assignment generation, or
+`nix build --no-link .#nixfiles.config.nixos.optionsDoc` for the option reference. Reserve
+`nix flake check --no-build` for final broad validation or reproducing CI.
 CI builds each attr of `.#ci.x86_64-linux` (systems, homes, packages, shell) and pushes to the
-Harmonia binary cache; see `.gitea/workflows/ci.yaml` and `ci/push-to-cache.sh`.
+Harmonia binary cache; see `.gitea/workflows/ci.yaml` and `ci/push-to-cache.sh`. A separate
+workflow (`.gitea/workflows/update-docs.yaml`) regenerates the network-assignment tables and NixOS
+option reference via `nix run .#update-docs-{assignments,options}`.
 
 For DNS lookups use **`drill`** (ldns) — `dig` isn't installed in this environment (it fails with
 exit 127, which is easy to miss if stderr is redirected). E.g. `drill -Q @<resolver> <name> A`.
@@ -64,7 +75,16 @@ exit 127, which is easy to miss if stderr is redirected). E.g. `drill -Q @<resol
 For privilege escalation use **`doas`**, not `sudo` — the boxes don't install `sudo` (it fails with
 `command not found`). E.g. `doas ip link set <if> up`.
 
+For ad-hoc packages prefer **`pkgs#<name>`** over `nixpkgs#<name>` (e.g. `nix run pkgs#python3`):
+`pkgs` is a system registry alias for the same pinned nixpkgs the boxes are built from, so it
+resolves from the local store instead of fetching a different channel.
+
 ## Architecture
+
+The mechanics in this section have expanded human-readable write-ups under `docs/`:
+`docs/architecture.md` (module system), `docs/networking.md` (assignments, topology, meshes) and
+`docs/deployment.md` (deploy-rs, devshell, secrets, CI). This section stays the terse agent
+version; consult those for depth.
 
 ### The custom module system
 `flake.nix` does **not** call `nixosSystem` per host directly. Instead it `evalModules` over
@@ -115,50 +135,33 @@ Per-host configs live under `nixos/boxes/<host>` (some are single `.nix` files, 
 with nested VMs/containers under e.g. `colony/vms`). Many "systems" are VMs or containers managed
 via the `vms` / `containers` modules and the `l2mesh` VXLAN module.
 
-### Home routers (`nixos/boxes/home/routing-common`)
-The two home routers, `river` and `stream`, share `routing-common`, which is a **function of an
-`index`** (`import ../../routing-common 0` for river, `1` for stream). The index derives per-box
-addresses, keepalived VRRP priorities/state, DNS `ns` numbering, etc., so the two boxes are an
-active/backup HA pair from one definition. They differ where hardware/uplink differ: `stream` has a
-DHCP WAN, `river` runs PPPoE (`services.pppd`, Digiweb) — box-specific bits live in the respective
-box file, not `routing-common`.
+For a human-readable map of what is actually deployed (per-box roles, services and networking),
+see `README.md` and `docs/` (index at `docs/README.md`; box pages under `docs/sites/`,
+`docs/remote/`, `docs/mobile/`). Keep these in sync when adding, removing or repurposing a box or
+service. The network-assignment tables are consolidated in `docs/networking.md` (one per site,
+CI-generated from `allAssignments` between `<!-- assignments: <site> -->` markers); box pages
+link to that section. Write the prose and let the updater refresh the tables.
 
-- **HA is VRRP (`keepalived`).** Per-VLAN floating **VIPs** (`lib.my.c.home.vips`) are what clients
-  use as both gateway *and* DNS server. `kea` (DHCP) and `radvd` (RAs; started only on the master)
-  hand out the VIP, and `pdns-recursor` binds the VIPs (with `net.ipv*.ip_nonlocal_bind` so the
-  backup can pre-bind). Point client-facing services at the VIP, not a box's real address, so
-  failover follows the master instead of relying on client resolver timeouts.
-- **`wan-online.target`** is a shared abstract target meaning "the public WAN/IPv4 route is up".
-  `routing-common` only declares it; each box wires *how it is reached* (`stream`: a oneshot that
-  waits for the DHCP default route; `river`: the pppd `ip-up`/`ip-down` hooks). Services that need
-  the WAN attach **to** it via `wantedBy` + `partOf` + `after` (not `requires`/`wants`), so an empty
-  target is never pulled in and prematurely activated, and they re-load on WAN flap.
-- networkd helpers used heavily here: `lib.my.networkdAssignment` and `lib.my.mkVLAN` live under
-  **`lib.my`**, while networkd snippet constants like `networkd.noL3` live under **`lib.my.c`** —
-  easy to mix up. Set an interface MTU via the `.network`'s `linkConfig.MTUBytes` (`[Link]`), not
-  `netdevConfig` (`[NetDev]` rejects `MTUBytes`).
+### Home routers (`nixos/boxes/home/routing-common`)
+`river` and `stream` share `routing-common`, a function of an `index`; keep common HA behavior there
+and box-specific WAN behavior in the respective box file. Client-facing gateway and DNS services
+must use the floating VIPs. `routing-common` only declares the inert `wan-online.target`; each box
+wires its own reachability mechanism. See `docs/networking.md#router-ha` and the router box pages
+for the design and operational detail. Keep pair-wide behavior in `docs/networking.md`; router
+pages should document only their WAN, platform and other box-specific responsibilities.
+
+The easy-to-mix-up implementation details are that `lib.my.networkdAssignment` and
+`lib.my.mkVLAN` live under `lib.my`, networkd snippet constants such as `networkd.noL3` live under
+`lib.my.c`, and interface MTU belongs in the `.network`'s `linkConfig.MTUBytes`.
 
 ### Home switches (`jim` / `dave` / `brian`)
-The home boxes and the Digiweb WAN hang off hand-configured switches that are **not** managed by
-this flake: `jim` and `dave` (MikroTik, RouterOS) and `brian` (Ubiquiti, UniFi). The full topology,
-VLAN map, and the ONT/WAN path live in **`home-switches.md`** at the repo root — read it before
-touching anything WAN/VLAN-related, and update it when the switch layout changes.
-- **Access:** the switches resolve by **short hostname** on the home network (the routers serve
-  their records in the home zone — `routing-common/dns.nix`: `jim`/`dave`/`brian`). From a home box,
-  SSH to the MikroTiks as `admin`/`admin` (e.g. `ssh admin@jim`); `brian` is configured via the
-  UniFi controller, not a CLI.
-- **Changing switch config is out-of-band and hard to revert — always confirm before applying:**
-  print the affected menu, make the change, then re-verify. The nix config and the switches must
-  agree on VLAN numbering (e.g. `lib.my.c.home.vlans`), so a switch-side change usually pairs with a
-  box change; `home-switches.md` documents the switch layout and per-switch config for the WAN design.
+These switches are not managed by the flake, and changing them is out-of-band and hard to revert.
+Read `docs/sites/home/switches.md` before WAN or VLAN work, always confirm before applying a switch
+change, and keep the documented layout and `lib.my.c.home.vlans` in sync.
 
 ### Home wireless APs (`vibe` / `wave`)
-The home Wi-Fi APs are also **not** managed by this flake: `vibe` (MikroTik cAP ax, RouterOS) and
-`wave` (Cudy AX3000 running OpenWrt/UCI). They are dumb APs — bridge clients onto the right VLAN,
-routers do DHCP/RA/firewall. The trunk/VLAN design, the OpenWrt flash + config for `wave`, and the
-per-AP management addressing live in **`home-aps.md`** at the repo root — read it before touching AP
-config, and update it when an AP changes. Only the DNS records live in the flake
-(`routing-common/dns.nix`).
+These APs are not managed by the flake; only their DNS records are. Read and update
+`docs/sites/home/aps.md` when changing an AP or its VLAN layout.
 
 ## Secrets
 
@@ -171,7 +174,8 @@ private keys) is required for editing secrets, deploying, and running dev VMs.
 
 ## Conventions
 
-- Format with `nixpkgs-fmt` (`fmt`). 2-space indent, `inherit (...)` blocks at the top of `let`.
+- Format with `nixpkgs-fmt` (`fmt`). 2-space indent, `inherit (...)` blocks at the top of `let` —
+  prefer `inherit (lib) mkOption ...;` (and bare use) over qualifying inline as `lib.mkOption`.
   **Ask before running `fmt`** — some files aren't canonically formatted, so `fmt` can reindent a
   whole file and bury a logical change in whitespace churn. Match the surrounding style by hand and
   leave formatting to the user unless they ask.
@@ -186,6 +190,69 @@ private keys) is required for editing secrets, deploying, and running dev VMs.
   as `overlays.default`.
 - In prose and commit messages, quote code-like identifiers (commands, options, paths, package and
   attribute names) in backticks.
-- Call the machines **"boxes"**, never "fleet".
+- Keep docs and prose plain — avoid vague AI-tell filler. In particular use "layout"/"structure"
+  rather than "shape", and "General" rather than "cross-cutting topics"; name things directly
+  instead of reaching for umbrella words.
+- For network connectivity, use the concrete term — "interface", "connection", "network
+  attachment" or the network's name — rather than calling it a "leg".
+- Call the systems **"boxes"**, never "machines" or "fleet", except where "machine" is part of a
+  command, option or upstream technical term such as QEMU's machine type.
 - Commit subjects follow `area/scope: Capitalized summary` (e.g. `nixos/home: ...`); keep logically
-  distinct changes in separate commits.
+  distinct changes in separate commits. Aim for 50-character subjects and do not exceed 72
+  characters. Wrap commit bodies at 72 columns. A concise body describing the change and its
+  rationale is welcome when the subject alone does not provide enough context.
+
+## Documentation
+
+Human-readable docs live under `docs/` (index: `docs/README.md`). Box pages are under
+`docs/sites/<site>/`, `docs/remote/`, `docs/mobile/`. A box that itself hosts sub-systems
+(containers/nested VMs) gets a **directory named for it** with a `README.md` and the child pages
+beneath it (e.g. `shill/README.md` + `shill/containers/*.md`, `sfh/README.md`). When a site and its
+physical box share a name, the site keeps the `README.md` and the box page stays alongside it (for
+example `sites/colony/README.md` and `sites/colony/colony.md`).
+
+**Box page layout** (match the existing pages): H1 + a one-line intro; a short bullet list of
+`Source` / `Host` / `nixpkgs`; `## Role`; `## Network assignments` that **links** to
+[`networking.md#box-assignments`](docs/networking.md#box-assignments) (never inline the table); one
+`##` section per topic; `## Notable config files` last. A box without static assignments still gets
+the section with a short explanation instead of a generated-table link.
+
+**Structure and layout:**
+- Use **tables** for lists of structured items (BGP peers, forwarded ports, vhosts, containers,
+  VMs, VLANs). Make the item **name the link**; don't add a separate `Page`/`Docs` column.
+- Break up **long prose**: any bullet running past ~4 lines over several distinct facts becomes a
+  `###` subheading (lead sentence + nested bullets). Don't leave walls of long bullets.
+- Prefer durable concepts and named configuration identifiers over copying exact numbers that are
+  tunable, generated or likely to drift. Exact values are appropriate when they are useful parts of
+  the inventory or interface: VM resource allocations, hardware-fixed properties, network and
+  protocol identifiers, exposed service ports, and safety or recovery values. Describe mutable
+  implementation tunables by purpose and link to their source instead of duplicating the current
+  value.
+- **Per-site index pages** (`docs/sites/*/README.md`, `docs/remote/README.md`, and
+  `docs/mobile/README.md`) use one table listing **boxes only**; don't repeat that inventory in a
+  diagram. A box's containers / nested VMs are tabulated on that box's own page. The global
+  `docs/README.md` is the exception: it may show them in high-level site diagrams, but should not
+  add a second detailed inventory outside those diagrams.
+
+**De-dup by ownership** — each fact has one home:
+- Shared cross-box **fabric** (the AS211024 mesh, Tailscale/headscale topology, the BGP overview,
+  the WireGuard-tunnel summary) is documented once in `docs/networking.md`; box pages give a
+  one-line summary and link to it.
+- Site-wide network definitions (prefixes, VLANs, router VIPs and router HA) also live in
+  `docs/networking.md`; site pages summarize and link to the canonical section.
+- **Box-specific** detail (a box's own BGP peers, the WireGuard tunnels it terminates, its
+  services) lives on the box page; `networking.md` carries only a per-box summary that links out.
+- Addresses represented by generated `assignments` or `extraAssignments` live only in the
+  assignment tables; handwritten box and workload inventories link there instead of copying them.
+  Addresses outside that data model (such as external peers or service endpoints) stay with the
+  topic that owns them.
+
+**Generated content:** the network-assignment tables in `networking.md` and the option reference
+(`docs/reference/nixos-options.md`) are CI-generated (`nix run .#update-docs-{assignments,options}`)
+— don't hand-edit between the `<!-- ... -->` markers; write the prose and let the updater refresh
+the tables.
+
+**Keep docs current:** when you add, remove or repurpose a box or service, update its box page, the
+relevant site-index `README.md`, and any affected prose in `networking.md` (the assignment/option
+tables refresh via CI). This is the same "prefer docs over agent memory" rule from the top of this
+file.
