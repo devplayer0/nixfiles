@@ -9,7 +9,9 @@ In short: the Digiweb ISP VLAN (10) is trunked straight through to river (which 
 and the ONT's untagged management is PVID'd onto VLAN 140 at brian, its edge switch. VLAN 10 is
 carried untranslated because a single ONT makes it unique on the fabric — see
 [the WAN path](#the-digiweb-wan-path-trunked-vlan-10--pvid-140) and
-[why not translation](#why-not-translation-for-one-ont).
+[why not translation](#why-not-translation-for-one-ont). The router side lives in
+[river.md](river.md); the logical network map in [networking.md](../../networking.md). The Wi-Fi
+APs that hang off these switches are in [aps.md](aps.md).
 
 ## The switches
 
@@ -18,8 +20,8 @@ carried untranslated because a single ONT makes it unique on the fabric — see
 | Identity | `jim-sw` | `dave-sw` | (UniFi) |
 | Model | CRS326-24G-2S+ | CRS504-4XQ | Ubiquiti Switch Pro XG 8 PoE |
 | Switch chip | Marvell 98DX3236 | Marvell 98DX4310 (+ Atheros 8227 for the 1G mgmt port) | — |
-| OS | RouterOS 7.18 | RouterOS 7.18 | UniFi |
-| Ports | 24×1G + 2×SFP+ | 4×QSFP28 (100G, breakout-capable) + 1G mgmt | 8×10GBASE-T PoE + 2×25G SFP28 |
+| OS | RouterOS | RouterOS | UniFi |
+| Ports | 24×1G + 2×SFP+ | 4×QSFP28 (100G, breakout-capable) + 1G mgmt | 8×10GBASE-T PoE + 2×10G SFP+ |
 | Bridge | `main`, `vlan-filtering=yes` | `main`, `vlan-filtering=yes` | UniFi VLAN profiles |
 
 jim and dave run a single hardware-offloaded bridge (`main`) with VLAN filtering. Access to the
@@ -29,52 +31,45 @@ chips); brian cannot rewrite tags, only trunk/PVID them.
 
 ## Physical topology
 
-The ONT terminates on brian; jim's `wan-pon-in` (`sfp-sfpplus2`) is a spare SFP+ port.
+The two WAN sources enter at the top: the Virgin Media modem lands on **jim** (VLAN 130), and the
+Digiweb **ONT** lands on **brian**. Both `jim` and `brian` are edge switches that uplink down into
+the **dave** core; the home boxes hang off dave's 100G ports, with backup links up to jim. jim's
+`wan-pon-in` (`sfp-sfpplus2`) is a spare SFP+ port, unused today.
 
 ```
-            Virgin Media cable modem
-                        │  VLAN 130 (wan1 / wan2 / wan-in)
-        ┌───────────────┴──────────────────────────────────────┐
-        │ jim    CRS326-24G-2S+    (Marvell 98DX3236)          │
-        │ 1G edge: fort, pronter, laptop-dock, palace-kvm,     │
-        │          ups, ether15-20, wan1/wan2/wan-in           │
-        │ wan-pon-in = sfp-sfpplus2  (spare SFP+)              │
-        └───────┬──────────────────────────────────────────────┘
-                │ dave-uplink = sfp-sfpplus1  (10G trunk)
-                │ also: palace, stream (1G secondaries),
-                │       castle (2.5G, normally down)
-        ┌───────┴──────────────────────────────────────────────┐
-        │ dave    CRS504-4XQ    (Marvell 98DX4310)             │
-        │ jim-downlink = qsfp28-3-1                            │
-        └──┬──────────────────┬───────────────────┬────────────┘
-           │ palace           │ castle            │ brian-downlink
-           │ = qsfp28-1-1     │ (100G)            │ 802.3ad LAG
-           │ (100G)           │                   │ (brian1 + brian2)
-           │                  …                   │
-   ┌───────┴────────┐                     ┌───────┴─────────────┐
-   │ palace host    │                     │ brian               │
-   │   └ river (VM) │                     │ Switch Pro XG 8 PoE │
-   └────────────────┘                     └───────┬─────────────┘
-   river WAN + LAN ride the 100G link             │    hosts the ONT
-                                                  │
-                                          ┌───────┴─────────────┐
-                                          │ ONT   (Digiweb)     │  untagged mgmt
-                                          │ PPPoE via ONT       │  192.168.100.1
-                                          └─────────────────────┘  + VLAN 10; PVID 140
+  Virgin Media cable modem                         Digiweb ONT
+  stream WAN, VLAN 130                             river WAN, management + VLAN 10
+             |                                               |
+            jim                                            brian
+             | 10G trunk                         802.3ad LAG |
+             +--------------------+          +---------------+
+                                  |          |
+                              +---+----------+---+
+                              |      dave        |
+                              +--------+---------+
+                                       |
+                 +---------------------+---------------------+
+                 |                     |                     |
+             palace (100G)         castle (100G)          stream
+             river VM              NVMe-oF root           second router
+
+  Backup links to jim (normally idle):
+    * palace: 1G
+    * stream: 1G; STP selects the active link
+    * castle: 2.5G, normally down; no live failover
 ```
 
 Notes:
 - **river** runs as a VM on the **palace** host; its uplink is dave's 100G `palace` port. jim also
   has 1G `palace`/`stream` ports, but those are secondary links and do **not** carry the WAN.
 - **stream** (the second router box) is dual-homed to both jim and dave (STP picks the active path).
-- **castle** is dual-homed but **not** via STP: its primary uplink is dave's **100G** `castle` port
-  (`et100g`, active), and it has a secondary **2.5G** link to jim's `castle` edge port (`et2.5g`,
-  **normally down** — no live failover). ⚠️ **castle's root disk is NVMe-oF over the fabric** (via
-  `et100g`→dave), so rebooting **dave** — or downing castle's `et100g` — freezes castle mid-I/O.
-  Do dave maintenance (upgrades/reboots) from a host that doesn't depend on dave for storage or
-  network, or with castle cleanly powered off; don't drive it from castle.
-- **brian** is a Ubiquiti **Switch Pro XG 8 PoE** (8×10GBASE-T), downlinked from dave over an
-  **802.3ad LAG** (`brian-downlink` = `brian1` + `brian2`, layer-2 hash). It hosts the ONT.
+
+### Castle storage dependency
+
+`castle` is dual-homed without STP: its primary link is dave's 100G `castle` port (`et100g`), while
+the 2.5G link to jim (`et2.5g`) is normally down and provides no live failover. Its root disk is
+NVMe-oF over `et100g` and dave, so interrupting either freezes `castle` mid-I/O. Do dave maintenance
+from a box that does not depend on it, or power `castle` off cleanly first.
 
 ## VLANs
 
@@ -115,12 +110,13 @@ we just carry it end to end and let river run PPPoE directly on it:
    1500).
 
 Net result: **river runs PPPoE single-tagged on VLAN 10 and holds a VLAN 140 address to reach the
-ONT.** See `nixos/boxes/home/palace/vms/river.nix` for the river side.
+ONT.** See [`nixos/boxes/home/palace/vms/river.nix`](../../../nixos/boxes/home/palace/vms/river.nix)
+for the river side.
 
 ```
-ONT ──(untagged + VLAN10)── brian ──(VLAN140 + VLAN10)── dave ──(VLAN140 + VLAN10)── river
-        ONT port             │ PVID140 + tagged 10        │ plain bridging
-                             └─ brian-downlink LAG ── dave ┘
+ONT -- untagged + VLAN 10 -- brian -- VLAN 140 + VLAN 10 -- dave -- palace -- river
+                              |
+                              +-- ONT port PVID 140; VLAN 10 remains tagged
 ```
 
 ### Why not translation (for one ONT)?
@@ -183,8 +179,10 @@ translation there, feeding distinct fabric VLANs up to dave.
 ## Accessing the switches
 
 The switches resolve by **short hostname** on the home network — the home routers serve their
-records in the home zone (`nixos/boxes/home/routing-common/dns.nix`: `jim` → hi `.10`, `dave` → hi
-`.11`, `brian` → core `.13`). From a box on the home network just `ssh admin@jim` / `admin@dave`.
+records in the home zone
+([`nixos/boxes/home/routing-common/dns.nix`](../../../nixos/boxes/home/routing-common/dns.nix):
+`jim` → hi `.10`, `dave` → hi `.11`, `brian` → core `.13`). From a box on the home network just
+`ssh admin@jim` / `admin@dave`.
 
 **Key auth** for `admin` is installed on jim/dave (and the `vibe` AP) — `ssh -i ~/.ssh/id_rsa
 admin@jim` works keyless (imported via `/user ssh-keys import`). Password `admin`/`admin` remains as

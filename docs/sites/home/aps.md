@@ -1,11 +1,12 @@
 # Home wireless APs
 
-Reference for the home Wi-Fi access points. Like the switches (`home-switches.md`), these are **not**
-managed by this flake — they are configured on-device (RouterOS on the MikroTik, OpenWrt/UCI on the
-Cudy). This file documents the shared VLAN/trunk design and each AP.
+Reference for the home Wi-Fi access points. Like the switches ([switches.md](switches.md)), these
+are **not** managed by this flake — they are configured on-device (RouterOS on the MikroTik,
+OpenWrt/UCI on the Cudy). This file documents the shared VLAN/trunk design and each AP.
 
-Only the DNS records live in the flake (`nixos/boxes/home/routing-common/dns.nix`, `h.nul.ie` zone).
-Everything else here is applied by hand on the device.
+Only the DNS records live in the flake
+([`nixos/boxes/home/routing-common/dns.nix`](../../../nixos/boxes/home/routing-common/dns.nix),
+`h.nul.ie` zone). Everything else here is applied by hand on the device.
 
 ## The APs
 
@@ -64,15 +65,17 @@ RouterOS, one hardware-offloaded bridge `main` with `vlan-filtering=yes`. Access
   (WPA2-PSK), untagged onto VLAN 120. `country=Ireland`.
 - **Bridge VLANs** — 100 tagged `main,ether1`; 110 tagged `main,ether1` + untagged
   `ether2,wifi1,wifi2`; 120 tagged `main,ether1` + untagged `wifi3`.
-- **Management** — `jim`/`dave`-style (core/hi/lo), on host `.15`: `192.168.64.15` on core
-  (native/untagged, backup), `192.168.68.15/22` + `2a0e:97c0:4d0:1::1:6` on the `hi` VLAN-100
-  interface (holds the default route, via the hi VIP `192.168.71.254`), and
-  `192.168.72.15/21` + `2a0e:97c0:4d0:2::1:6` on `lo` VLAN 110. No IP on `untrusted`.
-  `l2mtu 9214`, so `hi` carries jumbo (9000) here — `vibe` sits on `hi` because it *can* jumbo,
-  unlike `wave` (see its MTU note).
 - **Roaming** — 802.11k/v via a `/interface wifi steering` profile (`rrm=yes wnm=yes`,
   `neighbor-group=home-aps`) assigned to `wifi1`/`wifi2`/`wifi3`.
 - **Resolver** — the hi VIP `192.168.71.254` / `2a0e:97c0:4d0:1::ffff`.
+
+### Management
+
+Management uses host `.15`: `192.168.64.15` on native/core as a backup,
+`192.168.68.15/22` + `2a0e:97c0:4d0:1::1:6` on `hi` VLAN 100, and
+`192.168.72.15/21` + `2a0e:97c0:4d0:2::1:6` on `lo` VLAN 110. The `hi` address holds the default
+route through its VIP; `untrusted` has no address. With `l2mtu 9214`, `vibe` can use the jumbo
+`hi` network unlike `wave`.
 
 ## wave (Cudy AX3000, OpenWrt)
 
@@ -99,7 +102,7 @@ zone with `input REJECT` (and `wave` has no IP there) — **no management via th
 `wave` hangs off **brian** (UniFi). Its port is a **trunk**: tagged VLAN **110/120** (`lo` + guest),
 and **native/untagged = core** (the fabric's management VLAN, carrying `wave-core`). VLAN 100 (`hi`)
 is **not** needed here — `wave` isn't on `hi` (see Management addressing). Configure via the UniFi
-controller (brian has no CLI); see `home-switches.md`.
+controller (brian has no CLI); see [switches.md](switches.md).
 
 ### Flashing OpenWrt (Cudy AX3000 / `cudy_ap3000-v1`)
 
@@ -110,6 +113,7 @@ Hardware: MT7981B, 512 MB RAM, 256 MB SPI-NAND, 1× 2.5 GbE (RTL8221B), 2×2 WiF
 
 OpenWrt can't be flashed directly over stock. Two-stage, via a Cudy **transition** firmware (Cudy
 OpenWrt download page / `support@cudy.com`; `warnning.txt` in that bundle has the steps):
+
 1. Stock Cudy UI: update to **≥ 2.4.7** (adds TFTP `recovery.bin` recovery), then flash the Cudy
    **intermediate** firmware (`cudy_ap3000-v1-sysupgrade_*.bin`), "keep settings" **unchecked**.
    It reboots into an OpenWrt-based build at `192.168.1.1` (SSH `root`, empty password).
@@ -122,11 +126,13 @@ stock-side flashing is done from a browser, not headless.
 
 ### On-device config notes
 
-- Package manager is **`apk`** (not `opkg`). WiFi runs **`wpad-mbedtls`** (full — swapped from the
-  default `wpad-basic-mbedtls`, which lacks 802.11v). **802.11k + 802.11v** (`ieee80211k` +
-  `bss_transition`) are enabled on all SSIDs. ⚠️ Swapping wpad **live** leaves the mac80211 vifs
-  stuck in a start→teardown loop (`nl80211 ... No such device`); a `wifi reload`/`network restart`
-  won't recover it — **reboot** after `apk add wpad-mbedtls`.
+#### Wireless packages
+
+The package manager is `apk`, not `opkg`. Wi-Fi uses the full `wpad-mbedtls` package so all SSIDs
+can enable 802.11k/v (`ieee80211k` + `bss_transition`). Replacing `wpad-basic-mbedtls` live leaves
+the mac80211 interfaces in a start/teardown loop that reloads cannot recover; reboot after
+`apk add wpad-mbedtls`.
+
 - Radios: `radio0` = 2.4 GHz, `radio1` = 5 GHz (keyed by `band`, don't assume). 5 GHz is pinned to
   **channel 36 / HE160** (any 160 MHz block in IE is DFS; ch36 has the shortest ~60 s CAC).
 - Bridge: `br-lan` with `vlan_filtering`, single port `eth0` — tagged `110/120`, untagged/PVID
