@@ -191,7 +191,7 @@ rec {
     };
     lvmDisk' = vg: lv: lvmDisk'' lv vg lv;
     lvmDisk = lvmDisk' "main";
-    disk = vm: lv: lvmDisk' lv "vm-${vm}-${lv}";
+    disk = vm: lv: lvmDisk'' lv "main" "vm-${vm}-${lv}";
   };
 
   deploy-rs =

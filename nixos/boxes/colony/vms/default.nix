@@ -212,8 +212,8 @@
             cleanShutdown.timeout = 120;
             drives = [
               (mkMerge [ (vm.disk "darts" "root") { frontendOpts.bootindex = 0; } ])
-              (vm.lvmDisk' "media" "darts-media")
-              (vm.lvmDisk' "ext" "darts-ext")
+              (vm.lvmDisk'' "media" "main" "darts-media")
+              (vm.lvmDisk'' "ext" "main" "darts-ext")
             ];
           };
         };
