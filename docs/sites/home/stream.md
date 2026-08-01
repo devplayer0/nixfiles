@@ -8,6 +8,18 @@ redundant router pair with [`river`](river.md) and is dual-homed to both switche
 - **Host:** physical
 - **nixpkgs:** `mine`
 
+## Hardware
+
+| Component | Inventory |
+|---|---|
+| Platform | BROUNION R86S |
+| CPU | Intel Celeron N5105 (4 cores / 4 threads) |
+| Memory | 16 GiB |
+| Storage | 512 GB Samsung SSD 970 PRO NVMe containing `/boot`, `/nix` and `/persist`; integrated 128 GB eMMC is present but is not used by the declared filesystems |
+| Network | Three Intel `igc` interfaces and a dual-port Mellanox `mlx4_en` adapter; `wan`, `lan-jim` and `lan-dave` use three of these ports |
+
+The platform configuration enables `kvm-intel`, `intel_iommu=on` and Intel microcode updates.
+
 ## Role
 
 At `routing-common` index 1, `stream` normally holds the secondary position in the router pair.
@@ -61,28 +73,14 @@ box sets:
   reaching the modem subnet (needed only because it shares `wan`; WAN egress is otherwise
   accepted).
 
-## Platform
-
-### Hardware
-
-| Component | Inventory |
-|---|---|
-| Platform | BROUNION R86S |
-| CPU | Intel Celeron N5105 (4 cores / 4 threads) |
-| Memory | 16 GiB |
-| Storage | 512 GB Samsung SSD 970 PRO NVMe containing `/boot`, `/nix` and `/persist`; integrated 128 GB eMMC is present but is not used by the declared filesystems |
-| Network | Three Intel `igc` interfaces and a dual-port Mellanox `mlx4_en` adapter; `wan`, `lan-jim` and `lan-dave` use three of these ports |
-
-The platform configuration enables `kvm-intel`, `intel_iommu=on` and Intel microcode updates.
-
-### Switching (RSTP)
+## Switching (RSTP)
 
 `stream` is dual-homed to both switches: `lan-jim` (igc) and `lan-dave` (mlx4_en), both MTU 9000,
 are enslaved to the `lan` bridge with `STP=true`. [`routing-common/mstpd.nix`](../../../nixos/boxes/home/routing-common/mstpd.nix)
 runs a patched `mstpd` and forces RSTP on `lan` once it's routable, so exactly one uplink carries
 traffic at a time. (The remaining NICs are renamed `et2`/`et5` and left unconfigured.)
 
-### Deployment
+## Deployment
 
 `my.deploy.node.hostname` is currently commented out.
 

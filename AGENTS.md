@@ -212,10 +212,12 @@ physical box share a name, the site keeps the `README.md` and the box page stays
 example `sites/colony/README.md` and `sites/colony/colony.md`).
 
 **Box page layout** (match the existing pages): H1 + a one-line intro; a short bullet list of
-`Source` / `Host` / `nixpkgs`; `## Role`; `## Network assignments` that **links** to
+`Source` / `Host` / `nixpkgs`; an optional hardware inventory or VPS resource-allocation section;
+`## Role`; `## Network assignments` that **links** to
 [`networking.md#box-assignments`](docs/networking.md#box-assignments) (never inline the table); one
-`##` section per topic; `## Notable config files` last. A box without static assignments still gets
-the section with a short explanation instead of a generated-table link.
+`##` section per topic; `## Notable config files` last. Keep non-hardware platform details in their
+topical sections rather than moving them with the inventory. A box without static assignments still
+gets the section with a short explanation instead of a generated-table link.
 
 **Structure and layout:**
 - Use **tables** for lists of structured items (BGP peers, forwarded ports, vhosts, containers,

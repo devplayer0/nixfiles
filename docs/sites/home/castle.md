@@ -7,6 +7,17 @@ root storage on NVMe-oF volumes from `cellar`.
 - **Host:** physical
 - **nixpkgs:** `mine`
 
+## Hardware
+
+| Component | Inventory |
+|---|---|
+| Platform | ASUS ProArt X670E-CREATOR WIFI |
+| CPU | AMD Ryzen 9 7950X (16 cores / 32 threads) |
+| Memory | 64 GiB |
+| Graphics | Integrated AMD Radeon graphics |
+| Network | Mellanox ConnectX-4 100G, Aquantia AQC113CS 10G, Intel I225-V 2.5G and MediaTek MT7922 Wi-Fi 6E controllers |
+| System storage | No local root disk; the box netboots and uses the SPDK NVMe-oF namespace exported by `cellar` |
+
 ## Role
 
 ### Desktop
@@ -37,17 +48,6 @@ a `drm-amd-display` flicker patch remains commented out.
 ## Network assignments
 
 See the consolidated [network assignments](../../networking.md#box-assignments) table (this box: `castle`).
-
-## Hardware
-
-| Component | Inventory |
-|---|---|
-| Platform | ASUS ProArt X670E-CREATOR WIFI |
-| CPU | AMD Ryzen 9 7950X (16 cores / 32 threads) |
-| Memory | 64 GiB |
-| Graphics | Integrated AMD Radeon graphics |
-| Network | Mellanox ConnectX-4 100G, Aquantia AQC113CS 10G, Intel I225-V 2.5G and MediaTek MT7922 Wi-Fi 6E controllers |
-| System storage | No local root disk; the box netboots and uses the SPDK NVMe-oF namespace exported by `cellar` |
 
 ## Networking
 

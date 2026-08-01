@@ -7,6 +7,14 @@ control plane, a tailnet exit node, and the BGP speaker for AS211024.
 - **Host:** VPS at Vultr (London, `lon1`)
 - **nixpkgs:** `mine`
 
+## Platform
+
+| Component | Allocation |
+|---|---|
+| Virtualisation | Vultr VC2 virtual guest on a QEMU-compatible platform |
+| Compute | 2 vCPUs and 2 GiB RAM |
+| Storage | 65 GiB virtio disk with separate ext4 filesystems for `/boot`, `/nix` and `/persist`; root is tmpfs |
+
 ## Role
 
 - **Headscale** — the self-hosted Tailscale control plane at `hs.nul.ie`; every other box's
@@ -26,14 +34,6 @@ control plane, a tailnet exit node, and the BGP speaker for AS211024.
 ## Network assignments
 
 See the consolidated [network assignments](../networking.md#box-assignments) table (this box: `britway`).
-
-## Platform
-
-| Component | Allocation |
-|---|---|
-| Virtualisation | Vultr VC2 virtual guest on a QEMU-compatible platform |
-| Compute | 2 vCPUs and 2 GiB RAM |
-| Storage | 65 GiB virtio disk with separate ext4 filesystems for `/boot`, `/nix` and `/persist`; root is tmpfs |
 
 ## Networking
 

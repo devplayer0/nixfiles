@@ -8,6 +8,18 @@ everything at the colony site.
 - **Host:** bare metal (this *is* the physical box)
 - **nixpkgs:** `mine-stable`
 
+## Hardware
+
+| Component | Inventory |
+|---|---|
+| Platform | ASRock Rack X570D4U server board |
+| CPU | AMD Ryzen 9 5950X (16 cores / 32 threads) |
+| Memory | 128 GiB |
+| NVMe storage | Three 2 TB Samsung SSD 980 PRO devices providing the NVMe-backed LVM thin pool and data LVs |
+| Bulk storage | Three 12 TB WD120EDBZ disks and one 18 TB WD180EDGZ disk for the bulk LVM volumes |
+| Boot | SanDisk USB device holding the EFI system partition |
+| Network / management | Two Intel I210 Gigabit Ethernet controllers, one passed through to `estuary`; ASPEED BMC graphics and console |
+
 ## Role
 
 Bare-metal AMD host. It does little application work itself — its job is to run
@@ -54,18 +66,6 @@ Netdata uses FreeIPMI while ignoring the VCCM sensor. The box also runs `smartd`
 ## Network assignments
 
 See the consolidated [network assignments](../../networking.md#box-assignments) table (this box: `colony`).
-
-## Hardware
-
-| Component | Inventory |
-|---|---|
-| Platform | ASRock Rack X570D4U server board |
-| CPU | AMD Ryzen 9 5950X (16 cores / 32 threads) |
-| Memory | 128 GiB |
-| NVMe storage | Three 2 TB Samsung SSD 980 PRO devices providing the NVMe-backed LVM thin pool and data LVs |
-| Bulk storage | Three 12 TB WD120EDBZ disks and one 18 TB WD180EDGZ disk for the bulk LVM volumes |
-| Boot | SanDisk USB device holding the EFI system partition |
-| Network / management | Two Intel I210 Gigabit Ethernet controllers, one passed through to `estuary`; ASPEED BMC graphics and console |
 
 ## Networking
 

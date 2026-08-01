@@ -8,18 +8,6 @@ SR-IOV VFs, PCI NVMe drives and LVM disks.
 - **Host:** physical
 - **nixpkgs:** `mine-stable`
 
-## Role
-
-- Home hypervisor: VMs are declared in `my.vms.instances`
-  ([`palace/vms/default.nix`](../../../nixos/boxes/home/palace/vms/default.nix)); disks are LVs in
-  the `main` thin pool (`services.lvm.boot.thin.enable`).
-- AMD box (`kvm-amd`, `amd_iommu=on`, microcode updates); the kernel is built with
-  `ACPI_APEI_PCIEAER`/`PCIEAER` for the PCIe passthrough work below.
-
-## Network assignments
-
-See the consolidated [network assignments](../../networking.md#box-assignments) table (this box: `palace`).
-
 ## Hardware
 
 | Component | Inventory |
@@ -31,6 +19,18 @@ See the consolidated [network assignments](../../networking.md#box-assignments) 
 | Bulk storage | Three 8 TB Seagate IronWolf disks in the `hdds` VG, providing the RAID-backed `hdd-storage` and `frigate` LVs |
 | NVMe storage | Three 2 TB Samsung NVMe devices passed through to `cellar`; SPDK combines them as the `NVMeRaid` RAID 0 device |
 | Network / graphics | Mellanox ConnectX-4 100G adapter with four SR-IOV VFs, two Intel I211 Gigabit Ethernet controllers, and an AMD Radeon RX 550/560-family GPU |
+
+## Role
+
+- Home hypervisor: VMs are declared in `my.vms.instances`
+  ([`palace/vms/default.nix`](../../../nixos/boxes/home/palace/vms/default.nix)); disks are LVs in
+  the `main` thin pool (`services.lvm.boot.thin.enable`).
+- AMD box (`kvm-amd`, `amd_iommu=on`, microcode updates); the kernel is built with
+  `ACPI_APEI_PCIEAER`/`PCIEAER` for the PCIe passthrough work below.
+
+## Network assignments
+
+See the consolidated [network assignments](../../networking.md#box-assignments) table (this box: `palace`).
 
 ## Networking
 

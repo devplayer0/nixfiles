@@ -6,17 +6,6 @@ Portable workstation — a Framework Laptop 13 (Intel), running the full GUI env
 - **Host:** physical (laptop)
 - **nixpkgs:** `mine`
 
-## Role
-
-- Personal portable workstation: `my.gui.enable`, with Sway managed by home-manager.
-- Joins the tailnet through the headscale on [`britway`](../remote/britway.md) (fish abbr
-  `tsup` = `doas tailscale up --login-server=https://hs.nul.ie --accept-routes`).
-
-## Network assignments
-
-`tower` has no static assignment; it uses DHCP through NetworkManager and reaches the other boxes
-over Tailscale.
-
 ## Hardware / platform
 
 | Component | Inventory |
@@ -31,6 +20,17 @@ over Tailscale.
 The configuration enables Intel microcode updates, `kvm-intel`, `intel_iommu=on`,
 `intel-media-driver` and the latest kernel (`lib.my.c.kernel.latest`). Thunderbolt security
 (`bolt`), the fingerprint reader (`fprintd`) and `tlp` power management are also enabled.
+
+## Role
+
+- Personal portable workstation: `my.gui.enable`, with Sway managed by home-manager.
+- Joins the tailnet through the headscale on [`britway`](../remote/britway.md) (fish abbr
+  `tsup` = `doas tailscale up --login-server=https://hs.nul.ie --accept-routes`).
+
+## Network assignments
+
+`tower` has no static assignment; it uses DHCP through NetworkManager and reaches the other boxes
+over Tailscale.
 
 ## Storage
 

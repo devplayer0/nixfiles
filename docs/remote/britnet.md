@@ -7,6 +7,14 @@ narrower gateway role than [`britway`](britway.md) (no control plane, no BGP).
 - **Host:** VPS (Birmingham, `bhx1`; provider uplink assignment `allhost`)
 - **nixpkgs:** `mine`
 
+## Platform
+
+| Component | Allocation |
+|---|---|
+| Virtualisation | KVM/QEMU guest |
+| Compute | 2 vCPUs and 2 GiB RAM |
+| Storage | 32 GiB virtio disk with separate ext4 filesystems for `/boot`, `/nix` and `/persist`; root is tmpfs |
+
 ## Role
 
 - **Tailscale exit node** — logs into the headscale on [`britway`](britway.md)
@@ -19,14 +27,6 @@ narrower gateway role than [`britway`](britway.md) (no control plane, no BGP).
 ## Network assignments
 
 See the consolidated [network assignments](../networking.md#box-assignments) table (this box: `britnet`).
-
-## Platform
-
-| Component | Allocation |
-|---|---|
-| Virtualisation | KVM/QEMU guest |
-| Compute | 2 vCPUs and 2 GiB RAM |
-| Storage | 32 GiB virtio disk with separate ext4 filesystems for `/boot`, `/nix` and `/persist`; root is tmpfs |
 
 ## Networking
 
