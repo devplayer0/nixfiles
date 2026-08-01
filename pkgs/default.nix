@@ -15,4 +15,8 @@ in
   update-docs-assignments = pkgs.writeShellScriptBin "update-docs-assignments" ''
     exec ${pkgs.python3}/bin/python3 ${../ci/update-docs-assignments.py} "$@"
   '';
+
+  update-docs-options = pkgs.writeShellScriptBin "update-docs-options" ''
+    exec ${pkgs.python3}/bin/python3 ${../ci/update-docs-options.py} "$@"
+  '';
 }

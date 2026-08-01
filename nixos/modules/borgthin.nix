@@ -3,7 +3,7 @@ let
   inherit (builtins) substring match;
   inherit (lib)
     nameValuePair optional optionalString optionalAttrs mapAttrs' mapAttrsToList concatStringsSep
-    concatMapStringsSep mkIf;
+    concatMapStringsSep mkIf mkOption literalExpression;
   inherit (lib.my) mkOpt' mkBoolOpt';
 
   jobType = with lib.types; submodule ({ name, ... }@args:
@@ -15,12 +15,22 @@ let
       repo = mkOpt' str null "borg repository URL";
       passFile = mkOpt' (nullOr str) null "Path to file containing passphrase";
 
-      archivePrefix = mkOpt' str "${config.networking.hostName}-${name}-" "Prefix to start new archives with";
+      archivePrefix = mkOption {
+        type = str;
+        default = "${config.networking.hostName}-${name}-";
+        defaultText = literalExpression ''"''${config.networking.hostName}-''${name}-"'';
+        description = "Prefix to start new archives with";
+      };
       dateFormat = mkOpt' str "+%Y-%m-%dT%H:%M:%S" "Format passed to the date command";
       compression = mkOpt' str "zstd,3" "Compression options";
       lvs = mkOpt' (listOf str) null "Thin LVs to backup (vg/lv format)";
       prune = {
-        pattern = mkOpt' str "sh:${cfg.archivePrefix}*" "Borg pattern to select archives for pruning";
+        pattern = mkOption {
+          type = str;
+          default = "sh:${cfg.archivePrefix}*";
+          defaultText = literalExpression ''"sh:''${config.archivePrefix}*"'';
+          description = "Borg pattern to select archives for pruning";
+        };
         keep = mkOpt' (attrsOf (either int str)) { } "Borg pruning params";
       };
 
@@ -129,7 +139,12 @@ in
     thinToolsPackage = mkOpt' package pkgs.thin-provisioning-tools "Package containing thin-provisioning-tools";
     # Really we should use the version from the overlay, but the package is quite far behind...
     # Not bothering to update until Borg 2.0 releases
-    package = mkOpt' package inputs.borgthin.packages.${config.nixpkgs.system}.borgthin "borgthin package";
+    package = mkOption {
+      type = package;
+      default = inputs.borgthin.packages.${config.nixpkgs.system}.borgthin;
+      defaultText = literalExpression "inputs.borgthin.packages.\${system}.borgthin";
+      description = "borgthin package";
+    };
     jobs = mkOpt' (attrsOf jobType) { } "borgthin jobs";
   };
 

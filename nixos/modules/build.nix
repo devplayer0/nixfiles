@@ -190,6 +190,9 @@ let
     type = unspecified;
     default = ext;
     visible = "shallow";
+    # Build-target plumbing: the default evaluates a whole alternate system, so keep
+    # it out of the generated option docs (see `optionsDoc` in flake.nix).
+    internal = true;
     description = "Configuration as ${desc}.";
   };
 in

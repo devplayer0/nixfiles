@@ -1,6 +1,6 @@
 { lib, pkgs, config, ... }:
 let
-  inherit (lib) mkMerge mkIf mkForce genAttrs concatMapStringsSep;
+  inherit (lib) mkMerge mkIf mkForce genAttrs concatMapStringsSep mkOption literalExpression;
   inherit (lib.my) mkOpt' mkBoolOpt';
 
   cfg = config.my.netboot;
@@ -47,7 +47,12 @@ in
     server = {
       enable = mkBoolOpt' false "Whether a netboot server should be enabled.";
       ip = mkOpt' str null "IP clients should connect to via TFTP.";
-      host = mkOpt' str config.networking.fqdn "Hostname clients should connect to over HTTP / NFS.";
+      host = mkOption {
+        type = str;
+        default = config.networking.fqdn;
+        defaultText = literalExpression "config.networking.fqdn";
+        description = "Hostname clients should connect to over HTTP / NFS.";
+      };
       allowedPrefixes = mkOpt' (listOf str) null "Prefixes clients should be allowed to connect from (NFS).";
       installer = {
         storeSize = mkOpt' str "16GiB" "Total allowed writable size of store.";

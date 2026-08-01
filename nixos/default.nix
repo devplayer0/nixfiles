@@ -100,6 +100,40 @@ let
       ] ++ defs;
     };
 
+  # JSON dump of the custom `my.*` options, rendered to docs/ by `update-docs-options`.
+  # Built from a minimal synthetic system (the shared modules are applied to every system,
+  # so any eval exposes the same option declarations) rather than a real box, so defaults
+  # don't pick up a specific host's values.
+  optionsDoc =
+    let
+      eval = mkSystem {
+        name = "options-doc";
+        config' = {
+          system = "x86_64-linux";
+          nixpkgs = "mine";
+          home-manager = "mine";
+          hmNixpkgs = "mine";
+          docCustom = false;
+          assignments = { };
+        };
+        defs = [ ];
+      };
+      pkgs = pkgs'.mine."x86_64-linux";
+    in
+    (pkgs.nixosOptionsDoc {
+      options = { my = eval.options.my; };
+      warningsAreErrors = false;
+      # Rewrite store-path declarations to repo-relative so the reference can link module
+      # files. The internal `asX` build-target options are dropped by nixosOptionsDoc itself.
+      transformOptions = opt: opt // {
+        declarations = map
+          (decl:
+            let m = builtins.match ".*-source/(.*)" (toString decl); in
+            if m != null then builtins.head m else decl)
+          opt.declarations;
+      };
+    }).optionsJSON;
+
   assignmentOpts = with lib.types; { name, config, ... }: {
     options = {
       name = mkOpt' str name "Name of assignment.";
@@ -154,8 +188,11 @@ let
     options = {
       inherit (commonOpts) system nixpkgs home-manager;
       hmNixpkgs = commonOpts.nixpkgs;
-      # This causes a (very slow) docs rebuild on every change to a module's options it seems
-      # TODO: Currently broken with infinite recursion...
+      # Routes the custom modules into `baseModules` so the NixOS manual documents them. The old
+      # infinite-recursion is gone, but enabling this makes every system build regenerate the
+      # manual, and it documents everything the modules transitively import — including third-party
+      # modules that aren't doc-clean (e.g. `services.sharry`). Prefer the generated
+      # `nixos.optionsDoc` reference (`docs/reference/nixos-options.md`) instead.
       docCustom = mkBoolOpt' false "Whether to document nixfiles' custom NixOS modules.";
 
       assignments = mkOpt' (attrsOf (submoduleWith {
@@ -197,6 +234,11 @@ in
         description = "All network assignments.";
         readOnly = true;
       };
+      optionsDoc = mkOption {
+        type = package;
+        description = "nixosOptionsDoc JSON dump of the custom `my.*` module options.";
+        readOnly = true;
+      };
       vpns = {
         l2 = mkOpt' (attrsOf (submodule l2MeshOpts)) { } "Layer 2 meshes.";
       };
@@ -224,7 +266,7 @@ in
     ];
 
     nixos = {
-      inherit allAssignments;
+      inherit allAssignments optionsDoc;
     };
   };
 }
