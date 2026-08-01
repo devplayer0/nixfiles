@@ -49,8 +49,13 @@
     copyparty.inputs.nixpkgs.follows = "nixpkgs-unstable";
     hass-west-wood.url = "github:devplayer0/hass-west-wood";
     hass-west-wood.inputs.nixpkgs.follows = "nixpkgs-unstable";
-    pi-agent.url = "github:lukasl-dev/pi.nix";
-    pi-agent.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    # Disabled: `pi-coding-agent-bun` breaks `nix flake check` in CI. Its bun2nix `fetchBunDeps`
+    # calls `builtins.filterSource` on subpaths of the pi.nix flake source (coding-agent/bun.nix),
+    # which requires that source derivation to be realised in the local store. On a fresh CI runner
+    # it isn't, so eval aborts with `path '…-source.drv' is not valid`. Works locally only because
+    # the source is already realised there. Re-enable (and revisit upstream) if we start using pi.
+    # pi-agent.url = "github:lukasl-dev/pi.nix";
+    # pi-agent.inputs.nixpkgs.follows = "nixpkgs-unstable";
   };
 
   outputs =

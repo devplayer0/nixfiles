@@ -88,16 +88,17 @@ in
             ffmpeg-full
             xournalpp
 
-            (pkgs.symlinkJoin {
-              name = "pi-coding-agent";
-              buildInputs = [ pkgs.makeWrapper ];
-              paths = [ pkgs.pi-coding-agent-bun ];
-              postBuild = ''
-                wrapProgram $out/bin/pi \
-                  --set NPM_CONFIG_PREFIX ${config.home.homeDirectory}/.pi/npm/ \
-                  --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.nodejs_latest ]}
-              '';
-            })
+            # Disabled: breaks `nix flake check` in CI (see flake.nix pi-agent note).
+            # (pkgs.symlinkJoin {
+            #   name = "pi-coding-agent";
+            #   buildInputs = [ pkgs.makeWrapper ];
+            #   paths = [ pkgs.pi-coding-agent-bun ];
+            #   postBuild = ''
+            #     wrapProgram $out/bin/pi \
+            #       --set NPM_CONFIG_PREFIX ${config.home.homeDirectory}/.pi/npm/ \
+            #       --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.nodejs_latest ]}
+            #   '';
+            # })
           ];
         };
 

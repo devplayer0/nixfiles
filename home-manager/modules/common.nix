@@ -8,7 +8,8 @@ let
   inherit (lib.my) mkOpt' dummyOption;
 in
 {
-  imports = [ inputs.pi-agent.homeModules.default ];
+  # Disabled: breaks `nix flake check` in CI (see flake.nix pi-agent note).
+  # imports = [ inputs.pi-agent.homeModules.default ];
 
   options = with lib.types; {
     my = {
@@ -233,7 +234,7 @@ in
           inputs.deploy-rs.overlays.default
           inputs.boardie.overlays.default
           inputs.nixGL.overlays.default
-          inputs.pi-agent.overlays.default
+          # inputs.pi-agent.overlays.default
         ];
         config = {
           allowUnfree = true;
