@@ -144,9 +144,19 @@ def discover_nameservers(domains: list[str], port: int) -> dict[str, list[str]]:
     return discovered
 
 
-def transfer_domain(port: int, domain: str, servers: list[str]) -> list[Record]:
+def transfer_domain(
+    port: int, domain: str, servers: list[str], fallback: list[str] = ()
+) -> list[Record]:
+    # A zone may be delegated publicly to servers that refuse AXFR (e.g. HE serving
+    # reverse DNS) while our own authoritative servers, discovered for other zones,
+    # will transfer it. Try the delegated servers first, then fall back to those.
+    ordered = list(servers)
+    for server in fallback:
+        if server not in ordered:
+            ordered.append(server)
+
     errors = []
-    for server in servers:
+    for server in ordered:
         try:
             return transfer(server, port, domain)
         except RuntimeError as error:
@@ -325,8 +335,13 @@ def main() -> int:
 
     try:
         nameservers = discover_nameservers(args.domain, args.port)
+        fallback = []
+        for servers in nameservers.values():
+            for server in servers:
+                if server not in fallback:
+                    fallback.append(server)
         transferred = [
-            (domain, transfer_domain(args.port, domain, nameservers[domain]))
+            (domain, transfer_domain(args.port, domain, nameservers[domain], fallback))
             for domain in args.domain
         ]
     except RuntimeError as error:
