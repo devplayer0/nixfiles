@@ -1,6 +1,6 @@
 # sfh
 
-"Services for home" — the NixOS container host for the home site. A VM on `palace` that netboots
+"Shill from home" — the NixOS container host for the home site. A VM on `palace` that netboots
 from `river` and runs its root off NVMe-oF from `cellar`.
 
 - **Source:** [`nixos/boxes/home/palace/vms/sfh/`](../../../../nixos/boxes/home/palace/vms/sfh)
