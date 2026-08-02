@@ -114,8 +114,12 @@ in
         ];
         also-notify = [ "127.0.0.1" ];
         allow-axfr-ips = [
+          "127.0.0.0/8" "::1/128"
           "216.218.133.2" "2001:470:600::2"
-        ];
+        ]
+        ++ lib.my.c.home.routersPubV4
+        ++ lib.my.c.as211024.trusted.v4
+        ++ lib.my.c.as211024.trusted.v6;
         enable-lua-records = true;
         #loglevel = 7;
         #log-dns-queries = true;

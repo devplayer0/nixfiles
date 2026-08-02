@@ -170,6 +170,12 @@ in
           "0.0.0.0:5353" "[::]:5353"
         ];
         also-notify = [ "127.0.0.1" ];
+        allow-axfr-ips = [
+          "127.0.0.0/8" "::1/128"
+          allAssignments.estuary.internal.ipv4.address
+        ]
+        ++ lib.my.c.as211024.trusted.v4
+        ++ lib.my.c.as211024.trusted.v6;
         enable-lua-records = true;
         # loglevel = 7;
         # log-dns-queries = true;
