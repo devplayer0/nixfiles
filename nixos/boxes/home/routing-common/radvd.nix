@@ -1,8 +1,8 @@
 index: { lib, pkgs, ... }:
 let
-  inherit (lib) mkForce concatMapStringsSep;
+  inherit (lib) mkForce concatMapStringsSep concatStringsSep;
   inherit (lib.my) net;
-  inherit (lib.my.c.home) domain prefixes vips;
+  inherit (lib.my.c.home) domain searchDomains prefixes vips;
 
   # untrusted uses external (Cloudflare) resolvers, matching the v4 kea config;
   # trusted VLANs use the internal recursor via its floating VRRP VIP
@@ -18,7 +18,7 @@ let
       AdvLinkMTU ${toString prefixes."${name}".mtu};
       prefix ${prefixes."${name}".v6} {};
       RDNSS ${rdnss name} {};
-      DNSSL ${domain} dyn.${domain} ${lib.my.c.colony.domain} ${lib.my.c.britway.domain} {};
+      DNSSL ${concatStringsSep " " searchDomains} {};
      };
   '';
 in

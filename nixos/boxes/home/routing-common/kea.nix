@@ -1,8 +1,8 @@
 index: { lib, pkgs, config, assignments, allAssignments, ... }:
 let
-  inherit (lib) mkForce;
+  inherit (lib) mkForce concatStringsSep;
   inherit (lib.my) net netbootKeaClientClasses;
-  inherit (lib.my.c.home) domain prefixes vips hiMTU;
+  inherit (lib.my.c.home) domain searchDomains prefixes vips hiMTU;
 
   dns-servers = [
     {
@@ -59,7 +59,7 @@ in
             }
             {
               name = "domain-search";
-              data = "${domain}, dyn.${domain}, ${lib.my.c.colony.domain}, ${lib.my.c.britway.domain}";
+              data = concatStringsSep ", " searchDomains;
               always-send = true;
             }
           ];

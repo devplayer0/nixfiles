@@ -307,6 +307,8 @@ rec {
 
   home = rec {
     domain = "h.${pubDomain}";
+    # Search domains advertised to clients (radvd DNSSL / kea domain-search)
+    searchDomains = [ domain "dyn.${domain}" colony.domain britway.domain ];
     vlans = {
       hi = 100;
       lo = 110;
