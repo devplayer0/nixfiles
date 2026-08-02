@@ -149,6 +149,10 @@ rec {
       (optional (a.ipv6.gateway != null) a.ipv6.gateway);
     networkConfig = {
       IPv6AcceptRA = a.ipv6.gateway == null || a.ipv6.iid != null;
+      # These are servers: temporary (privacy) addresses only rotate our stable source
+      # address out from under long-lived connected sockets (e.g. nginx's resolver, which
+      # wedges permanently when the address it bound to expires).
+      IPv6PrivacyExtensions = "no";
       # NOTE: LLDP emission / reception is ignored on bridge interfaces
       LLDP = true;
       EmitLLDP = "customer-bridge";
