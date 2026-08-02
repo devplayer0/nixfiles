@@ -327,7 +327,9 @@ and keepalived's `notify_master`/`notify_backup` hooks ensure that only the mast
 [`routing-common/dns.nix`](../nixos/boxes/home/routing-common/dns.nix). The
 `net.ipv4.ip_nonlocal_bind` / `net.ipv6.ip_nonlocal_bind` settings let the backup listen before it
 owns the addresses, so failover does not depend on client resolver timeouts. The recursor forwards
-the site's zones to authoritative PowerDNS on `127.0.0.1:5353`.
+the site's zones to authoritative PowerDNS on `127.0.0.1:5353`. The generated
+[DNS reference](reference/dns.md) lists the live forward and reverse records; the authoritative
+servers allow its AXFRs from the shared internal prefixes and the colony site's egress address.
 
 #### `wan-online.target`
 

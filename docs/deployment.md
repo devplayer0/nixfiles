@@ -170,14 +170,13 @@ Pushing the `installer` tag (refreshed by `update-installer`) builds `my.buildAs
 
 ### `update-docs.yaml`
 
-On pushes to the docs branch, excluding its own commits, this runs
-`nix run .#update-docs-assignments` and `nix run .#update-docs-options` and commits changed outputs
-as `docs: update generated tables`.
+On pushes to `master`, excluding its own commits, this runs the assignment, option and DNS
+reference generators and commits changed outputs as `docs: Update generated references`.
 
 ### The docs generators
 
-Both are registered in [`pkgs/default.nix`](../pkgs/default.nix) (`writeShellScriptBin`s wrapping
-Python scripts under [`ci/`](../ci)). They leave the worktree unchanged when their output is current;
+The generators are registered in [`pkgs/default.nix`](../pkgs/default.nix) as wrappers around
+Python scripts under [`ci/`](../ci). They leave the worktree unchanged when their output is current;
 the workflow stages `docs/` and uses `git diff --cached --quiet` to decide whether to commit.
 
 `update-docs-assignments` ([`ci/update-docs-assignments.py`](../ci/update-docs-assignments.py))
@@ -197,3 +196,11 @@ apply to every box, so defaults don't pick up a real host's values. The renderer
 [`docs/reference/nixos-options.md`](reference/nixos-options.md), one table per module file. The
 whole file is generated; edit the option descriptions in the modules, not the reference. The
 internal `asX` build-target options are marked `internal = true` so they're excluded.
+
+`update-docs-dns` ([`ci/update-docs-dns.py`](../ci/update-docs-dns.py)) accepts forward and reverse
+zone names, discovers their authoritative nameservers through NS queries, and transfers each zone
+over AXFR. If a private reverse zone is not visible through the configured recursive resolver, it
+asks the authoritative servers discovered for the other requested zones. It updates only the
+matching `<!-- dns: <zone> -->` blocks in the [`DNS records`](reference/dns.md) reference; the page's
+headings and prose remain handwritten. Kea-managed owners are identified by `DHCID` records and
+removed together with their A, AAAA and PTR records; SOA records and TTLs are also omitted.

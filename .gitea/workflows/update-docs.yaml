@@ -6,7 +6,7 @@ on:
 
 jobs:
   update:
-    if: "!contains(github.event.head_commit.message, 'docs: update generated tables')"
+    if: "!contains(github.event.head_commit.message, 'docs: Update generated references')"
     runs-on: ubuntu-26.04
     permissions:
       contents: write
@@ -26,6 +26,16 @@ jobs:
       - name: Update option reference
         run: nix run .#update-docs-options
 
+      - name: Update DNS reference
+        run: >
+          nix run .#update-docs-dns --
+          ams1.int.nul.ie
+          100.10.in-addr.arpa
+          2.d.4.0.0.c.7.9.e.0.a.2.ip6.arpa
+          h.nul.ie
+          168.192.in-addr.arpa
+          0.d.4.0.0.c.7.9.e.0.a.2.ip6.arpa
+
       - name: Commit and push if changed
         env:
           GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
@@ -36,6 +46,6 @@ jobs:
           git remote set-url origin "${REPO_URL/https:\/\//https:\/\/oauth2:${GITEA_TOKEN}@}"
           git add docs/
           if ! git diff --cached --quiet; then
-            git commit -m "docs: update generated tables"
+            git commit -m "docs: Update generated references"
             git push
           fi

@@ -19,4 +19,12 @@ in
   update-docs-options = pkgs.writeShellScriptBin "update-docs-options" ''
     exec ${pkgs.python3}/bin/python3 ${../ci/update-docs-options.py} "$@"
   '';
+
+  update-docs-dns =
+    let
+      python = pkgs.python3.withPackages (ps: [ ps.dnspython ]);
+    in
+    pkgs.writeShellScriptBin "update-docs-dns" ''
+      exec ${python}/bin/python3 ${../ci/update-docs-dns.py} "$@"
+    '';
 }

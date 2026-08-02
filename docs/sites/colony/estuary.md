@@ -75,7 +75,8 @@ Besides the forwards, `extraRules` defines:
 
 ## DNS
 
-Both halves are PowerDNS ([`dns.nix`](../../../nixos/boxes/colony/vms/estuary/dns.nix)).
+Both halves are PowerDNS ([`dns.nix`](../../../nixos/boxes/colony/vms/estuary/dns.nix)). The live
+forward and reverse records are listed in the generated [DNS reference](../../reference/dns.md).
 
 ### Authoritative
 
@@ -86,7 +87,8 @@ zone.
 - Zone contents are largely generated from `allAssignments`
   (`lib.my.dns.fwdRecords` / `ptrRecords` / `ptr6Records`); `ALIAS` records
   (with `expand-alias`) point the zone apex at estuary itself.
-- AXFR is allowed to HE.net's secondary (`216.218.133.2` / `2001:470:600::2`).
+- AXFR is allowed to HE.net's secondary and the trusted internal/site-egress sources used by the
+  generated DNS reference.
 - `_acme-challenge` is a LUA `TXT` record answered from a file (DNS-01 issuance).
 - Reached publicly via the NAT redirect of port 53 → 5353; the `base` side also
   accepts DNS directly.
