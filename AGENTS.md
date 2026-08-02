@@ -46,7 +46,10 @@ Common ones:
   Pass the flake-qualified node, e.g. `deploy .#git`. The deploy node name is **always** the system
   name (`deploy-rs.nix` keys nodes directly off `nixos.systems` / `home-manager.homes`); a system is
   only a deploy target when `config.my.deploy.enable` is true (defaults true; auto-disabled for dev
-  VMs and containers). Pass `--boot` to stage a config as the boot default **without** live-switching
+  VMs and containers). A container is **not** its own deploy node — it is generated as a
+  `container-<name>` profile on its **host** node. So `deploy .#<host>` deploys the host's `system`
+  profile and every one of its containers, whereas `deploy .#<host>.container-<name>` targets a
+  single container (e.g. `deploy .#shill.container-middleman`). Pass `--boot` to stage a config as the boot default **without** live-switching
   (`deploy --boot .#<host>`) — the box keeps running its current generation until it reboots. Use this
   when a live `switch` would break connectivity mid-change (e.g. a router's WAN VLAN rework), then
   reboot to cut over.
