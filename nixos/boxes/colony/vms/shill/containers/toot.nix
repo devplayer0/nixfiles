@@ -48,8 +48,9 @@ in
                   "s3-secret-key.txt"
                 ])
                 (_: with config.services.mastodon; {
-                  owner = user;
-                  inherit group;
+                  # user doesn't exist any more, so this breaks on deploy
+                  # owner = user;
+                  # inherit group;
                 })) // {
                   "toot/pds.env" = {
                     owner = "pds";
