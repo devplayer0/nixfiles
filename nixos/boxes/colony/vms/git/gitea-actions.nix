@@ -1,7 +1,14 @@
 { lib, pkgs, config, ... }:
 let
   inherit (lib) mkForce;
+  inherit (lib.my) net;
   inherit (lib.my.c) pubDomain;
+
+  # The podman bridge gateway (first host of the default subnet); job
+  # containers reach the runner's artifact cache server here, through a single
+  # fixed port opened in the firewall below.
+  podmanGateway = net.cidr.host 1 config.virtualisation.containers.containersConf.settings.network.default_subnet;
+  cachePort = 34567;
 in
 {
   config = {
@@ -34,6 +41,11 @@ in
             cache = {
               enabled = true;
               dir = "/var/cache/gitea-runner";
+              # Announce the podman bridge gateway rather than let act_runner
+              # autodetect the box's outbound address, which containers can't
+              # route back to.
+              host = podmanGateway;
+              port = cachePort;
             };
           };
         };
@@ -73,6 +85,15 @@ in
           group = "gitea-runner";
         };
       };
+
+      # Let job containers reach the runner's artifact cache server on the host.
+      firewall.extraRules = ''
+        table inet filter {
+          chain input {
+            iifname "podman0" tcp dport ${toString cachePort} accept
+          }
+        }
+      '';
     };
   };
 }

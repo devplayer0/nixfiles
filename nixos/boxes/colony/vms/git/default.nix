@@ -38,6 +38,8 @@ in
       let
         inherit (lib) mkMerge;
         inherit (lib.my) networkdAssignment;
+
+        podmanSubnet = "10.88.0.0/16";
       in
       {
         imports = [
@@ -158,7 +160,7 @@ in
               oci-containers = {
                 backend = "podman";
               };
-              containers.containersConf.settings.network.default_subnet = "10.88.0.0/16";
+              containers.containersConf.settings.network.default_subnet = podmanSubnet;
             };
 
             systemd.network = {
@@ -195,7 +197,7 @@ in
                 extraRules = ''
                   table inet filter {
                     chain forward {
-                      ip saddr 10.88.0.0/16 accept
+                      ip saddr ${podmanSubnet} accept
                     }
                   }
                 '';
