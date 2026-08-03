@@ -50,9 +50,9 @@ in
       };
 
       nix = {
-        package = pkgs'.mine.nix;
+        package = pkgs'.mine.determinate-nix;
         channel.enable = false;
-        settings = with lib.my.c.nix; {
+        settings = with lib.my.c.nix; determinateSettings // {
           trusted-users = [ "@wheel" ];
           experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
           extra-substituters = cache.substituters;

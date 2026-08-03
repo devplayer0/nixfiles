@@ -1,6 +1,19 @@
 {
   description = "System configs";
 
+  # Offer our Harmonia cache when building the flake itself, so `nix develop` / `nix build` don't
+  # rebuild from source. Nix reads `nixConfig` before the flake evaluates and rejects any computed
+  # value (imports/thunks), so these must stay literal — keep them in sync with `lib.my.c.nix.cache`.
+  # Consumers must trust these (accept-flake-config / a trusted user) for them to take effect.
+  nixConfig = {
+    extra-substituters = [
+      "https://nix-cache.nul.ie"
+    ];
+    extra-trusted-public-keys = [
+      "nix-cache.nul.ie-1:BzH5yMfF4HbzY1C977XzOxoPhEc9Zbu39ftPkUbH+m4="
+    ];
+  };
+
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
     # libnet.url = "github:reo101/nix-lib-net";
@@ -20,6 +33,12 @@
     home-manager-unstable.inputs.nixpkgs.follows = "nixpkgs-unstable";
     home-manager-stable.url = "home-manager/release-26.05";
     home-manager-stable.inputs.nixpkgs.follows = "nixpkgs-stable";
+
+    # Determinate Nix, used as the common Nix implementation across systems, homes, the devshell and
+    # CI (see lib.my.c.nix). We build it ourselves against our pinned nixpkgs (FlakeHub's cache needs
+    # auth), so it flows through our own Harmonia cache like everything else.
+    determinate-nix.url = "https://flakehub.com/f/DeterminateSystems/nix-src/*";
+    determinate-nix.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
     # Stuff used by the flake for build / deployment
     # ragenix.url = "github:yaxitech/ragenix";
@@ -83,6 +102,11 @@
       };
       pkgsLibOverlay = final: prev: { lib = prev.lib.extend libOverlay; };
       myPkgsOverlay = final: prev: import ./pkgs { lib = final.lib; pkgs = prev; };
+      # Exposes Determinate Nix under a stable attr name so systems, homes and the devshell all
+      # resolve the exact same package (referenced as `pkgs'.mine.determinate-nix` in configs).
+      determinateOverlay = final: prev: {
+        determinate-nix = inputs.determinate-nix.packages.${prev.stdenv.hostPlatform.system}.default;
+      };
 
       # Override the flake-level lib since we're going to use it for non-config specific stuff
       pkgsFlakes = mapAttrs (_: pkgsFlake: pkgsFlake // { lib = pkgsFlake.lib.extend libOverlay; }) {
@@ -111,6 +135,7 @@
             pkgsLibOverlay
 
             myPkgsOverlay
+            determinateOverlay
             inputs.devshell.overlays.default
             inputs.ragenix.overlays.default
             inputs.deploy-rs.overlays.default
@@ -126,6 +151,7 @@
             pkgsLibOverlay
 
             myPkgsOverlay
+            determinateOverlay
           ];
 
           config = {
@@ -187,7 +213,13 @@
       nixosModules = nixfiles.config.nixos.modules;
       homeModules = nixfiles.config.home-manager.modules;
 
-      nixosConfigurations = mapAttrs (_: s: s.rendered) nixfiles.config.nixos.systems;
+      # Containers and the installer override `rendered` with a bare `extendModules` config
+      # (`my.asContainer` / `my.asISO`) that lacks the `pkgs`/`lib` attrs `eval-config` exposes on a
+      # normal system. Determinate Nix's flake schemas read `machine.pkgs.stdenv.system` for every
+      # `nixosConfigurations` entry, so re-attach them from the full system eval (`configuration`).
+      nixosConfigurations = mapAttrs
+        (_: s: s.rendered // { inherit (s.configuration) pkgs lib; })
+        nixfiles.config.nixos.systems;
       homeConfigurations = mapAttrs (_: s: s.configuration) nixfiles.config.home-manager.homes;
 
       deploy = nixfiles.config.deploy-rs.rendered;

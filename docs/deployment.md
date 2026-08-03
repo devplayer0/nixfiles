@@ -110,6 +110,31 @@ VM's unix sockets from `/run/vms/<vm>/` on `<host>` over SSH):
 | `vm-monitor <host> <vm>` | QEMU monitor socket in `minicom`. |
 | `vm-viewer <host> <vm>` | SPICE display in `virt-viewer` (not on Darwin). |
 
+## Nix implementation
+
+Every context uses **Determinate Nix** as its `nix.package`, for its performance features
+(parallel evaluation and lazy trees) — not `determinate-nixd`; the daemon and `nix.conf` model
+are unchanged, and the Determinate NixOS module is deliberately not imported.
+
+- **Input and package.** The [`determinate-nix`](../flake.nix) input is the `nix-src` flake
+  (`flakehub.com/f/DeterminateSystems/nix-src`), with `nixpkgs.follows = "nixpkgs-unstable"`. We
+  build it ourselves against our pinned nixpkgs — FlakeHub's own cache needs authentication, so
+  there is nothing to gain from leaving it unpinned — and it then flows through the Harmonia cache
+  like everything else. `determinateOverlay` exposes it under the stable attr `determinate-nix`,
+  added to both the devshell `pkgs'` and the config `configPkgs'` overlay lists, so systems, homes
+  and the devshell all resolve the same package (`pkgs'.mine.determinate-nix`).
+- **Settings.** `lib.my.c.nix.determinateSettings` (`lazy-trees`, `eval-cores = 0`) is merged into
+  `nix.settings` for systems and homes and into the devshell's `nix.conf`. These keys are only
+  understood by the Determinate binary.
+- **Consumers follow automatically.** Everything that shells out to Nix references
+  `config.nix.package` (deploy-rs, containers, `build`, netboot, Harmonia), so they inherit
+  Determinate without further change.
+- **`accept-flake-config`.** Set true only in the devshell `nix.conf`, `.envrc` (as
+  `--accept-flake-config`, for direnv) and CI — the contexts that build this flake — so its
+  `nixConfig` (the Harmonia cache) is trusted without an interactive prompt. It is deliberately not
+  set system-wide: boxes already trust that cache via `nix.settings`, so a global setting would only
+  blanket-trust every flake's `nixConfig` for no gain.
+
 ## Secrets
 
 Secrets are age-encrypted files in [`secrets/`](../secrets), managed with **ragenix** (a fork
@@ -152,8 +177,10 @@ GitHub/Gitea Actions workflows live in [`.gitea/workflows/`](../.gitea/workflows
 
 ### `ci.yaml`
 
-On pushes to `master`, this runs `nix flake check --no-build`, then builds every attribute of
-`.#ci.x86_64-linux`: systems as `system-<name>`, homes as `home-<name>` (with `@` changed to
+On pushes to `master`, this installs Determinate Nix on the runner (via
+`DeterminateSystems/determinate-nix-action`, configured with the same performance settings and
+Harmonia substituter as the boxes), runs `nix flake check --no-build`, then builds every attribute
+of `.#ci.x86_64-linux`: systems as `system-<name>`, homes as `home-<name>` (with `@` changed to
 `-at-`), packages as `package-<name>`, and the development `shell`. Each result is pushed to the
 Harmonia cache with [`ci/push-to-cache.sh`](../ci/push-to-cache.sh).
 

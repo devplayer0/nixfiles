@@ -111,6 +111,13 @@ rec {
         extra-trusted-public-keys = ${concatStringsSep " " keys}
       '';
     };
+
+    # Determinate-specific settings enabling its performance features. Only understood by the
+    # Determinate Nix binary, so they must not be emitted for a base-Nix package.
+    determinateSettings = {
+      lazy-trees = true;
+      eval-cores = 0;
+    };
   };
 
   pubDomain = "nul.ie";

@@ -12,6 +12,9 @@ in
     NIX_USER_CONF_FILES = toString (pkgs.writeText "nix.conf"
       ''
         experimental-features = nix-command flakes ca-derivations
+        lazy-trees = true
+        eval-cores = 0
+        accept-flake-config = true
         connect-timeout = 5
         fallback = true
         ${lib.my.c.nix.cache.conf}
@@ -22,7 +25,7 @@ in
 
   packages = with pkgs; [
     coreutils
-    nixVersions.stable
+    determinate-nix
     rage
     wireguard-tools
     (pkgs.writeShellScriptBin "deploy" ''

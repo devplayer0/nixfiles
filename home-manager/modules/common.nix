@@ -50,7 +50,7 @@ in
       };
 
       nix = {
-        settings = with lib.my.c.nix; {
+        settings = with lib.my.c.nix; determinateSettings // {
           experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
           max-jobs = mkDefault "auto";
 
@@ -256,13 +256,13 @@ in
         ssh.authKeys.files = [ lib.my.c.sshKeyFiles.me ];
       };
 
-      nix.package = pkgs.nix;
+      nix.package = pkgs'.mine.determinate-nix;
 
       fonts.fontconfig.enable = true;
 
       home = {
         packages = with pkgs; [
-          pkgs'.mine.nix
+          pkgs'.mine.determinate-nix
         ];
 
         # Without this, we are at the mercy of whatever version of nix is in $PATH...

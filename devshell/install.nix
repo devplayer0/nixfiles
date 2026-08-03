@@ -29,7 +29,7 @@ let
       coreutils
       gnugrep
       openssh
-      nixVersions.stable
+      determinate-nix
       jq
     ];
     text =

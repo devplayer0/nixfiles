@@ -10,17 +10,22 @@ jobs:
     runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v6
-      - uses: cachix/install-nix-action@v31
+      - uses: DeterminateSystems/determinate-nix-action@v3
         with:
-          # Gitea will supply a token in GITHUB_TOKEN, which this action will
-          # try to pass to Nix when downloading from GitHub
-          github_access_token: ${{ secrets.GH_PULL_TOKEN }}
-          extra_nix_config: |
+          # Gitea will supply a token in GITHUB_TOKEN, which this action passes to
+          # Nix (as access-tokens) when downloading from GitHub
+          github-token: ${{ secrets.GH_PULL_TOKEN }}
+          extra-conf: |
             # Make sure we're using sandbox
             sandbox-fallback = false
             # Big C++ projects fill up memory...
             cores = 6
 
+            # Determinate performance features
+            lazy-trees = true
+            eval-cores = 0
+
+            accept-flake-config = true
             extra-substituters = https://nix-cache.nul.ie
             extra-trusted-public-keys = nix-cache.nul.ie-1:BzH5yMfF4HbzY1C977XzOxoPhEc9Zbu39ftPkUbH+m4=
 
