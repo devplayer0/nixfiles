@@ -2,7 +2,7 @@
 let
   inherit (builtins) listToAttrs mapAttrs readFile;
   inherit (lib)
-    optionalString nameValuePair concatMapStrings concatStringsSep optionalAttrs versionAtLeast
+    optionalString nameValuePair concatMapStrings concatStringsSep optionalAttrs
     mapAttrsToList mkMerge mkIf mkDefault mkOption;
   inherit (lib.hm) dag;
   inherit (lib.my) mkOpt' dummyOption;
@@ -50,7 +50,6 @@ in
       };
 
       nix = {
-        package = mkIf (!(versionAtLeast config.home.stateVersion "22.11")) pkgs.nix;
         settings = with lib.my.c.nix; {
           experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
           max-jobs = mkDefault "auto";
@@ -257,7 +256,7 @@ in
         ssh.authKeys.files = [ lib.my.c.sshKeyFiles.me ];
       };
 
-      nix.package = mkIf (versionAtLeast config.home.stateVersion "22.05") pkgs.nix;
+      nix.package = pkgs.nix;
 
       fonts.fontconfig.enable = true;
 
