@@ -61,7 +61,9 @@ Common ones:
   `SSH_AUTH_SOCK= ssh-machine …` (or add `-o IdentityAgent=none` to a raw `ssh`).
 - `ragenix` — edit age secrets using `.keys/dev.key` as identity (see Secrets).
 - `repl` — `nix repl .#`.
-- `update-nixpkgs` / `update-home-manager` — bump pinned inputs.
+- `update-nixpkgs` / `update-home-manager` — bump pinned inputs. For the full periodic upgrade
+  (rebasing the `devplayer0` nixpkgs fork, stable-release bumps, version-gate sweep, input review)
+  follow the guided procedure in [`docs/nixpkgs-upgrade.md`](docs/nixpkgs-upgrade.md).
 
 Use the narrowest relevant evaluation while iterating: `check-system <host>` for a box config,
 `nix eval .#nixfiles.config.nixos.allAssignments --json` for assignment generation, or

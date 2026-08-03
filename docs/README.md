@@ -25,6 +25,8 @@ Not every box fits this pattern, but **colony** and **home** are organised this 
 - [`networking.md`](networking.md) — network assignments, domains, site topologies, router HA,
   the AS211024 L2 mesh, BGP, WireGuard, Tailscale.
 - [`deployment.md`](deployment.md) — deploy-rs, devshell commands, secrets workflow, CI.
+- [`nixpkgs-upgrade.md`](nixpkgs-upgrade.md) — guided procedure for the periodic upgrade of the four
+  nixpkgs channels and home-manager (fork rebase, stable bumps, input review).
 - [`reference/dns.md`](reference/dns.md) — generated forward and reverse DNS record reference.
 - [`reference/nixos-options.md`](reference/nixos-options.md) — generated per-option reference for
   the custom `my.*` NixOS modules.
