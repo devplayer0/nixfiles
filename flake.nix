@@ -104,8 +104,19 @@
       myPkgsOverlay = final: prev: import ./pkgs { lib = final.lib; pkgs = prev; };
       # Exposes Determinate Nix under a stable attr name so systems, homes and the devshell all
       # resolve the exact same package (referenced as `pkgs'.mine.determinate-nix` in configs).
+      # `nix-util`'s `readLinkAt.works` unit test creates PATH_MAX-length symlinks, which our CI
+      # runner's XFS-backed build filesystem rejects (XFS hard-caps symlink targets at 1024 bytes).
+      # Skip just that test via gtest's GTEST_FILTER so the rest of the suite still gates the build.
       determinateOverlay = final: prev: {
-        determinate-nix = inputs.determinate-nix.packages.${prev.stdenv.hostPlatform.system}.default;
+        determinate-nix =
+          (inputs.determinate-nix.packages.${prev.stdenv.hostPlatform.system}.default).overrideAttrs (o: {
+            checkInputs = map
+              (drv:
+                if (drv.name or "") == "nix-util-tests-run"
+                then drv.overrideAttrs (_: { GTEST_FILTER = "-readLinkAt.*"; })
+                else drv)
+              o.checkInputs;
+          });
       };
 
       # Override the flake-level lib since we're going to use it for non-config specific stuff
