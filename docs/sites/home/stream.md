@@ -76,8 +76,9 @@ box sets:
 ## Switching (RSTP)
 
 `stream` is dual-homed to both switches: `lan-jim` (igc) and `lan-dave` (mlx4_en), both MTU 9000,
-are enslaved to the `lan` bridge with `STP=true`. [`routing-common/mstpd.nix`](../../../nixos/boxes/home/routing-common/mstpd.nix)
-runs a patched `mstpd` and forces RSTP on `lan` once it's routable, so exactly one uplink carries
+are enslaved to the `lan` bridge with `STP=true`. The explicit bridge-port costs prefer
+`lan-dave` at 10 over `lan-jim` at 100. [`routing-common/mstpd.nix`](../../../nixos/boxes/home/routing-common/mstpd.nix)
+runs a patched `mstpd` and forces RSTP on `lan` once it is configured, so exactly one uplink carries
 traffic at a time. (The remaining NICs are renamed `et2`/`et5` and left unconfigured.)
 
 ## Deployment

@@ -115,10 +115,7 @@
                 Name = "lan";
                 Kind = "bridge";
               };
-              extraConfig = ''
-                [Bridge]
-                STP=true
-              '';
+              bridgeConfig.STP = true;
             };
           };
           links = {
@@ -175,10 +172,12 @@
             "50-lan-jim" = {
               matchConfig.Name = "lan-jim";
               networkConfig.Bridge = "lan";
+              bridgeConfig.Cost = 100;
             };
             "50-lan-dave" = {
               matchConfig.Name = "lan-dave";
               networkConfig.Bridge = "lan";
+              bridgeConfig.Cost = 10;
             };
 
             "50-wan-ifb" = {

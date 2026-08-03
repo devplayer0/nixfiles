@@ -24,7 +24,7 @@ in
   services = {
     networkd-dispatcher.rules = {
       configure-mstpd = {
-        onState = [ "routable" ];
+        onState = [ "configured" ];
         script = ''
           #!${pkgs.runtimeShell}
           if [ "$IFACE" = "lan" ]; then
