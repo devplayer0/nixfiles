@@ -77,6 +77,12 @@ Management uses host `.15`: `192.168.64.15` on native/core as a backup,
 route through its VIP; `untrusted` has no address. With `l2mtu 9214`, `vibe` can use the jumbo
 `hi` network unlike `wave`.
 
+Like the switches, `vibe` is **pure L2 and must not route** — `ip-forward=no`, IPv6 `forward=no`,
+`accept-router-advertisements=no`, `ra-lifetime=0`. RouterOS ships these forwarding-on and then
+advertises itself as an IPv6 router; re-check after any upgrade. See
+[switches.md#switches-must-not-route](switches.md#switches-must-not-route) for the rationale and
+commands.
+
 ## wave (Cudy AX3000, OpenWrt)
 
 Single-port AP, so the port is a VLAN **trunk** carrying management + both SSIDs.

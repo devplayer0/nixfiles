@@ -86,7 +86,9 @@ from a box that does not depend on it, or power `castle` off cleanly first.
 
 Switch L3 presence (`/interface vlan` on `main`) exists **only** for VLANs the switch is managed
 from — `hi` (100) and `lo` (110), plus native core. WAN and guest VLANs deliberately have no switch
-L3 interface.
+L3 interface. jim and dave carry a static IPv4 and **global IPv6** address on `hi`/`lo` (plus a
+static default route on each stack) purely for management — they are **pure L2, never routers**. See
+[Switches must not route](#switches-must-not-route).
 
 ## The Digiweb WAN path (trunked VLAN 10 + PVID 140)
 
@@ -146,6 +148,33 @@ this is plain tagged bridging.
 **jim (RouterOS)** — carries **none** of the Digiweb WAN path: no translation rules, and no VLAN
 10/140/141 rows. `wan-pon-in` (`sfp-sfpplus2`) sits at `pvid=1` as a spare port. jim only handles
 stream's VLAN-130 WAN and the LAN VLANs.
+
+## Switches must not route
+
+jim and dave (and the `vibe` AP) are **pure L2** — river/stream do all routing. Their per-stack
+management addresses and static default routes exist only so the boxes themselves can be reached and
+reach out; they must **never** forward traffic or advertise themselves as routers. RouterOS defaults
+work against this: `ip-forward` and IPv6 `forward` ship **on**, and with IPv6 forwarding on RouterOS
+also emits Router Advertisements (`ra-lifetime=30m`) on every L3 interface — so a switch silently
+becomes a competing IPv6 default router. This surfaced after the 7.18 → 7.23 upgrade, when clients
+picked up dave/jim as default routers alongside river.
+
+The required config on each RouterOS box:
+```
+/ip settings set ip-forward=no
+/ipv6 settings set forward=no accept-router-advertisements=no
+/ipv6 nd set [find] ra-lifetime=0
+```
+- `ip-forward=no` / `forward=no` — no L3 forwarding on either stack; IPv6 `forward=no` also stops RA
+  emission at the source.
+- `accept-router-advertisements=no` — with forwarding off RouterOS would otherwise start *accepting*
+  RAs; this keeps the box on its deterministic **static** default route.
+- `ra-lifetime=0` — belt-and-suspenders: even if forwarding is ever re-enabled the box advertises
+  router-lifetime 0 (i.e. "not a default router"). Setting it also emits a withdrawal RA that
+  actively clears the rogue default from clients (they otherwise cache it for up to ~30 min).
+
+**After any RouterOS upgrade, re-check `/ip settings` and `/ipv6 settings`** — an upgrade can reset
+these to the forwarding-on defaults. brian (UniFi) is not a RouterOS box and was not affected.
 
 ## Future: multiple ONTs (per-port VLAN translation)
 
