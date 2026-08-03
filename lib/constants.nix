@@ -385,6 +385,16 @@ rec {
       };
     };
 
+    # networkConfig fragment anchoring a VLAN client's DNS on the router pair's
+    # VRRP VIPs rather than the RA RDNSS. v6 addresses here are RA/token-derived,
+    # so when RA is absent (e.g. v6 disabled) there is no v6 and no RDNSS at all;
+    # the always-present static v4 VIP keeps name resolution working, with the v6
+    # VIP as a bonus when v6 is up. Merge into the VLAN network's networkConfig.
+    vlanDns = vlan: {
+      DNS = [ vips.${vlan}.v4 vips.${vlan}.v6 ];
+      Domains = searchDomains;
+    };
+
     roceBootModules = [ "ib_core" "ib_uverbs" "mlx5_core" "mlx5_ib" ];
   };
 

@@ -1,7 +1,7 @@
 { lib, ... }:
 let
   inherit (lib.my) net;
-  inherit (lib.my.c.home) domain prefixes vips hiMTU;
+  inherit (lib.my.c.home) domain prefixes vips vlanDns hiMTU;
 in
 {
   nixos.systems.unifi = { config, ... }: {
@@ -58,7 +58,10 @@ in
 
         systemd = {
           network.networks = {
-            "80-container-host0" = networkdAssignment "host0" assignments.hi;
+            "80-container-host0" = mkMerge [
+              (networkdAssignment "host0" assignments.hi)
+              { networkConfig = vlanDns "hi"; }
+            ];
             "80-lan-core" = networkdAssignment "lan-core" assignments.core;
           };
         };

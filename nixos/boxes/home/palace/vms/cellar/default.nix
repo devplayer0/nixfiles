@@ -2,7 +2,7 @@
 let
   inherit (lib.my) net;
   inherit (lib.my.c) pubDomain;
-  inherit (lib.my.c.home) domain prefixes vips hiMTU;
+  inherit (lib.my.c.home) domain prefixes vips vlanDns hiMTU;
 in
 {
   nixos.systems.cellar = {
@@ -79,7 +79,10 @@ in
               };
 
               networks = {
-                "80-lan-hi" = networkdAssignment "lan-hi" assignments.hi;
+                "80-lan-hi" = mkMerge [
+                  (networkdAssignment "lan-hi" assignments.hi)
+                  { networkConfig = vlanDns "hi"; }
+                ];
               };
             };
 

@@ -1,7 +1,7 @@
 { lib, ... }:
 let
   inherit (lib.my) net;
-  inherit (lib.my.c.home) domain prefixes vips hiMTU roceBootModules;
+  inherit (lib.my.c.home) domain prefixes vips vlanDns hiMTU roceBootModules;
 in
 {
   imports = [ ./containers ];
@@ -134,8 +134,10 @@ in
           networks = {
             "30-lan-hi" = mkMerge [
               (networkdAssignment "lan-hi" assignments.hi)
-              # So we don't drop the IP we use to connect to NVMe-oF!
-              { networkConfig.KeepConfiguration = "static"; }
+              {
+                # So we don't drop the IP we use to connect to NVMe-oF!
+                networkConfig = vlanDns "hi" // { KeepConfiguration = "static"; };
+              }
             ];
             "30-lan-hi-ctrs" = {
               matchConfig.Name = "lan-hi-ctrs";

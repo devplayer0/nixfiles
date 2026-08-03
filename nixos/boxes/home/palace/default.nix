@@ -2,7 +2,7 @@
 let
   inherit (lib.my) net mkVLAN;
   inherit (lib.my.c) pubDomain;
-  inherit (lib.my.c.home) domain vlans prefixes vips hiMTU;
+  inherit (lib.my.c.home) domain vlans prefixes vips vlanDns hiMTU;
 in
 {
   imports = [ ./vms ];
@@ -203,7 +203,10 @@ in
                   MACAddress=52:54:00:90:34:95
                 '';
               };
-              "60-lan-hi" = networkdAssignment "lan-hi" assignments.hi;
+              "60-lan-hi" = mkMerge [
+                (networkdAssignment "lan-hi" assignments.hi)
+                { networkConfig = vlanDns "hi"; }
+              ];
 
               "50-lan-core-phy" = {
                 matchConfig.Name = "lan-core-phy";

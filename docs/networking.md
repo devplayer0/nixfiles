@@ -321,6 +321,12 @@ family move together.
 serving disjoint pool halves. `radvd` advertises the v6 VIP as RDNSS (`untrusted` gets Cloudflare)
 and keepalived's `notify_master`/`notify_backup` hooks ensure that only the master sends RAs.
 
+Statically-addressed boxes (the servers on `hi`) don't run DHCP, so they'd otherwise learn a
+resolver only from the v6 RA RDNSS — which vanishes when v6 is disabled, taking DNS with it. They
+instead anchor DNS on the VIPs via the shared `lib.my.c.home.vlanDns "<vlan>"` fragment, which sets
+`DNS` to `vips.<vlan>.{v4,v6}` and `Domains` to the advertised search list; the always-present
+static v4 VIP keeps resolution working even with v6 down.
+
 #### DNS binding
 
 `pdns-recursor` binds the VIPs directly; see

@@ -2,7 +2,7 @@
 let
   inherit (lib.my) net;
   inherit (lib.my.c) networkd;
-  inherit (lib.my.c.home) domain searchDomains vlans prefixes vips roceBootModules;
+  inherit (lib.my.c.home) domain vlans prefixes vips vlanDns roceBootModules;
 in
 {
   nixos.systems.castle = {
@@ -190,11 +190,7 @@ in
               "40-lan-hi" = mkMerge [
                 (networkdAssignment "lan-hi" assignments.hi)
                 {
-                  networkConfig = {
-                    # v6 is RA/SLAAC-derived, so when RA is absent we have no v6 at all;
-                    # anchor DNS on the always-present static v4 (the VRRP VIP follows the master)
-                    DNS = [ vips.hi.v4 vips.hi.v6 ];
-                    Domains = searchDomains;
+                  networkConfig = vlanDns "hi" // {
                     # So we don't drop the IP we use to connect to NVMe-oF!
                     KeepConfiguration = "static";
                   };
