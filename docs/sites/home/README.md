@@ -43,3 +43,9 @@ documented in [switches.md](switches.md).
 The Wi-Fi APs — `vibe` (MikroTik cAP ax) and `wave` (Cudy AX3000 on OpenWrt) — are dumb APs, also
 **not** managed by this flake. The shared VLAN-trunk design, SSIDs, per-AP management addressing,
 and the OpenWrt flash/config for `wave` are in [aps.md](aps.md).
+
+## 5G WWAN
+
+A Quectel RM500U-EA USB modem with a GoMo SIM is being evaluated as a replacement for `stream`'s
+Virgin Media WAN. It is bench-tested only and not yet referenced by the flake; the module settings
+it needs, the APN gotcha and the CGNAT consequences are in [wwan.md](wwan.md).

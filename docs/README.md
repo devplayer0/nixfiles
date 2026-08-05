@@ -59,7 +59,9 @@ colony (physical VM host, ams1)
 
 Redundant routers, VM host, storage, IoT containers and the workstation — see
 [`sites/home/README.md`](sites/home/README.md). The hand-configured switch fabric (jim/dave/brian)
-and the Digiweb WAN path are documented in [`sites/home/switches.md`](sites/home/switches.md).
+and the Digiweb WAN path are documented in [`sites/home/switches.md`](sites/home/switches.md); the
+5G modem being evaluated as a replacement for `stream`'s WAN is in
+[`sites/home/wwan.md`](sites/home/wwan.md).
 
 ```
 h.nul.ie

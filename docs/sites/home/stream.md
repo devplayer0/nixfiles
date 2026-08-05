@@ -33,6 +33,10 @@ See the consolidated [network assignments](../../networking.md#box-assignments) 
 
 ## WAN (Virgin Media DHCP)
 
+A Quectel RM500U-EA 5G modem is being evaluated as a replacement for this WAN; it is bench-tested
+only and nothing here depends on it yet. Note that its SIM is CGNAT, so it cannot carry the public
+lease this section assumes — see [wwan.md](wwan.md).
+
 ### Link and addressing
 
 `wan` is a renamed igc NIC (`00:f0:cb:ee:ca:dd`) towards the cable modem. The modem segment is
