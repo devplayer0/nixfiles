@@ -1,6 +1,6 @@
 { lib, pkgs', pkgs, config, ... }:
 let
-  inherit (lib) genAttrs mkIf mkMerge mkForce mapAttrs mkOptionDefault mkDefault;
+  inherit (lib) genAttrs mkIf mkMerge mkForce mapAttrs mkOptionDefault mkDefault optional;
   inherit (lib.my) mkOpt' mkBoolOpt';
   inherit (lib.my.c) pubDomain;
 
@@ -45,6 +45,9 @@ let
     chmod +x "$out"/bin/doomsaver
   '';
   doomsaver = doomsaver' cfg.screensaver.brainrotTextCommand;
+  firefoxMemoryControl = pkgs.firefox-memory-control.override {
+    inherit (cfg.firefoxMemoryControl) lowAvailableMiB highAvailableMiB pollIntervalMs minInactiveMs;
+  };
 in
 {
   options.my.gui = with lib.types; {
@@ -52,12 +55,26 @@ in
     manageGraphical = mkBoolOpt' false "Configure the graphical session";
     standalone = mkBoolOpt' false "Enable settings for fully Nix managed systems";
     screensaver.brainrotTextCommand = mkOpt' (either path str) genLipsum "Command to generate brainrot text.";
+    firefoxMemoryControl = {
+      enable = mkBoolOpt' pkgs.stdenv.isLinux "Enable memory-pressure tab unloading in Firefox";
+      lowAvailableMiB = mkOpt' ints.positive 2048 "Available memory threshold at which Firefox starts unloading tabs.";
+      highAvailableMiB = mkOpt' ints.positive 3072 "Available memory threshold at which Firefox stops unloading tabs.";
+      pollIntervalMs = mkOpt' ints.positive 1000 "Memory-pressure polling interval in milliseconds.";
+      minInactiveMs = mkOpt' ints.unsigned 300000 "Minimum tab inactivity before automatic unloading, in milliseconds.";
+    };
   };
 
   config = mkIf cfg.enable (mkMerge [
       {
+        assertions = [
+          {
+            assertion = cfg.firefoxMemoryControl.highAvailableMiB > cfg.firefoxMemoryControl.lowAvailableMiB;
+            message = "`my.gui.firefoxMemoryControl.highAvailableMiB` must exceed `lowAvailableMiB`.";
+          }
+        ];
+
         home = {
-          packages = with pkgs; [
+          packages = (with pkgs; [
             xdg-utils
 
             font.package
@@ -99,7 +116,7 @@ in
             #       --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.nodejs_latest ]}
             #   '';
             # })
-          ];
+          ]) ++ optional cfg.firefoxMemoryControl.enable firefoxMemoryControl;
         };
 
         programs = {
