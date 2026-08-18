@@ -43,8 +43,18 @@ in
 
               (umask 027; gitea_extra_setup)
             '';
+
+            # Uploaded release assets are buffered through a temp file before being stored.
+            # The default /tmp is on the small tmpfs root, so keep them on the state volume.
+            environment.TMPDIR = "${config.services.gitea.stateDir}/tmp";
           }
         ];
+      };
+
+      tmpfiles.settings."10-gitea-tmp"."${config.services.gitea.stateDir}/tmp".d = {
+        user = config.services.gitea.user;
+        group = config.services.gitea.group;
+        mode = "0700";
       };
     };
 
