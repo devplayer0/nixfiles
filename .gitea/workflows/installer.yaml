@@ -10,10 +10,6 @@ jobs:
     runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v6
-      - name: Set up Go
-        uses: https://github.com/actions/setup-go@v4
-        with:
-          go-version: '>=1.20.1'
       - uses: DeterminateSystems/determinate-nix-action@v3
         with:
           # Gitea will supply a token in GITHUB_TOKEN, which this action passes to
@@ -46,10 +42,10 @@ jobs:
             jackos-installer-netboot-${{ steps.setup.outputs.short_rev }}.tar.zst
 
       - name: Create release
-        uses: https://gitea.com/actions/release-action@main
+        uses: https://gitea.com/actions/gitea-release-action@main
         with:
-          title: Latest installer
-          api_key: '${{ secrets.RELEASE_TOKEN }}'
+          name: Latest installer
+          token: '${{ secrets.RELEASE_TOKEN }}'
           files: |
             jackos-installer-${{ steps.setup.outputs.short_rev }}.iso
             jackos-installer-netboot-${{ steps.setup.outputs.short_rev }}.tar.zst
