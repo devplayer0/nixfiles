@@ -145,6 +145,15 @@
           };
         };
 
+        # networkd's wait-online knows nothing about the pppd-owned `wan` interface, so
+        # network-online.target is reached long before there's a route off-site. Gate the
+        # installer fetch on the WAN instead, and retry it whenever the link returns.
+        systemd.services.netboot-update = {
+          after = [ "wan-online.target" ];
+          wantedBy = mkForce [ "wan-online.target" ];
+          partOf = [ "wan-online.target" ];
+        };
+
         systemd.network = {
           netdevs = mkMerge [
             (mkVLAN "wan-pon-ont" vlans.wan-pon-ont)

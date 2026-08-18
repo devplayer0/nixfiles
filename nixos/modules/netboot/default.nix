@@ -129,7 +129,8 @@ in
         services = {
           netboot-update = {
             description = "Update netboot images";
-            after = [ "systemd-networkd-wait-online.service" ];
+            wants = [ "network-online.target" ];
+            after = [ "network-online.target" ];
             serviceConfig.Type = "oneshot";
             path = with pkgs; [
               coreutils curl jq zstd gnutar
@@ -138,6 +139,10 @@ in
               update_nixos() {
                 latestShort="$(curl -s https://git.nul.ie/api/v1/repos/dev/nixfiles/tags/installer \
                              | jq -r .commit.sha | cut -c -7)"
+                if [ -z "$latestShort" ] || [ "$latestShort" = "null" ]; then
+                  echo "Couldn't resolve the installer tag to a commit" >&2
+                  return 1
+                fi
                 if [ -f nixos-installer/tag.txt ] && [ "$(< nixos-installer/tag.txt)" = "$latestShort" ]; then
                   echo "NixOS installer is up to date"
                   return
@@ -148,6 +153,10 @@ in
                 fname="jackos-installer-netboot-$latestShort.tar.zst"
                 downloadUrl="$(curl -s https://git.nul.ie/api/v1/repos/dev/nixfiles/releases/tags/installer | \
                                jq -r ".assets[] | select(.name == \"$fname\").browser_download_url")"
+                if [ -z "$downloadUrl" ]; then
+                  echo "No release asset $fname; did the installer build succeed?" >&2
+                  return 1
+                fi
                 curl -Lo /tmp/nixos-installer-netboot.tar.zst "$downloadUrl"
                 tar -C nixos-installer --zstd -xf /tmp/nixos-installer-netboot.tar.zst
                 truncate -s "${cfg.server.installer.storeSize}" nixos-installer/rootfs.ext4
@@ -163,7 +172,7 @@ in
               update_nixos
             '';
             startAt = "06:00";
-            wantedBy = [ "network-online.target" ];
+            wantedBy = [ "multi-user.target" ];
           };
 
           nbd-server = {
