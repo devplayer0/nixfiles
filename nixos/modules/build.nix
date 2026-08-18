@@ -64,10 +64,10 @@ let
                 ip = "${iproute2}/bin/ip";
                 nbd-client = "${nbd}/bin/nbd-client";
               };
-              extraConfig = ''
-                DefaultTimeoutStartSec=20
-                DefaultDeviceTimeoutSec=20
-              '';
+              settings.Manager = {
+                DefaultTimeoutStartSec = "20s";
+                DefaultDeviceTimeoutSec = "20s";
+              };
 
               network = {
                 enable = true;
