@@ -395,8 +395,9 @@ in
 
                   "XF86AudioRaiseVolume" = "exec ${pkgs.pamixer}/bin/pamixer -i 5";
                   "XF86AudioLowerVolume" = "exec ${pkgs.pamixer}/bin/pamixer -d 5";
-                  "XF86AudioPlay" = "exec ${pkgs.playerctl}/bin/playerctl play";
-                  "XF86AudioPause" = "exec ${pkgs.playerctl}/bin/playerctl pause";
+                  # Some AVRCP devices alternate play and pause events independently of player state.
+                  "XF86AudioPlay" = "exec ${pkgs.playerctl}/bin/playerctl play-pause";
+                  "XF86AudioPause" = "exec ${pkgs.playerctl}/bin/playerctl play-pause";
                   "XF86AudioNext" = "exec ${pkgs.playerctl}/bin/playerctl next";
                   "XF86AudioPrev" = "exec ${pkgs.playerctl}/bin/playerctl previous";
                 };
