@@ -32,7 +32,7 @@
           };
 
           image = {
-            baseName = "jackos-installer";
+            baseName = mkForce "jackos-installer";
           };
           isoImage = {
             volumeID = "jackos-${config.system.nixos.release}-${pkgs.stdenv.hostPlatform.uname.processor}";
@@ -97,10 +97,17 @@
           documentation.enable = mkForce true;
           documentation.nixos.enable = mkForce true;
 
-          # Enable wpa_supplicant, but don't start it by default.
-          networking.wireless.enable = mkDefault true;
-          networking.wireless.userControlled = true;
-          systemd.services.wpa_supplicant.wantedBy = mkForce [];
+          system.nixos.variant_id = mkDefault "installer";
+
+          # Enable NetworkManager, but don't start it by default.
+          networking.networkmanager.enable = true;
+          systemd.services = {
+            NetworkManager.wantedBy = mkForce [];
+            NetworkManager-wait-online.wantedBy = mkForce [];
+            NetworkManager-dispatcher.wantedBy = mkForce [];
+            # NetworkManager's wireless backend, D-Bus activated on demand
+            wpa_supplicant.wantedBy = mkForce [];
+          };
 
           # Tell the Nix evaluator to garbage collect more aggressively.
           # This is desirable in memory-constrained environments that don't
@@ -113,6 +120,18 @@
           # download-using-manifests.pl from forking even if there is
           # plenty of free memory.
           boot.kernel.sysctl."vm.overcommit_memory" = "1";
+
+          # Prevent installation media from evacuating persistent storage, as their
+          # var directory is not persistent and it would thus result in deletion of
+          # those entries.
+          environment.etc."systemd/pstore.conf".text = ''
+            [PStore]
+            Unlink=no
+          '';
+
+          # Remove warning about unset mail
+          boot.swraid.mdadmConf = "PROGRAM ${pkgs.coreutils}/bin/true";
+
           services.lvm.boot.thin.enable = true;
         };
       };

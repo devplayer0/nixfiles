@@ -18,9 +18,6 @@ let
       "${modulesPath}/installer/cd-dvd/iso-image.nix"
       allHardware
       {
-        # Doesn't work right now... (missing /dev/root)
-        boot.initrd.systemd.enable = false;
-
         isoImage = {
           makeEfiBootable = true;
           makeUsbBootable = true;

@@ -24,8 +24,11 @@ The custom NixOS installer image used to bootstrap new boxes.
   `installer-<hex>` hostname is set at boot.
 - `INSTALL_ROOT=/mnt` in the session environment, plus a `show-hw-config` alias wrapping
   `nixos-generate-config --show-hardware-config --root $INSTALL_ROOT`.
-- NixOS documentation enabled, `wpa_supplicant` available but not started, GC and memory-overcommit
-  tuning for low-memory targets, LVM thin and NFS support.
+- NixOS documentation enabled, NetworkManager available but not started at boot (run
+  `systemctl start NetworkManager`, then `nmtui`), GC and memory-overcommit tuning for low-memory
+  targets, LVM thin and NFS support.
+- Identifies itself as `VARIANT_ID=installer` in `/etc/os-release`, and leaves the target's
+  persistent pstore entries alone (`Unlink=no`) so an install doesn't evacuate them.
 - No regular user (`my.user.enable = false`), no tmpfs-root management, no NAT, and not a
   deploy target (`my.deploy.enable = false`).
 
