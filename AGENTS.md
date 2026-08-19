@@ -61,6 +61,9 @@ Common ones:
   `SSH_AUTH_SOCK= ssh-machine …` (or add `-o IdentityAgent=none` to a raw `ssh`).
 - `ragenix` — edit age secrets using `.keys/dev.key` as identity (see Secrets).
 - `repl` — `nix repl .#`.
+- `installer-shell` / `do-install <system>` — drive an install against a booted installer at
+  `$INSTALLER`. For bringing up a new box end to end follow the guided procedure in
+  [`docs/install-box.md`](docs/install-box.md).
 - `update-nixpkgs` / `update-home-manager` — bump pinned inputs. For the full periodic upgrade
   (rebasing the `devplayer0` nixpkgs fork, stable-release bumps, version-gate sweep, input review)
   follow the guided procedure in [`docs/nixpkgs-upgrade.md`](docs/nixpkgs-upgrade.md).
@@ -176,6 +179,10 @@ age-encrypted secrets in `secrets/`, managed with **ragenix**. Each module decla
 recipient key list (always including `.keys/dev.pub`). Edit secrets with the `ragenix` devshell
 command, which supplies `.keys/dev.key` as the identity. The `.keys/` directory (dev + deploy
 private keys) is required for editing secrets, deploying, and running dev VMs.
+
+When a recipient list changes, re-encrypt selectively with `ragenix --rekey-one <file>` for each
+affected secret. `ragenix --rekey` rewrites **every** secret in `secrets/`, burying the real change
+in churn.
 
 ## Conventions
 

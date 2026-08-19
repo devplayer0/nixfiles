@@ -34,8 +34,10 @@ The custom NixOS installer image used to bootstrap new boxes.
 
 ## Installing a box
 
-The devshell's installer commands ([`devshell/install.nix`](../../devshell/install.nix)) drive
-an install over SSH against a booted installer reachable at `$INSTALLER`:
+The end-to-end procedure — hardware inventory, partitioning, writing the box config, installing and
+documenting it — is in [`install-box.md`](../install-box.md). The devshell's installer commands
+([`devshell/install.nix`](../../devshell/install.nix)) drive an install over SSH against a booted
+installer reachable at `$INSTALLER`:
 
 - `installer-shell` — get a shell on the installer.
 - `do-install <system>` — builds the system's toplevel, `nix copy`s the closure to the
