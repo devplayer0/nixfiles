@@ -266,6 +266,10 @@ On top of that: `p2pTunnels` (`10.100.5.0/24`) holds point-to-point tunnel /30s 
 public blocks and the per-customer `mail` / `darts` / `jam` prefixes carry customer-facing
 services with their own public addresses (announced by BGP, routed via the host).
 
+This layout is expected to change: [`portcullis`](sites/colony/portcullis.md) is bare-metal edge
+hardware headed for Nikhef that will take over most of `estuary`'s routing. It has no assignments
+yet and the replacement topology is still being designed.
+
 ## home
 
 The home site prefixes (`lib.my.c.home.prefixes`) come from `192.168.64.0/18` and

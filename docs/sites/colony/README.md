@@ -24,9 +24,13 @@ prefixes and routing overview are in the [`colony` section of networking.md](../
 | [`git`](git.md) | Gitea + Gitea Actions runner |
 | [`mail`](mail.md) | Debian VM running mailcow (not NixOS) |
 | [`darts`](darts.md) | Third-party/customer VM (not NixOS) |
+| [`portcullis`](portcullis.md) | Bare-metal edge box for Nikhef; being staged, not yet in service |
 
 The applications running on `shill` are listed on its own page — see
 [shill/README.md](shill/README.md#containers).
 
 `mail` and `darts` are host-defined VMs whose guest operating systems are managed out of band; their
 pages document only what this repository controls.
+
+`portcullis` is new hardware headed for Nikhef that will take over most of `estuary`'s edge routing.
+It is not deployed yet and the resulting topology is still being worked out.

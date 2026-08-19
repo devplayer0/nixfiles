@@ -53,6 +53,8 @@ colony (physical VM host, ams1)
 ├── git ────── Gitea + Gitea Actions runner
 ├── mail ───── Debian VM running mailcow (not NixOS)
 └── darts ──── third-party/customer VM (opaque, not NixOS)
+
+portcullis (bare-metal edge box for Nikhef — staged, not yet in service)
 ```
 
 ## Site: home

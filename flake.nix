@@ -181,6 +181,7 @@
         # Systems
         nixos/installer.nix
         nixos/boxes/colony
+        nixos/boxes/colony/portcullis
         nixos/boxes/tower
         nixos/boxes/home/stream.nix
         nixos/boxes/home/palace
