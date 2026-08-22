@@ -215,6 +215,11 @@ in churn.
   rationale is welcome when the subject alone does not provide enough context — keep it to the
   essentials rather than restating the diff. `Co-Authored-By` is the only trailer used here; do
   **not** add a `Claude-Session` link (or any other session/tooling trailer).
+- **"Logically distinct" means unrelated** — two different applications, two boxes that have nothing
+  to do with each other, a drive-by fix that happens to sit in a file you were editing anyway. One
+  piece of work stays in one commit even when it touches a config, several docs and a switch: if the
+  parts only make sense together, splitting them just makes each half unreviewable. Err towards one
+  commit and split when a reader would ask why two things arrived together.
 
 ## Documentation
 
