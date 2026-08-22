@@ -181,7 +181,7 @@ image, with no cross-toolchain involved.
 
 | Output | Box | Release |
 |---|---|---|
-| `openwrt-fergal` | [fergal](sites/home/switches.md#fergal-the-openwrt-switch) | `snapshot` |
+| `openwrt-fergal` | [fergal](sites/colony/fergal.md) | `snapshot` |
 | `openwrt-fergal-release` | The same, on the release branch | pinned in `openwrt/default.nix` |
 
 Both are in `ci`, so images are built and pushed to the Harmonia cache like everything else. Build

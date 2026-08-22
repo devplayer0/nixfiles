@@ -267,8 +267,9 @@ public blocks and the per-customer `mail` / `darts` / `jam` prefixes carry custo
 services with their own public addresses (announced by BGP, routed via the host).
 
 This layout is expected to change: [`portcullis`](sites/colony/portcullis.md) is bare-metal edge
-hardware headed for Nikhef that will take over most of `estuary`'s routing. It has no assignments
-yet and the replacement topology is still being designed.
+hardware headed for Nikhef that will take over most of `estuary`'s routing. It has no colony
+assignments yet (only a home `hi` one, from being staged at home) and the replacement topology is
+still being designed.
 
 ## home
 

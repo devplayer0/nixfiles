@@ -28,19 +28,34 @@ this repository covers only what is needed to boot and reach the box.
 
 ## Network assignments
 
-`portcullis` has no static assignments yet. It is being staged at home before it is racked, so it
-takes DHCP on the home `lo` VLAN; the colony assignments land alongside the routing config once the
-topology is decided.
+`portcullis` has no colony assignments yet — those land alongside the routing config once the
+topology is decided. While it is staged at home it holds a single home `hi` assignment, listed in
+[`networking.md#box-assignments`](../../networking.md#box-assignments).
 
 ## Networking
 
 - The four I226-V ports are named `et2g5-0`…`et2g5-3` and the 82599ES SFP+ ports `et10g-0` /
   `et10g-1`, pinned by permanent MAC address in `.link` files.
-- Bootstrap only: a single `.network` matches every `et2g5-*` port and takes DHCP, so whichever
-  port happens to be patched in brings the box up. `wait-online.anyInterface` keeps boot from
-  blocking on the unpatched ports.
-- kea registers the DHCP hostname, so while staged the box answers to `portcullis.dyn.h.nul.ie` —
-  which is also what `my.deploy.node.hostname` points at, since there is no colony FQDN for it yet.
+- Bootstrap: a single `.network` matches every `et2g5-*` port and takes DHCP on the home `lo` VLAN,
+  so whichever port happens to be patched in brings the box up. `wait-online.anyInterface` keeps
+  boot from blocking on the unpatched ports.
+- kea registers the DHCP hostname, so while staged the box also answers to `portcullis.dyn.h.nul.ie`.
+- `my.deploy.node.hostname` is the `hi` address, taken from the assignment rather than written out,
+  since there is no colony FQDN for the box yet.
+
+### 10G to the home `hi` VLAN
+
+`et10g-0` runs over fibre to [`fergal`](fergal.md), which uplinks to jim's `sfp-spare` port. That
+uplink is untagged VLAN 1, so `hi` is carried tagged on a `lan-hi` VLAN interface rather than on the
+port itself; the physical link takes the `hi` jumbo MTU so the whole path is consistent with the
+rest of the VLAN. `lan-hi` carries the static assignment, resolves through the router VIPs like
+every other `hi` client, and its gateway route outranks the DHCP default, so the 10G path is
+preferred while the 2.5G one stays as a fallback.
+
+Both jim and `fergal` tag `hi` and `lo` along that path. It exists only while the box is staged at
+home — `fergal` goes to Nikhef with it.
+
+The other SFP+ port, `et10g-1`, is unused.
 
 ## Storage
 

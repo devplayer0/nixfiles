@@ -59,6 +59,7 @@ colony (physical VM host, ams1)
 └── darts ──── third-party/customer VM (opaque, not NixOS)
 
 portcullis (bare-metal edge box for Nikhef — staged, not yet in service)
+    └── fergal   OpenWrt SFP+ switch, staged and moving with it
 ```
 
 ## Site: home

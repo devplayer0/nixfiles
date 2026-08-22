@@ -3,7 +3,7 @@
 Guided procedure for putting a flake-built OpenWrt image onto a box. The images themselves are
 declared in [`openwrt/default.nix`](../openwrt/default.nix) and described in
 [`deployment.md`](deployment.md#openwrt-images); the boxes are listed on their site pages (today
-that is [fergal](sites/home/switches.md#fergal-the-openwrt-switch)).
+that is [fergal](sites/colony/fergal.md)).
 
 Packages are baked into the image, so this runs whenever the package list changes — not only for
 version upgrades. Work through the phases in order; ⏸ marks the point to stop and confirm.
@@ -32,7 +32,7 @@ df -h /tmp                                        # room for the image
 
 **Flash or RAM matters.** A box booted normally shows a squashfs `/rom` plus a jffs2 `/overlay`;
 one booted from an initramfs has `/` on tmpfs. The initramfs case has its own hazards — see
-[Flashing from an initramfs](sites/home/switches.md#flashing-notes).
+[Flashing from an initramfs](sites/colony/fergal.md#flashing-notes).
 
 **Check the address is in UCI**, not just present on the interface. An address added by hand with
 `ip` disappears on reboot and the box comes back unreachable.
@@ -53,7 +53,7 @@ protocol if you prefer it.)
 
 For a box being flashed off its **vendor** firmware for the first time, back up the whole flash
 first — the vendor partitions hold per-unit MAC addresses and licence data that cannot be
-regenerated. See [fergal's flash layout](sites/home/switches.md#flash-layout).
+regenerated. See [fergal's flash layout](sites/colony/fergal.md#flash-layout).
 
 ## Phase 4 — Stage and validate
 

@@ -11,9 +11,8 @@ carried untranslated because a single ONT makes it unique on the fabric — see
 [the WAN path](#the-digiweb-wan-path-trunked-vlan-10--pvid-140) and
 [why not translation](#why-not-translation-for-one-ont). The router side lives in
 [river.md](river.md); the logical network map in [networking.md](../../networking.md). The Wi-Fi
-APs that hang off these switches are in [aps.md](aps.md). A fourth switch, **fergal**, runs OpenWrt
-and is on the bench rather than in the production path — see
-[fergal](#fergal-the-openwrt-switch).
+APs that hang off these switches are in [aps.md](aps.md). A fourth switch, **fergal**, hangs off jim
+but belongs to the colony site — see [fergal](#fergal-portculliss-switch).
 
 ## The switches
 
@@ -36,13 +35,14 @@ chips); brian cannot rewrite tags, only trunk/PVID them.
 The two WAN sources enter at the top: the Virgin Media modem lands on **jim** (VLAN 130), and the
 Digiweb **ONT** lands on **brian**. Both `jim` and `brian` are edge switches that uplink down into
 the **dave** core; the home boxes hang off dave's 100G ports, with backup links up to jim. jim's
-`wan-pon-in` (`sfp-sfpplus2`) is a spare SFP+ port, unused today.
+second SFP+ port (`sfp-spare`, `sfp-sfpplus2`) feeds [fergal](#fergal-portculliss-switch), which
+[`portcullis`](../colony/portcullis.md) hangs off while it is staged at home.
 
 ```
   Virgin Media cable modem                         Digiweb ONT
   stream WAN, VLAN 130                             river WAN, management + VLAN 10
              |                                               |
-            jim                                            brian
+            jim ---- 10G ---- fergal ---- portcullis         brian
              | 10G trunk                         802.3ad LAG |
              +--------------------+          +---------------+
                                   |          |
@@ -148,8 +148,13 @@ VLAN 140 also spans `brian-downlink,palace` (it carries a few other members too)
 this is plain tagged bridging.
 
 **jim (RouterOS)** — carries **none** of the Digiweb WAN path: no translation rules, and no VLAN
-10/140/141 rows. `wan-pon-in` (`sfp-sfpplus2`) sits at `pvid=1` as a spare port. jim only handles
-stream's VLAN-130 WAN and the LAN VLANs.
+10/140/141 rows. jim only handles stream's VLAN-130 WAN and the LAN VLANs. `sfp-spare`
+(`sfp-sfpplus2`) stays at `pvid=1` — the switch feeding `portcullis` is reached over VLAN 1
+untagged — and is a **tagged** member of `hi` (100) and `lo` (110) so those reach `portcullis`:
+```
+/interface bridge vlan set [find bridge=main vlan-ids=100] tagged=...,sfp-spare
+/interface bridge vlan set [find bridge=main vlan-ids=110] tagged=...,sfp-spare
+```
 
 ## Switches must not route
 
@@ -202,66 +207,21 @@ Each ONT port must also be a tagged member of bridge VLAN 10 for correct egress 
 piece that otherwise shows up as pppd "Timeout waiting for PADO"). The pins bypass the FDB, so the
 two ISP sessions never mix.
 
-**Why a new switch:** jim (the only box with spare SFP+ *and* the translation feature) has just
-**one** free SFP+ port, so it can't host two ONTs. The plan is a dedicated
+**Why a new switch:** jim (the only box with spare SFP+ *and* the translation feature) had just
+**one** free SFP+ port — now taken by fergal — so it can't host two ONTs. The plan is a dedicated
 **CRS305-1G-4S+** (4×SFP+, same Marvell rule support) to land multiple ONTs and do the per-port
 translation there, feeding distinct fabric VLANs up to dave.
 
-## fergal, the OpenWrt switch
+## fergal (portcullis's switch)
 
-An 8-port SFP+ switch — **XikeStor SKS8300-8X**, the board itself branded **ONTi ONT-S508CL-8S** —
-on a Realtek RTL9303 (MIPS 34Kc, 512 MB RAM, 32 MiB SPI NOR). Unlike jim, dave and brian it runs
-**OpenWrt**, so it is configured through UCI rather than RouterOS or a UniFi controller.
+**fergal** is an 8-port SFP+ switch running OpenWrt, hanging off jim's `sfp-spare` port. It belongs
+to [`portcullis`](../colony/portcullis.md) rather than to the home fabric — it is here only while
+that box is staged at home, and goes to Nikhef with it. Nothing in the home fabric depends on it.
 
-fergal is **not yet part of the fabric**: it sits at `192.168.64.30` on core (no DNS record yet),
-still has the stock single-VLAN bridge with all eight ports untagged, and only one SFP+ cage is
-populated. Treat it as bench equipment until that changes.
-
-Its firmware *is* built by this flake — see
-[OpenWrt images](../../deployment.md#openwrt-images) for the outputs and the feed pin. Packages are
-baked into the image, so adding tooling means editing
-[`openwrt/default.nix`](../../../openwrt/default.nix) and reflashing rather than installing on the
-box.
-
-### Flash layout
-
-A single 32 MiB SPI NOR chip (`spi0.0`, 64 KiB erase blocks). `kernel` and `rootfs` are
-sub-partitions of `firmware`, and OpenWrt adds `rootfs_data` as the JFFS2 overlay after a real
-flash.
-
-| Partition | Device | Offset | Size |
-|---|---|---|---|
-| `u-boot` | `mtd0` | `0x000000` | 1 MiB |
-| `board-info` | `mtd1` | `0x100000` | 192 KiB |
-| `syslog` | `mtd2` | `0x130000` | 832 KiB |
-| `firmware` | `mtd3` | `0x200000` | 30 MiB |
-
-**`board-info` is irreplaceable.** It holds the unit's MAC addresses (`[vlanmac]` / `[cpumac]`), its
-`[license]` hash, the stock boot pointers and an SSH host key — only about 1.3 KiB of it is
-non-blank, and none of it can be regenerated. A full dump of all four partitions, taken before
-OpenWrt was flashed, is kept outside this repo — 33 MB of images, with per-partition checksums and
-restore notes. Never write `u-boot` or `board-info` without a confirmed serial/TFTP recovery path.
-
-### Flashing notes
-
-The procedure itself is in [`openwrt-flash.md`](../../openwrt-flash.md); what follows is specific to
-this board.
-
-Stock u-boot boots `flash:/nos.img` from a JFFS2 filesystem, so OpenWrt's sysupgrade image is
-itself a JFFS2 image containing `nos.img` rather than a raw kernel + squashfs. Two things bite when
-flashing from an initramfs, as during the initial install:
-
-- **`sysupgrade -c` does not work.** It needs `/overlay/upper/etc`, which doesn't exist when running
-  from RAM, and it aborts *after* `mtd erase firmware` has already run — leaving the box with no
-  bootable firmware until the job is finished. Pass the config as an explicit tarball instead
-  (`tar czf`, then `sysupgrade -f <tarball> …`).
-- **The working management address may not be in UCI.** If it was set by hand with `ip` while UCI
-  still held the stock address, the box comes back unreachable. Write it into `network.lan` and
-  commit before flashing.
-
-Neither applies to an ordinary flash-to-flash upgrade, where `sysupgrade` keeps `/etc/config` and
-the files listed in `/lib/upgrade/keep.d/` by default. Dropbear host keys are regenerated by a flash
-that doesn't preserve them, so clear the old `known_hosts` entry afterwards.
+What it borrows from home is VLAN 1 untagged on the jim uplink (fergal's own management sits on it,
+at `192.168.64.30` on core) plus tagged `hi` (100) and `lo` (110), so `portcullis` can reach those
+over 10G. The switch itself — VLAN layout, flash layout, firmware and flashing notes — is
+documented in [sites/colony/fergal.md](../colony/fergal.md).
 
 ## Accessing the switches
 

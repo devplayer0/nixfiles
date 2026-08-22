@@ -33,4 +33,7 @@ The applications running on `shill` are listed on its own page — see
 pages document only what this repository controls.
 
 `portcullis` is new hardware headed for Nikhef that will take over most of `estuary`'s edge routing.
-It is not deployed yet and the resulting topology is still being worked out.
+It is not deployed yet and the resulting topology is still being worked out. It travels with
+[`fergal`](fergal.md), an OpenWrt SFP+ switch whose firmware this flake builds; both are staged at
+home for now, borrowing the home fabric through
+[jim](../home/switches.md#fergal-portculliss-switch).
