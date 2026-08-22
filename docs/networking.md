@@ -388,6 +388,37 @@ Libreswan transport mode. It authenticates without encryption by default; `secur
 switches ESP from `null-sha256` to AES-GCM. The shared `l2mesh/as211024.key` PSK is expanded into
 `/run/l2mesh.secrets` when `ipsec` starts.
 
+### ESP throughput
+
+ESP is the mesh's throughput limit rather than VXLAN — encapsulation is close to free, and on a
+small box the crypto is what costs. The kernel processes a single SA on a single core, so per-peer
+throughput is capped by one core however many the box has. That limit binds per peer rather than
+per box, so a router spreads naturally across its peers.
+
+Two things follow for configuration:
+
+- The `esp4_offload` / `esp6_offload` modules provide GSO/GRO batching for ESP and are **not**
+  autoloaded when an SA is created. The [`l2mesh` module](../nixos/modules/l2mesh.nix) loads the
+  one matching each secured mesh's underlay family; without them throughput is around a third
+  lower, for more CPU.
+- `security.encrypt = false` does not save CPU on hardware with AES-NI — it measured slower than
+  AES-GCM. GCM resolves to a single fused accelerated implementation, while the authenticate-only
+  path falls back to a generic `authenc(hmac(sha256),ecb(cipher_null))` composition.
+
+#### pcrypt
+
+`pcrypt` parallelises an SA's crypto across cores via padata and does lift the per-SA ceiling. It
+is not enabled on any box here, and is recorded as an option rather than a recommendation:
+
+- It cannot be named in the SA — `ip xfrm` and the kernel both validate AEAD names against a fixed
+  list. It is engaged instead by registering a `pcrypt(...)`-wrapped instance under the standard
+  algorithm name at a higher priority, over `NETLINK_CRYPTO` (`CONFIG_CRYPTO_USER`). `crconf` is
+  the usual tool for that and is not packaged in nixpkgs.
+- The registration is global: it redirects every user of that algorithm on the box, not just the
+  mesh, and would have to run before `ipsec` starts.
+- A single-threaded submit path remains, so it does not scale with core count, and it trades
+  latency and packet ordering for throughput.
+
 ### Overlay addressing
 
 The overlay uses `10.100.50.0/24` / `2a0e:97c0:4df::/64`. Each router holds `10.100.50.<n>`:

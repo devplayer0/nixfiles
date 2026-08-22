@@ -1,7 +1,7 @@
 { lib, config, vpns, ... }:
 let
   inherit (builtins) any attrValues;
-  inherit (lib) optionalString mapAttrsToList concatStringsSep concatMapStringsSep filterAttrs mkIf mkMerge;
+  inherit (lib) optional optionalString mapAttrsToList concatStringsSep concatMapStringsSep filterAttrs mkIf mkMerge;
   inherit (lib.my) isIPv6 mkOpt';
 
   vxlanPort = 4789;
@@ -105,6 +105,11 @@ let
     echo "${ownAddr} ${p.addr} : PSK \"$(< "${config.my.vpns.l2.pskFiles.${name}}")\"" >> /run/l2mesh.secrets
   '') (attrValues otherPeers);
   anySecurity = any (c: c.security.enable) (attrValues memberMeshes);
+  securedFamily = v6: any (c: c.security.enable && c.ipv6 == v6) (attrValues memberMeshes);
+  # ESP GSO/GRO batching, which the kernel does not autoload when an SA is created
+  espOffloadModules =
+    (optional (securedFamily false) "esp4_offload") ++
+    (optional (securedFamily true) "esp6_offload");
 in
 {
   options = {
@@ -114,6 +119,8 @@ in
   };
 
   config = {
+    boot.kernelModules = espOffloadModules;
+
     systemd.network = mkMerge (mapAttrsToList mkNetConfig memberMeshes);
 
     environment.etc."ipsec.d/l2mesh.secrets" = mkIf anySecurity {
