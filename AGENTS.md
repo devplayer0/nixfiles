@@ -212,7 +212,9 @@ in churn.
 - Commit subjects follow `area/scope: Capitalized summary` (e.g. `nixos/home: ...`); keep logically
   distinct changes in separate commits. Aim for 50-character subjects and do not exceed 72
   characters. Wrap commit bodies at 72 columns. A concise body describing the change and its
-  rationale is welcome when the subject alone does not provide enough context.
+  rationale is welcome when the subject alone does not provide enough context — keep it to the
+  essentials rather than restating the diff. `Co-Authored-By` is the only trailer used here; do
+  **not** add a `Claude-Session` link (or any other session/tooling trailer).
 
 ## Documentation
 
