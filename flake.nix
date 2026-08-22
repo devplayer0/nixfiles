@@ -58,6 +58,15 @@
     # harmonia.url = "github:devplayer0/harmonia/cache-config-daemon-store";
     harmonia.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
+    # Firmware building for the OpenWrt boxes, which aren't managed by this flake otherwise.
+    # `openwrt-feeds` pins the package feeds; without it, evaluation would reach the OpenWrt
+    # download server over import-from-derivation and break on hashes that upstream rotates daily.
+    openwrt-imagebuilder.url = "github:astro/nix-openwrt-imagebuilder";
+    openwrt-imagebuilder.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    openwrt-feeds.url = "github:devplayer0/openwrt-feeds";
+    openwrt-feeds.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    openwrt-feeds.inputs.openwrt-imagebuilder.follows = "openwrt-imagebuilder";
+
     # Packages not in nixpkgs
     sharry.url = "github:eikek/sharry";
     sharry.inputs.nixpkgs.follows = "nixpkgs-unstable";
@@ -259,7 +268,9 @@
         deploy = recurseIntoAttrs (pkgs.deploy-rs.lib.deployChecks self.deploy);
       };
 
-      packages = flattenTree (import ./pkgs { inherit lib pkgs; });
+      packages = flattenTree (
+        (import ./pkgs { inherit lib pkgs; }) //
+        (import ./openwrt { inherit pkgs inputs; }));
 
       devShells.default = shell;
 

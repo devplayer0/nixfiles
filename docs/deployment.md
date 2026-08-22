@@ -171,6 +171,43 @@ default `/tmp/xchg/dev.key`), so dev VMs can decrypt the boxes' secrets without 
 keys. Dev VMs also get DHCP on `eth0`, an SSH port forward (host 2222 → guest 22), and are
 automatically excluded from deploy targets.
 
+## OpenWrt images
+
+The OpenWrt boxes are not NixOS and are not deployed by this flake, but their firmware is built
+here. [`openwrt/default.nix`](../openwrt/default.nix) declares one image per box and packages it
+through [`astro/nix-openwrt-imagebuilder`](https://github.com/astro/nix-openwrt-imagebuilder),
+which drives OpenWrt's official ImageBuilder — prebuilt target packages assembled into a sysupgrade
+image, with no cross-toolchain involved.
+
+| Output | Box | Release |
+|---|---|---|
+| `openwrt-fergal` | [fergal](sites/home/switches.md#fergal-the-openwrt-switch) | `snapshot` |
+| `openwrt-fergal-release` | The same, on the release branch | pinned in `openwrt/default.nix` |
+
+Both are in `ci`, so images are built and pushed to the Harmonia cache like everything else. Build
+one with `nix build .#openwrt-fergal`; the result holds the `-squashfs-sysupgrade.bin` to flash,
+plus a package manifest and an SBOM. Getting it onto the box is a guided procedure of its own —
+see [`openwrt-flash.md`](openwrt-flash.md).
+
+Packages are baked into the image rather than installed on the box. OpenWrt's package server keeps
+only the current build of each feed, so a box that installs packages at runtime stops being able to
+do so as soon as the feed moves on from the firmware it is running. Adding a package means editing
+the image's `packages` list and reflashing.
+
+### The feed pin
+
+OpenWrt's download server is never at rest: snapshot is rebuilt daily, and
+`releases/<version>/packages/` is a symlink to the rolling `packages-<major>` feed shared by every
+point release. Building straight against it fails on hash mismatches and, worse, resolves the
+package list by import-from-derivation — which would drag *evaluation* of this flake onto the
+network and let an OpenWrt feed rebuild break `check-system` for unrelated boxes.
+
+The `openwrt-feeds` input exists to stop that. It holds expanded per-package hashes, so every `.apk`
+is a plain pinned `fetchurl` and no import-from-derivation is involved. Its generated files run to
+hundreds of thousands of lines and are rewritten wholesale on each refresh, which is why they live
+in their own repository rather than here. Refresh the pin with `nix flake update openwrt-feeds`;
+adding a release or target means adding it to that repo's `pins` and regenerating there first.
+
 ## CI
 
 GitHub/Gitea Actions workflows live in [`.gitea/workflows/`](../.gitea/workflows).

@@ -29,6 +29,8 @@ Not every box fits this pattern, but **colony** and **home** are organised this 
   nixpkgs channels and home-manager (fork rebase, stable bumps, input review).
 - [`install-box.md`](install-box.md) — guided procedure for installing a new box, from the booted
   installer through partitioning, the box config, `do-install` and documentation.
+- [`openwrt-flash.md`](openwrt-flash.md) — guided procedure for flashing a flake-built image onto an
+  OpenWrt box, from the build through pre-flight, `sysupgrade` and verification.
 - [`reference/dns.md`](reference/dns.md) — generated forward and reverse DNS record reference.
 - [`reference/nixos-options.md`](reference/nixos-options.md) — generated per-option reference for
   the custom `my.*` NixOS modules.
