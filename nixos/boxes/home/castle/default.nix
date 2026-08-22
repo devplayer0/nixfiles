@@ -198,6 +198,9 @@ in
               ];
               "45-lan-lo" = {
                 matchConfig.Name = "lan-lo";
+                # The parent carries hi's jumbo frames, but lo runs at the standard MTU;
+                # without this the VLAN would inherit the parent's larger one.
+                linkConfig.MTUBytes = "1500";
                 networkConfig = {
                   DHCP = "ipv4";
                   IPv6AcceptRA = true;
