@@ -202,11 +202,14 @@ point release. Building straight against it fails on hash mismatches and, worse,
 package list by import-from-derivation — which would drag *evaluation* of this flake onto the
 network and let an OpenWrt feed rebuild break `check-system` for unrelated boxes.
 
-The `openwrt-feeds` input exists to stop that. It holds expanded per-package hashes, so every `.apk`
-is a plain pinned `fetchurl` and no import-from-derivation is involved. Its generated files run to
-hundreds of thousands of lines and are rewritten wholesale on each refresh, which is why they live
-in their own repository rather than here. Refresh the pin with `nix flake update openwrt-feeds`;
-adding a release or target means adding it to that repo's `pins` and regenerating there first.
+The `openwrt-feeds` input exists to stop that. It holds expanded per-package metadata and vendors
+the repository indexes themselves, so every `.apk` is a plain pinned `fetchurl`, image builds read
+the indexes from the flake rather than OpenWrt's mutable URLs, and no import-from-derivation is
+involved. Its generated files run to hundreds of thousands of lines and are rewritten wholesale on
+each refresh, which is why they live in their own repository rather than here. Regenerate and push
+that repository with `nix run .#update`, then refresh this flake's pin with
+`nix flake update openwrt-feeds`; adding a release or target means adding it to that repository's
+`pins` first.
 
 ## CI
 

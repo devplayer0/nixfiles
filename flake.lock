@@ -941,11 +941,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1787353688,
-        "narHash": "sha256-YDEm+ev3BpDS9Sq1ByVv0i5QQCE1yezpjWVhcNBBjCE=",
+        "lastModified": 1787522666,
+        "narHash": "sha256-Ev4X1HCx6aV4L5GtMQX9DJRgWQ7K914rT11nL7mIkmw=",
         "owner": "devplayer0",
         "repo": "openwrt-feeds",
-        "rev": "a30b2b5f83c7d1fffca2146453e8d5866b882da4",
+        "rev": "53720becf1e89473660e25107ae5d23bf1465621",
         "type": "github"
       },
       "original": {
