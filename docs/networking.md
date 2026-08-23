@@ -405,6 +405,41 @@ Two things follow for configuration:
   AES-GCM. GCM resolves to a single fused accelerated implementation, while the authenticate-only
   path falls back to a generic `authenc(hmac(sha256),ecb(cipher_null))` composition.
 
+#### NIC crypto offload
+
+No mesh uses it, and the `esp4_offload` / `esp6_offload` modules above are unrelated to it — those
+are software GSO/GRO batching. Hardware ESP offload is a separate XFRM feature that Libreswan only
+requests for connections setting `nic-offload=yes`, which the
+[`l2mesh` module](../nixos/modules/l2mesh.nix) does not.
+
+[`portcullis`](sites/colony/portcullis.md)'s 82599ES ports advertise `esp-hw-offload` and the
+offload does work, but not for anything the meshes could use. Measured on the box by installing
+SAs directly with `ip xfrm` and watching `ixgbe`'s `tx_ipsec` counter:
+
+| SA | Result |
+|---|---|
+| `et10g-0`, transport, AES-GCM-128 | offload active — `mode crypto` against the physical port |
+| `et10g-0`, transport, AES-GCM-256 | rejected: *"IPsec hw offload only supports keys up to 128 bits with a 32 bit salt"* |
+| `et10g-0`, **tunnel** mode | rejected: *"Unsupported mode for ipsec offload"* |
+| `lan-hi` (a VLAN on `et10g-0`) | **accepted with the offload silently dropped** — software crypto |
+| `et2g5-0` (I226-V) | accepted, offload silently dropped — `igc` has none |
+
+Two traps are worth knowing. Binding an SA to a device that cannot offload is **not** an error:
+`xfrm_dev_state_add` returns success having cleared the device, so the SA looks fine and quietly
+runs in software. And a VLAN interface never offloads — it carries no `xfrmdev_ops`, and
+`esp-hw-offload` reads `off [fixed]` on it even when its parent supports the feature.
+
+The second trap is the decisive one here. Even with the offload genuinely active against
+`et10g-0`, driving traffic through the SA left `tx_ipsec` at zero, because the packets egress
+`lan-hi` and the kernel only offloads when the SA's device matches the egress device. Every address
+`portcullis` holds is on a VLAN, so an SA would have to be bound to an untagged physical port to
+see the hardware at all.
+
+So adopting it would mean dropping to a 128-bit key to suit one NIC family, keeping the underlay
+off VLANs, and forgoing `udpEncapsulation` — `xfrm_dev_offload_ok` refuses any SA carrying
+`encap`. That is not a trade worth making for a mesh that has to run across boxes with no offload
+at all.
+
 #### pcrypt
 
 `pcrypt` parallelises an SA's crypto across cores via padata and does lift the per-SA ceiling. It

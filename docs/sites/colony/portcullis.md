@@ -18,6 +18,11 @@ routing currently done by the [`estuary`](estuary.md) VM.
 | Network | Four Intel I226-V 2.5 GbE ports (`et2g5-0`…`et2g5-3`) and one dual-port Intel 82599ES 10 GbE SFP+ card (`et10g-0`, `et10g-1`) |
 | Management | JetKVM (HDMI/USB KVM with virtual media) |
 
+The PCIe layout constrains what the cards can reach. The 82599ES sits behind a gen2 x4 link giving
+16 Gb/s for **both** its ports together, so one port runs at line rate but the pair is
+oversubscribed. The NVMe is on a x1 root port, capped near 7.9 Gb/s regardless of the drive. Each
+I226-V has its own x1 link and is not constrained.
+
 ## Role
 
 Not yet in service. The eventual job is to be the physical edge for the colony site at Nikhef,
@@ -56,6 +61,46 @@ Both jim and `fergal` tag `hi` and `lo` along that path. It exists only while th
 home — `fergal` goes to Nikhef with it.
 
 The other SFP+ port, `et10g-1`, is unused.
+
+### Interface tuning
+
+Every port takes router-sized 4096-entry rings rather than the driver defaults, matching the other
+routers here, and enables `GenericReceiveOffloadUDPForwarding` so GRO batching survives forwarding
+once the box carries UDP-encapsulated traffic. Both are `.link` settings, so they apply on the next
+device event rather than at switch time — a reboot is the reliable way to land a change to them.
+
+Interrupt coalescing is deliberately left alone. `igc` reports `rx-usecs` 3 and `ixgbe` reports 1,
+which are the drivers' markers for dynamic ITR rather than literal microseconds; writing a
+plausible-looking value there replaces adaptive moderation with a fixed one.
+
+### I226-V erratum
+
+The I226-V link-drop erratum is driven by PCIe ASPM, Energy Efficient Ethernet and stale NIC
+firmware. ASPM, the dominant cause, is off across the whole box for the reason in
+[Power](#power) below. EEE is held off by a udev rule invoking `ethtool`, as `systemd.link` has no
+knob for it. `igc` already leaves EEE off on these ports, so the rule pins a driver default rather
+than correcting one, and keeps it from drifting on a kernel bump. Firmware is the remaining item:
+the ports report NVM `2.13` (EEPROM version word `0x2013`, which `igc` prints as the `2013` in
+`ethtool -i`), behind the `2.29`/`2.32` images that circulate. Intel does not publish the I226-V
+NVM image, so updating means third-party firmware and is best attempted while the box is at home
+and the JetKVM is attached.
+
+## Power
+
+The SoC side is already at its floor and needs no tuning: the package draws around 0.75 W idle with
+cores in C10 essentially all the time, under `intel_pstate` on the `powersave` governor.
+
+Platform idle is capped instead, and deliberately left that way. The ACPI FADT declares that the
+system does not support PCIe ASPM, so the OS defers to firmware, every root port advertises ASPM as
+unsupported and every endpoint sits with it disabled. Deep package C-states need every PCIe link in
+L1, so the package never leaves C3. `pcie_aspm=force` is the usual answer and is **not** used here:
+the 82599ES advertises only L0s with an unlimited exit latency, so no amount of forcing reaches the
+deep states while that card is fitted, and the only links it would actually change are the four
+I226-V ones — the exact configuration behind the erratum above. Recovering that power is a firmware
+question for the mini PC, and only worthwhile once the 82599ES is gone.
+
+`iommu=pt` puts host devices in passthrough so the forwarding path does not pay DMA translation,
+while leaving the IOMMU available.
 
 ## Storage
 

@@ -32,6 +32,14 @@ in
         inherit (lib) mkMerge;
         inherit (lib.my) mkVLAN networkdAssignment;
         inherit (lib.my.c) networkd;
+
+        # Router-sized rings rather than the driver defaults, and GRO kept across
+        # forwarding so UDP-encapsulated traffic stays batched.
+        nicTuning = {
+          RxBufferSize = 4096;
+          TxBufferSize = 4096;
+          GenericReceiveOffloadUDPForwarding = true;
+        };
       in
       {
         hardware = {
@@ -43,7 +51,9 @@ in
 
         boot = {
           kernelModules = [ "kvm-intel" ];
-          kernelParams = [ "intel_iommu=on" ];
+          # Passthrough mode keeps the IOMMU available without paying DMA translation
+          # on the forwarding path.
+          kernelParams = [ "intel_iommu=on" "iommu=pt" ];
           initrd = {
             availableKernelModules = [ "xhci_pci" "nvme" "usb_storage" "usbhid" "sd_mod" "sr_mod" ];
             kernelModules = [ "dm-snapshot" ];
@@ -69,6 +79,13 @@ in
 
         networking = { inherit domain; };
 
+        # The I226-V link-drop erratum is driven by EEE as well as ASPM. The driver already
+        # leaves EEE off, so this pins a default rather than changing one; systemd.link has
+        # no knob for it.
+        services.udev.extraRules = ''
+          ACTION=="add", SUBSYSTEM=="net", DRIVERS=="igc", RUN+="${pkgs.ethtool}/bin/ethtool --set-eee $name eee off"
+        '';
+
         environment.systemPackages = with pkgs; [
           pciutils
           usbutils
@@ -87,28 +104,28 @@ in
           links = {
             "10-et2g5-0" = {
               matchConfig.PermanentMACAddress = "00:d0:b4:05:ed:48";
-              linkConfig.Name = "et2g5-0";
+              linkConfig = nicTuning // { Name = "et2g5-0"; };
             };
             "10-et2g5-1" = {
               matchConfig.PermanentMACAddress = "00:d0:b4:05:ed:49";
-              linkConfig.Name = "et2g5-1";
+              linkConfig = nicTuning // { Name = "et2g5-1"; };
             };
             "10-et2g5-2" = {
               matchConfig.PermanentMACAddress = "00:d0:b4:05:ed:4a";
-              linkConfig.Name = "et2g5-2";
+              linkConfig = nicTuning // { Name = "et2g5-2"; };
             };
             "10-et2g5-3" = {
               matchConfig.PermanentMACAddress = "00:d0:b4:05:ed:4b";
-              linkConfig.Name = "et2g5-3";
+              linkConfig = nicTuning // { Name = "et2g5-3"; };
             };
 
             "11-et10g-0" = {
               matchConfig.PermanentMACAddress = "60:be:b4:2e:9b:a2";
-              linkConfig.Name = "et10g-0";
+              linkConfig = nicTuning // { Name = "et10g-0"; };
             };
             "11-et10g-1" = {
               matchConfig.PermanentMACAddress = "60:be:b4:2e:9b:a3";
-              linkConfig.Name = "et10g-1";
+              linkConfig = nicTuning // { Name = "et10g-1"; };
             };
           };
 
