@@ -23,10 +23,14 @@ let
     target = "realtek";
     variant = "rtl930x";
     profile = "xikestor_sks8300-8x";
-    packages = [ "luci" "ip-full" "ip-bridge" "ethtool-full" "luci-app-sfp-info" ];
+    packages = [ "luci" "ip-full" "ip-bridge" "ethtool-full" ];
   };
 in
 {
-  openwrt-fergal = mkImage (fergal // { release = "snapshot"; });
+  openwrt-fergal = mkImage (fergal // {
+    release = "snapshot";
+    # The release feeds do not provide this LuCI app.
+    packages = fergal.packages ++ [ "luci-app-sfp-info" ];
+  });
   openwrt-fergal-release = mkImage (fergal // { inherit release; });
 }
