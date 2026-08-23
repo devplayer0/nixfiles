@@ -71,7 +71,6 @@ all vhosts are `onlySSL`, kTLS and HTTP/2. "SSO" = gated behind nginx-sso (`gene
 | `jackflix.nul.ie` | `jackflix-ctr:8096` | Jellyfin; `/socket` websockets; `/` redirects to `/web/` |
 | `toot.nul.ie` | `toot-ctr:80` | Mastodon — **upstream currently disabled**, see [toot](toot.md) |
 | `pds.nul.ie` | `toot-ctr:3000` | Bluesky PDS ([toot](toot.md)); websockets |
-| `share.nul.ie` | `object-ctr:9090` | Sharry ([object](object.md)); websockets |
 | `stuff.nul.ie` | `jackflix-ctr:3923` | copyparty |
 | `public.nul.ie` (+ alias `p.nul.ie`) | static `/mnt/media/public` | fancyindex file listing; `addSSL` so plain HTTP also works |
 | `mc-map.nul.ie` | `simpcraft-oci:8100` | Minecraft map (OCI container on [`whale2`](../../whale2.md#game-servers)) |

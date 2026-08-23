@@ -15,7 +15,7 @@ database, the containers (and the `git` VM) connect here over the `ctrs` network
   the ident map.
 - **netdata** with the Python PostgreSQL collector.
 - Consumers wait for the database to accept connections with the `lib.my.systemdAwaitPostgres`
-  helper (e.g. `sharry`, `atticd`, `mastodon-init-db`, and `middleman`'s nginx as a DNS
+  helper (e.g. `atticd`, `mastodon-init-db`, and `middleman`'s nginx as a DNS
   bootstrap hack).
 
 ## Network assignments
@@ -27,7 +27,7 @@ use as the database hostname.
 
 ## Consumers
 
-- [object](object.md) — `sharry` and `hedgedoc` (and `atticd` when enabled) over
+- [object](object.md) — `hedgedoc` (and `atticd` when enabled) over
   `colony-psql:5432`
 - [toot](toot.md) — Mastodon's database (Mastodon currently disabled)
 - [chatterbox](chatterbox.md) — the mautrix bridges (WhatsApp, Messenger, Instagram) via

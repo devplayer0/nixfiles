@@ -423,12 +423,12 @@ in
         gtk = {
           enable = true;
           theme = {
-            name = "Numix";
-            package = pkgs.numix-gtk-theme;
+            name = "Adwaita";
+            package = pkgs.gnome-themes-extra;
           };
           gtk4.theme = {
-            name = "Numix";
-            package = pkgs.numix-gtk-theme;
+            name = "Adwaita";
+            package = pkgs.gnome-themes-extra;
           };
           iconTheme = {
             name = "Numix";

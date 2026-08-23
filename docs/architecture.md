@@ -175,7 +175,7 @@ descriptions) see [`reference/nixos-options.md`](reference/nixos-options.md).
 
 | Module | Provides |
 |---|---|
-| `common` | Baseline for all boxes: imports the impermanence, ragenix (age), sharry, copyparty and harmonia NixOS modules; pins `system.stateVersion`; `doas` instead of `sudo`; immutable users; nix settings (flakes, `ca-derivations`, the `nix-cache.nul.ie` substituter); declares the `my` option root. |
+| `common` | Baseline for all boxes: imports the impermanence, ragenix (age), copyparty and harmonia NixOS modules; pins `system.stateVersion`; `doas` instead of `sudo`; immutable users; nix settings (flakes, `ca-derivations`, the `nix-cache.nul.ie` substituter); declares the `my` option root. |
 | `user` | `my.user` — the primary user: `users.users` + matching `home-manager.users` entry, wheel/doas, SSH authorized key from `.keys/me.pub`, shell taken from the home config, home persistence under tmproot. |
 | `build` | `my.build` — alternate build targets via `extendModules`: `my.buildAs.devVM` (QEMU dev VM), `iso`, `container`, `kexecTree`, `netbootTree`/`netbootArchive`; `my.build.isDevVM` marker; `allHardware` profile toggle. |
 | `dynamic-motd` | `my.dynamic-motd` — runs a script via `pam_exec` to generate the MOTD on login/ssh. |

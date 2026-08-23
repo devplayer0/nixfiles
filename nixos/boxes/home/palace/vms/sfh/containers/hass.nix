@@ -47,8 +47,9 @@ in
       inherit (lib) mkMerge mkIf mkForce;
       inherit (lib.my) networkdAssignment;
 
+      hassPort = 8123;
       hassCli = pkgs.writeShellScriptBin "hass-cli" ''
-        export HASS_SERVER="http://localhost:${toString config.services.home-assistant.config.http.server_port}"
+        export HASS_SERVER="http://localhost:${toString hassPort}"
         export HASS_TOKEN="$(< ${config.age.secrets."hass/cli-token.txt".path})"
         exec ${pkgs.home-assistant-cli}/bin/hass-cli "$@"
       '';
@@ -69,7 +70,7 @@ in
           };
 
           firewall = {
-            tcp.allowed = [ "http" 1883 ];
+            tcp.allowed = [ "http" hassPort 1883 ];
           };
         };
 
@@ -166,8 +167,6 @@ in
 
           home-assistant =
           let
-            cfg = config.services.home-assistant;
-
             pyirishrail = ps: ps.buildPythonPackage rec {
               pname = "pyirishrail";
               version = "0.0.2";
@@ -217,7 +216,6 @@ in
             ];
 
             configWritable = false;
-            openFirewall = true;
             config = {
               default_config = {};
               homeassistant = {
@@ -227,9 +225,10 @@ in
                 country = "IE";
                 time_zone = "Europe/Dublin";
                 external_url = "https://hass.${pubDomain}";
-                internal_url = "http://hass-ctr.${domain}:${toString cfg.config.http.server_port}";
+                internal_url = "http://hass-ctr.${domain}:${toString hassPort}";
               };
               http = {
+                server_port = hassPort;
                 use_x_forwarded_for = true;
                 trusted_proxies = with allAssignments.middleman.internal; [
                   ipv4.address

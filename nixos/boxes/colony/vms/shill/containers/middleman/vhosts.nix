@@ -336,15 +336,6 @@ in
         useACMEHost = pubDomain;
       };
 
-      "share.${pubDomain}" = {
-        locations."/" = {
-          proxyPass = "http://object-ctr.${domain}:9090";
-          proxyWebsockets = true;
-          extraConfig = proxyHeaders;
-        };
-        useACMEHost = pubDomain;
-      };
-
       "stuff.${pubDomain}" = {
         locations."/" = {
           proxyPass = "http://jackflix-ctr.${domain}:3923";

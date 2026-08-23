@@ -191,7 +191,7 @@ let
       # Routes the custom modules into `baseModules` so the NixOS manual documents them. The old
       # infinite-recursion is gone, but enabling this makes every system build regenerate the
       # manual, and it documents everything the modules transitively import — including third-party
-      # modules that aren't doc-clean (e.g. `services.sharry`). Prefer the generated
+      # modules that aren't doc-clean. Prefer the generated
       # `nixos.optionsDoc` reference (`docs/reference/nixos-options.md`) instead.
       docCustom = mkBoolOpt' false "Whether to document nixfiles' custom NixOS modules.";
 

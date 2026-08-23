@@ -35,10 +35,11 @@
     home-manager-stable.inputs.nixpkgs.follows = "nixpkgs-stable";
 
     # Determinate Nix, used as the common Nix implementation across systems, homes, the devshell and
-    # CI (see lib.my.c.nix). We build it ourselves against our pinned nixpkgs (FlakeHub's cache needs
-    # auth), so it flows through our own Harmonia cache like everything else.
+    # CI (see lib.my.c.nix). We build it ourselves (FlakeHub's cache needs auth), so it flows through
+    # our own Harmonia cache like everything else. Keep its tested nixpkgs pin: its packaging carries
+    # compatibility patches that can conflict with newer nixpkgs patches.
     determinate-nix.url = "https://flakehub.com/f/DeterminateSystems/nix-src/*";
-    determinate-nix.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    determinate-nix.inputs.nixpkgs.url = "github:NixOS/nixpkgs/4382ed2b7a6839d4280a9b386db49cbc5907414d";
 
     # Stuff used by the flake for build / deployment
     # ragenix.url = "github:yaxitech/ragenix";
@@ -68,8 +69,6 @@
     openwrt-feeds.inputs.openwrt-imagebuilder.follows = "openwrt-imagebuilder";
 
     # Packages not in nixpkgs
-    sharry.url = "github:eikek/sharry";
-    sharry.inputs.nixpkgs.follows = "nixpkgs-unstable";
     borgthin.url = "github:devplayer0/borg";
     # TODO: Update borgthin so this works
     # borgthin.inputs.nixpkgs.follows = "nixpkgs-mine";

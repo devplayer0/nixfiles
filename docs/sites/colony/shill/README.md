@@ -53,7 +53,7 @@ their current addresses. Each container has its own page:
 | [`colony-psql`](containers/colony-psql.md) | Shared PostgreSQL (14) |
 | [`chatterbox`](containers/chatterbox.md) | Matrix Synapse + bridges |
 | [`jackflix`](containers/jackflix.md) | Media stack |
-| [`object`](containers/object.md) | MinIO, Harmonia Nix cache, Sharry, HedgeDoc, wastebin |
+| [`object`](containers/object.md) | MinIO, Harmonia Nix cache, HedgeDoc, wastebin |
 | [`toot`](containers/toot.md) | Bluesky PDS (Mastodon disabled) |
 | [`waffletail`](containers/waffletail.md) | Tailscale subnet router / exit node |
 | [`qclk`](containers/qclk.md) | WireGuard management appliance |

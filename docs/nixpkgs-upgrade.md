@@ -72,6 +72,12 @@ For **both** branches — `devplayer0` onto `upstream/nixos-unstable`, and `devp
    conflicted.
 6. ⏸ **Push:** only after confirmation. `git push --force-with-lease origin devplayer0
    devplayer0-stable` (force needed — rebase rewrites history).
+7. Wait for the GitHub mirror used by the flake inputs to catch up with the primary fork remote.
+   Compare the local branch tips with
+   `git ls-remote https://github.com/devplayer0/nixpkgs.git refs/heads/devplayer0
+   refs/heads/devplayer0-stable` and do not continue until both match. Updating sooner can leave
+   `nixpkgs-mine` and `nixpkgs-mine-stable` pinned to the pre-rebase commits even though the push
+   succeeded.
 
 ## Phase 3 — Update the pinned inputs
 
@@ -126,7 +132,7 @@ Don't blanket-update. Walk the other inputs deliberately:
 
 1. List inputs and locked revisions from `flake.lock` (or `nix flake metadata`).
 2. For each meaningful input (`libnetRepo`, `devshell`, `determinate-nix`, `ragenix`, `deploy-rs`,
-   `impermanence`, and the packaged apps like `boardie`, `harmonia`, `copyparty`, `sharry`, …),
+   `impermanence`, and the packaged apps like `boardie`, `harmonia`, and `copyparty`),
    compare the locked revision to upstream and summarize notable changes (breaking changes,
    relevant fixes). Many inputs `follows` `nixpkgs-unstable` and already moved in Phase 3.
 3. Propose a per-input update list with reasons; update the approved ones with targeted
@@ -137,7 +143,14 @@ Don't blanket-update. Walk the other inputs deliberately:
 1. `nix flake check --no-build` (broad eval; reproduces CI's cheap checks).
 2. `check-system <host>` on a representative box, and one exercising the stable channel if the
    boxes mix channels. This must exercise the refreshed kernel constants on both channels.
-3. Report eval/build results honestly. On failure, surface the error and stop rather than papering
+3. Build the actual devshell with
+   `nix build --no-link --print-out-paths .#devShells.x86_64-linux.default`. Evaluation does not
+   build its dependencies, so it cannot catch packaging conflicts introduced by inputs such as
+   Determinate Nix.
+4. After the evaluations pass, run `build-system <host>` for one representative NixOS box. Prefer
+   the local box when it is managed by this flake: its full closure is likely to exercise the most
+   relevant packages, home-manager configuration and upgraded kernel. Build only; do not switch.
+5. Report eval/build results honestly. On failure, surface the error and stop rather than papering
    over it.
 
 ## Wrap-up

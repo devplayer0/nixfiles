@@ -22,6 +22,12 @@ Key reminders (see the doc for the full steps):
   and the `flake.nix` stable pins must agree on one release.
 - **Re-verify the patch stack against freshly fetched upstream**, not stale refs — enumerate it with
   `git log`; don't assume a remembered list.
+- After pushing the rebased fork branches, **wait for the GitHub mirror to catch up** before
+  refreshing flake pins. The `nixpkgs-mine*` inputs fetch from GitHub, not the fork's primary
+  remote; verify both GitHub branch tips match the pushed local tips first.
 - After refreshing the pins, update `lib/constants.nix` to the current explicit LTS and latest
   kernel package attributes, and update the `lib/default.nix` version overlay's `YY.MM` prefix to
   the current month. Change its codename only when the stable channel advances.
+- After the cheap evaluations pass, build the actual devshell and one representative NixOS system
+  (prefer the local box). `nix flake check --no-build` does not expose dependency build failures;
+  this is especially important when updating build-tool inputs such as Determinate Nix.

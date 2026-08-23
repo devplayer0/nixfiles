@@ -11,7 +11,6 @@ in
   imports = [
     inputs.impermanence.nixosModules.default
     inputs.ragenix.nixosModules.age
-    inputs.sharry.nixosModules.default
     inputs.copyparty.nixosModules.default
     inputs.harmonia.nixosModules.harmonia
   ];
@@ -77,7 +76,6 @@ in
       nixpkgs = {
         overlays = [
           inputs.deploy-rs.overlays.default
-          inputs.sharry.overlays.default
           # TODO: Re-enable when borgthin is updated
           # inputs.borgthin.overlays.default
           inputs.boardie.overlays.default
@@ -169,7 +167,7 @@ in
 
       services = {
         # TODO: Remove if-else when 26.11 releases
-        kmscon = if (config.system.nixos.release == "26.06:u-26.11") then {
+        kmscon = if (config.system.nixos.release == "26.08:u-26.11") then {
           enable = mkDefault false;
           config = {
             hwaccel = config.hardware.graphics.enable;
