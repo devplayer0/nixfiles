@@ -65,8 +65,9 @@ Common ones:
   `$INSTALLER`. For bringing up a new box end to end follow the guided procedure in
   [`docs/install-box.md`](docs/install-box.md).
 - `update-nixpkgs` / `update-home-manager` — bump pinned inputs. For the full periodic upgrade
-  (rebasing the `devplayer0` nixpkgs fork, stable-release bumps, version-gate sweep, input review)
-  follow the guided procedure in [`docs/nixpkgs-upgrade.md`](docs/nixpkgs-upgrade.md).
+  (rebasing the `devplayer0` nixpkgs fork, stable-release bumps, kernel and release-metadata
+  refreshes, version-gate sweep, input review) follow the guided procedure in
+  [`docs/nixpkgs-upgrade.md`](docs/nixpkgs-upgrade.md).
 
 Use the narrowest relevant evaluation while iterating: `check-system <host>` for a box config,
 `nix eval .#nixfiles.config.nixos.allAssignments --json` for assignment generation, or
@@ -211,10 +212,13 @@ in churn.
   command, option or upstream technical term such as QEMU's machine type.
 - Commit subjects follow `area/scope: Capitalized summary` (e.g. `nixos/home: ...`); keep logically
   distinct changes in separate commits. Aim for 50-character subjects and do not exceed 72
-  characters. Wrap commit bodies at 72 columns. A concise body describing the change and its
-  rationale is welcome when the subject alone does not provide enough context — keep it to the
-  essentials rather than restating the diff. `Co-Authored-By` is the only trailer used here; do
-  **not** add a `Claude-Session` link (or any other session/tooling trailer).
+  characters. Hard-wrap commit body lines at 72 characters; Git preserves an unwrapped `-m`
+  argument as one long line, so include literal line breaks or use a commit-message file. Before
+  reporting a commit, inspect `git show -s --format=%B HEAD` and amend it if any line exceeds 72
+  characters. A concise body describing the change and its rationale is welcome when the subject
+  alone does not provide enough context — keep it to the essentials rather than restating the diff.
+  `Co-Authored-By` is the only trailer used here; do **not** add a `Claude-Session` link (or any
+  other session/tooling trailer).
 - **"Logically distinct" means unrelated** — two different applications, two boxes that have nothing
   to do with each other, a drive-by fix that happens to sit in a file you were editing anyway. One
   piece of work stays in one commit even when it touches a config, several docs and a switch: if the

@@ -2,13 +2,14 @@
 
 Procedure for the periodic upgrade of all four nixpkgs channels (`unstable`, `stable`, `mine`,
 `mine-stable`) and home-manager. Written to be followed by a person or any coding agent; a
-Claude Code entry point exists at `.claude/skills/upgrade-nixpkgs/` but the steps below are the
-canonical source.
+shared agent-skill entry point exists at `.agents/skills/upgrade-nixpkgs/`, but the steps below are
+the canonical source.
 
 The upgrade is **guided, not automated**: do the mechanical and investigative steps, but stop at
 the judgment points (marked ⏸) — pushing the fork, resolving rebase conflicts, editing the
-`flake.nix` stable pins, and deleting version guards. Report findings and let the maintainer
-decide. Keep a running summary and present it before any push or commit.
+stable-channel configuration, choosing a new release codename, and deleting version guards. Report
+findings and let the maintainer decide. Keep a running summary and present it before any push or
+commit.
 
 Work the phases in order; skip one only if explicitly scoped to a subset.
 
@@ -43,6 +44,7 @@ stable pins) has to agree on one NixOS stable release, so establish it up front.
    the pieces must all move to the same release together:
    - Rebase `devplayer0-stable` onto the new `upstream/release-YY.NN` (Phase 2 uses this target).
    - Edit `flake.nix`: `nixpkgs-stable.url` and `home-manager-stable.url` → the new release.
+   - Choose a new `lib/default.nix` `versionOverlay` codename (Phase 4 updates it).
    - Bump each system's `stateVersion` / `home.stateVersion` only if the maintainer explicitly
      wants to — that is a separate, deliberate decision; never auto-bump.
    Don't edit `flake.nix` here without confirmation.
@@ -83,7 +85,28 @@ update-home-manager
 Then show the `flake.lock` diff for the nixpkgs/home-manager entries so the old→new revisions are
 visible.
 
-## Phase 4 — Sweep version-gated behavior
+## Phase 4 — Refresh kernels and release metadata
+
+Update the repository values that deliberately move with nixpkgs upgrades:
+
+1. In `lib/constants.nix`, inspect the kernel attributes available from the refreshed nixpkgs pins
+   and update both explicit selections:
+   - `kernel.lts` → the newest upstream long-term-support kernel carried by nixpkgs.
+   - `kernel.latest` → the newest kernel series carried by nixpkgs.
+   Keep explicit `pkgs.linuxKernel.packages.linux_X_Y` attributes rather than replacing them with
+   moving aliases. Confirm both attributes exist in the unstable and stable package sets used by
+   the boxes; if the newest choice is unavailable on stable, report that instead of breaking the
+   shared constant.
+2. In `lib/default.nix`, update the `versionOverlay` values:
+   - Set the leading `YY.MM` in `trivial.release` to the current year and month. Preserve the
+     `:u-${prev.trivial.release}` suffix.
+   - If Phase 1 found a new NixOS stable release, ⏸ ask the maintainer to choose or approve a new
+     `trivial.codeName`, then update it as part of the coordinated stable bump. Otherwise retain the
+     existing codename.
+
+Show these edits alongside the input changes in the upgrade summary.
+
+## Phase 5 — Sweep version-gated behavior
 
 The repo carries branch-conditional logic and TODOs keyed to specific nixpkgs versions; some become
 removable after an upgrade, especially after a stable bump. Surface them:
@@ -97,7 +120,7 @@ Known example: `nixos/modules/common.nix` carries a `# TODO: Remove if-else when
 guard. For each hit, evaluate whether the now-current versions make the guard removable and list
 candidates. ⏸ Don't delete guards without confirmation — some protect the still-supported stable.
 
-## Phase 5 — Review remaining flake inputs
+## Phase 6 — Review remaining flake inputs
 
 Don't blanket-update. Walk the other inputs deliberately:
 
@@ -109,17 +132,17 @@ Don't blanket-update. Walk the other inputs deliberately:
 3. Propose a per-input update list with reasons; update the approved ones with targeted
    `nix flake update <input>`, not a global update.
 
-## Phase 6 — Validate
+## Phase 7 — Validate
 
 1. `nix flake check --no-build` (broad eval; reproduces CI's cheap checks).
 2. `check-system <host>` on a representative box, and one exercising the stable channel if the
-   boxes mix channels.
+   boxes mix channels. This must exercise the refreshed kernel constants on both channels.
 3. Report eval/build results honestly. On failure, surface the error and stop rather than papering
    over it.
 
 ## Wrap-up
 
 Present a final summary: fork rebase outcome (patches kept/dropped/conflicted), whether a stable
-bump is pending or was applied, the lock diff, version-gate cleanup candidates, inputs updated, and
-validation results. Leave committing to the maintainer unless asked; if committing, follow the
-repo's `area/scope: Capitalized summary` convention.
+bump is pending or was applied, kernel and release-metadata changes, the lock diff, version-gate
+cleanup candidates, inputs updated, and validation results. Leave committing to the maintainer
+unless asked; if committing, follow the repo's `area/scope: Capitalized summary` convention.
