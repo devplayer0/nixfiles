@@ -36,9 +36,9 @@
   // procfs files report a size of zero, so IOUtils reads /proc/meminfo as empty.
   // nsIScriptableInputStream also rejects reads larger than that reported size;
   // nsIConverterInputStream reads until EOF without relying on it.
-  function availableMemory() {
+  function readProcFile(path) {
     const file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsIFile);
-    file.initWithPath("/proc/meminfo");
+    file.initWithPath(path);
     const fileStream = Cc["@mozilla.org/network/file-input-stream;1"].createInstance(
       Ci.nsIFileInputStream
     );
@@ -48,17 +48,38 @@
     );
     input.init(fileStream, "UTF-8", 0, 0);
     const chunk = {};
-    let meminfo = "";
+    let contents = "";
     while (input.readString(4096, chunk)) {
-      meminfo += chunk.value;
+      contents += chunk.value;
     }
     input.close();
+    return contents;
+  }
 
-    const match = /^MemAvailable:\s+(\d+)\s+kB$/m.exec(meminfo);
+  function memoryInfo() {
+    const meminfo = readProcFile("/proc/meminfo");
+
+    const readKiB = name => {
+      const match = new RegExp(`^${name}:\\s+(\\d+)\\s+kB$`, "m").exec(meminfo);
+      if (!match) {
+        throw new Error(`${name} is absent from /proc/meminfo`);
+      }
+      return Number(match[1]) * 1024;
+    };
+
+    return {
+      available: readKiB("MemAvailable"),
+    };
+  }
+
+  const availableMemory = () => memoryInfo().available;
+
+  function swapOutPages() {
+    const match = /^pswpout\s+(\d+)$/m.exec(readProcFile("/proc/vmstat"));
     if (!match) {
-      throw new Error("MemAvailable is absent from /proc/meminfo");
+      throw new Error("pswpout is absent from /proc/vmstat");
     }
-    return Number(match[1]) * 1024;
+    return Number(match[1]);
   }
 
   async function unloadOne(minInactiveMs) {
@@ -184,6 +205,7 @@
     underPressure: false,
     timer: null,
     paths: null,
+    previousSwapOutPages: null,
 
     async tick() {
       if (this.busy) {
@@ -203,19 +225,32 @@
           return;
         }
 
-        const available = await availableMemory();
+        const { available } = memoryInfo();
+        const currentSwapOutPages = swapOutPages();
+        // Swap usage persists after pressure passes, so react to new swap-outs instead.
+        const swappedOutPages =
+          this.previousSwapOutPages === null
+            ? 0
+            : Math.max(0, currentSwapOutPages - this.previousSwapOutPages);
+        this.previousSwapOutPages = currentSwapOutPages;
         const low = prefInt("lowAvailableMiB") * MiB;
         const high = prefInt("highAvailableMiB") * MiB;
         if (high <= low) {
           throw new Error("highAvailableMiB must be greater than lowAvailableMiB");
         }
 
-        if (!this.underPressure && available <= low) {
+        if (!this.underPressure && (available <= low || swappedOutPages > 0)) {
           this.underPressure = true;
-          log(`memory pressure entered at ${Math.round(available / MiB)} MiB available`);
-        } else if (this.underPressure && available >= high) {
+          log(
+            `memory pressure entered at ${Math.round(available / MiB)} MiB available, ` +
+              `${swappedOutPages} pages swapped out since the previous poll`
+          );
+        } else if (this.underPressure && available >= high && swappedOutPages === 0) {
           this.underPressure = false;
-          log(`memory pressure cleared at ${Math.round(available / MiB)} MiB available`);
+          log(
+            `memory pressure cleared at ${Math.round(available / MiB)} MiB available, ` +
+              "no pages swapped out since the previous poll"
+          );
         }
 
         if (this.underPressure) {
