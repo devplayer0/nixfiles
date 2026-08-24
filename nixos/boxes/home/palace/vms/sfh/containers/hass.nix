@@ -165,27 +165,7 @@ in
             };
           };
 
-          home-assistant =
-          let
-            pyirishrail = ps: ps.buildPythonPackage rec {
-              pname = "pyirishrail";
-              version = "0.0.2";
-              src = pkgs.fetchFromGitHub {
-                owner = "ttroy50";
-                repo = "pyirishrail";
-                tag = version;
-                hash = "sha256-NgARqhcXP0lgGpgBRiNtQaSn9JcRNtCcZPljcL7t3Xc=";
-              };
-
-              dependencies = with ps; [
-                requests
-              ];
-
-              pyproject = true;
-              build-system = [ ps.setuptools ];
-            };
-          in
-          {
+          home-assistant = {
             enable = true;
 
             extraComponents = [
@@ -207,7 +187,6 @@ in
               isal
 
               gtts
-              (pyirishrail python3Packages)
             ];
             customComponents = with pkgs.home-assistant-custom-components; [
               alarmo

@@ -702,11 +702,11 @@
     },
     "nixpkgs-mine": {
       "locked": {
-        "lastModified": 1787523184,
-        "narHash": "sha256-wdRy2OJNSEceZoyDyAXWWw7sroxQZlY/d3FyeOU3QxA=",
+        "lastModified": 1787612836,
+        "narHash": "sha256-25KxhEJHYVZXAwsHQbXpyaG9/WpWGo9EmGe7kzMc25Y=",
         "owner": "devplayer0",
         "repo": "nixpkgs",
-        "rev": "9eaacb6680b6f10067acd4b10c61ef4c4d643fb6",
+        "rev": "c92598bc3fd46ff4d23407045091eea206120979",
         "type": "github"
       },
       "original": {
