@@ -10,6 +10,11 @@ remote_cmd() {
   ssh -i "$SSH_KEY" "$SSH_HOST" env HOME=/run/harmonia NIX_REMOTE="$REMOTE_STORE" "$@"
 }
 
+collect_garbage() {
+  echo "Collecting garbage..."
+  remote_cmd nix-collect-garbage --delete-older-than 60d
+}
+
 umask_old=$(umask)
 umask 0066
 echo "$HARMONIA_SSH_KEY" | base64 -d > "$SSH_KEY"
@@ -17,6 +22,12 @@ umask $umask_old
 
 mkdir -p ~/.ssh
 cp ci/known_hosts ~/.ssh/
+
+if [ "${1-}" = "--gc" ]; then
+  collect_garbage
+  exit
+fi
+
 path="$1"
 
 echo "Pushing $path to cache..."
@@ -26,6 +37,5 @@ if [ -n "$UPDATE_PROFILE" ]; then
   echo "Updating profile..."
   remote_cmd nix-env -p "$REMOTE_STORE"/nix/var/nix/profiles/nixfiles --set "$path"
 
-  echo "Collecting garbage..."
-  remote_cmd nix-collect-garbage --delete-older-than 60d
+  collect_garbage
 fi

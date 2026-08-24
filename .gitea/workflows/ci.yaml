@@ -37,6 +37,10 @@ jobs:
         env:
           HARMONIA_SSH_KEY: ${{ secrets.HARMONIA_SSH_KEY }}
         run: |
+          # Make room before pushing so a full cache cannot prevent the GC at
+          # the end of a successful run from ever being reached.
+          ci/push-to-cache.sh --gc
+
           nix eval --json --apply "builtins.attrNames" .#ci.x86_64-linux | jq -cr '.[]' | while read job; do
             echo "::group::Build $job"
             nix build --no-link .#ci.x86_64-linux."$job"
