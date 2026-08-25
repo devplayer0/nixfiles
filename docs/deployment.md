@@ -223,8 +223,8 @@ Harmonia substituter as the boxes), runs `nix flake check --no-build`, then buil
 of `.#ci.x86_64-linux`: systems as `system-<name>`, homes as `home-<name>` (with `@` changed to
 `-at-`), packages as `package-<name>`, and the development `shell`. Each result is pushed to the
 Harmonia cache with [`ci/push-to-cache.sh`](../ci/push-to-cache.sh). Before the first push, the
-workflow collects cache paths older than its retention period so a full cache cannot prevent
-collection from being reached.
+workflow deletes cache-profile generations older than its retention period, then collects
+unreachable paths so a full cache cannot prevent collection from being reached.
 
 It then builds `.#ciDrv.x86_64-linux`, a `linkFarm` of all CI attributes, and pushes it with
 `UPDATE_PROFILE=1`. That updates the `nixfiles` profile on the cache box and collects old paths

@@ -12,7 +12,10 @@ remote_cmd() {
 
 collect_garbage() {
   echo "Collecting garbage..."
-  remote_cmd nix-collect-garbage --delete-older-than 60d
+  remote_cmd nix-env \
+    -p "$REMOTE_STORE"/nix/var/nix/profiles/nixfiles \
+    --delete-generations 60d
+  remote_cmd nix-collect-garbage
 }
 
 umask_old=$(umask)
