@@ -39,6 +39,4 @@ nix copy --no-check-sigs --to "$STORE_URI" "$path"
 if [ -n "$UPDATE_PROFILE" ]; then
   echo "Updating profile..."
   remote_cmd nix-env -p "$REMOTE_STORE"/nix/var/nix/profiles/nixfiles --set "$path"
-
-  collect_garbage
 fi

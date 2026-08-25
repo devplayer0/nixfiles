@@ -227,10 +227,9 @@ workflow deletes cache-profile generations older than its retention period, then
 unreachable paths so a full cache cannot prevent collection from being reached.
 
 It then builds `.#ciDrv.x86_64-linux`, a `linkFarm` of all CI attributes, and pushes it with
-`UPDATE_PROFILE=1`. That updates the `nixfiles` profile on the cache box and collects old paths
-according to the workflow's retention setting. The SSH store uses `/var/lib/harmonia`,
-`HARMONIA_SSH_KEY`, and pinned `ci/known_hosts`; clients use `https://nix-cache.nul.ie` through
-`lib.my.c.nix.cache`.
+`UPDATE_PROFILE=1`. That updates the `nixfiles` profile on the cache box. The SSH store uses
+`/var/lib/harmonia`, `HARMONIA_SSH_KEY`, and pinned `ci/known_hosts`; clients use
+`https://nix-cache.nul.ie` through `lib.my.c.nix.cache`.
 
 ### `installer.yaml`
 
