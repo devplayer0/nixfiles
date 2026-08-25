@@ -159,6 +159,7 @@ edit prose there, never the other generated cells.
 | [`cellar`](sites/home/cellar.md) | `192.168.68.80/22 gw 192.168.71.254` | `2a0e:97c0:4d0:1::4:1/64` | h.nul.ie |  |
 | [`hass`](sites/home/sfh/containers/hass.md) | `192.168.68.103/22 gw 192.168.71.254` | `2a0e:97c0:4d0:1::5:3/64` | h.nul.ie |  |
 | [`palace`](sites/home/palace.md) | `192.168.68.22/22 gw 192.168.71.254` | `2a0e:97c0:4d0:1::2:1/64` | h.nul.ie |  |
+| [`portcullis`](sites/colony/portcullis.md) | `192.168.68.41/22 gw 192.168.71.254` | `2a0e:97c0:4d0:1::6:1/64` | h.nul.ie |  |
 | [`river`](sites/home/river.md) | `192.168.68.1/22` | `2a0e:97c0:4d0:1::1/64` | h.nul.ie |  |
 | `router-hi` | `192.168.71.254/22 gw 192.168.68.1` | `2a0e:97c0:4d0:1::ffff/64` | h.nul.ie | Floating VIP shared by [`river`](sites/home/river.md) and [`stream`](sites/home/stream.md) |
 | [`sfh`](sites/home/sfh/README.md) | `192.168.68.81/22 gw 192.168.71.254` | `2a0e:97c0:4d0:1::4:2/64` | h.nul.ie |  |
