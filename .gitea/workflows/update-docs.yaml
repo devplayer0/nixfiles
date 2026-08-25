@@ -39,10 +39,10 @@ jobs:
       - name: Commit and push if changed
         env:
           GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
-          REPO_URL: ${{ gitea.repositoryUrl }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          REPO_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
           git remote set-url origin "${REPO_URL/https:\/\//https:\/\/oauth2:${GITEA_TOKEN}@}"
           git add docs/
           if ! git diff --cached --quiet; then
