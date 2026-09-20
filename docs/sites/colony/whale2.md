@@ -48,7 +48,8 @@ forwarded by `estuary`.
 | `graeme` | `25569` tcp+udp | running |
 
 - **valheim** ([`valheim.nix`](../../../nixos/boxes/colony/vms/whale2/valheim.nix)) —
-  `lloesche/valheim-server`, public server "amogus sus", world `simpland2`,
+  `community-valheim-tools/valheim-server`, public server "amogus sus", world `simpland3`
+  (previous world `simpland2` retained in the `valheim_data` volume),
   allow-listed Steam IDs, password from agenix.
 - **simpcraft** ([`minecraft/`](../../../nixos/boxes/colony/vms/whale2/minecraft)) —
   `itzg/minecraft-server` (self-built `git.nul.ie/dev/craftblock` image),
