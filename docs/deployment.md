@@ -62,6 +62,16 @@ Generated profiles deploy in this order:
 `ssh-machine <name> bash -s < script.sh`. If a flaky agent stalls public-key authentication, use
 `SSH_AUTH_SOCK= ssh-machine …`.
 
+## Codex
+
+The shared GUI home-manager module installs Codex from the `llm-agents` input, retaining
+that input's tested nixpkgs pin. Run `nix flake update llm-agents`, then switch the system
+or home configuration to use the updated package.
+
+`programs.codex.mutableSettings` merges the declared status-line settings into the writable
+`~/.codex/config.toml` during activation. Declared values take precedence on each switch;
+other settings, including model selection, providers and project trust, remain imperative.
+
 ## Devshell commands
 
 The repo ships a `numtide/devshell` ([`devshell/`](../devshell), entered via `direnv`). Run a

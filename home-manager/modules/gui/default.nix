@@ -1,4 +1,4 @@
-{ lib, pkgs', pkgs, config, ... }:
+{ lib, pkgs', pkgs, inputs, config, ... }:
 let
   inherit (lib) genAttrs mkIf mkMerge mkForce mapAttrs mkOptionDefault mkDefault optional;
   inherit (lib.my) mkOpt' mkBoolOpt';
@@ -184,6 +184,26 @@ in
                   character = "┊";
                 };
               };
+            };
+          };
+
+          codex = {
+            enable = true;
+            package = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex;
+            mutableSettings = true;
+            settings.tui = {
+              status_line = [
+                "model-with-reasoning"
+                "current-dir"
+                "five-hour-limit"
+                "weekly-limit"
+                "context-used"
+                "context-window-size"
+                "total-input-tokens"
+                "total-output-tokens"
+                "used-tokens"
+              ];
+              status_line_use_colors = true;
             };
           };
 

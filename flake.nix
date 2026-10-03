@@ -69,6 +69,8 @@
     openwrt-feeds.inputs.openwrt-imagebuilder.follows = "openwrt-imagebuilder";
 
     # Packages not in nixpkgs
+    # Keep its tested nixpkgs pin so packages can use the upstream binary cache.
+    llm-agents.url = "github:numtide/llm-agents.nix";
     borgthin.url = "github:devplayer0/borg";
     # TODO: Update borgthin so this works
     # borgthin.inputs.nixpkgs.follows = "nixpkgs-mine";
