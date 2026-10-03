@@ -187,6 +187,13 @@ in churn.
 
 ## Conventions
 
+- Prefer `jj` for status, diffs, history, commits, rebases and remote operations when it is
+  available and the checkout has a Jujutsu workspace. Use Git when `jj` is unavailable or the
+  checkout is Git-only, and for Git-specific tooling. The shared home config and devshell install
+  `jujutsu`; see [`docs/deployment.md#version-control`](docs/deployment.md#version-control) for
+  setup and the workflow. Inspect `jj status`, `jj diff` and `jj log` before editing; `jj`
+  snapshots working-copy changes automatically, so preserve existing user changes and use
+  explicit revisions when rewriting history or moving bookmarks.
 - Format with `nixpkgs-fmt` (`fmt`). 2-space indent, `inherit (...)` blocks at the top of `let` —
   prefer `inherit (lib) mkOption ...;` (and bare use) over qualifying inline as `lib.mkOption`.
   **Ask before running `fmt`** — some files aren't canonically formatted, so `fmt` can reindent a
@@ -212,11 +219,12 @@ in churn.
   command, option or upstream technical term such as QEMU's machine type.
 - Commit subjects follow `area/scope: Capitalized summary` (e.g. `nixos/home: ...`); keep logically
   distinct changes in separate commits. Aim for 50-character subjects and do not exceed 72
-  characters. Hard-wrap commit body lines at 72 characters; Git preserves an unwrapped `-m`
-  argument as one long line, so include literal line breaks or use a commit-message file. Before
-  reporting a commit, inspect `git show -s --format=%B HEAD` and amend it if any line exceeds 72
-  characters. A concise body describing the change and its rationale is welcome when the subject
-  alone does not provide enough context — keep it to the essentials rather than restating the diff.
+  characters. Hard-wrap commit body lines at 72 characters; `-m` preserves unwrapped text, so
+  include literal line breaks or use a commit-message file. Before reporting a commit, inspect
+  `jj log --no-graph -r <revision> -T description` (or `git show -s --format=%B HEAD` in a Git-only
+  checkout) and amend its description if any line exceeds 72 characters. A concise body describing
+  the change and its rationale is welcome when the subject alone does not provide enough context —
+  keep it to the essentials rather than restating the diff.
   `Co-Authored-By` is the only trailer used here; do **not** add a `Claude-Session` link (or any
   other session/tooling trailer).
 - **"Logically distinct" means unrelated** — two different applications, two boxes that have nothing

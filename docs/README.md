@@ -24,7 +24,7 @@ Not every box fits this pattern, but **colony** and **home** are organised this 
   nixpkgs channels, shared module inventory.
 - [`networking.md`](networking.md) — network assignments, domains, site topologies, router HA,
   the AS211024 L2 mesh, BGP, WireGuard, Tailscale.
-- [`deployment.md`](deployment.md) — deploy-rs, devshell commands, secrets workflow, CI.
+- [`deployment.md`](deployment.md) — deploy-rs, devshell commands, `jj` workflow, secrets, CI.
 - [`nixpkgs-upgrade.md`](nixpkgs-upgrade.md) — guided procedure for the periodic upgrade of the four
   nixpkgs channels and home-manager (fork rebase, stable bumps, input review).
 - [`install-box.md`](install-box.md) — guided procedure for installing a new box, from the booted

@@ -32,5 +32,6 @@ in
       exec ${deploy-rs.deploy-rs}/bin/deploy --skip-checks "$@"
     '')
     home-manager
+    jujutsu
   ];
 }

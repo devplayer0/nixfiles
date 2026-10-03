@@ -67,6 +67,24 @@ in
         # never care about.
         home-manager.enable = true;
 
+        git = {
+          enable = true;
+          settings = {
+            user = {
+              email = "jackos1998@gmail.com";
+              name = "Jack O'Sullivan";
+            };
+            pull.rebase = true;
+          };
+          lfs.enable = true;
+        };
+        diff-so-fancy.enable = true;
+
+        jujutsu = {
+          enable = true;
+          settings.user = config.programs.git.settings.user;
+        };
+
         lsd = {
           enable = mkDefault true;
           enableFishIntegration = mkDefault true;

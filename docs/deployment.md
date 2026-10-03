@@ -120,6 +120,43 @@ VM's unix sockets from `/run/vms/<vm>/` on `<host>` over SSH):
 | `vm-monitor <host> <vm>` | QEMU monitor socket in `minicom`. |
 | `vm-viewer <host> <vm>` | SPICE display in `virt-viewer` (not on Darwin). |
 
+## Version control
+
+The shared [Home Manager module](../home-manager/modules/common.nix) enables `programs.git`
+and `programs.jujutsu`, including Git LFS and `diff-so-fancy`, for graphical and non-graphical
+homes. Jujutsu uses the identity declared in `programs.git.settings.user`; Home Manager writes
+its `jj/config.toml`. The [devshell](../devshell/default.nix) also installs `jujutsu`, which
+provides `jj`. Prefer `jj` when it is available and the checkout has a Jujutsu workspace;
+use Git for Git-only checkouts and Git-specific tooling such as the installer-tag command
+and CI scripts.
+
+To use an existing Git checkout with both tools, run `jj git init --colocate` at its root.
+This creates local `.jj` metadata and keeps `.git` for Nix flake source discovery and existing
+Git tooling. Switch the home configuration to install the managed identity. When using only
+the devshell, configure your identity with `jj config set --user user.name '<name>'` and
+`jj config set --user user.email '<email>'` before creating commits.
+
+| Task | Command |
+|---|---|
+| Inspect the working copy and history | `jj status`, `jj diff`, `jj log` |
+| Describe the current change | `jj describe -m 'area/scope: Capitalized summary'` |
+| Start the next change | `jj new` |
+| Inspect a completed description | `jj log --no-graph -r <revision> -T description` |
+| Fetch remote history | `jj git fetch` |
+| Name a revision for publishing | `jj bookmark create <name> -r <revision>` |
+| Move an existing bookmark | `jj bookmark set <name> -r <revision>` |
+| Publish a bookmark | `jj git push --bookmark <name>` |
+
+`@` is the working-copy revision; after `jj new`, the completed change is normally `@-`.
+Working-copy edits are snapshotted automatically, without a staging step. Inspect existing
+changes before editing, keep unrelated work separate, and check the target revision before
+rewriting history or moving a bookmark. Follow the commit-message conventions in
+[`AGENTS.md`](../AGENTS.md#conventions).
+
+See the upstream [Jujutsu CLI reference](https://docs.jj-vcs.dev/latest/cli-reference/)
+for command options and [Git compatibility](https://docs.jj-vcs.dev/latest/git-compatibility/)
+for colocation details.
+
 ## Nix implementation
 
 Every context uses **Determinate Nix** as its `nix.package`, for its performance features

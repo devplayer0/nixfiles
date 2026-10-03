@@ -505,19 +505,6 @@ in
         };
 
         programs = {
-          git = {
-            enable = true;
-            settings = {
-              user = {
-                email = "jackos1998@gmail.com";
-                name = "Jack O'Sullivan";
-              };
-              pull.rebase = true;
-            };
-            lfs.enable = true;
-          };
-          diff-so-fancy.enable = true;
-
           waybar = import ./waybar.nix { inherit lib pkgs config font; };
           rofi = {
             enable = true;
