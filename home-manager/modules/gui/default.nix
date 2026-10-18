@@ -191,6 +191,7 @@ in
             enable = true;
             package = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex;
             mutableSettings = true;
+            settings.sandbox_workspace_write.network_access = true;
             settings.tui = {
               status_line = [
                 "model-with-reasoning"
