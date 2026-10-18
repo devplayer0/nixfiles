@@ -220,6 +220,7 @@ in
           file
           tree
           pwgen
+          python3
 
           minicom
           iperf3

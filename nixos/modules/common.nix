@@ -147,6 +147,7 @@ in
         [
           bash-completion
           git
+          python3
           unzip
           tcpdump
         ]
