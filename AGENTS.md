@@ -116,6 +116,11 @@ Four pkgs sets are threaded everywhere as `pkgsFlakes` / `pkgs'` (and `hmFlakes`
 channel via `nixpkgs` / `home-manager` / `hmNixpkgs` options (e.g. `nixpkgs = "mine-stable"`).
 Modules receive `pkgs'` = an attrset of all channels for the current system.
 
+For options absent from older channels, omit the attribute with `optionalAttrs` guarded by
+the module's `options` argument. `mkIf false` still checks option existence. Add a `TODO`
+comment explaining which older release needs the guard and which release upgrade allows
+its removal, matching the existing release-gated TODOs.
+
 ### `lib.my` and the `my` option namespace
 `lib/default.nix` extends `lib` with a `my` attrset (helpers like `mkOpt'`, `mkBoolOpt'`,
 `mkDefault'`, `inlineModule'`, `mkDefaultSystemsPkgs`, `homeStateVersion`). It also pulls in:

@@ -1,6 +1,6 @@
-{ lib, pkgs', pkgs, inputs, config, ... }:
+{ lib, pkgs', pkgs, inputs, config, options, ... }:
 let
-  inherit (lib) genAttrs mkIf mkMerge mkForce mapAttrs mkOptionDefault mkDefault optional;
+  inherit (lib) genAttrs mkIf mkMerge mkForce mapAttrs mkOptionDefault mkDefault optional optionalAttrs;
   inherit (lib.my) mkOpt' mkBoolOpt';
   inherit (lib.my.c) pubDomain;
 
@@ -187,10 +187,10 @@ in
             };
           };
 
+          # TODO: Remove mutableSettings guard when Home Manager 26.11 releases; 26.05 lacks it.
           codex = {
             enable = true;
             package = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex;
-            mutableSettings = true;
             settings.sandbox_workspace_write.network_access = true;
             settings.tui = {
               status_line = [
@@ -206,6 +206,8 @@ in
               ];
               status_line_use_colors = true;
             };
+          } // optionalAttrs (options.programs.codex ? mutableSettings) {
+            mutableSettings = true;
           };
 
           claude-code = {
