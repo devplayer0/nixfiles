@@ -84,7 +84,7 @@ in
 
             grim
             slurp
-            swappy
+            satty
 
             python3Packages.python-lsp-server
             nil # nix language server
@@ -410,8 +410,8 @@ in
                   "${mod}+Shift+n" = "exec ${clearWsName}";
 
                   # Screenshots
-                  "${mod}+Shift+d" = ''exec grim - | swappy -f -'';
-                  "${mod}+Shift+s" = ''exec grim -g "$(slurp)" - | swappy -f -'';
+                  "${mod}+Shift+d" = ''exec grim - | satty -f -'';
+                  "${mod}+Shift+s" = ''exec grim -g "$(slurp)" - | satty -f -'';
 
                   "XF86MonBrightnessDown" = "exec ${pkgs.brightnessctl}/bin/brightnessctl set 5%-";
                   "XF86MonBrightnessUp" = "exec ${pkgs.brightnessctl}/bin/brightnessctl set +5%";
