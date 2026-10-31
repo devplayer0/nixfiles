@@ -1,16 +1,18 @@
 {
   description = "System configs";
 
-  # Offer our Harmonia cache when building the flake itself, so `nix develop` / `nix build` don't
+  # Offer our Harmonia and Numtide caches when building the flake, so `nix develop` / `nix build` don't
   # rebuild from source. Nix reads `nixConfig` before the flake evaluates and rejects any computed
   # value (imports/thunks), so these must stay literal — keep them in sync with `lib.my.c.nix.cache`.
   # Consumers must trust these (accept-flake-config / a trusted user) for them to take effect.
   nixConfig = {
     extra-substituters = [
       "https://nix-cache.nul.ie"
+      "https://cache.numtide.com"
     ];
     extra-trusted-public-keys = [
       "nix-cache.nul.ie-1:BzH5yMfF4HbzY1C977XzOxoPhEc9Zbu39ftPkUbH+m4="
+      "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
     ];
   };
 

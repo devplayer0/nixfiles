@@ -102,9 +102,11 @@ rec {
     cache = rec {
       substituters = [
         "https://nix-cache.${pubDomain}"
+        "https://cache.numtide.com"
       ];
       keys = [
         "nix-cache.nul.ie-1:BzH5yMfF4HbzY1C977XzOxoPhEc9Zbu39ftPkUbH+m4="
+        "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
       ];
       conf = ''
         extra-substituters = ${concatStringsSep " " substituters}

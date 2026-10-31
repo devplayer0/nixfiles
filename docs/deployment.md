@@ -68,6 +68,10 @@ The shared GUI home-manager module installs Codex from the `llm-agents` input, r
 that input's tested nixpkgs pin. Run `nix flake update llm-agents`, then switch the system
 or home configuration to use the updated package.
 
+The shared cache settings in `lib.my.c.nix.cache` and the flake's `nixConfig` include
+the [Numtide binary cache](https://github.com/numtide/llm-agents.nix#binary-cache), so
+Codex can be downloaded prebuilt. Keep the input's tested nixpkgs pin to preserve cache hits.
+
 `programs.codex.mutableSettings` merges the declared status-line settings into the writable
 `~/.codex/config.toml` during activation. Declared values take precedence on each switch;
 other settings, including model selection, providers and project trust, remain imperative.
@@ -178,8 +182,8 @@ are unchanged, and the Determinate NixOS module is deliberately not imported.
   Determinate without further change.
 - **`accept-flake-config`.** Set true only in the devshell `nix.conf`, `.envrc` (as
   `--accept-flake-config`, for direnv) and CI — the contexts that build this flake — so its
-  `nixConfig` (the Harmonia cache) is trusted without an interactive prompt. It is deliberately not
-  set system-wide: boxes already trust that cache via `nix.settings`, so a global setting would only
+  `nixConfig` (the Harmonia and Numtide caches) is trusted without an interactive prompt. It is
+  deliberately not set system-wide: boxes already trust those caches via `nix.settings`, so a global setting would only
   blanket-trust every flake's `nixConfig` for no gain.
 
 ## Secrets
