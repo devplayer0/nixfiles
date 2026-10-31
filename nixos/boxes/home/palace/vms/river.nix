@@ -1,3 +1,8 @@
+{ lib, ... }:
+let
+  inherit (lib.my) net;
+  inherit (lib.my.c.home) domain prefixes hiMTU;
+in
 {
   imports = [ (import ../../routing-common 0) ];
 
@@ -5,6 +10,17 @@
     system = "x86_64-linux";
     nixpkgs = "mine";
     home-manager = "mine";
+
+    assignments.rdma = {
+      name = "river-rdma";
+      inherit domain;
+      mtu = hiMTU;
+      ipv4 = {
+        address = net.cidr.host 3 prefixes.hi.v4;
+        mask = 32;
+        gateway = null;
+      };
+    };
 
     configuration = { lib, modulesPath, pkgs, config, assignments, allAssignments, ... }:
     let
@@ -14,11 +30,11 @@
       inherit (lib.my.c) networkd;
       inherit (lib.my.c.home) vlans domain prefixes roceBootModules routersPubV4;
 
-      # river reaches the ONT over its 100G `lan` uplink to the dave switch (which downlinks to
-      # brian, where the ONT lands). Digiweb delivers the ISP VLAN (pon-isp, 10) single-tagged at
-      # the ONT alongside the ONT's untagged management traffic. With a single ONT there's no VLAN
-      # collision, so the switches simply trunk the ISP's VLAN 10 straight through to river (PPPoE
-      # runs directly on it) and PVID the ONT's untagged management port onto wan-pon-ont (140).
+      # river reaches the ONT through its RSTP `lan` bridge, normally over `lan-dave`. Digiweb
+      # delivers the ISP VLAN (pon-isp, 10) single-tagged at the ONT alongside the ONT's untagged
+      # management traffic. With a single ONT there's no VLAN collision, so the switches simply
+      # trunk the ISP's VLAN 10 straight through to river (PPPoE runs directly on it) and PVID the
+      # ONT's untagged management port onto wan-pon-ont (140).
       # river takes .100 in the ONT's /24 (matching stream's modem-mgmt .100) to reach its web
       # UI at 192.168.100.1. (See docs/sites/home/switches.md for the switch side and the multi-ONT plan.)
       ontV4 = net.cidr.host 100 prefixes.ont.v4;
@@ -35,24 +51,36 @@
         boot = {
           kernelModules = [ "kvm-amd" ];
           kernelParams = [ "console=ttyS0,115200n8" ];
+          kernel.sysctl = {
+            # Keep storage and router addresses on their own interfaces on the shared L2 network.
+            "net.ipv4.conf.rdma-hi.arp_ignore" = 1;
+            "net.ipv4.conf.lan-hi.arp_ignore" = 1;
+            "net.ipv4.conf.rdma-hi.arp_announce" = 2;
+            "net.ipv4.conf.lan-hi.arp_announce" = 2;
+          };
           initrd = {
             availableKernelModules = [
               "virtio_pci" "ahci" "sr_mod" "virtio_blk"
-              "8021q"
             ] ++ roceBootModules;
             kernelModules = [ "dm-snapshot" ];
             systemd = {
               network = {
-                # Don't need to put the link config here, they're copied from main config
-                netdevs = mkVLAN "lan-hi" vlans.hi;
+                # NixOS copies the main system's .link units into the systemd initrd, so the
+                # rdma-hi rename is already available here. It does not copy .network units.
                 networks = {
-                  "20-lan" = {
-                    matchConfig.Name = "lan";
-                    vlan = [ "lan-hi" ];
-                    linkConfig.RequiredForOnline = "no";
-                    networkConfig = networkd.noL3;
-                  };
-                  "30-lan-hi" = networkdAssignment "lan-hi" assignments.hi;
+                  "20-rdma-hi" = mkMerge [
+                    (networkdAssignment "rdma-hi" assignments.rdma)
+                    {
+                      networkConfig.IPv6AcceptRA = mkForce false;
+                      routes = [
+                        {
+                          Destination = "${allAssignments.cellar.hi.ipv4.address}/32";
+                          PreferredSource = assignments.rdma.ipv4.address;
+                          Scope = "link";
+                        }
+                      ];
+                    }
+                  ];
                 };
               };
             };
@@ -86,9 +114,6 @@
           };
           fstrim.enable = true;
 
-          # TODO: re-enable once scheduling is tested
-          networkd-dispatcher.enable = mkForce false;
-
           pppd = {
             enable = true;
             peers.digiweb = {
@@ -118,8 +143,8 @@
           };
         };
 
-        # PPPoE WAN (Digiweb): pppd owns the `wan` interface on top of wan-pon-isp (the switch's
-        # swap of the ISP's VLAN 10), and its ip-up/ip-down hooks toggle the shared
+        # PPPoE WAN (Digiweb): pppd owns the `wan` interface on top of wan-pon-isp (the ISP's
+        # VLAN 10, trunked untranslated), and its ip-up/ip-down hooks toggle the shared
         # wan-online.target. Nothing else Wants the target, so it stays inactive until the link
         # is actually up.
         systemd.targets.wan-online.unitConfig.DefaultDependencies = false;
@@ -159,10 +184,18 @@
             (mkVLAN "wan-pon-ont" vlans.wan-pon-ont)
             # The ISP VLAN is trunked through untranslated, so this is the raw pon-isp (10)
             (mkVLAN "wan-pon-isp" vlans.pon-isp)
+            {
+              # The adapter's local switching must recognize the router's destination MAC.
+              "25-lan".netdevConfig = {
+                Name = "lan";
+                Kind = "bridge";
+                MACAddress = "52:54:00:8a:8a:f4";
+              };
+            }
           ];
 
           links = {
-            "10-wan-old" = {
+            "10-lan-jim" = {
               matchConfig = {
                 # Matching against MAC address seems to break VLAN interfaces
                 # (since they share the same MAC address)
@@ -170,34 +203,61 @@
                 PermanentMACAddress = "e0:d5:5e:68:0c:6e";
               };
               linkConfig = {
-                Name = "wan-old";
+                Name = "lan-jim";
                 RxBufferSize = 4096;
                 TxBufferSize = 4096;
+                MTUBytes = toString lib.my.c.home.hiMTU;
               };
             };
 
-            "10-lan" = {
+            "10-rdma-hi" = {
               matchConfig = {
                 Driver = "mlx5_core";
                 PermanentMACAddress = "52:54:00:8a:8a:f2";
               };
               linkConfig = {
-                Name = "lan";
+                Name = "rdma-hi";
+                MTUBytes = toString lib.my.c.home.hiMTU;
+              };
+            };
+
+            "10-lan-dave" = {
+              matchConfig = {
+                Driver = "mlx5_core";
+                PermanentMACAddress = "52:54:00:8a:8a:f4";
+              };
+              linkConfig = {
+                Name = "lan-dave";
                 MTUBytes = toString lib.my.c.home.hiMTU;
               };
             };
           };
 
           networks = {
+            "30-rdma-hi" = mkMerge [
+              (networkdAssignment "rdma-hi" assignments.rdma)
+              {
+                networkConfig = {
+                  IPv6AcceptRA = mkForce false;
+                  # Keep the address and route established in the initrd: dropping either while
+                  # stage 2 networkd takes over would interrupt the mounted NVMe-oF root.
+                  KeepConfiguration = "static";
+                };
+                routes = [
+                  {
+                    Destination = "${allAssignments.cellar.hi.ipv4.address}/32";
+                    PreferredSource = assignments.rdma.ipv4.address;
+                    Scope = "link";
+                  }
+                ];
+              }
+            ];
             "55-lan" = {
-              # both WAN VLANs arrive single-tagged on the 100G uplink to dave: wan-pon-ont (140,
-              # the ONT's management, PVID-tagged at the brian edge) and the ISP's VLAN 10, trunked
-              # straight through
+              # Both WAN VLANs arrive single-tagged on the RSTP bridge: wan-pon-ont (140, the ONT's
+              # management, PVID-tagged at the brian edge) and the ISP's VLAN 10, trunked straight
+              # through.
               vlan = [ "wan-pon-ont" "wan-pon-isp" ];
             };
-            # So we don't drop the IP we use to connect to NVMe-oF!
-            "60-lan-hi".networkConfig.KeepConfiguration = "static";
-
             # ONT management: the brian edge PVIDs the ONT's untagged port onto wan-pon-ont, so give
             # ourselves an address in its /24 to reach the ONT's web UI at 192.168.100.1.
             "70-wan-pon-ont" = {

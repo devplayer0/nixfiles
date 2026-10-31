@@ -2,7 +2,7 @@
 
 This page describes how addressing works across the boxes: the assignment mechanism, the
 per-site domains and prefixes, the home router HA pair, and the overlays/tunnels that tie the
-sites together. Switch-level home topology (jim/dave/brian, the ONT path) lives in
+sites together. Switch-level home topology (`jim`/`dave`/`brian`/`shytzel`, the WAN paths) lives in
 [sites/home/switches.md](sites/home/switches.md).
 
 ## Assignments
@@ -314,6 +314,29 @@ which the other sites use as their next-hop into the home prefixes.
 
 ### Router HA
 
+#### Switch attachments
+
+Both routers use `lan-dave` and `lan-jim` under an RSTP bridge named `lan`. The
+[failover validation](sites/home/router-failover.md) covers router, attachment and switch outages.
+[`routing-common`](../nixos/boxes/home/routing-common/default.nix) owns the bridge, `mstpd` setup and
+explicit port costs: `dave` is preferred at cost 10 and `jim` is redundant at cost 100. Native
+`core`, the client VLANs and `river`'s Digiweb VLANs sit above this bridge. The `jim` path can reach
+the ONT through the RSTP-protected connection between `jim` and `brian` without traversing `dave`.
+
+RSTP follows the fabric topology, including failures beyond a local cable that retains carrier;
+an active-backup bond using only MII monitoring would miss those failures. The guest bridge has an
+explicit jumbo MTU. Root priorities and port roles across the complete fabric must agree with the
+intended preference; local port costs alone do not establish a working redundant path.
+On networkd configuration events, the dispatcher inspects the current bridge ports and applies
+the costs through `mstpctl`, retrying until the daemon has registered each port. The daemon's
+configuration hook reapplies them on restart or reload. The shared DHCPv4 service
+waits for IPv4 readiness on the client interfaces and retries delayed startup without exhausting
+systemd's start limit.
+
+`river` keeps its NVMe/RDMA traffic on a separate VF, outside the bridge; see
+[river](sites/home/river.md#storage). The physical fabric is documented in
+[switches.md](sites/home/switches.md).
+
 #### VRRP
 
 [`routing-common/keepalived.nix`](../nixos/boxes/home/routing-common/keepalived.nix) defines separate
@@ -351,15 +374,20 @@ route on `wan`, while `river`'s `pppd` hooks start and stop it. Consumers such a
 `wantedBy` + `partOf` + `after`, never `requires`/`wants`, so they cannot pull the target in early
 and they reload on WAN flap.
 
+DDNS starts after `network.target` rather than this WAN gate and can fail before the WAN is
+ready. Its timer retries periodically; `doas systemctl start ddns-update.service` retries
+immediately once connectivity is available.
+
 ### WAN paths (summary)
 
 #### `river`
 
 The VM on `palace` runs Digiweb PPPoE directly on VLAN 10 (`vlans.pon-isp`), trunked untranslated
-through the switches. The carrying interface is named `wan-pon-isp`; VLAN ID 141 with that name is
-reserved for a future translation scheme. MTU 1508 preserves a 1500-byte PPP session, IPCP requests
-the static address, and the `pppd` hooks own `wan-online.target`. `wan-pon-ont` (VLAN 140) reaches
-the ONT management subnet at `192.168.100.0/24`, where `river` takes `.100`.
+over its RSTP `lan` bridge. `dave` is the normal carrying path; `jim` provides the redundant path.
+The VLAN interface is named `wan-pon-isp`; VLAN ID 141 with that name is reserved for a future
+translation scheme. MTU 1508 preserves a 1500-byte PPP session, IPCP
+requests the static address, and the `pppd` hooks own `wan-online.target`. `wan-pon-ont` (VLAN 140)
+reaches the ONT management subnet at `192.168.100.0/24`, where `river` takes `.100`.
 
 #### `stream`
 

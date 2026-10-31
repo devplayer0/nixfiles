@@ -1,0 +1,14 @@
+flowchart LR
+  virgin["Virgin Media modem"] --- shytzel["shytzel"]
+  ont["Digiweb ONT"] --- brian["brian"]
+  shytzel ---|"VLAN 130 trunk"| jim["jim"]
+  brian ---|"2 × 10G LAG"| dave["dave · RSTP root"]
+  brian -. "1G backup" .- jim
+  jim ---|"10G fabric trunk"| dave
+  dave ---|"100G"| palace["palace · river / cellar / sfh"]
+  jim ---|"1G host + separate 1G river trunk"| palace
+  dave ---|"100G"| castle["castle · NVMe-oF root"]
+  jim -. "1G · normally down" .- castle
+  dave ---|"10G LAN"| stream["stream"]
+  jim -. "1G LAN backup" .- stream
+  jim ---|"Separate VLAN 130 WAN handoff"| stream

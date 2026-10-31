@@ -26,10 +26,18 @@ in
   };
 
   systemd.services = {
-    kea-dhcp4-server.serviceConfig = {
-      # Sometimes interfaces might not be ready in time and Kea doesn't like that
-      Restart = "on-failure";
-      DynamicUser = mkForce false;
+    kea-dhcp4-server = {
+      unitConfig.StartLimitIntervalSec = 0;
+      preStart = ''
+        ${config.systemd.package}/lib/systemd/systemd-networkd-wait-online \
+          --interface=lan-hi:routable --interface=lan-lo:routable \
+          --interface=lan-untrusted:routable --ipv4 --timeout=60
+      '';
+      serviceConfig = {
+        Restart = "on-failure";
+        RestartSec = 5;
+        DynamicUser = mkForce false;
+      };
     };
     kea-dhcp-ddns-server.serviceConfig.DynamicUser = mkForce false;
   };

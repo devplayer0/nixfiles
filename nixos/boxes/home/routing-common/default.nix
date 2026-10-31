@@ -3,7 +3,7 @@ let
   inherit (builtins) elemAt;
   inherit (lib.my) net mkVLAN;
   inherit (lib.my.c) pubDomain;
-  inherit (lib.my.c.home) domain vlans prefixes vips routers routersPubV4;
+  inherit (lib.my.c.home) domain vlans prefixes vips routers routersPubV4 hiMTU;
 
   name = elemAt routers index;
   otherIndex = 1 - index;
@@ -106,7 +106,7 @@ in
           ./dns.nix
           ./radvd.nix
           ./kea.nix
-        ];
+        ] ++ [ ./mstpd.nix ];
 
         # Per-box WAN-management specifics: the Virgin Media modem on stream lives on the `wan`
         # interface itself, whereas river's ONT sits on its own interface. Declared as options the
@@ -203,6 +203,14 @@ in
 
             netdevs = mkMerge [
               {
+                "25-lan" = {
+                  netdevConfig = {
+                    Name = "lan";
+                    Kind = "bridge";
+                    MTUBytes = toString hiMTU;
+                  };
+                  bridgeConfig.STP = true;
+                };
                 "25-wan-ifb".netdevConfig = {
                   Name = "wan-ifb";
                   Kind = "ifb";
@@ -238,6 +246,16 @@ in
             in
             mkMerge [
               {
+                "50-lan-dave" = {
+                  matchConfig.Name = "lan-dave";
+                  networkConfig.Bridge = "lan";
+                  bridgeConfig.Cost = 10;
+                };
+                "50-lan-jim" = {
+                  matchConfig.Name = "lan-jim";
+                  networkConfig.Bridge = "lan";
+                  bridgeConfig.Cost = 100;
+                };
                 "55-lan" = {
                   matchConfig.Name = "lan";
                   vlan = [ "lan-hi" "lan-lo" "lan-untrusted" "wan-tunnel" ];

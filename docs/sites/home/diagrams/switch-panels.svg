@@ -1,0 +1,517 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1580" viewBox="0 0 1440 1580" role="img" aria-labelledby="title desc">
+<title id="title">Home rack switch front panels and cable endpoints</title>
+<desc id="desc">Stream is drawn above Brian but physically sits to its left. Brian above Jim above Dave, with palace several rack units below. Socket order follows the hardware; matching letter badges identify cable ends.</desc>
+<style>text{font-family:system-ui,sans-serif;fill:#172033}.heading{font-weight:650;font-size:22px}.sub{fill:#526075;font-size:14px}.port{font-size:12px;font-weight:600}.small{font-size:11px}.mono{font-family:monospace}</style>
+<rect x="0" y="0" width="1440" height="1580" rx="0" fill="white" stroke="none"/>
+<text x="95" y="38" class="heading" text-anchor="start">Home rack · physical socket map</text>
+<text x="95" y="64" class="sub" text-anchor="start">Front views, top to bottom. Socket positions follow the hardware; spacing and chassis widths are schematic.</text>
+<g transform="translate(0,330)">
+<rect x="330" y="-235" width="780" height="305" rx="8" fill="#eef1f5" stroke="#a8b2c1"/>
+<text x="350" y="-205" class="heading" text-anchor="start">stream · BROUNION R86S</text>
+<text x="350" y="-180" class="sub" text-anchor="start">Physically left of brian; drawn above for cable routing</text>
+<text x="350" y="-150" class="small" text-anchor="start">DC / USB</text>
+<text x="600" y="-65" class="small" text-anchor="middle">Intel I225-V · 2.5G</text>
+<text x="600" y="-48" class="small" text-anchor="middle">1G connection</text>
+<text x="780" y="-65" class="small" text-anchor="middle">Intel I225-V · 2.5G</text>
+<text x="780" y="-48" class="small" text-anchor="middle">1G connection</text>
+<text x="960" y="-65" class="small" text-anchor="middle">Intel I225-V · 2.5G</text>
+<text x="960" y="-48" class="small" text-anchor="middle">Unused</text>
+<text x="650" y="53" class="small" text-anchor="middle">ConnectX-3 · 10G SFP+</text>
+<text x="890" y="53" class="small" text-anchor="middle">ConnectX-3 · 10G SFP+</text>
+<rect x="93" y="90" width="9" height="1080" rx="2" fill="#dce2eb" stroke="none"/>
+<rect x="95" y="106" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="130" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="154" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="178" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="202" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="226" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="250" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="274" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="298" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="322" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="346" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="370" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="394" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="418" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="442" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="466" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="490" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="514" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="538" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="562" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="586" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="610" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="634" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="658" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="682" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="706" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="730" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="754" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="778" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="802" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="826" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="850" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="874" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="898" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="922" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="946" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="970" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="994" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="1018" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="1042" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="1066" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="1090" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="1114" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="1138" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="95" y="1162" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1347" y="90" width="9" height="1080" rx="2" fill="#dce2eb" stroke="none"/>
+<rect x="1349" y="106" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="130" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="154" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="178" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="202" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="226" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="250" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="274" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="298" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="322" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="346" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="370" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="394" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="418" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="442" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="466" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="490" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="514" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="538" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="562" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="586" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="610" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="634" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="658" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="682" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="706" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="730" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="754" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="778" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="802" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="826" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="850" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="874" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="898" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="922" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="946" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="970" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="994" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="1018" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="1042" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="1066" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="1090" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="1114" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="1138" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="1349" y="1162" width="5" height="8" rx="1" fill="white" stroke="none"/>
+<rect x="115" y="100" width="1210" height="155" rx="8" fill="#eef1f5" stroke="#a8b2c1"/>
+<text x="140" y="128" class="heading" text-anchor="start">brian · USW-Pro-XG-8-PoE</text>
+<text x="1300" y="127" class="sub" text-anchor="end">8 × RJ45, then 2 × SFP+</text>
+<rect x="205" y="180" width="10" height="10" rx="5" fill="#60a5fa" stroke="none"/>
+<text x="210" y="218" class="small" text-anchor="middle">LED</text>
+<rect x="115" y="340" width="1210" height="205" rx="8" fill="#eef1f5" stroke="#a8b2c1"/>
+<text x="140" y="368" class="heading" text-anchor="start">jim · CRS326-24G-2S+RM</text>
+<text x="1300" y="367" class="sub" text-anchor="end">3 banks of 8 RJ45 · even above odd · SFP+ at right</text>
+<rect x="175" y="425" width="54" height="29" rx="5" fill="#28364a" stroke="#94a3b8"/>
+<text x="202" y="410" class="small" text-anchor="middle">CONSOLE</text>
+<rect x="115" y="630" width="1210" height="165" rx="8" fill="#eef1f5" stroke="#a8b2c1"/>
+<text x="140" y="658" class="heading" text-anchor="start">dave · CRS504-4XQ-IN</text>
+<text x="1300" y="657" class="sub" text-anchor="end">4 QSFP28 cages · console above management at right</text>
+<rect x="175" y="680" width="90" height="78" rx="5" fill="#d1d8e2" stroke="#94a3b8"/>
+<text x="220" y="725" class="sub" text-anchor="middle">PSU 1</text>
+<rect x="290" y="680" width="90" height="78" rx="5" fill="#d1d8e2" stroke="#94a3b8"/>
+<text x="335" y="725" class="sub" text-anchor="middle">PSU 2</text>
+<rect x="724" y="695" width="92" height="29" rx="5" fill="#fff" stroke="#0891b2"/>
+<rect x="732" y="701" width="76" height="17" rx="1" fill="#28364a" stroke="none"/>
+<text x="770" y="686" class="port mono" text-anchor="middle">Q3</text>
+<text x="770" y="743" class="small" text-anchor="middle">4 × 10G breakout</text>
+<path d="M770 757 V820" stroke="#0891b2" stroke-width="2" fill="none"/>
+<rect x="1095" y="690" width="54" height="27" rx="5" fill="#28364a" stroke="#94a3b8"/>
+<text x="1122" y="681" class="small" text-anchor="middle">CONSOLE</text>
+<text x="1235" y="725" class="sub" text-anchor="middle">DC / reset</text>
+<rect x="430" y="820" width="820" height="84" rx="5" fill="#f4f8fc" stroke="#b9cadb"/>
+<text x="445" y="841" class="sub" text-anchor="start">Q3 breakout lanes (one physical cage)</text>
+<text x="720" y="963" class="sub" text-anchor="middle">⋮  several rack units  ⋮</text>
+<rect x="115" y="1030" width="1210" height="160" rx="8" fill="#eef1f5" stroke="#a8b2c1"/>
+<text x="140" y="1058" class="heading" text-anchor="start">palace</text>
+<text x="1300" y="1057" class="sub" text-anchor="end">NIC endpoints only; rear-panel positions are not depicted</text>
+<polyline points="1060,201 1060,280 38,280 38,925 785,925 785,874" fill="none" stroke="white" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="1060,201 1060,280 38,280 38,925 785,925 785,874" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="1180,201 1180,300 58,300 58,950 1185,950 1185,874" fill="none" stroke="white" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="1180,201 1180,300 58,300 58,950 1185,950 1185,874" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="620,201 620,315 492,315 492,458 462,458 462,476" fill="none" stroke="white" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="620,201 620,315 492,315 492,458 462,458 462,476" fill="none" stroke="#d97706" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="1134,472 1134,575 1394,575 1394,975 585,975 585,874" fill="none" stroke="white" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="1134,472 1134,575 1394,575 1394,975 585,975 585,874" fill="none" stroke="#0891b2" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="989.5,414.0 1010,414 1010,600 1380,600 1380,753 1149.0,753.0" fill="none" stroke="white" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="989.5,414.0 1010,414 1010,600 1380,600 1380,753 1149.0,753.0" fill="none" stroke="#64748b" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="403,500 403,568 1368,568 1368,1010 730,1010 730,1090" fill="none" stroke="white" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="403,500 403,568 1368,568 1368,1010 730,1010 730,1090" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="930.5,414.0 940,414 940,590 1416,590 1416,1025 1110,1025 1110,1090" fill="none" stroke="white" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="930.5,414.0 940,414 940,590 1416,590 1416,1025 1110,1025 1110,1090" fill="none" stroke="#db2777" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="490,722 490,790 410,790 410,1000 350,1000 350,1090" fill="none" stroke="white" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="490,722 490,790 410,790 410,1000 350,1000 350,1090" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="600,-135 600,-160 18,-160 18,555 898,555 909,500" fill="none" stroke="white" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="600,-135 600,-160 18,-160 18,555 898,555 909,500" fill="none" stroke="#92400e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="780,-135 780,-170 70,-170 70,322 403,322 403,402" fill="none" stroke="white" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="780,-135 780,-170 70,-170 70,322 403,322 403,402" fill="none" stroke="#0f766e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="890,15 890,80 1428,80 1428,920 985,920 985,874" fill="none" stroke="white" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="890,15 890,80 1428,80 1428,920 985,920 985,874" fill="none" stroke="#4f46e5" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<g><title>stream ETH0: wan — 1G connection to jim 21</title>
+<rect x="570.0" y="-135" width="60" height="27" rx="3" fill="#fff" stroke="#92400e"/>
+<rect x="576.0" y="-130" width="48" height="17" rx="1" fill="#28364a" stroke="none"/>
+<text x="600" y="-144" class="port mono" text-anchor="middle">ETH0</text>
+<rect x="618.0" y="-156" width="20" height="20" rx="4" fill="#92400e" stroke="none"/>
+<text x="628.0" y="-142" class="port" text-anchor="middle" style="fill:white">I</text>
+<text x="600" y="-93" class="small" text-anchor="middle">wan</text>
+</g>
+<g><title>stream ETH1: lan-jim — 1G connection to jim 6</title>
+<rect x="750.0" y="-135" width="60" height="27" rx="3" fill="#fff" stroke="#0f766e"/>
+<rect x="756.0" y="-130" width="48" height="17" rx="1" fill="#28364a" stroke="none"/>
+<text x="780" y="-144" class="port mono" text-anchor="middle">ETH1</text>
+<rect x="798.0" y="-156" width="20" height="20" rx="4" fill="#0f766e" stroke="none"/>
+<text x="808.0" y="-142" class="port" text-anchor="middle" style="fill:white">J</text>
+<text x="780" y="-93" class="small" text-anchor="middle">lan-jim</text>
+</g>
+<g><title>stream ETH2: et2 — Unused</title>
+<rect x="930.0" y="-135" width="60" height="27" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="936.0" y="-130" width="48" height="17" rx="1" fill="#28364a" stroke="none"/>
+<text x="960" y="-144" class="port mono" text-anchor="middle">ETH2</text>
+<text x="960" y="-93" class="small" text-anchor="middle">et2</text>
+</g>
+<g><title>stream SFP+ L: et5 — Unused</title>
+<rect x="615.0" y="-12" width="70" height="27" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="621.0" y="-7" width="58" height="17" rx="1" fill="#28364a" stroke="none"/>
+<text x="650" y="-21" class="port mono" text-anchor="middle">SFP+ L</text>
+<text x="650" y="30" class="small" text-anchor="middle">et5</text>
+</g>
+<g><title>stream SFP+ R: lan-dave — 10G connection to dave Q3.3</title>
+<rect x="855.0" y="-12" width="70" height="27" rx="3" fill="#fff" stroke="#4f46e5"/>
+<rect x="861.0" y="-7" width="58" height="17" rx="1" fill="#28364a" stroke="none"/>
+<text x="890" y="-21" class="port mono" text-anchor="middle">SFP+ R</text>
+<rect x="913.0" y="-33" width="20" height="20" rx="4" fill="#4f46e5" stroke="none"/>
+<text x="923.0" y="-19" class="port" text-anchor="middle" style="fill:white">K</text>
+<text x="890" y="30" class="small" text-anchor="middle">lan-dave</text>
+</g>
+<g><title>brian 1: Port 1 — Configured port label</title>
+<rect x="296.0" y="174" width="48" height="27" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="302.0" y="179" width="36" height="17" rx="1" fill="#28364a" stroke="none"/>
+<text x="320" y="165" class="port mono" text-anchor="middle">1</text>
+<text x="320" y="216" class="small" text-anchor="middle">fort</text>
+</g>
+<g><title>brian 2: Port 2 — Configured port label</title>
+<rect x="371.0" y="174" width="48" height="27" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="377.0" y="179" width="36" height="17" rx="1" fill="#28364a" stroke="none"/>
+<text x="395" y="165" class="port mono" text-anchor="middle">2</text>
+<text x="395" y="216" class="small" text-anchor="middle">castle</text>
+</g>
+<g><title>brian 3: Port 3 — portcullis test connection</title>
+<rect x="446.0" y="174" width="48" height="27" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="452.0" y="179" width="36" height="17" rx="1" fill="#28364a" stroke="none"/>
+<text x="470" y="165" class="port mono" text-anchor="middle">3</text>
+<text x="470" y="216" class="small" text-anchor="middle">portcullis</text>
+<text x="470" y="228" class="small" text-anchor="middle">test</text>
+</g>
+<g><title>brian 4: Port 4 — Second JetKVM</title>
+<rect x="521.0" y="174" width="48" height="27" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="527.0" y="179" width="36" height="17" rx="1" fill="#28364a" stroke="none"/>
+<text x="545" y="165" class="port mono" text-anchor="middle">4</text>
+<text x="545" y="216" class="small" text-anchor="middle">portcullis</text>
+<text x="545" y="228" class="small" text-anchor="middle">KVM</text>
+</g>
+<g><title>brian 5: Port 5 — Backup fabric trunk</title>
+<rect x="596.0" y="174" width="48" height="27" rx="3" fill="#fff" stroke="#d97706"/>
+<rect x="602.0" y="179" width="36" height="17" rx="1" fill="#28364a" stroke="none"/>
+<text x="620" y="165" class="port mono" text-anchor="middle">5</text>
+<rect x="632.0" y="153" width="20" height="20" rx="4" fill="#d97706" stroke="none"/>
+<text x="642.0" y="167" class="port" text-anchor="middle" style="fill:white">C</text>
+<text x="620" y="216" class="small" text-anchor="middle">jim P7</text>
+</g>
+<g><title>brian 6: Port 6 — Native VLAN 140; tagged VLAN 10</title>
+<rect x="671.0" y="174" width="48" height="27" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="677.0" y="179" width="36" height="17" rx="1" fill="#28364a" stroke="none"/>
+<text x="695" y="165" class="port mono" text-anchor="middle">6</text>
+<text x="695" y="216" class="small" text-anchor="middle">Digiweb ONT</text>
+</g>
+<g><title>brian 7: Port 7 — AP trunk</title>
+<rect x="746.0" y="174" width="48" height="27" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="752.0" y="179" width="36" height="17" rx="1" fill="#28364a" stroke="none"/>
+<text x="770" y="165" class="port mono" text-anchor="middle">7</text>
+<text x="770" y="216" class="small" text-anchor="middle">wave</text>
+</g>
+<g><title>brian 8: Port 8 — AP trunk</title>
+<rect x="821.0" y="174" width="48" height="27" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="827.0" y="179" width="36" height="17" rx="1" fill="#28364a" stroke="none"/>
+<text x="845" y="165" class="port mono" text-anchor="middle">8</text>
+<text x="845" y="216" class="small" text-anchor="middle">vibe</text>
+</g>
+<g><title>brian 9: SFP+ 1 — LAG member 1</title>
+<rect x="1027.5" y="174" width="65" height="27" rx="3" fill="#fff" stroke="#2563eb"/>
+<rect x="1033.5" y="179" width="53" height="17" rx="1" fill="#28364a" stroke="none"/>
+<text x="1060" y="165" class="port mono" text-anchor="middle">9</text>
+<rect x="1080.5" y="153" width="20" height="20" rx="4" fill="#2563eb" stroke="none"/>
+<text x="1090.5" y="167" class="port" text-anchor="middle" style="fill:white">A</text>
+<text x="1060" y="216" class="small" text-anchor="middle">dave Q3.2</text>
+</g>
+<g><title>brian 10: SFP+ 2 — LAG member 2</title>
+<rect x="1147.5" y="174" width="65" height="27" rx="3" fill="#fff" stroke="#7c3aed"/>
+<rect x="1153.5" y="179" width="53" height="17" rx="1" fill="#28364a" stroke="none"/>
+<text x="1180" y="165" class="port mono" text-anchor="middle">10</text>
+<rect x="1200.5" y="153" width="20" height="20" rx="4" fill="#7c3aed" stroke="none"/>
+<text x="1210.5" y="167" class="port" text-anchor="middle" style="fill:white">B</text>
+<text x="1180" y="216" class="small" text-anchor="middle">dave Q3.4</text>
+</g>
+<g><title>jim 1: ether1 — Configured member of shytzel-downlink</title>
+<rect x="263.5" y="476" width="43" height="24" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="269.5" y="481" width="31" height="14" rx="1" fill="#28364a" stroke="none"/>
+<text x="285" y="467" class="port mono" text-anchor="middle">1</text>
+<text x="285" y="515" class="small" text-anchor="middle">shytzel</text>
+<text x="285" y="527" class="small" text-anchor="middle">LAG</text>
+</g>
+<g><title>jim 2: ether2 — Configured member of shytzel-downlink</title>
+<rect x="263.5" y="402" width="43" height="24" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="269.5" y="407" width="31" height="14" rx="1" fill="#28364a" stroke="none"/>
+<text x="285" y="393" class="port mono" text-anchor="middle">2</text>
+<text x="285" y="441" class="small" text-anchor="middle">shytzel</text>
+<text x="285" y="453" class="small" text-anchor="middle">LAG</text>
+</g>
+<g><title>jim 3: ether3 — Configured member of shytzel-downlink</title>
+<rect x="322.5" y="476" width="43" height="24" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="328.5" y="481" width="31" height="14" rx="1" fill="#28364a" stroke="none"/>
+<text x="344" y="467" class="port mono" text-anchor="middle">3</text>
+<text x="344" y="515" class="small" text-anchor="middle">shytzel</text>
+<text x="344" y="527" class="small" text-anchor="middle">LAG</text>
+</g>
+<g><title>jim 4: ether4 — Configured member of shytzel-downlink</title>
+<rect x="322.5" y="402" width="43" height="24" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="328.5" y="407" width="31" height="14" rx="1" fill="#28364a" stroke="none"/>
+<text x="344" y="393" class="port mono" text-anchor="middle">4</text>
+<text x="344" y="441" class="small" text-anchor="middle">shytzel</text>
+<text x="344" y="453" class="small" text-anchor="middle">LAG</text>
+</g>
+<g><title>jim 5: palace — Core / netboot trunk</title>
+<rect x="381.5" y="476" width="43" height="24" rx="3" fill="#fff" stroke="#16a34a"/>
+<rect x="387.5" y="481" width="31" height="14" rx="1" fill="#28364a" stroke="none"/>
+<text x="403" y="467" class="port mono" text-anchor="middle">5</text>
+<rect x="412.5" y="455" width="20" height="20" rx="4" fill="#16a34a" stroke="none"/>
+<text x="422.5" y="469" class="port" text-anchor="middle" style="fill:white">F</text>
+<text x="403" y="515" class="small" text-anchor="middle">palace</text>
+<text x="403" y="527" class="small" text-anchor="middle">host</text>
+</g>
+<g><title>jim 6: stream — Backup RSTP trunk</title>
+<rect x="381.5" y="402" width="43" height="24" rx="3" fill="#fff" stroke="#0f766e"/>
+<rect x="387.5" y="407" width="31" height="14" rx="1" fill="#28364a" stroke="none"/>
+<text x="403" y="393" class="port mono" text-anchor="middle">6</text>
+<rect x="412.5" y="381" width="20" height="20" rx="4" fill="#0f766e" stroke="none"/>
+<text x="422.5" y="395" class="port" text-anchor="middle" style="fill:white">J</text>
+<text x="403" y="441" class="small" text-anchor="middle">stream</text>
+<text x="403" y="453" class="small" text-anchor="middle">LAN</text>
+</g>
+<g><title>jim 7: brian-downlink — Backup fabric trunk</title>
+<rect x="440.5" y="476" width="43" height="24" rx="3" fill="#fff" stroke="#d97706"/>
+<rect x="446.5" y="481" width="31" height="14" rx="1" fill="#28364a" stroke="none"/>
+<text x="462" y="467" class="port mono" text-anchor="middle">7</text>
+<rect x="471.5" y="455" width="20" height="20" rx="4" fill="#d97706" stroke="none"/>
+<text x="481.5" y="469" class="port" text-anchor="middle" style="fill:white">C</text>
+<text x="462" y="515" class="small" text-anchor="middle">brian P5</text>
+</g>
+<g><title>jim 8: palace-kvm — lo access</title>
+<rect x="440.5" y="402" width="43" height="24" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="446.5" y="407" width="31" height="14" rx="1" fill="#28364a" stroke="none"/>
+<text x="462" y="393" class="port mono" text-anchor="middle">8</text>
+<text x="462" y="441" class="small" text-anchor="middle">JetKVM</text>
+</g>
+<g><title>jim 9: ether9 — Unbridged spare</title>
+<rect x="516.5" y="476" width="43" height="24" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="522.5" y="481" width="31" height="14" rx="1" fill="#28364a" stroke="none"/>
+<text x="538" y="467" class="port mono" text-anchor="middle">9</text>
+<text x="538" y="515" class="small" text-anchor="middle">spare</text>
+</g>
+<g><title>jim 10: castle — Backup attachment, normally down</title>
+<rect x="516.5" y="402" width="43" height="24" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="522.5" y="407" width="31" height="14" rx="1" fill="#28364a" stroke="none"/>
+<text x="538" y="393" class="port mono" text-anchor="middle">10</text>
+<text x="538" y="441" class="small" text-anchor="middle">castle</text>
+</g>
+<g><title>jim 11: fort — lo access (configured label)</title>
+<rect x="575.5" y="476" width="43" height="24" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="581.5" y="481" width="31" height="14" rx="1" fill="#28364a" stroke="none"/>
+<text x="597" y="467" class="port mono" text-anchor="middle">11</text>
+<text x="597" y="515" class="small" text-anchor="middle">fort</text>
+</g>
+<g><title>jim 12: laptop-dock — lo access (configured label)</title>
+<rect x="575.5" y="402" width="43" height="24" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="581.5" y="407" width="31" height="14" rx="1" fill="#28364a" stroke="none"/>
+<text x="597" y="393" class="port mono" text-anchor="middle">12</text>
+<text x="597" y="441" class="small" text-anchor="middle">dock</text>
+</g>
+<g><title>jim 13: pronter — lo access (configured label)</title>
+<rect x="634.5" y="476" width="43" height="24" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="640.5" y="481" width="31" height="14" rx="1" fill="#28364a" stroke="none"/>
+<text x="656" y="467" class="port mono" text-anchor="middle">13</text>
+<text x="656" y="515" class="small" text-anchor="middle">pronter</text>
+</g>
+<g><title>jim 14: untrusted-sta1 — Untrusted access</title>
+<rect x="634.5" y="402" width="43" height="24" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="640.5" y="407" width="31" height="14" rx="1" fill="#28364a" stroke="none"/>
+<text x="656" y="393" class="port mono" text-anchor="middle">14</text>
+<text x="656" y="441" class="small" text-anchor="middle">guest</text>
+</g>
+<g><title>jim 15: ether15 — lo access; peer unconfirmed</title>
+<rect x="693.5" y="476" width="43" height="24" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="699.5" y="481" width="31" height="14" rx="1" fill="#28364a" stroke="none"/>
+<text x="715" y="467" class="port mono" text-anchor="middle">15</text>
+<text x="715" y="515" class="small" text-anchor="middle">unmapped</text>
+</g>
+<g><title>jim 16: ether16 — lo access; peer unconfirmed</title>
+<rect x="693.5" y="402" width="43" height="24" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="699.5" y="407" width="31" height="14" rx="1" fill="#28364a" stroke="none"/>
+<text x="715" y="393" class="port mono" text-anchor="middle">16</text>
+<text x="715" y="441" class="small" text-anchor="middle">unmapped</text>
+</g>
+<g><title>jim 17: ether17 — lo access; peer unconfirmed</title>
+<rect x="769.5" y="476" width="43" height="24" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="775.5" y="481" width="31" height="14" rx="1" fill="#28364a" stroke="none"/>
+<text x="791" y="467" class="port mono" text-anchor="middle">17</text>
+<text x="791" y="515" class="small" text-anchor="middle">unmapped</text>
+</g>
+<g><title>jim 18: ether18 — lo access; peer unconfirmed</title>
+<rect x="769.5" y="402" width="43" height="24" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="775.5" y="407" width="31" height="14" rx="1" fill="#28364a" stroke="none"/>
+<text x="791" y="393" class="port mono" text-anchor="middle">18</text>
+<text x="791" y="441" class="small" text-anchor="middle">unmapped</text>
+</g>
+<g><title>jim 19: ether19 — lo access; peer unconfirmed</title>
+<rect x="828.5" y="476" width="43" height="24" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="834.5" y="481" width="31" height="14" rx="1" fill="#28364a" stroke="none"/>
+<text x="850" y="467" class="port mono" text-anchor="middle">19</text>
+<text x="850" y="515" class="small" text-anchor="middle">unmapped</text>
+</g>
+<g><title>jim 20: ether20 — lo access; peer unconfirmed</title>
+<rect x="828.5" y="402" width="43" height="24" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="834.5" y="407" width="31" height="14" rx="1" fill="#28364a" stroke="none"/>
+<text x="850" y="393" class="port mono" text-anchor="middle">20</text>
+<text x="850" y="441" class="small" text-anchor="middle">unmapped</text>
+</g>
+<g><title>jim 21: stream-wan — Untagged VLAN 130 handoff</title>
+<rect x="887.5" y="476" width="43" height="24" rx="3" fill="#fff" stroke="#92400e"/>
+<rect x="893.5" y="481" width="31" height="14" rx="1" fill="#28364a" stroke="none"/>
+<text x="909" y="467" class="port mono" text-anchor="middle">21</text>
+<rect x="918.5" y="455" width="20" height="20" rx="4" fill="#92400e" stroke="none"/>
+<text x="928.5" y="469" class="port" text-anchor="middle" style="fill:white">I</text>
+<text x="909" y="515" class="small" text-anchor="middle">stream</text>
+<text x="909" y="527" class="small" text-anchor="middle">WAN</text>
+</g>
+<g><title>jim 22: river — Dedicated router trunk</title>
+<rect x="887.5" y="402" width="43" height="24" rx="3" fill="#fff" stroke="#db2777"/>
+<rect x="893.5" y="407" width="31" height="14" rx="1" fill="#28364a" stroke="none"/>
+<text x="909" y="393" class="port mono" text-anchor="middle">22</text>
+<rect x="918.5" y="381" width="20" height="20" rx="4" fill="#db2777" stroke="none"/>
+<text x="928.5" y="395" class="port" text-anchor="middle" style="fill:white">G</text>
+<text x="909" y="441" class="small" text-anchor="middle">river</text>
+<text x="909" y="453" class="small" text-anchor="middle">backup</text>
+</g>
+<g><title>jim 23: ups — lo access</title>
+<rect x="946.5" y="476" width="43" height="24" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="952.5" y="481" width="31" height="14" rx="1" fill="#28364a" stroke="none"/>
+<text x="968" y="467" class="port mono" text-anchor="middle">23</text>
+<text x="968" y="515" class="small" text-anchor="middle">UPS</text>
+</g>
+<g><title>jim 24: dave-management — Core management</title>
+<rect x="946.5" y="402" width="43" height="24" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="952.5" y="407" width="31" height="14" rx="1" fill="#28364a" stroke="none"/>
+<text x="968" y="393" class="port mono" text-anchor="middle">24</text>
+<rect x="977.5" y="381" width="20" height="20" rx="4" fill="#64748b" stroke="none"/>
+<text x="987.5" y="395" class="port" text-anchor="middle" style="fill:white">E</text>
+<text x="968" y="441" class="small" text-anchor="middle">dave</text>
+<text x="968" y="453" class="small" text-anchor="middle">mgmt</text>
+</g>
+<g><title>jim S1: dave-uplink — 10G fabric trunk</title>
+<rect x="1107.0" y="445" width="54" height="27" rx="3" fill="#fff" stroke="#0891b2"/>
+<rect x="1113.0" y="450" width="42" height="17" rx="1" fill="#28364a" stroke="none"/>
+<text x="1134" y="436" class="port mono" text-anchor="middle">S1</text>
+<rect x="1149.0" y="424" width="20" height="20" rx="4" fill="#0891b2" stroke="none"/>
+<text x="1159.0" y="438" class="port" text-anchor="middle" style="fill:white">D</text>
+<text x="1134" y="487" class="small" text-anchor="middle">dave</text>
+<text x="1134" y="499" class="small" text-anchor="middle">Q3.1</text>
+</g>
+<g><title>jim S2: sfp-spare — 10G trunk; colony staging</title>
+<rect x="1208.0" y="445" width="54" height="27" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="1214.0" y="450" width="42" height="17" rx="1" fill="#28364a" stroke="none"/>
+<text x="1235" y="436" class="port mono" text-anchor="middle">S2</text>
+<text x="1235" y="487" class="small" text-anchor="middle">fergal</text>
+</g>
+<g><title>dave Q1: palace — 100G; whole cage</title>
+<rect x="444.0" y="695" width="92" height="27" rx="3" fill="#fff" stroke="#dc2626"/>
+<rect x="450.0" y="700" width="80" height="17" rx="1" fill="#28364a" stroke="none"/>
+<text x="490" y="686" class="port mono" text-anchor="middle">Q1</text>
+<rect x="524.0" y="674" width="20" height="20" rx="4" fill="#dc2626" stroke="none"/>
+<text x="534.0" y="688" class="port" text-anchor="middle" style="fill:white">H</text>
+<text x="490" y="737" class="small" text-anchor="middle">palace</text>
+</g>
+<g><title>dave Q2: castle — 100G; whole cage</title>
+<rect x="584.0" y="695" width="92" height="27" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="590.0" y="700" width="80" height="17" rx="1" fill="#28364a" stroke="none"/>
+<text x="630" y="686" class="port mono" text-anchor="middle">Q2</text>
+<text x="630" y="737" class="small" text-anchor="middle">castle</text>
+</g>
+<g><title>dave Q4: qsfp28-4-1 — No identified peer</title>
+<rect x="864.0" y="695" width="92" height="27" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="870.0" y="700" width="80" height="17" rx="1" fill="#28364a" stroke="none"/>
+<text x="910" y="686" class="port mono" text-anchor="middle">Q4</text>
+<text x="910" y="737" class="small" text-anchor="middle">unmapped</text>
+</g>
+<g><title>dave MGMT: management — 100M management RJ45</title>
+<rect x="1095.0" y="741" width="54" height="24" rx="3" fill="#fff" stroke="#64748b"/>
+<rect x="1101.0" y="746" width="42" height="14" rx="1" fill="#28364a" stroke="none"/>
+<text x="1122" y="732" class="port mono" text-anchor="middle">MGMT</text>
+<rect x="1137.0" y="720" width="20" height="20" rx="4" fill="#64748b" stroke="none"/>
+<text x="1147.0" y="734" class="port" text-anchor="middle" style="fill:white">E</text>
+</g>
+<text x="485" y="870" class="port mono" text-anchor="start">Q3.1</text>
+<rect x="536" y="854" width="20" height="20" rx="4" fill="#0891b2" stroke="none"/>
+<text x="546" y="868" class="port" text-anchor="middle" style="fill:white">D</text>
+<text x="485" y="889" class="small" text-anchor="start">jim SFP+1</text>
+<rect x="568" y="854" width="34" height="20" rx="3" fill="white" stroke="#0891b2"/>
+<rect x="574" y="860" width="22" height="8" rx="1" fill="#0891b2" stroke="none"/>
+<text x="685" y="870" class="port mono" text-anchor="start">Q3.2</text>
+<rect x="736" y="854" width="20" height="20" rx="4" fill="#2563eb" stroke="none"/>
+<text x="746" y="868" class="port" text-anchor="middle" style="fill:white">A</text>
+<text x="685" y="889" class="small" text-anchor="start">brian SFP+1</text>
+<rect x="768" y="854" width="34" height="20" rx="3" fill="white" stroke="#2563eb"/>
+<rect x="774" y="860" width="22" height="8" rx="1" fill="#2563eb" stroke="none"/>
+<text x="885" y="870" class="port mono" text-anchor="start">Q3.3</text>
+<rect x="936" y="854" width="20" height="20" rx="4" fill="#4f46e5" stroke="none"/>
+<text x="946" y="868" class="port" text-anchor="middle" style="fill:white">K</text>
+<text x="885" y="889" class="small" text-anchor="start">stream LAN</text>
+<rect x="968" y="854" width="34" height="20" rx="3" fill="white" stroke="#4f46e5"/>
+<rect x="974" y="860" width="22" height="8" rx="1" fill="#4f46e5" stroke="none"/>
+<text x="1085" y="870" class="port mono" text-anchor="start">Q3.4</text>
+<rect x="1136" y="854" width="20" height="20" rx="4" fill="#7c3aed" stroke="none"/>
+<text x="1146" y="868" class="port" text-anchor="middle" style="fill:white">B</text>
+<text x="1085" y="889" class="small" text-anchor="start">brian SFP+2</text>
+<rect x="1168" y="854" width="34" height="20" rx="3" fill="white" stroke="#7c3aed"/>
+<rect x="1174" y="860" width="22" height="8" rx="1" fill="#7c3aed" stroke="none"/>
+<rect x="205" y="1090" width="290" height="76" rx="5" fill="white" stroke="#dc2626"/>
+<text x="232" y="1120" class="port mono" text-anchor="start">uplink-dave</text>
+<rect x="459" y="1102" width="20" height="20" rx="4" fill="#dc2626" stroke="none"/>
+<text x="469" y="1116" class="port" text-anchor="middle" style="fill:white">H</text>
+<text x="350" y="1146" class="small" text-anchor="middle">Mellanox ConnectX-4 · 100G QSFP28</text>
+<rect x="585" y="1090" width="290" height="76" rx="5" fill="white" stroke="#16a34a"/>
+<text x="612" y="1120" class="port mono" text-anchor="start">host-jim</text>
+<rect x="839" y="1102" width="20" height="20" rx="4" fill="#16a34a" stroke="none"/>
+<text x="849" y="1116" class="port" text-anchor="middle" style="fill:white">F</text>
+<text x="730" y="1146" class="small" text-anchor="middle">Intel I211 · 1G RJ45</text>
+<rect x="965" y="1090" width="290" height="76" rx="5" fill="white" stroke="#db2777"/>
+<text x="992" y="1120" class="port mono" text-anchor="start">river-jim-phy</text>
+<rect x="1219" y="1102" width="20" height="20" rx="4" fill="#db2777" stroke="none"/>
+<text x="1229" y="1116" class="port" text-anchor="middle" style="fill:white">G</text>
+<text x="1110" y="1146" class="small" text-anchor="middle">Intel I211 · 1G RJ45</text>
+<text x="95" y="1220" class="sub" text-anchor="start">Matching letter badges identify cable ends. Port labels describe configured use; they do not indicate current link state.</text>
+</g></svg>

@@ -13,7 +13,8 @@ Only the DNS records live in the flake
 | | vibe | wave |
 |---|---|---|
 | Model | MikroTik **cAP ax** (`cAPGi-5HaxD2HaxD`) | Cudy **AX3000** (OpenWrt id `cudy,ap3000-v1`) |
-| OS | RouterOS 7.x | OpenWrt 25.12.x (MT7981B / Filogic 820) |
+| OS | RouterOS 7.25.1 | OpenWrt 25.12.x (MT7981B / Filogic 820) |
+| RouterBOOT | 7.25.1 | — |
 | Radio | 2×2 both bands | 2×2 both bands (2 spatial streams) |
 | Uplink | trunk (multi-port; `ether2` is a wired LAN port) | single **2.5 GbE** trunk |
 | Management | core/hi/lo `.15` | core/lo `.14` (**not** `hi`; see below) |
@@ -57,6 +58,10 @@ with `ssh admin@vibe '/interface wifi export show-sensitive'` (`.passphrase=` pr
 
 RouterOS, one hardware-offloaded bridge `main` with `vlan-filtering=yes`. Access: `ssh admin@vibe`
 — key auth for `admin` is installed (`~/.ssh/id_rsa`), with `admin`/`admin` as a fallback.
+
+`wifi-qcom` matches the RouterOS version. Follow the shared
+[upgrade procedure](switches.md#upgrades) for backups and version checks. A DFS channel
+availability check can delay the 5 GHz radio after reboot while 2.4 GHz is already running.
 
 - **Uplink `ether1`** — trunk, tagged VLANs 100/110/120; native/untagged is the default VLAN 1
   (PVID, no IP). `ether2` is a wired **access port** on VLAN 110 (`lo`). `l2mtu 9214`.

@@ -18,8 +18,6 @@
       modemV4 = net.cidr.host 100 prefixes.modem.v4;
     in
     {
-      imports = [ ./routing-common/mstpd.nix ];
-
       config = {
         boot = {
           kernelModules = [ "kvm-intel" ];
@@ -109,15 +107,6 @@
         };
 
         systemd.network = {
-          netdevs = {
-            "25-lan" = {
-              netdevConfig = {
-                Name = "lan";
-                Kind = "bridge";
-              };
-              bridgeConfig.STP = true;
-            };
-          };
           links = {
             "10-wan" = {
               matchConfig = {
@@ -169,17 +158,6 @@
             };
           };
           networks = {
-            "50-lan-jim" = {
-              matchConfig.Name = "lan-jim";
-              networkConfig.Bridge = "lan";
-              bridgeConfig.Cost = 100;
-            };
-            "50-lan-dave" = {
-              matchConfig.Name = "lan-dave";
-              networkConfig.Bridge = "lan";
-              bridgeConfig.Cost = 10;
-            };
-
             "50-wan-ifb" = {
               matchConfig.Name = "wan-ifb";
               networkConfig = networkd.noL3;

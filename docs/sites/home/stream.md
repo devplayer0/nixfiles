@@ -16,7 +16,7 @@ redundant router pair with [`river`](river.md) and is dual-homed to both switche
 | CPU | Intel Celeron N5105 (4 cores / 4 threads) |
 | Memory | 16 GiB |
 | Storage | 512 GB Samsung SSD 970 PRO NVMe containing `/boot`, `/nix` and `/persist`; integrated 128 GB eMMC is present but is not used by the declared filesystems |
-| Network | Three Intel `igc` interfaces and a dual-port Mellanox `mlx4_en` adapter; `wan`, `lan-jim` and `lan-dave` use three of these ports |
+| Network | Three Intel I225-V 2.5G interfaces (`igc`) and a dual-port Mellanox ConnectX-3 10G SFP+ adapter (`mlx4_en`); `wan`, `lan-jim` and `lan-dave` use three of these ports |
 
 The platform configuration enables `kvm-intel`, `intel_iommu=on` and Intel microcode updates.
 
@@ -39,8 +39,9 @@ lease this section assumes — see [wwan.md](wwan.md).
 
 ### Link and addressing
 
-`wan` is a renamed igc NIC (`00:f0:cb:ee:ca:dd`) towards the cable modem. The modem segment is
-switch VLAN 130; `jim` handles the tag, so the box interface is untagged. See
+`wan` is a renamed igc NIC (`00:f0:cb:ee:ca:dd`) on a physically separate connection to `jim`'s
+`stream-wan` port. The Virgin Media modem connects to `shytzel`, which trunks
+VLAN 130 to `jim`; `stream-wan` delivers it untagged to the box. See
 [switches.md](switches.md) for the fabric side.
 
 `DHCP=ipv4` pulls the public lease. `dhcpV4Config.UseDNS=false` points resolution at the local
@@ -79,11 +80,15 @@ box sets:
 
 ## Switching (RSTP)
 
-`stream` is dual-homed to both switches: `lan-jim` (igc) and `lan-dave` (mlx4_en), both MTU 9000,
-are enslaved to the `lan` bridge with `STP=true`. The explicit bridge-port costs prefer
-`lan-dave` at 10 over `lan-jim` at 100. [`routing-common/mstpd.nix`](../../../nixos/boxes/home/routing-common/mstpd.nix)
-runs a patched `mstpd` and forces RSTP on `lan` once it is configured, so exactly one uplink carries
-traffic at a time. (The remaining NICs are renamed `et2`/`et5` and left unconfigured.)
+`stream` is dual-homed to both switches: `lan-dave` (mlx4_en) and `lan-jim` (igc), both MTU 9000,
+are ports of the shared `lan` bridge. `routing-common` owns the bridge, its STP setting and the
+explicit `dave`/`jim` costs of 10/100. [`routing-common/mstpd.nix`](../../../nixos/boxes/home/routing-common/mstpd.nix)
+runs a patched `mstpd` and forces RSTP once `lan` is configured, so exactly one uplink carries
+traffic at a time and `dave` is preferred. (The remaining NICs are renamed `et2`/`et5` and left
+unconfigured.)
+
+The separate `wan` connection to `jim` is not a bridge port. Retaining it provides an isolated
+untagged DHCP handoff for Virgin Media and a simple path for a future replacement direct-IP WAN.
 
 ## Deployment
 
@@ -96,8 +101,8 @@ traffic at a time. (The remaining NICs are renamed `et2`/`et5` and left unconfig
 ## Notable config files
 
 - [`nixos/boxes/home/stream.nix`](../../../nixos/boxes/home/stream.nix) — box config: DHCP WAN,
-  modem management, CAKE, `wan-online.target` gate, STP bridge.
+  modem management, CAKE, `wan-online.target` gate and hardware link matching.
 - [`nixos/boxes/home/routing-common/default.nix`](../../../nixos/boxes/home/routing-common/default.nix) —
-  shared router definition (index 1).
+  shared router definition, including the `lan` bridge and port preferences (index 1).
 - [`nixos/boxes/home/routing-common/mstpd.nix`](../../../nixos/boxes/home/routing-common/mstpd.nix) —
   RSTP on the `lan` bridge.

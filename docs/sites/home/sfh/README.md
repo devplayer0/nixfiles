@@ -31,16 +31,21 @@ See the consolidated [network assignments](../../../networking.md#box-assignment
 
 ## Networking
 
-Four NICs, all MTU 9000 where jumbo-capable:
+| Interface | `palace` attachment | Purpose |
+|---|---|---|
+| `lan-hi` | `sfh-hi` SR-IOV VF 2 | Box's `hi` assignment and NVMe/RDMA root path; MTU 9000 |
+| `ctrs-hi` | `sfh-ctrs` SR-IOV VF 3 | L3-less MACVLAN parent for each container's `host0`; MTU 9000 |
+| `ctrs-core` | Virtio via `sfh-core-tap`, `lan-core` and `host-jim` | L3-less MACVLAN parent for UniFi's `lan-core` management attachment |
+| `ctrs-lo` | Virtio via `sfh-lo-tap`, `lan-lo` and `host-jim` | L3-less MACVLAN parent for `hass`'s `lan-lo` and the VM's PXE path |
 
-- `lan-hi` — SR-IOV VF 2, the box's own `hi` assignment.
-- `lan-hi-ctrs` — SR-IOV VF 3, no L3: the MACVLAN parent for the containers' `hi` interfaces
-  (`host0` inside each container).
-- `lan-core-ctrs` / `lan-lo-ctrs` — virtio NICs (bridged to palace's `lan-core` / `lan-lo`), no
-  L3: MACVLAN parents for containers that need a `core` or `lo` interface.
+The two VFs separate the box's RDMA root traffic from container `hi` traffic; they do not provide
+redundant switch paths. The Virtio attachments reach the `jim`-facing `palace` host bridges. Container
+`host0` names are intentionally unchanged.
 
 The per-container MACVLAN wiring lives in `systemd.nspawn.*.networkConfig` in
-[`sfh/default.nix`](../../../../nixos/boxes/home/palace/vms/sfh/default.nix).
+[`sfh/default.nix`](../../../../nixos/boxes/home/palace/vms/sfh/default.nix). The
+[`palace` interface topology](../palace.md#end-to-end-interface-topology) traces these interfaces
+back through the VM handoffs to the physical switch connections.
 
 ## Containers
 

@@ -47,8 +47,8 @@ Passed through from `sfh` (USB host ports on `palace`):
 
 ## Networking
 
-MACVLAN interfaces created from `sfh`'s container NICs: `host0` on `lan-hi-ctrs` (the `hi` assignment,
-alt name `frigate`, default gateway via the VIP) and `lan-lo` on `lan-lo-ctrs` (the `lo`
+MACVLAN interfaces created from `sfh`'s container NICs: `host0` on `ctrs-hi` (the `hi` assignment,
+alt name `frigate`, default gateway via the VIP) and `lan-lo` on `ctrs-lo` (the `lo`
 assignment, no gateway) — the `lo` interface reaches the IoT devices (the Reolink camera lives there).
 
 ## Notable config files

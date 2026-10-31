@@ -33,10 +33,12 @@ clients and the two WAN paths. VLAN IDs, prefixes, MTUs and router addressing li
 
 ## Switch fabric
 
-The boxes hang off three hand-configured switches — `jim` and `dave` (MikroTik, RouterOS) and
-`brian` (Ubiquiti, UniFi) — which are **not** managed by this flake. The physical topology, VLAN
-map, the Digiweb WAN path (trunked VLAN 10 + PVID 140 at the ONT edge), and the multi-ONT plan are
-documented in [switches.md](switches.md).
+The boxes hang off four hand-configured switches: `jim` and `dave` (MikroTik, RouterOS), `brian`
+(Ubiquiti, UniFi), and the L2-managed Zyxel switch `shytzel`. They are **not** managed by this
+flake. The physical topology, VLAN map, the Digiweb WAN path (trunked VLAN 10 + PVID 140 at the ONT
+edge), and the multi-ONT plan are documented in [switches.md](switches.md). Router attachments
+are described in [Router HA](../../networking.md#router-ha); tested failure scenarios and checks
+for maintenance are documented in [router-failover.md](router-failover.md).
 
 ## Wireless APs
 

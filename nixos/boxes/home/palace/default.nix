@@ -57,6 +57,8 @@ in
           kernelParams = [ "amd_iommu=on" ];
           initrd = {
             availableKernelModules = [ "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" "sr_mod" ];
+            # LVM autoactivation can discover the RAID LVs before stage-two module loading.
+            kernelModules = [ "dm-raid" ];
           };
         };
 
@@ -94,7 +96,7 @@ in
             extraOptions = [ "-A /var/log/smartd/" "--interval=600" ];
           };
           udev.extraRules = ''
-            ACTION=="add", SUBSYSTEM=="net", ENV{ID_NET_DRIVER}=="mlx5_core", ENV{ID_PATH}=="pci-0000:44:00.0", ATTR{device/sriov_numvfs}="4"
+            ACTION=="add", SUBSYSTEM=="net", ENV{ID_NET_DRIVER}=="mlx5_core", ENV{ID_PATH}=="pci-0000:44:00.0", ATTR{device/sriov_numvfs}="5"
           '';
         };
 
@@ -119,24 +121,24 @@ in
 
           network = {
             links = {
-              "10-et1g0" = {
+              "10-river-jim-phy" = {
                 matchConfig = {
                   PermanentMACAddress = "e0:d5:5e:68:0c:6e";
                   Driver = "igb";
                 };
-                linkConfig.Name = "et1g0";
+                linkConfig.Name = "river-jim-phy";
               };
-              "10-lan-core-phy" = {
+              "10-host-jim" = {
                 matchConfig.PermanentMACAddress = "e0:d5:5e:68:0c:70";
-                linkConfig.Name = "lan-core-phy";
+                linkConfig.Name = "host-jim";
               };
-              "10-et100g" = {
+              "10-uplink-dave" = {
                 matchConfig = {
                   PermanentMACAddress = "24:8a:07:ac:59:c0";
                   Driver = "mlx5_core";
                 };
                 linkConfig = {
-                  Name = "et100g";
+                  Name = "uplink-dave";
                   MTUBytes = toString hiMTU;
                 };
               };
@@ -169,8 +171,8 @@ in
                 }
               ];
 
-              "50-et100g" = {
-                matchConfig.Name = "et100g";
+              "50-uplink-dave" = {
+                matchConfig.Name = "uplink-dave";
                 vlan = [ "lan-hi" ];
                 networkConfig = networkd.noL3;
                 linkConfig.RequiredForOnline = "no";
@@ -182,9 +184,10 @@ in
                   LinkState=yes
                   MACAddress=52:54:00:cc:3e:70
 
-                  # river
+                  # river RDMA
                   [SR-IOV]
                   VirtualFunction=1
+                  VLANId=${toString vlans.hi}
                   LinkState=yes
                   MACAddress=52:54:00:8a:8a:f2
 
@@ -195,12 +198,20 @@ in
                   LinkState=yes
                   MACAddress=52:54:00:ac:15:a9
 
-                  # sfh bridge
+                  # sfh containers
                   [SR-IOV]
                   VirtualFunction=3
                   VLANId=${toString vlans.hi}
                   LinkState=yes
                   MACAddress=52:54:00:90:34:95
+
+                  # river LAN trunk
+                  [SR-IOV]
+                  VirtualFunction=4
+                  LinkState=auto
+                  MACAddress=52:54:00:8a:8a:f4
+                  Trust=yes
+                  MACSpoofCheck=no
                 '';
               };
               "60-lan-hi" = mkMerge [
@@ -208,8 +219,8 @@ in
                 { networkConfig = vlanDns "hi"; }
               ];
 
-              "50-lan-core-phy" = {
-                matchConfig.Name = "lan-core-phy";
+              "50-host-jim" = {
+                matchConfig.Name = "host-jim";
                 networkConfig = {
                   Bridge = "lan-core";
                 } // networkd.noL3;

@@ -105,29 +105,29 @@ in
                 MTUBytes = toString lib.my.c.home.hiMTU;
               };
             };
-            "10-lan-hi-ctrs" = {
+            "10-ctrs-hi" = {
               matchConfig = {
                 Driver = "mlx5_core";
                 PermanentMACAddress = "52:54:00:90:34:95";
               };
               linkConfig = {
-                Name = "lan-hi-ctrs";
+                Name = "ctrs-hi";
                 MTUBytes = toString lib.my.c.home.hiMTU;
               };
             };
-            "10-lan-core-ctrs" = {
+            "10-ctrs-core" = {
               matchConfig = {
                 Driver = "virtio_net";
                 PermanentMACAddress = "52:54:00:72:67:51";
               };
-              linkConfig.Name = "lan-core-ctrs";
+              linkConfig.Name = "ctrs-core";
             };
-            "10-lan-lo-ctrs" = {
+            "10-ctrs-lo" = {
               matchConfig = {
                 Driver = "virtio_net";
                 PermanentMACAddress = "52:54:00:a5:7e:93";
               };
-              linkConfig.Name = "lan-lo-ctrs";
+              linkConfig.Name = "ctrs-lo";
             };
           };
 
@@ -139,18 +139,18 @@ in
                 networkConfig = vlanDns "hi" // { KeepConfiguration = "static"; };
               }
             ];
-            "30-lan-hi-ctrs" = {
-              matchConfig.Name = "lan-hi-ctrs";
+            "30-ctrs-hi" = {
+              matchConfig.Name = "ctrs-hi";
               linkConfig.RequiredForOnline = "no";
               networkConfig = networkd.noL3;
             };
-            "30-lan-core-ctrs" = {
-              matchConfig.Name = "lan-core-ctrs";
+            "30-ctrs-core" = {
+              matchConfig.Name = "ctrs-core";
               linkConfig.RequiredForOnline = "no";
               networkConfig = networkd.noL3;
             };
-            "30-lan-lo-ctrs" = {
-              matchConfig.Name = "lan-lo-ctrs";
+            "30-ctrs-lo" = {
+              matchConfig.Name = "ctrs-lo";
               linkConfig.RequiredForOnline = "no";
               networkConfig = networkd.noL3;
             };
@@ -160,12 +160,12 @@ in
         systemd.nspawn = {
           hass = {
             networkConfig = {
-              MACVLAN = mkForce "lan-hi-ctrs:host0 lan-lo-ctrs:lan-lo";
+              MACVLAN = mkForce "ctrs-hi:host0 ctrs-lo:lan-lo";
             };
           };
           unifi = {
             networkConfig = {
-              MACVLAN = mkForce "lan-hi-ctrs:host0 lan-core-ctrs:lan-core";
+              MACVLAN = mkForce "ctrs-hi:host0 ctrs-core:lan-core";
             };
           };
         };
@@ -217,7 +217,7 @@ in
           mkMerge [
             instances
             (mapAttrs (n: i: {
-              networking.macVLAN = "lan-hi-ctrs";
+              networking.macVLAN = "ctrs-hi";
             }) instances)
           ];
         };

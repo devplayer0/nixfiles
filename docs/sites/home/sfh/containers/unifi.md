@@ -29,8 +29,8 @@ management network. It is imported, listed in `sfh`'s `my.containers.instances`,
 
 ## Networking
 
-Two MACVLAN interfaces come from `sfh`'s container NICs: `host0` on `lan-hi-ctrs` carries the `hi`
-assignment (`unifi-ctr`, default gateway via the VIP), while `lan-core` on `lan-core-ctrs` carries
+Two MACVLAN interfaces come from `sfh`'s container NICs: `host0` on `ctrs-hi` carries the `hi`
+assignment (`unifi-ctr`, default gateway via the VIP), while `lan-core` on `ctrs-core` carries
 the gatewayless `core` assignment (`unifi-ctr-core`). The `core` interface is how the controller
 talks to `brian` and the other switches on their management network.
 

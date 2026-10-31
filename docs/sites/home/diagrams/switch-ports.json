@@ -1,0 +1,608 @@
+{
+  "view": "Front view; rack order is brian, jim, dave, then palace several U below. Socket order is physical; spacing and chassis widths are schematic. Stream sits physically left of brian and is drawn above it.",
+  "sources": {
+    "brian": "https://dl.ui.com/qig/usw-pro-xg-8-poe/",
+    "jim": "https://mikrotik.com/product/CRS326-24G-2SplusRM",
+    "dave": "https://mikrotik.com/product/crs504_4xq_in",
+    "stream": "https://www.gowinfanless.com/news/blogs/the-r86s-revolution-low-power-2-5gbe-and-10gbe-networking"
+  },
+  "brian": {
+    "model": "USW-Pro-XG-8-PoE",
+    "ports": [
+      {
+        "socket": "1",
+        "interface": "Port 1",
+        "label": "fort",
+        "role": "Configured port label",
+        "peer": "fort",
+        "peer_port": null
+      },
+      {
+        "socket": "2",
+        "interface": "Port 2",
+        "label": "castle",
+        "role": "Configured port label",
+        "peer": "castle",
+        "peer_port": null
+      },
+      {
+        "socket": "3",
+        "interface": "Port 3",
+        "label": "portcullis test",
+        "role": "portcullis test connection",
+        "peer": "portcullis",
+        "peer_port": null
+      },
+      {
+        "socket": "4",
+        "interface": "Port 4",
+        "label": "portcullis KVM",
+        "role": "Second JetKVM",
+        "peer": "portcullis-kvm",
+        "peer_port": null
+      },
+      {
+        "socket": "5",
+        "interface": "Port 5",
+        "label": "jim P7",
+        "role": "Backup fabric trunk",
+        "peer": "jim",
+        "peer_port": "7"
+      },
+      {
+        "socket": "6",
+        "interface": "Port 6",
+        "label": "Digiweb ONT",
+        "role": "Native VLAN 140; tagged VLAN 10",
+        "peer": "Digiweb ONT",
+        "peer_port": null
+      },
+      {
+        "socket": "7",
+        "interface": "Port 7",
+        "label": "wave",
+        "role": "AP trunk",
+        "peer": "wave",
+        "peer_port": "eth0"
+      },
+      {
+        "socket": "8",
+        "interface": "Port 8",
+        "label": "vibe",
+        "role": "AP trunk",
+        "peer": "vibe",
+        "peer_port": "ether1"
+      },
+      {
+        "socket": "9",
+        "interface": "SFP+ 1",
+        "label": "dave Q3.2",
+        "role": "LAG member 1",
+        "peer": "dave",
+        "peer_port": "Q3.2"
+      },
+      {
+        "socket": "10",
+        "interface": "SFP+ 2",
+        "label": "dave Q3.4",
+        "role": "LAG member 2",
+        "peer": "dave",
+        "peer_port": "Q3.4"
+      }
+    ]
+  },
+  "jim": {
+    "model": "CRS326-24G-2S+RM",
+    "ports": [
+      {
+        "socket": "1",
+        "interface": "ether1",
+        "default_name": "ether1",
+        "label": "shytzel LAG",
+        "role": "Configured member of shytzel-downlink",
+        "peer": "shytzel",
+        "peer_port": null
+      },
+      {
+        "socket": "2",
+        "interface": "ether2",
+        "default_name": "ether2",
+        "label": "shytzel LAG",
+        "role": "Configured member of shytzel-downlink",
+        "peer": "shytzel",
+        "peer_port": null
+      },
+      {
+        "socket": "3",
+        "interface": "ether3",
+        "default_name": "ether3",
+        "label": "shytzel LAG",
+        "role": "Configured member of shytzel-downlink",
+        "peer": "shytzel",
+        "peer_port": null
+      },
+      {
+        "socket": "4",
+        "interface": "ether4",
+        "default_name": "ether4",
+        "label": "shytzel LAG",
+        "role": "Configured member of shytzel-downlink",
+        "peer": "shytzel",
+        "peer_port": null
+      },
+      {
+        "socket": "5",
+        "interface": "palace",
+        "default_name": "ether5",
+        "label": "palace host",
+        "role": "Core / netboot trunk",
+        "peer": "palace",
+        "peer_port": "host-jim"
+      },
+      {
+        "socket": "6",
+        "interface": "stream",
+        "default_name": "ether6",
+        "label": "stream LAN",
+        "role": "Backup RSTP trunk",
+        "peer": "stream",
+        "peer_port": "lan-jim"
+      },
+      {
+        "socket": "7",
+        "interface": "brian-downlink",
+        "default_name": "ether7",
+        "label": "brian P5",
+        "role": "Backup fabric trunk",
+        "peer": "brian",
+        "peer_port": "RJ45 5"
+      },
+      {
+        "socket": "8",
+        "interface": "palace-kvm",
+        "default_name": "ether8",
+        "label": "JetKVM",
+        "role": "lo access",
+        "peer": "palace-kvm",
+        "peer_port": null
+      },
+      {
+        "socket": "9",
+        "interface": "ether9",
+        "default_name": "ether9",
+        "label": "spare",
+        "role": "Unbridged spare",
+        "peer": null,
+        "peer_port": null
+      },
+      {
+        "socket": "10",
+        "interface": "castle",
+        "default_name": "ether10",
+        "label": "castle",
+        "role": "Backup attachment, normally down",
+        "peer": "castle",
+        "peer_port": "et2.5g"
+      },
+      {
+        "socket": "11",
+        "interface": "fort",
+        "default_name": "ether11",
+        "label": "fort",
+        "role": "lo access (configured label)",
+        "peer": "fort",
+        "peer_port": null
+      },
+      {
+        "socket": "12",
+        "interface": "laptop-dock",
+        "default_name": "ether12",
+        "label": "dock",
+        "role": "lo access (configured label)",
+        "peer": "laptop-dock",
+        "peer_port": null
+      },
+      {
+        "socket": "13",
+        "interface": "pronter",
+        "default_name": "ether13",
+        "label": "pronter",
+        "role": "lo access (configured label)",
+        "peer": "pronter",
+        "peer_port": null
+      },
+      {
+        "socket": "14",
+        "interface": "untrusted-sta1",
+        "default_name": "ether14",
+        "label": "guest",
+        "role": "Untrusted access",
+        "peer": "untrusted-sta1",
+        "peer_port": null
+      },
+      {
+        "socket": "15",
+        "interface": "ether15",
+        "default_name": "ether15",
+        "label": "unmapped",
+        "role": "lo access; peer unconfirmed",
+        "peer": null,
+        "peer_port": null
+      },
+      {
+        "socket": "16",
+        "interface": "ether16",
+        "default_name": "ether16",
+        "label": "unmapped",
+        "role": "lo access; peer unconfirmed",
+        "peer": null,
+        "peer_port": null
+      },
+      {
+        "socket": "17",
+        "interface": "ether17",
+        "default_name": "ether17",
+        "label": "unmapped",
+        "role": "lo access; peer unconfirmed",
+        "peer": null,
+        "peer_port": null
+      },
+      {
+        "socket": "18",
+        "interface": "ether18",
+        "default_name": "ether18",
+        "label": "unmapped",
+        "role": "lo access; peer unconfirmed",
+        "peer": null,
+        "peer_port": null
+      },
+      {
+        "socket": "19",
+        "interface": "ether19",
+        "default_name": "ether19",
+        "label": "unmapped",
+        "role": "lo access; peer unconfirmed",
+        "peer": null,
+        "peer_port": null
+      },
+      {
+        "socket": "20",
+        "interface": "ether20",
+        "default_name": "ether20",
+        "label": "unmapped",
+        "role": "lo access; peer unconfirmed",
+        "peer": null,
+        "peer_port": null
+      },
+      {
+        "socket": "21",
+        "interface": "stream-wan",
+        "default_name": "ether21",
+        "label": "stream WAN",
+        "role": "Untagged VLAN 130 handoff",
+        "peer": "stream",
+        "peer_port": "wan"
+      },
+      {
+        "socket": "22",
+        "interface": "river",
+        "default_name": "ether22",
+        "label": "river backup",
+        "role": "Dedicated router trunk",
+        "peer": "palace",
+        "peer_port": "river-jim-phy"
+      },
+      {
+        "socket": "23",
+        "interface": "ups",
+        "default_name": "ether23",
+        "label": "UPS",
+        "role": "lo access",
+        "peer": "ups",
+        "peer_port": null
+      },
+      {
+        "socket": "24",
+        "interface": "dave-management",
+        "default_name": "ether24",
+        "label": "dave mgmt",
+        "role": "Core management",
+        "peer": "dave",
+        "peer_port": "MGMT"
+      },
+      {
+        "socket": "S1",
+        "interface": "dave-uplink",
+        "default_name": "sfp-sfpplus1",
+        "label": "dave Q3.1",
+        "role": "10G fabric trunk",
+        "peer": "dave",
+        "peer_port": "Q3.1"
+      },
+      {
+        "socket": "S2",
+        "interface": "sfp-spare",
+        "default_name": "sfp-sfpplus2",
+        "label": "fergal",
+        "role": "10G trunk; colony staging",
+        "peer": "fergal",
+        "peer_port": "lan1"
+      }
+    ]
+  },
+  "dave": {
+    "model": "CRS504-4XQ-IN",
+    "ports": [
+      {
+        "socket": "Q1",
+        "interface": "palace",
+        "default_name": "qsfp28-1-1",
+        "label": "palace",
+        "role": "100G; whole cage",
+        "peer": "palace",
+        "peer_port": "uplink-dave"
+      },
+      {
+        "socket": "Q2",
+        "interface": "castle",
+        "default_name": "qsfp28-2-1",
+        "label": "castle",
+        "role": "100G; whole cage",
+        "peer": "castle",
+        "peer_port": "et100g"
+      },
+      {
+        "socket": "Q3.1",
+        "interface": "jim-downlink",
+        "default_name": "qsfp28-3-1",
+        "label": "jim SFP+1",
+        "role": "10G breakout lane 1",
+        "peer": "jim",
+        "peer_port": "S1"
+      },
+      {
+        "socket": "Q3.2",
+        "interface": "brian1",
+        "default_name": "qsfp28-3-2",
+        "label": "brian SFP+1",
+        "role": "10G breakout lane 2; LAG",
+        "peer": "brian",
+        "peer_port": "9"
+      },
+      {
+        "socket": "Q3.3",
+        "interface": "stream",
+        "default_name": "qsfp28-3-3",
+        "label": "stream LAN",
+        "role": "10G breakout lane 3",
+        "peer": "stream",
+        "peer_port": "lan-dave"
+      },
+      {
+        "socket": "Q3.4",
+        "interface": "brian2",
+        "default_name": "qsfp28-3-4",
+        "label": "brian SFP+2",
+        "role": "10G breakout lane 4; LAG",
+        "peer": "brian",
+        "peer_port": "10"
+      },
+      {
+        "socket": "Q4",
+        "interface": "qsfp28-4-1",
+        "default_name": "qsfp28-4-1",
+        "label": "unmapped",
+        "role": "No identified peer",
+        "peer": null,
+        "peer_port": null
+      },
+      {
+        "socket": "MGMT",
+        "interface": "management",
+        "default_name": "ether1",
+        "label": "jim P24",
+        "role": "100M management RJ45",
+        "peer": "jim",
+        "peer_port": "24"
+      }
+    ]
+  },
+  "links": [
+    {
+      "id": "A",
+      "from": [
+        "brian",
+        "9"
+      ],
+      "to": [
+        "dave",
+        "Q3.2"
+      ],
+      "description": "10G; first LAG member"
+    },
+    {
+      "id": "B",
+      "from": [
+        "brian",
+        "10"
+      ],
+      "to": [
+        "dave",
+        "Q3.4"
+      ],
+      "description": "10G; second LAG member"
+    },
+    {
+      "id": "C",
+      "from": [
+        "brian",
+        "5"
+      ],
+      "to": [
+        "jim",
+        "7"
+      ],
+      "description": "1G; redundant fabric trunk"
+    },
+    {
+      "id": "D",
+      "from": [
+        "jim",
+        "S1"
+      ],
+      "to": [
+        "dave",
+        "Q3.1"
+      ],
+      "description": "10G; direct fabric trunk"
+    },
+    {
+      "id": "E",
+      "from": [
+        "jim",
+        "24"
+      ],
+      "to": [
+        "dave",
+        "MGMT"
+      ],
+      "description": "100M; dave management"
+    },
+    {
+      "id": "F",
+      "from": [
+        "jim",
+        "5"
+      ],
+      "to": [
+        "palace",
+        "host-jim"
+      ],
+      "description": "1G; host core / netboot"
+    },
+    {
+      "id": "G",
+      "from": [
+        "jim",
+        "22"
+      ],
+      "to": [
+        "palace",
+        "river-jim-phy"
+      ],
+      "description": "1G; river backup trunk"
+    },
+    {
+      "id": "H",
+      "from": [
+        "dave",
+        "Q1"
+      ],
+      "to": [
+        "palace",
+        "uplink-dave"
+      ],
+      "description": "100G; host PF and guest VFs"
+    },
+    {
+      "id": "I",
+      "from": [
+        "stream",
+        "ETH0"
+      ],
+      "to": [
+        "jim",
+        "21"
+      ],
+      "description": "1G WAN; 2.5G socket on stream"
+    },
+    {
+      "id": "J",
+      "from": [
+        "stream",
+        "ETH1"
+      ],
+      "to": [
+        "jim",
+        "6"
+      ],
+      "description": "1G backup LAN; 2.5G socket on stream"
+    },
+    {
+      "id": "K",
+      "from": [
+        "stream",
+        "SFP+ R"
+      ],
+      "to": [
+        "dave",
+        "Q3.3"
+      ],
+      "description": "10G preferred LAN"
+    }
+  ],
+  "stream": {
+    "model": "BROUNION R86S",
+    "ports": [
+      {
+        "socket": "ETH0",
+        "interface": "wan",
+        "label": "wan",
+        "role": "1G connection to jim 21",
+        "nic": "Intel I225-V",
+        "capacity": "2.5G"
+      },
+      {
+        "socket": "ETH1",
+        "interface": "lan-jim",
+        "label": "lan-jim",
+        "role": "1G connection to jim 6",
+        "nic": "Intel I225-V",
+        "capacity": "2.5G"
+      },
+      {
+        "socket": "ETH2",
+        "interface": "et2",
+        "label": "et2",
+        "role": "Unused",
+        "nic": "Intel I225-V",
+        "capacity": "2.5G"
+      },
+      {
+        "socket": "SFP+ R",
+        "interface": "lan-dave",
+        "label": "lan-dave",
+        "role": "10G connection to dave Q3.3",
+        "nic": "Mellanox ConnectX-3",
+        "capacity": "10G"
+      },
+      {
+        "socket": "SFP+ L",
+        "interface": "et5",
+        "label": "et5",
+        "role": "Unused",
+        "nic": "Mellanox ConnectX-3",
+        "capacity": "10G"
+      }
+    ]
+  },
+  "palace": {
+    "ports": [
+      {
+        "socket": "uplink-dave",
+        "nic": "Mellanox ConnectX-4",
+        "capacity": "100G QSFP28"
+      },
+      {
+        "socket": "host-jim",
+        "nic": "Intel I211",
+        "capacity": "1G RJ45"
+      },
+      {
+        "socket": "river-jim-phy",
+        "nic": "Intel I211",
+        "capacity": "1G RJ45"
+      }
+    ]
+  }
+}

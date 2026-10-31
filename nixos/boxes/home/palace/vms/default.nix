@@ -10,6 +10,7 @@
     inherit (lib) mkMerge;
     inherit (lib.my) vm;
     inherit (lib.my.c) networkd;
+    inherit (lib.my.c.home) hiMTU;
 
     installerDisk = {
       name = "installer";
@@ -28,10 +29,11 @@
   {
     systemd.network = {
       netdevs = {
-        "25-vm-et1g0" = {
+        "25-river-jim-tap" = {
            netdevConfig = {
-             Name = "vm-et1g0";
+             Name = "river-jim-tap";
              Kind = "macvtap";
+             MTUBytes = toString hiMTU;
            };
            # TODO: Upstream this missing section
            extraConfig = ''
@@ -41,16 +43,24 @@
         };
       };
       networks = {
-        "75-et1g0" = {
-          matchConfig.Name = "et1g0";
-          linkConfig.RequiredForOnline = "no";
+        "75-river-jim-phy" = {
+          matchConfig.Name = "river-jim-phy";
+          linkConfig = {
+            RequiredForOnline = "no";
+            MTUBytes = toString hiMTU;
+          };
           networkConfig = {
-            MACVTAP = "vm-et1g0";
+            MACVTAP = "river-jim-tap";
           } // networkd.noL3;
         };
-        "75-vm-et1g0" = {
-          matchConfig.Name = "vm-et1g0";
-          linkConfig.RequiredForOnline = "no";
+        "75-river-jim-tap" = {
+          matchConfig.Name = "river-jim-tap";
+          linkConfig = {
+            RequiredForOnline = "no";
+            MTUBytes = toString hiMTU;
+            # Guest receive-filter changes are not synchronized to the host macvtap.
+            AllMulticast = true;
+          };
           networkConfig = networkd.noL3;
         };
       };
@@ -79,7 +89,7 @@
 
       "vm@river" =
       let
-        vtapUnit = "sys-subsystem-net-devices-vm\\x2det1g0.device";
+        vtapUnit = "sys-subsystem-net-devices-river\\x2djim\\x2dtap.device";
       in
       mkMerge [
         (awaitVM "cellar")
@@ -109,7 +119,7 @@
               (vm.disk "cellar" "persist")
             ];
             hostDevices = {
-              et100g0vf0 = {
+              cellar-hi = {
                 index = 0;
                 hostBDF = "44:00.1";
               };
@@ -142,8 +152,8 @@
             memory = 4096;
             cleanShutdown.timeout = 60;
             networks = {
-              et1g0 = {
-                ifname = "vm-et1g0";
+              lan-jim = {
+                ifname = "river-jim-tap";
                 bridge = null;
                 tapFD = 100;
                 # Real hardware MAC
@@ -156,9 +166,13 @@
               (mkMerge [ (vm.disk "river" "esp") { frontendOpts.bootindex = 0; } ])
             ];
             hostDevices = {
-              et100g0vf1 = {
+              river-rdma = {
                 index = 0;
                 hostBDF = "44:00.2";
+              };
+              river-dave = {
+                index = 1;
+                hostBDF = "44:00.5";
               };
             };
           };
@@ -175,13 +189,14 @@
             networks = {
               netboot = {
                 bridge = "lan-lo";
+                ifname = "sfh-lo-tap";
                 waitOnline = "carrier";
                 mac = "52:54:00:a5:7e:93";
                 extraOptions.bootindex = 1;
               };
               core = {
                 bridge = "lan-core";
-                ifname = "vm-sfh-core";
+                ifname = "sfh-core-tap";
                 waitOnline = "carrier";
                 mac = "52:54:00:72:67:51";
               };
@@ -190,11 +205,11 @@
               (vm.lvmDisk' "hdds" "frigate")
             ];
             hostDevices = {
-              et100g0vf2 = {
+              sfh-hi = {
                 index = 0;
                 hostBDF = "44:00.3";
               };
-              et100g0vf3 = {
+              sfh-ctrs = {
                 index = 1;
                 hostBDF = "44:00.4";
               };

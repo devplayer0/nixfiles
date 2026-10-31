@@ -24,9 +24,10 @@ See the consolidated [network assignments](../../networking.md#box-assignments) 
 ### Link and addressing
 
 `services.pppd` peer `digiweb` attaches directly to `wan-pon-isp`, the raw ISP VLAN 10
-(`vlans.pon-isp`) trunked untranslated from the ONT through `brian` and `dave`; see
-[switches.md](switches.md). The netdev has no L3 configuration and uses `MTUBytes=1508`, leaving a
-clean `mtu`/`mru 1500` after PPPoE overhead.
+(`vlans.pon-isp`) trunked untranslated from the ONT. It normally reaches `river` through `brian`
+and `dave`; the configured RSTP path through `jim` is intended to provide redundancy after
+successful deployment and validation. See [switches.md](switches.md). The netdev has no L3
+configuration and uses `MTUBytes=1508`, leaving a clean `mtu`/`mru 1500` after PPPoE overhead.
 
 The static `84.203.124.128` address is requested through IPCP. The provider-wide credentials are
 deliberately not secret; the peer persists indefinitely with LCP echo monitoring and ignores
@@ -46,23 +47,45 @@ every WAN flap.
 
 ### Traffic shaping
 
-The shared `wan-ifb` ingress-shaping pieces are inert here. CAKE is specific to `stream`, and
-`networkd-dispatcher` is `mkForce false` pending scheduling tests.
+CAKE and the `wan-ifb` network configuration remain specific to `stream`. The shared IFB netdev
+exists here but has no matching `.network` file to trigger the ingress-mirroring rule. The source
+enables the shared `networkd-dispatcher` for RSTP setup.
 
 ## Platform
 
 ### Virtual machine and network attachment
 
-The 100G `lan` NIC is VF 1 of `palace`'s `et100g` (MTU 9000), with every router VLAN tagged on top
-as `55-lan`. A macvtap of `palace`'s 1G `et1g0` remains as the old `wan-old` path without L3
-configuration. Deployments use the `hi` assignment.
+The router's ordinary networks sit above the `lan` RSTP bridge. Its preferred port, `lan-dave`, is
+an unfiltered ConnectX-4 VF trunk; `lan-jim` is the 1G `river-jim-tap` macvtap exported by
+`palace`. Native `core`, the client VLANs and Digiweb VLANs 10/140 use `dave` normally and fail
+over to `jim`. The shared policy is documented in [Router HA](../../networking.md#router-ha);
+[failover validation](router-failover.md) covers attachment and switch outages.
+
+The bridge uses the trunk VF's assigned MAC so the ConnectX-4's local switching can deliver
+traffic from `palace` and the other VFs to the router. On `lan-hi` and `rdma-hi`, `arp_ignore=1`
+and `arp_announce=2` keep router and storage addresses on their respective interfaces; otherwise
+the storage VF can answer ARP for the router VIP and attract traffic to the wrong interface.
+
+The separate ConnectX-4 VF `rdma-hi` is not a bridge port. It has a PF-applied VLAN 100 and exists
+only for storage traffic.
+
+Ordinary Ethernet traverses the guest software bridge; this does not require mlx5
+switchdev or host representors. The bridge disables LRO on its ports; RDMA stays outside this
+path.
 
 ### Storage
 
 The VM's local disk holds only an ESP; `/nix` and `/persist` are LVs on `cellar`'s
-`nqn.2016-06.io.spdk:river` namespace over RDMA. The initrd brings up `lan-hi`
-with `roceBootModules`, and `KeepConfiguration=static` prevents networkd from dropping the address
-during reconfiguration. An installer ISO remains attached.
+`nqn.2016-06.io.spdk:river` namespace over RDMA. The initrd brings up `rdma-hi` with the dedicated
+`rdma` assignment and a link-scoped host route to `cellar`, alongside `roceBootModules`.
+
+NixOS copies the main system's `.link` units into the systemd initrd, so the `rdma-hi` rename is
+shared, but its `.network` and `.netdev` units are separate. `river` therefore declares the storage
+assignment and route once under `boot.initrd.systemd.network` and again under the main
+`systemd.network`. The systemd initrd leaves its kernel network state in place during the stage-two
+handover; `KeepConfiguration=static` on the main `.network` prevents networkd from dropping and
+recreating the static address and route underneath the mounted NVMe-oF root. An installer ISO
+remains attached.
 
 ## Netboot
 
@@ -76,4 +99,4 @@ assignment, restricted to the `hi` and `lo` prefixes.
 - [`nixos/boxes/home/routing-common/default.nix`](../../../nixos/boxes/home/routing-common/default.nix) —
   shared router definition (assignments, firewall/NAT, `as211024`).
 - [`nixos/boxes/home/palace/vms/default.nix`](../../../nixos/boxes/home/palace/vms/default.nix) —
-  the VM definition on `palace` (VF 1, macvtap, ESP disk).
+  the VM definition on `palace` (dedicated RDMA VF, trunk VF, macvtap and ESP disk).
