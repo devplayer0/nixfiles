@@ -106,7 +106,8 @@ in
         # HACK: Upstream changes in Git + Nix makes this necessary
         # https://github.com/NixOS/nix/issues/10202
         doas git config --global --add safe.directory "$PWD"
-        doas nixos-rebuild --flake . "$@"
+        # doas drops the devshell's NIX_USER_CONF_FILES, including accept-flake-config.
+        doas nixos-rebuild --accept-flake-config --flake . "$@"
       '';
     }
     {

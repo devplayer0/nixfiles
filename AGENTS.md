@@ -35,7 +35,7 @@ see its help, or browse `devshell/commands.nix` / `devshell/install.nix` / `devs
 Common ones:
 - `fmt` — format Nix with `nixpkgs-fmt` (the canonical formatter here).
 - `build-system <host> [nix args]` — build a NixOS system's `toplevel`.
-- `build-n-switch <args>` — wraps `doas nixos-rebuild --flake .`.
+- `build-n-switch <args>` — wraps `doas nixos-rebuild --accept-flake-config --flake .`.
 - `build-home <name>` / `home-switch` — build / switch a home-manager config.
 - `run-vm <host>` — build & boot a system as a dev VM (installs `.keys/dev.key` into the VM).
 - `build-iso` / `build-kexec` / `build-netboot <host>` — alternate build outputs via `config.my.buildAs.*`.

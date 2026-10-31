@@ -82,7 +82,7 @@ command with no arguments for its help. From
 |---|---|
 | `check-system <host> [nix args]` | Evaluates `.#nixosConfigurations."<host>".config.system.build.toplevel.drvPath` — catches module/option errors without building. Prefer this to validate a config change. |
 | `build-system <host> [nix args]` | Builds the system's `toplevel` (extra args pass through to `nix build`). |
-| `build-n-switch <args>` | `doas nixos-rebuild --flake .` (adds the repo as a git `safe.directory` for root first). |
+| `build-n-switch <args>` | `doas nixos-rebuild --accept-flake-config --flake .` (accepts the flake's cache settings and adds the repo as a git `safe.directory` for root first). |
 | `build-home <name> [nix args]` | Builds `.#homeConfigurations."<name>".activationPackage`. |
 | `home-switch [args]` | `home-manager switch --flake .`. |
 | `deploy [args]` | `deploy-rs --skip-checks` (wrapper package in `devshell/default.nix`). |
