@@ -73,6 +73,8 @@ in
           }
         ];
 
+        my.agents.enable = mkDefault true;
+
         home = {
           packages = (with pkgs; [
             xdg-utils
@@ -183,43 +185,6 @@ in
                   render = true;
                   character = "┊";
                 };
-              };
-            };
-          };
-
-          # TODO: Remove mutableSettings guard when Home Manager 26.11 releases; 26.05 lacks it.
-          codex = {
-            enable = true;
-            package = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex;
-            settings.sandbox_workspace_write.network_access = true;
-            settings.tui = {
-              status_line = [
-                "model-with-reasoning"
-                "current-dir"
-                "five-hour-limit"
-                "weekly-limit"
-                "context-used"
-                "context-window-size"
-                "total-input-tokens"
-                "total-output-tokens"
-                "used-tokens"
-              ];
-              status_line_use_colors = true;
-            };
-          } // optionalAttrs (options.programs.codex ? mutableSettings) {
-            mutableSettings = true;
-          };
-
-          claude-code = {
-            enable = true;
-            package = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.claude-code;
-            settings = {
-              model = "opus";
-              theme = "auto";
-              statusLine = {
-                type = "command";
-                command = ./claude-statusline.sh;
-                padding = 0;
               };
             };
           };

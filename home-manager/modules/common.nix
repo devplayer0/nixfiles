@@ -169,6 +169,18 @@ in
               HostName = "ch-s010.rsync";
             };
 
+            # Coding agents run as `slop-cannon`; never forward an agent there
+            slop-cannon = {
+              HostName = "slop-cannon-ctr.${lib.my.c.home.domain}";
+              User = "slop-cannon";
+              ForwardAgent = "no";
+            };
+            slop-cannon-dev = {
+              HostName = "slop-cannon-ctr.${lib.my.c.home.domain}";
+              User = "dev";
+              ForwardAgent = "no";
+            };
+
             shoe = {
               Host = "shoe.netsoc.tcd.ie shoe";
               User = "netsoc";

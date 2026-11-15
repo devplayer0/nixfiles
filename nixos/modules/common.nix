@@ -14,6 +14,7 @@ in
     inputs.copyparty.nixosModules.default
     inputs.harmonia.nixosModules.harmonia
     inputs.bootvine.nixosModules.default
+    inputs.paseo.nixosModules.paseo
   ];
 
   config = mkMerge [

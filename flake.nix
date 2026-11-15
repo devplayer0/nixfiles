@@ -73,6 +73,9 @@
     # Packages not in nixpkgs
     # Keep its tested nixpkgs pin so packages can use the upstream binary cache.
     llm-agents.url = "github:numtide/llm-agents.nix";
+    # Pinned to a release. Don't make it follow our nixpkgs: its npm dependency hash is tied to its
+    # own nixpkgs pin.
+    paseo.url = "github:getpaseo/paseo/v0.15.4";
     borgthin.url = "github:devplayer0/borg";
     # TODO: Update borgthin so this works
     # borgthin.inputs.nixpkgs.follows = "nixpkgs-mine";

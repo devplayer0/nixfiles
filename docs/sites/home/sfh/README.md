@@ -24,6 +24,8 @@ from `river` and runs its root off NVMe-oF from `cellar`.
   `/var/lib/frigate`.
 - USB: two host ports are passed to the VM (qemu flags) for the Zigbee coordinator and webcam used
   by `hass`; the nspawn unit gets `DeviceAllow` for `char-ttyUSB` and `char-video4linux`.
+- `slop-cannon`'s nspawn unit gets a low `CPUWeight` and a `MemoryMax`, so agent builds can't starve
+  `hass` and `unifi`, and a larger `/tmp` tmpfs than nspawn's default (10% of RAM).
 
 ## Network assignments
 
@@ -53,6 +55,7 @@ back through the VM handoffs to the physical switch connections.
 |---|---|
 | [`hass`](containers/hass.md) | Home Assistant + Frigate + MQTT |
 | [`unifi`](containers/unifi.md) | UniFi controller |
+| [`slop-cannon`](containers/slop-cannon.md) | Coding agents, driven remotely through Paseo |
 
 ## Notable config files
 
