@@ -378,6 +378,22 @@ in
         useACMEHost = pubDomain;
       };
 
+      "paseo-relay.${pubDomain}" = {
+        locations = {
+          "/" = {
+            proxyPass = "http://127.0.0.1:${toString config.my.paseo-relay.port}";
+            proxyWebsockets = true;
+            extraConfig = ''
+              ${proxyHeaders}
+              proxy_read_timeout 1h;
+              proxy_send_timeout 1h;
+            '';
+          };
+          "= /metrics".return = "404";
+        };
+        useACMEHost = pubDomain;
+      };
+
       "md.${pubDomain}" = {
         locations."/" = {
           proxyPass = "http://object-ctr.${domain}:3000";

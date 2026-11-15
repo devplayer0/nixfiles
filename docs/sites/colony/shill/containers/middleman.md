@@ -3,7 +3,7 @@
 The front-end reverse proxy for the colony's public web services — the single ingress that
 `estuary` DNATs HTTP/HTTPS (and Matrix federation on `:8448`) to. Terminates TLS with wildcard
 certificates it issues itself, provides nginx-sso for gated vhosts, and runs a librespeed
-backend.
+backend and a Paseo relay.
 
 - **Source:** [`shill/containers/middleman/`](../../../../../nixos/boxes/colony/vms/shill/containers/middleman)
   (`default.nix`, `vhosts.nix`)
@@ -42,6 +42,17 @@ username/password provider. Its cookie domain is `.nul.ie`; gated vhosts include
 The frontend and backend are published as `speed.nul.ie` and `librespeed.ams1.int.nul.ie`, both
 proxied to `localhost:8989`.
 
+### Paseo relay
+
+[`paseo-relay`](https://github.com/getpaseo/paseo-relay) (the `my.paseo-relay` module, package
+`pkgs/paseo-relay.nix`) relays end-to-end encrypted traffic between Paseo daemons and the Paseo
+app, in place of Paseo's hosted relay.
+
+- Single node with no Erlang distribution, listening on `127.0.0.1:4000` and published as
+  `paseo-relay.nul.ie`. It keeps no state, so a restart only drops connections.
+- The relay can't read or forge messages, so the vhost is open to the world. Its Prometheus
+  `/metrics` is not exposed; `/health` and `/ready` are.
+
 ## Network assignments
 
 See the consolidated [network assignments](../../../../networking.md#box-assignments) table (this box: `middleman`).
@@ -78,6 +89,7 @@ all vhosts are `onlySSL`, kTLS and HTTP/2. "SSO" = gated behind nginx-sso (`gene
 | `mc-map-kink.nul.ie` | `kinkcraft-oci:8100` | Minecraft map ([`whale2`](../../whale2.md#game-servers)) |
 | `speed.nul.ie` | `localhost:8989` | librespeed |
 | `librespeed.ams1.int.nul.ie` | `localhost:8989` | librespeed on the internal domain (internal wildcard cert) |
+| `paseo-relay.nul.ie` | `localhost:4000` | Paseo relay; websockets with long timeouts; `/metrics` blocked |
 | `md.nul.ie` | `object-ctr:3000` | HedgeDoc; websockets |
 | `pb.nul.ie` | `object-ctr:8088` | wastebin |
 | `photos.nul.ie` | `jackflix-ctr:2342` | PhotoPrism; websockets |
@@ -90,6 +102,6 @@ all vhosts are `onlySSL`, kTLS and HTTP/2. "SSO" = gated behind nginx-sso (`gene
 
 ## Notable config files
 
-- [`nixos/boxes/colony/vms/shill/containers/middleman/default.nix`](../../../../../nixos/boxes/colony/vms/shill/containers/middleman/default.nix) — container definition: nginx, ACME, nginx-sso, librespeed, secrets
+- [`nixos/boxes/colony/vms/shill/containers/middleman/default.nix`](../../../../../nixos/boxes/colony/vms/shill/containers/middleman/default.nix) — container definition: nginx, ACME, nginx-sso, librespeed, Paseo relay, secrets
 - [`nixos/boxes/colony/vms/shill/containers/middleman/vhosts.nix`](../../../../../nixos/boxes/colony/vms/shill/containers/middleman/vhosts.nix) — all virtual hosts, the SSO include helpers, and the `.well-known` tree
 - [`nixos/boxes/colony/vms/shill/containers/middleman/default.html`](../../../../../nixos/boxes/colony/vms/shill/containers/middleman/default.html) — default vhost landing page

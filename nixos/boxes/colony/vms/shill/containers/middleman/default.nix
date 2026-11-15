@@ -138,6 +138,8 @@ in
                 extraSettingsFile = config.age.secrets."librespeed.toml".path;
               };
             };
+
+            paseo-relay.enable = true;
           };
 
           users = {

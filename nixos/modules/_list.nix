@@ -20,6 +20,7 @@
     nvme = ./nvme;
     spdk = ./spdk.nix;
     librespeed = ./librespeed;
+    paseo-relay = ./paseo-relay.nix;
     netboot = ./netboot;
   };
 }
