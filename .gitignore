@@ -1,4 +1,5 @@
 .direnv
+/.cache
 result*
 /.vms/*
 !/.vms/.gitkeep

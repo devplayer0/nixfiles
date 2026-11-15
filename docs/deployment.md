@@ -58,7 +58,16 @@ Generated profiles deploy in this order:
 
 `ssh-machine <name> [cmd]` resolves `user@host` and the merged global/node `sshOpts` from
 `.#deploy`, using the same `my.deploy.enable` gate and `@` → `-at-` mangling as `deploy`, then runs
-`ssh`. Boxes default to `fish`, so pipe multi-statement remote scripts through `bash`, for example
+`ssh`. Connection settings for all nodes are cached together in `.cache/ssh-machine/`;
+normal connections read the cache without running Nix. A fingerprint of Git HEAD and
+staged/unstaged tracked changes automatically invalidates it, including newly added files
+after `git add`.
+Untracked and ignored files do not affect the fingerprint. Any tracked edit, even an unrelated
+one, causes the next connection to refresh all nodes. Use `ssh-machine --refresh` to force a
+refresh, or `ssh-machine --refresh <name> [cmd]` to refresh and connect. Refresh failures stop
+the command; the previous cache is never used as a fallback.
+
+Boxes default to `fish`, so pipe multi-statement remote scripts through `bash`, for example
 `ssh-machine <name> bash -s < script.sh`. If a flaky agent stalls public-key authentication, use
 `SSH_AUTH_SOCK= ssh-machine …`.
 

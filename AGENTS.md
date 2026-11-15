@@ -55,7 +55,10 @@ Common ones:
   reboot to cut over.
 - `ssh-machine <name> [cmd]` — SSH to a NixOS system or home-manager config by name. Resolves the
   target and ssh options (identity, port) from its deploy-rs node, so it needs `my.deploy.enable`
-  (same gate as `deploy`). Boxes default to the `fish` login shell, so pipe multi-statement remote
+  (same gate as `deploy`). Connection settings for all nodes are cached together and invalidated
+  by tracked Git changes; use `ssh-machine --refresh` to force a refresh
+  (see `docs/deployment.md#ssh-machine`).
+  Boxes default to the `fish` login shell, so pipe multi-statement remote
   scripts through `bash` (e.g. `ssh-machine <name> bash -s < script.sh`) rather than `&&`/`for`.
   If outbound SSH hangs at the publickey step (flaky `ssh-agent`), disable the agent for the call:
   `SSH_AUTH_SOCK= ssh-machine …` (or add `-o IdentityAgent=none` to a raw `ssh`).
@@ -207,6 +210,8 @@ in churn.
 - Comment where it genuinely aids understanding, but not for trivial/obvious code — match the file's
   existing (fairly sparse) comment density. When adding something general, comment its general
   purpose, not the specific change or one-off reason it was introduced for.
+- Separate logical steps in code with blank lines. Keep closely related statements together, and leave a
+  blank line before a comment that introduces the next step.
 - Prefer `lib.my` helpers (`mkOpt'`, `mkBoolOpt'`, `mkDefault'`) and `lib.my.c` constants over
   reimplementing.
 - New shared functionality → a module in `*/modules/` + entry in `_list.nix`, options under `my.*`.

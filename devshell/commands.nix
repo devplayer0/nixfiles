@@ -2,6 +2,11 @@
 let
   homeFlake = "$HOME/.config/home-manager/flake.nix";
   devKey = ".keys/dev.key";
+  sshMachine = pkgs.writeShellApplication {
+    name = "ssh-machine";
+    runtimeInputs = with pkgs; [ coreutils git jq openssh ];
+    text = builtins.readFile ./ssh-machine.sh;
+  };
 in
 {
   commands = [
@@ -52,20 +57,7 @@ in
       name = "ssh-machine";
       category = "utilities";
       help = "SSH to a machine by NixOS system or home-manager config name";
-      command = ''
-        name="$1"
-        shift
-        # Run from the project root so deploy's relative identity path (.keys/deploy.key) resolves
-        cd "$PRJ_ROOT"
-        # deploy-rs node names are the system/home name, with `@` mangled to `-at-`
-        node="''${name//@/-at-}"
-        # Single eval: resolve `user@host` plus merged (global + node) deploy-rs ssh options
-        info="$(nix eval --raw .#deploy --apply 'd: let n = d.nodes."'"$node"'"; in "''${n.sshUser}@''${n.hostname} ''${builtins.concatStringsSep " " (d.sshOpts ++ n.sshOpts)}"')"
-        target="''${info%% *}"
-        opts="''${info#* }"
-        # shellcheck disable=SC2086
-        exec ${pkgs.openssh}/bin/ssh $opts "$target" "$@"
-      '';
+      command = ''exec ${sshMachine}/bin/ssh-machine "$@"'';
     }
     {
       name = "json2nix";
