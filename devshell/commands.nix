@@ -156,19 +156,5 @@ in
       help = "Update installer tag (to trigger new release)";
       command = ''git tag -f installer && git push -f origin installer'';
     }
-    {
-      name = "deploy-multi";
-      category = "tasks";
-      help = "Deploy multiple flakes at once";
-      command = ''
-        for f in $@; do
-          if [ -n "''${O:-}" ]; then
-            deploy "$O" $f
-          else
-            deploy $f
-          fi
-        done
-      '';
-    }
   ];
 }

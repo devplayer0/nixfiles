@@ -42,7 +42,9 @@ Common ones:
 - `check-system <host> [nix args]` — evaluate a system (catches eval errors without a full build).
   **Prefer this over `build-system` to validate a config change** — evaluation surfaces module/option
   errors quickly and cheaply; only do a full build when you specifically need the built artifact.
-- `deploy <host>` and `deploy-multi <hosts...>` — deploy-rs deployment (uses `.keys/deploy.key`, `--skip-checks`).
+- `deploy <host>` — deploy-rs deployment (uses `.keys/deploy.key`, `--skip-checks`).
+  Use `deploy --targets .#<host1> .#<host2>` for multiple targets; shared options go directly
+  on the command, e.g. `deploy --boot --targets .#river .#stream`.
   Pass the flake-qualified node, e.g. `deploy .#git`. The deploy node name is **always** the system
   name (`deploy-rs.nix` keys nodes directly off `nixos.systems` / `home-manager.homes`); a system is
   only a deploy target when `config.my.deploy.enable` is true (defaults true; auto-disabled for dev

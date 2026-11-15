@@ -47,7 +47,8 @@ Generated profiles deploy in this order:
 
 - `deploy .#<host>` — the devshell's `deploy` is a wrapper that adds `--skip-checks`. Node
   names are the system names (`deploy .#git`).
-- `deploy-multi <hosts...>` — loops `deploy` over several nodes (extra args via `$O`).
+- `deploy --targets .#<host1> .#<host2>` — deploys several nodes in one invocation.
+  Pass shared options directly, e.g. `deploy --boot --targets .#river .#stream`.
 - `deploy --boot .#<host>` — stages the config as the boot default **without** live-switching
   (deploy-rs's `--boot` maps to the custom activation's `boot` phase, which also does the
   generation cleanup). Use it when a live `switch` would cut the box off mid-change (e.g. a
@@ -99,7 +100,7 @@ command with no arguments for its help. From
 | `build-home <name> [nix args]` | Builds `.#homeConfigurations."<name>".activationPackage`. |
 | `home-switch [args]` | `home-manager switch --flake .`. |
 | `deploy [args]` | `deploy-rs --skip-checks` (wrapper package in `devshell/default.nix`). |
-| `deploy-multi <nodes...>` | Deploys several nodes in sequence. |
+| `deploy --targets .#<node1> .#<node2>` | Deploys several nodes in one invocation. |
 | `ssh-machine <name> [cmd]` | SSH to a system or home by name, resolving target/options from its deploy-rs node (see above). |
 | `run-vm <host>` | Boots a system as a dev VM: installs `.keys/dev.key` into a temp `xchg/`, then `nix run`s `config.my.buildAs.devVM`. |
 | `build-iso <host>` | Builds `config.my.buildAs.iso`. |
