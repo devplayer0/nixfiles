@@ -60,6 +60,17 @@ in
       command = ''exec ${sshMachine}/bin/ssh-machine "$@"'';
     }
     {
+      name = "docs";
+      category = "utilities";
+      help = "Preview Markdown docs in the browser (default: `docs/README.md`)";
+      command = ''
+        if [ $# -eq 0 ] || [[ "$1" == -* ]]; then
+          set -- "$PRJ_ROOT/docs/README.md" "$@"
+        fi
+        exec ${pkgs.go-grip}/bin/go-grip "$@"
+      '';
+    }
+    {
       name = "json2nix";
       category = "utilities";
       help = "Convert JSON to formatted Nix";

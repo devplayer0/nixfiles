@@ -33,5 +33,6 @@ in
     '')
     home-manager
     jujutsu
+    go-grip
   ];
 }

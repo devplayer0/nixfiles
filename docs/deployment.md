@@ -116,6 +116,7 @@ command with no arguments for its help. From
 | `qemu-genmac` | Prints a random QEMU-suitable MAC (`52:54:00:xx:xx:xx`). |
 | `ssh-get-ed25519 <host>` | Prints a host's ed25519 pubkey via `ssh-keyscan`. |
 | `json2nix` | Converts JSON on stdin to formatted Nix. |
+| `docs [file] [go-grip args]` | Previews Markdown in the browser with `go-grip` (default `docs/README.md`), rendered locally with live reload. |
 
 From [`devshell/install.nix`](../devshell/install.nix) (driven by `$INSTALLER`, the address of
 a running custom installer, SSHing as root with `.keys/deploy.key`):
