@@ -374,8 +374,10 @@ route on `wan`, while `river`'s `pppd` hooks start and stop it. Consumers such a
 `wantedBy` + `partOf` + `after`, never `requires`/`wants`, so they cannot pull the target in early
 and they reload on WAN flap.
 
-DDNS starts after `network.target` rather than this WAN gate and can fail before the WAN is
-ready. Its timer retries periodically; `doas systemctl start ddns-update.service` retries
+DDNS starts when this WAN gate opens, after the local authoritative server and recursor.
+Its five-minute timer retries failed updates and refreshes the public records; timer and manual
+starts skip the update while the WAN gate is inactive, without activating it. `river` also
+updates immediately after PPPoE reconnects. `doas systemctl start ddns-update.service` retries
 immediately once connectivity is available.
 
 ### WAN paths (summary)

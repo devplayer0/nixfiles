@@ -127,18 +127,21 @@ in
         pdns.serviceConfig.RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6 AF_NETLINK";
         ddns-update = {
           description = "DNS update script";
-          after = [ "network.target" ];
+          after = [ "wan-online.target" "pdns.service" "pdns-recursor.service" ];
+          wantedBy = [ "wan-online.target" ];
+          partOf = [ "wan-online.target" ];
           path = [
             (pkgs.python3.withPackages (ps: [ ps.cloudflare ]))
             pkgs.ldns
           ];
           serviceConfig = {
             Type = "oneshot";
+            # Timer retries must not pull in the WAN gate or run before it opens.
+            ExecCondition = "${config.systemd.package}/bin/systemctl --quiet is-active wan-online.target";
             ExecStart =
               ''${./dns_update.py} -k ${config.age.secrets."home/ddclient-cloudflare.key".path} '' +
               ''${pubDomain} ns${toString (index + 1)}.${config.networking.domain}'';
           };
-          wantedBy = [ "multi-user.target" ];
         };
       };
       timers = {
