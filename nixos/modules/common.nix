@@ -178,7 +178,8 @@ in
         } else { };
         getty.greetingLine = mkDefault' ''<<< Welcome to ${config.system.nixos.distroName} ${config.system.nixos.label} (\m) - \l >>>'';
 
-        bootvine.enable = true;
+        # Needs a console TTY, which containers don't have
+        bootvine.enable = !config.boot.isContainer;
 
         openssh = {
           enable = mkDefault true;
