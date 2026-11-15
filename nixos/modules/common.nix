@@ -13,6 +13,7 @@ in
     inputs.ragenix.nixosModules.age
     inputs.copyparty.nixosModules.default
     inputs.harmonia.nixosModules.harmonia
+    inputs.bootvine.nixosModules.default
   ];
 
   config = mkMerge [

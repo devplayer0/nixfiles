@@ -87,6 +87,10 @@
     # the source is already realised there. Re-enable (and revisit upstream) if we start using pi.
     # pi-agent.url = "github:lukasl-dev/pi.nix";
     # pi-agent.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    bootvine = {
+      url = "git+https://codeberg.org/wvhulle/bootvine";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
   };
 
   outputs =
