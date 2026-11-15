@@ -181,10 +181,10 @@
             uuid = "82ec149d-577c-421a-93e2-a9307c756cd8";
             cpu = "host,topoext";
             smp = {
-              cpus = 8;
+              cpus = 16;
               threads = 2;
             };
-            memory = 32768;
+            memory = 98304;
             cleanShutdown.timeout = 120;
             networks = {
               netboot = {
