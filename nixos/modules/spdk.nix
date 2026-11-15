@@ -25,6 +25,15 @@ let
   spdk = pkgs.spdk.overrideAttrs (o: {
     configureFlags = o.configureFlags ++ (map (withFeature true) [ "rdma" "ublk" ]);
     buildInputs = o.buildInputs ++ (with pkgs; [ liburing ]);
+    # SPDK 26.01 recognizes prerelease DPDK 26.03, but selects the old PCI ABI for its release.
+    # TODO: Remove after upgrading to SPDK >= 26.05, which handles released DPDK 26.03:
+    # https://github.com/spdk/spdk/blob/v26.05/lib/env_dpdk/pci_dpdk.c
+    # nixos-unstable still packages 26.01 without this fix (checked 2026-11-15).
+    postPatch = (o.postPatch or "") + lib.optionalString (o.version == "26.01") ''
+      substituteInPlace lib/env_dpdk/pci_dpdk.c \
+        --replace-fail 'else if (year == 25) {' \
+          'else if (year == 25 || (year == 26 && month == 3 && minor == 0)) {'
+    '';
   });
   spdk-rpc = (pkgs.writeShellScriptBin "spdk-rpc" ''
     exec ${pkgs.python3}/bin/python3 ${spdk.src}/scripts/rpc.py "$@"
