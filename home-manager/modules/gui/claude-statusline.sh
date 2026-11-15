@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Source: https://github.com/daniel3303/ClaudeCodeStatusLine
-# Single line: Model | tokens | %used | %remain | think | 5h bar @reset | 7d bar @reset | extra
+# Single line: Model (effort) | dir@branch | tokens (%used) | 5h @reset | 7d @reset | extra | CLI version
 
 set -f  # disable globbing
-VERSION="1.4.4"
+VERSION="1.4.5"
 
 input=$(cat)
 
@@ -110,31 +110,26 @@ elif [ -f "$settings_path" ]; then
 fi
 [ -z "$effort_level" ] && effort_level="medium"
 
-# ===== Claude CLI version (cached, 1h TTL) =====
-cli_version_cache="/tmp/claude/statusline-cli-version"
-cli_version=""
-cli_version_max_age=3600
-
-if [ -f "$cli_version_cache" ]; then
-    cv_mtime=$(stat -c %Y "$cli_version_cache" 2>/dev/null || stat -f %m "$cli_version_cache" 2>/dev/null)
-    cv_now=$(date +%s)
-    cv_age=$(( cv_now - cv_mtime ))
-    if [ "$cv_age" -lt "$cli_version_max_age" ]; then
-        cli_version=$(cat "$cli_version_cache" 2>/dev/null)
-    fi
-fi
-
+# ===== Claude CLI version =====
+# Prefer the version Claude Code passes on stdin (always the running instance);
+# fall back to asking whichever `claude` is on PATH.
+cli_version=$(echo "$input" | jq -r '.version // empty')
 if [ -z "$cli_version" ]; then
     cli_version=$(claude --version 2>/dev/null | awk '{print $1}')
-    if [ -n "$cli_version" ]; then
-        mkdir -p /tmp/claude 2>/dev/null
-        echo "$cli_version" > "$cli_version_cache"
-    fi
 fi
 
 # ===== Build single-line output =====
 out=""
-out+="${blue}${model_name}${reset}"
+out+="${blue}${model_name}${reset} ${dim}(${reset}"
+case "$effort_level" in
+    low)    out+="${dim}${effort_level}${reset}" ;;
+    medium) out+="${orange}med${reset}" ;;
+    high)   out+="${green}${effort_level}${reset}" ;;
+    xhigh)  out+="${purple}${effort_level}${reset}" ;;
+    max)    out+="${red}${effort_level}${reset}" ;;
+    *)      out+="${green}${effort_level}${reset}" ;;
+esac
+out+="${dim})${reset}"
 
 # Current working directory
 cwd=$(echo "$input" | jq -r '.cwd // empty')
@@ -152,16 +147,6 @@ fi
 
 out+=" ${dim}|${reset} "
 out+="${orange}${used_tokens}/${total_tokens}${reset} ${dim}(${reset}${green}${pct_used}%${reset}${dim})${reset}"
-out+=" ${dim}|${reset} "
-out+="effort: "
-case "$effort_level" in
-    low)    out+="${dim}${effort_level}${reset}" ;;
-    medium) out+="${orange}med${reset}" ;;
-    high)   out+="${green}${effort_level}${reset}" ;;
-    xhigh)  out+="${purple}${effort_level}${reset}" ;;
-    max)    out+="${red}${effort_level}${reset}" ;;
-    *)      out+="${green}${effort_level}${reset}" ;;
-esac
 
 # ===== Cross-platform OAuth token resolution (from statusline.sh) =====
 # Tries credential sources in order: env var → macOS Keychain → Linux creds file → GNOME Keyring
