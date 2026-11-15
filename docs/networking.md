@@ -175,6 +175,12 @@ edit prose there, never the other generated cells.
 | `router-lo` | `192.168.79.254/21 gw 192.168.72.1` | `2a0e:97c0:4d0:2::ffff/64` | h.nul.ie | Floating VIP shared by [`river`](sites/home/river.md) and [`stream`](sites/home/stream.md) |
 | [`stream`](sites/home/stream.md) | `192.168.72.2/21` | `2a0e:97c0:4d0:2::2/64` | h.nul.ie |  |
 
+#### `rdma`
+
+| Box | IPv4 | IPv6 | Domain | Notes |
+|---|---|---|---|---|
+| [`river`](sites/home/river.md) | `192.168.68.3/32` | — | h.nul.ie |  |
+
 #### `untrusted`
 
 | Box | IPv4 | IPv6 | Domain | Notes |

@@ -224,6 +224,8 @@ These zones are served by [`river`](../sites/home/river.md) and
 | `palace` | `AAAA` | `2a0e:97c0:4d0:1::2:1` |
 | `palace-core` | `A` | `192.168.64.20` |
 | `palace-kvm` | `A` | `192.168.72.21` |
+| `portcullis` | `A` | `192.168.68.41` |
+| `portcullis` | `AAAA` | `2a0e:97c0:4d0:1::6:1` |
 | `reolink-living-room` | `A` | `192.168.72.45` |
 | `river` | `A (LUA)` | `generated at query time` |
 | `river` | `AAAA` | `2a0e:97c0:4df:0:1::1` |
@@ -280,6 +282,7 @@ These zones are served by [`river`](../sites/home/river.md) and
 | `192.168.68.2` | `stream-hi.h.nul.ie.` |
 | `192.168.68.22` | `palace.h.nul.ie.` |
 | `192.168.68.40` | `castle.h.nul.ie.` |
+| `192.168.68.41` | `portcullis.h.nul.ie.` |
 | `192.168.68.80` | `cellar.h.nul.ie.` |
 | `192.168.68.81` | `sfh.h.nul.ie.` |
 | `192.168.68.100` | `unifi-ctr.h.nul.ie.` |
@@ -309,6 +312,7 @@ These zones are served by [`river`](../sites/home/river.md) and
 | `2a0e:97c0:4d0:1::4:2` | `sfh.h.nul.ie.` |
 | `2a0e:97c0:4d0:1::5:1` | `unifi-ctr.h.nul.ie.` |
 | `2a0e:97c0:4d0:1::5:3` | `hass-ctr.h.nul.ie.` |
+| `2a0e:97c0:4d0:1::6:1` | `portcullis.h.nul.ie.` |
 | `2a0e:97c0:4d0:2::1` | `river-lo.h.nul.ie.` |
 | `2a0e:97c0:4d0:2::2` | `stream-lo.h.nul.ie.` |
 | `2a0e:97c0:4d0:2::ffff` | `router-lo.h.nul.ie.` |
