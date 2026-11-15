@@ -4,7 +4,7 @@ let
   devKey = ".keys/dev.key";
   sshMachine = pkgs.writeShellApplication {
     name = "ssh-machine";
-    runtimeInputs = with pkgs; [ coreutils git jq openssh ];
+    runtimeInputs = with pkgs; [ coreutils git jujutsu jq openssh ];
     text = builtins.readFile ./ssh-machine.sh;
   };
 in

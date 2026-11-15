@@ -60,11 +60,12 @@ Generated profiles deploy in this order:
 `ssh-machine <name> [cmd]` resolves `user@host` and the merged global/node `sshOpts` from
 `.#deploy`, using the same `my.deploy.enable` gate and `@` → `-at-` mangling as `deploy`, then runs
 `ssh`. Connection settings for all nodes are cached together in `.cache/ssh-machine/`;
-normal connections read the cache without running Nix. A fingerprint of Git HEAD and
-staged/unstaged tracked changes automatically invalidates it, including newly added files
-after `git add`.
-Untracked and ignored files do not affect the fingerprint. Any tracked edit, even an unrelated
-one, causes the next connection to refresh all nodes. Use `ssh-machine --refresh` to force a
+normal connections read the cache without running Nix. A fingerprint of the checkout
+automatically invalidates it. In a Jujutsu workspace (including secondary workspaces without a
+Git checkout) it is the working-copy commit ID, so any snapshotted change counts, including new
+files that are not ignored. In a Git-only checkout it is HEAD plus staged/unstaged tracked
+changes; untracked files only count after `git add`. Ignored files never affect the fingerprint.
+Any such edit, even an unrelated one, causes the next connection to refresh all nodes. Use `ssh-machine --refresh` to force a
 refresh, or `ssh-machine --refresh <name> [cmd]` to refresh and connect. Refresh failures stop
 the command; the previous cache is never used as a fallback.
 

@@ -58,8 +58,8 @@ Common ones:
 - `ssh-machine <name> [cmd]` — SSH to a NixOS system or home-manager config by name. Resolves the
   target and ssh options (identity, port) from its deploy-rs node, so it needs `my.deploy.enable`
   (same gate as `deploy`). Connection settings for all nodes are cached together and invalidated
-  by tracked Git changes; use `ssh-machine --refresh` to force a refresh
-  (see `docs/deployment.md#ssh-machine`).
+  by checkout changes (the jj working copy, else tracked Git changes); use
+  `ssh-machine --refresh` to force a refresh (see `docs/deployment.md#ssh-machine`).
   Boxes default to the `fish` login shell, so pipe multi-statement remote
   scripts through `bash` (e.g. `ssh-machine <name> bash -s < script.sh`) rather than `&&`/`for`.
   If outbound SSH hangs at the publickey step (flaky `ssh-agent`), disable the agent for the call:

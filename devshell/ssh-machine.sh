@@ -20,11 +20,17 @@ cache_dir=.cache/ssh-machine
 cache=$cache_dir/connections.json
 
 fingerprint() {
-  {
-    git rev-parse HEAD &&
-    git diff --no-ext-diff --no-textconv --binary HEAD -- &&
-    git diff --no-ext-diff --no-textconv --binary --cached --
-  } | sha256sum | cut -d ' ' -f 1
+  # A jj working-copy commit's ID covers its whole snapshotted tree, so it changes with any
+  # working-copy edit. This also works in secondary workspaces, which have no Git checkout.
+  if jj root >/dev/null 2>&1; then
+    jj log --no-pager --color never --no-graph -r @ -T 'commit_id'
+  else
+    {
+      git rev-parse HEAD &&
+      git diff --no-ext-diff --no-textconv --binary HEAD -- &&
+      git diff --no-ext-diff --no-textconv --binary --cached --
+    } | sha256sum | cut -d ' ' -f 1
+  fi
 }
 
 key=$(fingerprint)
