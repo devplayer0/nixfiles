@@ -84,8 +84,6 @@ in
           SUBSYSTEM=="usb", ATTR{idVendor}=="6969", MODE="0664", GROUP="wheel"
         '';
       };
-
-      bootvine.enable = true;
     };
 
     programs.dconf.enable = true;

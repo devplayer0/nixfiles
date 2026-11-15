@@ -178,6 +178,8 @@ in
         } else { };
         getty.greetingLine = mkDefault' ''<<< Welcome to ${config.system.nixos.distroName} ${config.system.nixos.label} (\m) - \l >>>'';
 
+        bootvine.enable = true;
+
         openssh = {
           enable = mkDefault true;
           settings = {
