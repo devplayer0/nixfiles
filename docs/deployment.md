@@ -72,15 +72,15 @@ Boxes default to `fish`, so pipe multi-statement remote scripts through `bash`, 
 `ssh-machine <name> bash -s < script.sh`. If a flaky agent stalls public-key authentication, use
 `SSH_AUTH_SOCK= ssh-machine …`.
 
-## Codex
+## Coding agents
 
-The shared GUI home-manager module installs Codex from the `llm-agents` input, retaining
+The shared GUI home-manager module installs Codex and Claude Code from the `llm-agents` input, retaining
 that input's tested nixpkgs pin. Run `nix flake update llm-agents`, then switch the system
 or home configuration to use the updated package.
 
 The shared cache settings in `lib.my.c.nix.cache` and the flake's `nixConfig` include
 the [Numtide binary cache](https://github.com/numtide/llm-agents.nix#binary-cache), so
-Codex can be downloaded prebuilt. Keep the input's tested nixpkgs pin to preserve cache hits.
+both agents can be downloaded prebuilt. Keep the input's tested nixpkgs pin to preserve cache hits.
 
 `programs.codex.mutableSettings` merges the declared status-line settings into the writable
 `~/.codex/config.toml` during activation. Declared values take precedence on each switch;
