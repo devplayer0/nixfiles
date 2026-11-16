@@ -36,6 +36,15 @@ in
       agentUser = "slop-cannon";
       agentHome = "/home/${agentUser}";
 
+      # TODO: Drop once Codex recognises bubblewrap's newer `/proc` error wording.
+      # Restore the diagnostic its procfs preflight expects so it uses its container fallback.
+      codexBubblewrap = pkgs.bubblewrap.overrideAttrs (old: {
+        postPatch = (old.postPatch or "") + ''
+          substituteInPlace bubblewrap.c \
+            --replace-fail "Can't mount proc on %s" "Can't mount proc on /newroot%s"
+        '';
+      });
+
       # Steer agents to the approval broker; these match command text, so they aren't a boundary
       claudeDeny = [
         "Bash(deploy:*)"
@@ -109,7 +118,7 @@ in
         home-manager.users.${agentUser} = {
           my.agents.enable = true;
 
-          home.packages = [ slopClone ];
+          home.packages = [ slopClone codexBubblewrap ];
 
           programs = {
             claude-code.settings.permissions = {

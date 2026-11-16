@@ -125,9 +125,9 @@ unprivileged user and the approval broker in front of the deploy key.
 - Claude's managed settings (`/etc/claude-code/managed-settings.json`) repeat the `deny` rules and
   disable bypass mode; agents can edit `~/.claude` but not `/etc`. The app still lists Bypass, but
   choosing it fails.
-- Codex stores its credentials in a file. Its command sandbox does not work inside nspawn yet:
-  bubblewrap can't mount a fresh `/proc` in the container, so every Codex command fails outside
-  full-access mode.
+- Codex stores its credentials in a file. A bubblewrap diagnostic compatibility override enables
+  its existing nspawn fallback; deployed and verified directly and through a fresh Paseo session.
+  See [Codex sandbox in nspawn](../../../../../agents-remote.md#codex-sandbox-in-nspawn).
 - Deploys and `ssh-machine` access are meant to go through an approval broker, which is not built
   yet; until then agents can't deploy.
 
