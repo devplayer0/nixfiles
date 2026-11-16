@@ -14,15 +14,8 @@ in
       spdk = {
         enable = true;
         extraArgs = "--mem-channels 2 --cpumask 0xffff";
-        debugCommands = ''
-          spdk-rpc bdev_nvme_attach_controller -t pcie -a 02:00.0 -b NVMe0
-          spdk-rpc bdev_nvme_attach_controller -t pcie -a 03:00.0 -b NVMe1
-          spdk-rpc bdev_nvme_attach_controller -t pcie -a 04:00.0 -b NVMe2
-          spdk-rpc bdev_raid_create -n NVMeRaid -z 64 -r 0 -b 'NVMe0n1 NVMe1n1 NVMe2n1'
-
-          spdk-rpc ublk_create_target
-          spdk-rpc ublk_start_disk NVMeRaid 1
-        '';
+        # `spdk-debug` exposes the RAID as /dev/ublkb1 (e.g. to edit its partition table)
+        debug.ublkDisks = [ "NVMeRaid" ];
         config.subsystems =
         let
           nvmeAttaches = mapAttrsToList (name: bdf: {

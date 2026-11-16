@@ -1,7 +1,7 @@
 { lib, pkgs, config, ... }:
 let
-  inherit (builtins) toJSON;
-  inherit (lib) optional optionalAttrs mapAttrsToList mkIf withFeature;
+  inherit (builtins) toJSON elem filter;
+  inherit (lib) optional optionalAttrs mapAttrsToList imap1 mkIf withFeature;
   inherit (lib.my) mkOpt' mkBoolOpt';
 
   rpcOpts = with lib.types; {
@@ -21,6 +21,30 @@ let
     }) cfg.config.subsystems;
   };
   configJSON = pkgs.writeText "spdk-config.json" (toJSON config');
+
+  # The same bdevs, but never examined (so the `gpt` module doesn't claim them) and not exported;
+  # `debug.ublkDisks` are exposed locally instead
+  debugConfig = {
+    subsystems =
+      map
+        (s: if s.subsystem != "bdev" then s else s // {
+          config = filter (c: !(elem c.method [ "bdev_examine" "bdev_wait_for_examine" ])) s.config;
+        })
+        (filter (s: s.subsystem != "nvmf") config'.subsystems)
+      ++ optional (cfg.debug.ublkDisks != [ ]) {
+        subsystem = "ublk";
+        config = [
+          { method = "ublk_create_target"; }
+        ] ++ imap1 (i: bdev: {
+          method = "ublk_start_disk";
+          params = {
+            bdev_name = bdev;
+            ublk_id = i;
+          };
+        }) cfg.debug.ublkDisks;
+      };
+  };
+  debugConfigJSON = pkgs.writeText "spdk-debug-config.json" (toJSON debugConfig);
 
   spdk = pkgs.spdk.overrideAttrs (o: {
     configureFlags = o.configureFlags ++ (map (withFeature true) [ "rdma" "ublk" ]);
@@ -43,25 +67,15 @@ let
   '');
   spdk-debug = pkgs.writeShellApplication {
     name = "spdk-debug";
-    runtimeInputs = [ spdk ];
+    runtimeInputs = with pkgs; [ bash python3 kmod gawk util-linux ];
     text = ''
-      set -m
       if [ "$(id -u)" -ne 0 ]; then
         echo "I need to be root!"
         exit 1
       fi
 
-      spdk_tgt ${cfg.extraArgs} --wait-for-rpc &
-      until spdk-rpc spdk_get_version > /dev/null; do
-        sleep 0.5
-      done
-
-      spdk-rpc bdev_set_options --disable-auto-examine
-      spdk-rpc framework_start_init
-
-      ${cfg.debugCommands}
-
-      fg %1
+      ${spdk.src}/scripts/setup.sh
+      exec ${spdk}/bin/spdk_tgt ${cfg.extraArgs} -c ${debugConfigJSON}
     '';
   };
 in
@@ -69,7 +83,8 @@ in
   options.my.spdk = with lib.types; {
     enable = mkBoolOpt' false "Whether to enable SPDK target.";
     extraArgs = mkOpt' str "" "Extra arguments to pass to spdk_tgt.";
-    debugCommands = mkOpt' lines "" "Commands to run with the spdk-debug script.";
+    debug.ublkDisks = mkOpt' (listOf str) [ ]
+      "Bdevs `spdk-debug` exposes as `/dev/ublkb<n>`, numbered from 1, instead of serving the config.";
     config.subsystems = mkOpt' (attrsOf (listOf (submodule rpcOpts))) { } "Subsystem config / RPCs.";
   };
 
@@ -80,7 +95,8 @@ in
       spdk
       spdk-setup
       spdk-rpc
-    ] ++ (optional (cfg.debugCommands != "") spdk-debug);
+      spdk-debug
+    ];
 
     systemd.services = {
       spdk-tgt = {
@@ -97,6 +113,8 @@ in
           ExecStart = "${spdk}/bin/spdk_tgt ${cfg.extraArgs} -c ${configJSON}";
         };
         wantedBy = [ "multi-user.target" ];
+        # Other boxes' root disks; restart by hand when they can do without them
+        restartIfChanged = false;
       };
     };
   };
