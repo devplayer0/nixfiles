@@ -177,6 +177,16 @@
 | `my.nvme.boot.nqn` | null or string | `null` | NQN to connect to on boot |
 | `my.nvme.uuid` | null or string | `null` | NVMe host ID |
 
+## `paseo-relay` — [`nixos/modules/paseo-relay.nix`](../../nixos/modules/paseo-relay.nix)
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `my.paseo-relay.enable` | boolean | `false` | Whether to enable the Paseo relay. |
+| `my.paseo-relay.environment` | attribute set of (string or signed integer or boolean) | `{ }` | Extra `PASEO_RELAY_*` environment variables (see the relay's README). |
+| `my.paseo-relay.host` | string | `"127.0.0.1"` | Address to listen on. |
+| `my.paseo-relay.package` | package | `<derivation paseo-relay-0.1.0-unstable-2026-10-28>` | Paseo relay package. |
+| `my.paseo-relay.port` | 16 bit unsigned integer; between 0 and 65535 (both inclusive) | `4000` | Port to listen on (plain HTTP / WebSocket). |
+
 ## `pdns` — [`nixos/modules/pdns.nix`](../../nixos/modules/pdns.nix)
 
 | Option | Type | Default | Description |

@@ -163,6 +163,7 @@ edit prose there, never the other generated cells.
 | [`river`](sites/home/river.md) | `192.168.68.1/22` | `2a0e:97c0:4d0:1::1/64` | h.nul.ie |  |
 | `router-hi` | `192.168.71.254/22 gw 192.168.68.1` | `2a0e:97c0:4d0:1::ffff/64` | h.nul.ie | Floating VIP shared by [`river`](sites/home/river.md) and [`stream`](sites/home/stream.md) |
 | [`sfh`](sites/home/sfh/README.md) | `192.168.68.81/22 gw 192.168.71.254` | `2a0e:97c0:4d0:1::4:2/64` | h.nul.ie |  |
+| [`slop-cannon`](sites/home/sfh/containers/slop-cannon.md) | `192.168.68.104/22 gw 192.168.71.254` | `2a0e:97c0:4d0:1::5:4/64` | h.nul.ie |  |
 | [`stream`](sites/home/stream.md) | `192.168.68.2/22` | `2a0e:97c0:4d0:1::2/64` | h.nul.ie |  |
 | [`unifi`](sites/home/sfh/containers/unifi.md) | `192.168.68.100/22 gw 192.168.71.254` | `2a0e:97c0:4d0:1::5:1/64` | h.nul.ie |  |
 

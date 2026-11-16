@@ -245,6 +245,8 @@ These zones are served by [`river`](../sites/home/river.md) and
 | `sfh` | `A` | `192.168.68.81` |
 | `sfh` | `AAAA` | `2a0e:97c0:4d0:1::4:2` |
 | `shytzel` | `A` | `192.168.64.12` |
+| `slop-cannon-ctr` | `A` | `192.168.68.104` |
+| `slop-cannon-ctr` | `AAAA` | `2a0e:97c0:4d0:1::5:4` |
 | `stream` | `A (LUA)` | `generated at query time` |
 | `stream` | `AAAA` | `2a0e:97c0:4df:0:1::2` |
 | `stream-core` | `A` | `192.168.64.2` |
@@ -287,6 +289,7 @@ These zones are served by [`river`](../sites/home/river.md) and
 | `192.168.68.81` | `sfh.h.nul.ie.` |
 | `192.168.68.100` | `unifi-ctr.h.nul.ie.` |
 | `192.168.68.103` | `hass-ctr.h.nul.ie.` |
+| `192.168.68.104` | `slop-cannon-ctr.h.nul.ie.` |
 | `192.168.71.254` | `router-hi.h.nul.ie.` |
 | `192.168.72.1` | `river-lo.h.nul.ie.` |
 | `192.168.72.2` | `stream-lo.h.nul.ie.` |
@@ -312,6 +315,7 @@ These zones are served by [`river`](../sites/home/river.md) and
 | `2a0e:97c0:4d0:1::4:2` | `sfh.h.nul.ie.` |
 | `2a0e:97c0:4d0:1::5:1` | `unifi-ctr.h.nul.ie.` |
 | `2a0e:97c0:4d0:1::5:3` | `hass-ctr.h.nul.ie.` |
+| `2a0e:97c0:4d0:1::5:4` | `slop-cannon-ctr.h.nul.ie.` |
 | `2a0e:97c0:4d0:1::6:1` | `portcullis.h.nul.ie.` |
 | `2a0e:97c0:4d0:2::1` | `river-lo.h.nul.ie.` |
 | `2a0e:97c0:4d0:2::2` | `stream-lo.h.nul.ie.` |
