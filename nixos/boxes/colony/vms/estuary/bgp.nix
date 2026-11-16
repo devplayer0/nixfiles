@@ -52,7 +52,7 @@ in
 
           protocol device {}
           protocol direct {
-            interface "wan", "frys-ix", "nl-ix", "fogixp", "ifog-transit";
+            interface "wan", "clue-ix", "frys-ix", "nl-ix", "fogixp", "ifog-transit";
             ipv4;
             ipv6;
           }
@@ -231,6 +231,20 @@ in
             description "LUJE.net labs (IPv6)";
             multihop 3;
             neighbor 2a07:cd40:1::9 as 202413;
+          }
+
+          protocol bgp ixp6_clueix_rs1 from ixp_bgp6 {
+            description "Clue-IX route server 1 (IPv6)";
+            local role rs_client;
+            ttl security on;
+            neighbor 2001:7f8:154::21:8511:1 as 218511;
+          }
+
+          protocol bgp ixp6_clueix_rs2 from ixp_bgp6 {
+            description "Clue-IX route server 2 (IPv6)";
+            local role rs_client;
+            ttl security on;
+            neighbor 2001:7f8:154::21:8511:2 as 218511;
           }
 
           protocol bgp ixp4_frysix_rs3 from ixp_bgp4 {

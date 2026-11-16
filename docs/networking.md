@@ -511,10 +511,48 @@ firewalls.
 
 Both edge routers run `bird2` as AS211024.
 
+### RIPE routing policy and peering records
+
+Maintain the routing policy in the RIPE `aut-num` object for AS211024, keeping peers grouped
+under the existing upstream, direct-peering and IXP remarks. Keep plain `import` / `export`
+attributes for IPv4 unicast and add `mp-import` / `mp-export` with `afi ipv6.unicast` for IPv6.
+For example, when the same policy applies to both families:
+
+```rpsl
+import:    from AS56393 accept AS-FRYS-IX-CONNECTED
+export:    to AS56393 announce AS211024:AS-DEVPLAYER0
+mp-import: afi ipv6.unicast from AS56393 accept AS-FRYS-IX-CONNECTED
+mp-export: afi ipv6.unicast to AS56393 announce AS211024:AS-DEVPLAYER0
+```
+
+`mp-*` means multiprotocol and can describe one or several address families. Keeping the IPv4
+policy in the original attributes preserves compatibility with older or custom readers that
+ignore `mp-*`, without overlapping the two policies. Use only the IPv6 pair for IPv6-only
+peering. Address families describe the routes exchanged, independently of the BGP session's
+transport address. See [RFC 4012](https://www.rfc-editor.org/rfc/rfc4012.html#section-2).
+
+To update the policy, find `AS211024` in the [RIPE Database](https://apps.db.ripe.net/db-web-ui/query),
+select **Update**, authenticate through `devplayer0-mnt`, add the entries under the appropriate
+remarks and submit. Check the success response and query the object again to confirm the result.
+These registry entries document policy; they do not configure BIRD.
+
+For a new peering, also check the prefix authorisations and connection records:
+
+- **IRR:** `AS211024:AS-DEVPLAYER0` lists the originating ASNs; `route` / `route6` objects associate
+  announced prefixes with their origin ASN. Prefix-filter generators can expand the AS-set and
+  route objects independently of the `aut-num` import/export policy.
+- **RPKI:** ROAs authorise AS211024 to originate the announced prefixes and lengths. Existing
+  correct ROAs and route objects need no change just because a new IXP is added; the route-server
+  ASN does not become the origin. The assigned peering-LAN address is an interface address, not
+  a prefix to originate or create a ROA for.
+- **PeeringDB:** record the exchange connection and assigned peering addresses.
+- **BGP:** verify that both route servers accept and propagate the intended exports, as well as
+  establishing sessions.
+
 ### `estuary`
 
 The colony edge takes a full table from ColoClue, IPv6 transit from iFog and Hurricane Electric,
-and peers through the Frys-IX, NL-ix and FogIXP route servers. It also has direct and monitoring
+and peers through the Clue-IX, Frys-IX, NL-ix and FogIXP route servers. It also has direct and monitoring
 sessions; the complete peer table and originated routes live in [estuary.md](sites/colony/estuary.md#bgp).
 
 ### `britway`

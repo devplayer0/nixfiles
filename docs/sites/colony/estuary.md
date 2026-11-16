@@ -27,16 +27,17 @@ See the consolidated [network assignments](../../networking.md#box-assignments) 
 
 - `wan` — the passed-through `igb` NIC (9000 MTU, enlarged rings). It carries
   the plain upstream uplink (static v4/v6 with gateways from the `internal`
-  assignment) plus the tagged `ifog` VLAN.
+  assignment) plus the tagged `ifog` and `clue-ix` VLANs.
 - `ifog` (VLAN 409) is an iFog QinQ transport that carries the IXP VLANs as
-  nested tags:
+  nested tags. `clue-ix` sits directly on `wan`:
 
-| Interface | VLAN | IPv4 | IPv6 | Purpose |
-|---|---|---|---|---|
-| `frys-ix` | 701 | `185.1.160.196/23` | `2001:7f8:10f::3:3850:196/64` | Frys-IX peering LAN |
-| `nl-ix` | 1845 | `193.239.116.145/22` | `2001:7f8:13::a521:1024:1/64` | NL-ix peering LAN |
-| `fogixp` | 1147 | `185.1.147.159/24` | `2001:7f8:ca:1::159/64` | FogIXP peering LAN |
-| `ifog-transit` | 702 | — | `2a0c:9a40:100f:370::2/64` | iFog IPv6 transit |
+| Interface | Parent | VLAN | IPv4 | IPv6 | Purpose |
+|---|---|---|---|---|---|
+| `clue-ix` | `wan` | 121 | — | `2001:7f8:154::21:1024:1/64` | Clue-IX peering LAN |
+| `frys-ix` | `ifog` | 701 | `185.1.160.196/23` | `2001:7f8:10f::3:3850:196/64` | Frys-IX peering LAN |
+| `nl-ix` | `ifog` | 1845 | `193.239.116.145/22` | `2001:7f8:13::a521:1024:1/64` | NL-ix peering LAN |
+| `fogixp` | `ifog` | 1147 | `185.1.147.159/24` | `2001:7f8:ca:1::159/64` | FogIXP peering LAN |
+| `ifog-transit` | `ifog` | 702 | — | `2a0c:9a40:100f:370::2/64` | iFog IPv6 transit |
 
 The IXP interfaces run at 1500 MTU with DHCP/RA/LLDP off; an nftables `ixp`
 chain rejects non-IP/ARP ethertypes in both directions.
@@ -112,6 +113,7 @@ BIRD2 ([`bgp.nix`](../../../nixos/boxes/colony/vms/estuary/bgp.nix)) speaking **
 | ColoClue | AS8283 | Upstream | `euNetworks` 2/3, v4+v6 |
 | iFog | AS34927 | Upstream | IPv6 transit |
 | Hurricane Electric | AS6939 | Upstream | IPv6 over Frys-IX |
+| Clue-IX | AS218511 | IXP route server | rs1/rs2, IPv6 only; `rs_client` role and GTSM |
 | Frys-IX | AS56393 | IXP route server | |
 | NL-ix | AS34307 | IXP route server | lower preference |
 | FogIXP | AS47498 | IXP route server | |
@@ -129,6 +131,18 @@ home routers' `as211024` VIP.
 
 Currently disabled (commented out): efero transit over FogIXP ("not working so
 well lately") and the NL-ix Cloudflare sessions.
+
+Clue-IX uses IPv6-only RIPE policy entries under the existing IXP remarks:
+
+```rpsl
+remarks:   \/\/ Clue-IX route servers \/\/
+mp-import: afi ipv6.unicast from AS218511 accept AS218511:AS-CLUE-IX
+mp-export: afi ipv6.unicast to AS218511 announce AS211024:AS-DEVPLAYER0
+```
+
+One pair covers both route servers. See [RIPE routing policy and peering
+records](../../networking.md#ripe-routing-policy-and-peering-records) for the shared attribute
+convention and update procedure.
 
 ## VPNs
 

@@ -65,7 +65,7 @@ in
 
     configuration = { lib, pkgs, modulesPath, config, assignments, allAssignments, ... }:
       let
-        inherit (lib) flatten mkIf mkMerge mkForce;
+        inherit (lib) flatten mkIf mkMerge mkForce optional;
         inherit (lib.my) networkdAssignment;
         inherit (lib.my.c) networkd;
       in
@@ -144,6 +144,7 @@ in
 
               netdevs = mkMerge [
                 (mkVLAN "ifog" 409)
+                (mkVLAN "clue-ix" 121)
 
                 (mkVLAN "frys-ix" 701)
                 (mkVLAN "nl-ix" 1845)
@@ -241,7 +242,7 @@ in
                 mkIXPConfig = name: ipv4: ipv6: {
                   "85-${name}" = {
                     matchConfig.Name = name;
-                    address = [ ipv4 ipv6 ];
+                    address = optional (ipv4 != null) ipv4 ++ [ ipv6 ];
                     linkConfig.MTUBytes = "1500";
                     networkConfig = {
                       DHCP = "no";
@@ -254,13 +255,14 @@ in
               in
               mkMerge
               [
+                (mkIXPConfig "clue-ix" null "2001:7f8:154::21:1024:1/64")
                 (mkIXPConfig "frys-ix" "185.1.160.196/23" "2001:7f8:10f::3:3850:196/64")
                 (mkIXPConfig "nl-ix" "193.239.116.145/22" "2001:7f8:13::a521:1024:1/64")
                 (mkIXPConfig "fogixp" "185.1.147.159/24" "2001:7f8:ca:1::159/64")
               {
                 "80-wan" = {
                   matchConfig.Name = "wan";
-                  vlan = [ "ifog" ];
+                  vlan = [ "ifog" "clue-ix" ];
                   DHCP = "no";
                   address = with assignments.internal; [
                     (with ipv4; "${address}/${toString mask}")
@@ -451,7 +453,7 @@ in
                   '';
                 in
                 ''
-                  define ixps = { frys-ix, nl-ix, fogixp, ifog-transit }
+                  define ixps = { clue-ix, frys-ix, nl-ix, fogixp, ifog-transit }
 
                   table inet filter {
                     chain input {
