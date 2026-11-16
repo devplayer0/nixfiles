@@ -38,6 +38,11 @@ let
       }))
     ];
   };
+  # Paseo's web app, which connects to daemons through the relay
+  paseoWebUi = pkgs.runCommand "paseo-web-ui-${pkgs.paseo.version}" { } ''
+    cp -r ${pkgs.paseo}/lib/paseo/packages/server/dist/server/web-ui "$out"
+  '';
+
   wellKnown = {
     "/.well-known/" = {
       alias = "${wellKnownRoot}/";
@@ -390,6 +395,23 @@ in
             '';
           };
           "= /metrics".return = "404";
+        };
+        useACMEHost = pubDomain;
+      };
+      "paseo.${pubDomain}" = {
+        root = paseoWebUi;
+        extraConfig = ''
+          gzip_static on;
+          brotli_static on;
+        '';
+        locations = {
+          "/".tryFiles = "$uri $uri/ /index.html";
+          "= /index.html".extraConfig = ''
+            add_header Cache-Control "no-store";
+          '';
+          "/_expo/".extraConfig = ''
+            add_header Cache-Control "public, max-age=31536000, immutable";
+          '';
         };
         useACMEHost = pubDomain;
       };

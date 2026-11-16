@@ -67,18 +67,21 @@ from the app don't survive a restart. It:
 
 ### Connectivity
 
-- The daemon listens on `127.0.0.1:6767` only. The phone app and the hosted web app at
-  `https://app.paseo.sh` reach it through our relay on
-  [`middleman`](../../../colony/shill/containers/middleman.md#paseo-relay) (`paseo-relay.nul.ie`).
+- The daemon listens on `127.0.0.1:6767` only. The phone app and the browser reach it through our
+  relay on [`middleman`](../../../colony/shill/containers/middleman.md#paseo-relay)
+  (`paseo-relay.nul.ie`).
 - Traffic through the relay is end-to-end encrypted between the app and the daemon; the relay sees
   only addresses, timing and sizes. The pairing QR code or link is the trust anchor; treat it like a
   password. Switching relays means re-pairing.
 - Push notifications go from the daemon to Expo's push service (`exp.host`), one outbound request
   per notification carrying its text.
-- In a browser, open the link `paseo daemon pair` prints: it loads the hosted web app with our
-  relay's address. The daemon's own web UI is off (`features.webUi.enabled` defaults to `false`);
-  if enabled, it needs a secure context, so it would be reached through an SSH tunnel to
-  `localhost` (`ssh -L 6767:127.0.0.1:6767 slop-cannon`).
+- In a browser, open the link `paseo daemon pair` prints. `app.baseUrl` points it at our copy of
+  the web app on `paseo.nul.ie`, served by `middleman`, instead of `app.paseo.sh`. The daemon's own
+  web UI stays off, so nothing needs to reach the daemon directly.
+- Opening a pairing link in the address bar adds the host without asking for the daemon password,
+  and the host page then shows "Password required" with no way to enter it. Instead, use the app's
+  option to paste a pairing link, which prompts for the password; remove a host added the other way
+  first.
 
 ### State
 

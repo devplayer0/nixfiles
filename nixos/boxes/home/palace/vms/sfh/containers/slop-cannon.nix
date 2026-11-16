@@ -48,12 +48,6 @@ in
         "Bash(slop-ssh:*)"
       ];
 
-      # TODO: Drop the override once getpaseo/paseo#7673 is fixed. The build runs npm with
-      # `--ignore-scripts`, so the web UI's `postinstall` patch is never applied.
-      paseo = inputs.paseo.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
-        preBuild = (old.preBuild or "") + "\nnpm run postinstall\n";
-      });
-
       slopClone = pkgs.writeShellApplication {
         name = "slop-clone";
         runtimeInputs = with pkgs; [ jujutsu openssh paseo ];
@@ -176,7 +170,7 @@ in
 
         services.paseo = {
           enable = true;
-          package = paseo;
+          package = pkgs.paseo;
           user = agentUser;
           group = agentUser;
           listenAddress = "127.0.0.1";
@@ -193,6 +187,8 @@ in
           # Rewritten on every start, so changes made from the app don't survive a restart
           settings = {
             version = 1;
+            # Pairing links open our copy of the web app (served by `middleman`)
+            app.baseUrl = "https://paseo.${lib.my.c.pubDomain}";
             daemon = {
               # Keep agents from changing modes, answering prompts or opening terminals
               mcp.injectIntoAgents = false;

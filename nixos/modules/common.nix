@@ -84,6 +84,13 @@ in
           inputs.copyparty.overlays.default
           inputs.hass-west-wood.overlays.default
           # inputs.pi-agent.overlays.default
+          (final: prev: {
+            # TODO: Drop the override once getpaseo/paseo#7673 is fixed. The build runs npm with
+            # `--ignore-scripts`, so the web UI's `postinstall` patch is never applied.
+            paseo = inputs.paseo.packages.${prev.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
+              preBuild = (old.preBuild or "") + "\nnpm run postinstall\n";
+            });
+          })
         ];
         config = {
           allowUnfree = true;
