@@ -94,11 +94,9 @@ in
 
     configuration = { lib, pkgs, config, assignments, allAssignments, ... }:
       let
-        inherit (lib) mkIf mkMerge mkForce optionalString concatStringsSep;
+        inherit (lib) mkIf mkMerge mkForce;
         inherit (lib.my) mkOpt' networkdAssignment;
         inherit (lib.my.c) networkd;
-
-        cfg = config.my.homeRouter;
       in
       {
         imports = map (m: import m index) [
@@ -115,10 +113,6 @@ in
           dns.wanSkipBroadcasts = mkOpt' (listOf str) [ ] ''
             Broadcast addresses to exclude when auto-selecting the router's own `wan` A record,
             for extra static subnets that share the `wan` interface.
-          '';
-          firewall.untrustedRejectV4 = mkOpt' (listOf str) [ ] ''
-            IPv4 prefixes untrusted clients must be explicitly rejected from reaching. Only needed
-            for subnets sharing the `wan` interface, since `wan` egress is otherwise accepted.
           '';
         };
 
@@ -365,10 +359,16 @@ in
                     meta l4proto udp ct state new jump routing-udp
                     return
                   }
+                  # `untrusted` gets the Internet only: colony trusts all home prefixes across the
+                  # mesh, and many devices trust anything on the LAN. Runs before `forward`, whose
+                  # ICMP rules would otherwise let pings through.
+                  chain untrusted-internal {
+                    ct state established,related return
+                    ${lib.my.c.internalNets.nftReject}
+                  }
                   chain filter-untrusted {
-                    ${optionalString (cfg.firewall.untrustedRejectV4 != [ ]) "ip daddr { ${concatStringsSep ", " cfg.firewall.untrustedRejectV4} } reject"}
-                    oifname wan accept
-                    return
+                    oifname { wan, as211024 } accept
+                    reject with icmpx admin-prohibited
                   }
 
                   chain forward-early {
@@ -380,11 +380,13 @@ in
                     # More Disney+ discrimination...
                     # TODO: This prefix could change (random AWS block)
                     ip6 daddr 2600:9000:2245::/48 drop
+
+                    iifname lan-untrusted jump untrusted-internal
                   }
                   chain forward {
                     ${lib.my.c.as211024.nftTrust}
                     iifname lan-untrusted jump filter-untrusted
-                    iifname { wan, as211024, lan-untrusted } oifname { lan-hi, lan-lo } jump filter-routing
+                    iifname { wan, as211024 } oifname { lan-hi, lan-lo } jump filter-routing
                     oifname as211024 accept
                   }
                   chain output { }

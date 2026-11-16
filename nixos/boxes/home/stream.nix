@@ -203,11 +203,8 @@
           };
           server.enable = true;
           # The modem's management subnet shares the `wan` interface: skip its address when
-          # picking our own wan A record, and reject untrusted clients from reaching it.
-          homeRouter = {
-            dns.wanSkipBroadcasts = [ (lib.my.netBroadcast prefixes.modem.v4) ];
-            firewall.untrustedRejectV4 = [ prefixes.modem.v4 ];
-          };
+          # picking our own wan A record
+          homeRouter.dns.wanSkipBroadcasts = [ (lib.my.netBroadcast prefixes.modem.v4) ];
           # deploy.node.hostname = "192.168.68.2";
         };
       };

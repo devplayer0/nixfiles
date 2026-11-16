@@ -464,6 +464,22 @@ rec {
     '';
   };
 
+  # Non-public destinations, plus our own IPv6 prefixes (trusted across the mesh), for keeping
+  # untrusted workloads to the Internet
+  internalNets = rec {
+    v4 = [
+      "0.0.0.0/8" "10.0.0.0/8" "100.64.0.0/10" "127.0.0.0/8" "169.254.0.0/16"
+      "172.16.0.0/12" "192.168.0.0/16" "224.0.0.0/4" "240.0.0.0/4"
+    ];
+    v6 = [
+      "::/127" "::ffff:0:0/96" "fc00::/7" "fe80::/10" "ff00::/8"
+    ] ++ map (p: colony.prefixes.${p}.v6) [ "home" "all" "cust" "as211024" ];
+    nftReject = ''
+      ip daddr { ${concatStringsSep ", " v4} } reject with icmpx admin-prohibited
+      ip6 daddr { ${concatStringsSep ", " v6} } reject with icmpx admin-prohibited
+    '';
+  };
+
   kelder = {
     groups = {
       storage = 2000;

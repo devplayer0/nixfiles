@@ -68,15 +68,11 @@ uses the DOCSIS overhead preset.
 ### Per-box `routing-common` options
 
 The modem's management subnet shares the `wan` interface, which `routing-common` itself knows
-nothing about — it declares two per-box options
-([`routing-common/default.nix`](../../../nixos/boxes/home/routing-common/default.nix)) that this
-box sets:
-
-- `my.homeRouter.dns.wanSkipBroadcasts` — skip the modem subnet's broadcast address when
-  auto-selecting the router's own `wan` A record for the zone's LUA record.
-- `my.homeRouter.firewall.untrustedRejectV4` — reject untrusted clients from
-  reaching the modem subnet (needed only because it shares `wan`; WAN egress is otherwise
-  accepted).
+nothing about. This box sets `my.homeRouter.dns.wanSkipBroadcasts`
+([`routing-common/default.nix`](../../../nixos/boxes/home/routing-common/default.nix)) to skip the
+modem subnet's broadcast address when auto-selecting the router's own `wan` A record for the zone's
+LUA record. `untrusted` clients can't reach the modem subnet: it's private, so the
+[`untrusted` filter](../../networking.md#untrusted-clients) rejects it.
 
 ## Switching (RSTP)
 

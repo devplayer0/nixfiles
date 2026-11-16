@@ -363,6 +363,24 @@ instead anchor DNS on the VIPs via the shared `lib.my.c.home.vlanDns "<vlan>"` f
 `DNS` to `vips.<vlan>.{v4,v6}` and `Domains` to the advertised search list; the always-present
 static v4 VIP keeps resolution working even with v6 down.
 
+#### Untrusted clients
+
+The routers restrict clients on the `untrusted` VLAN to Internet destinations. The filter also
+blocks access to colony, where the home prefixes are trusted across the mesh.
+
+- `forward-early` sends new connections from `lan-untrusted` to `untrusted-internal`, which rejects
+  everything in `lib.my.c.internalNets`: private, CGNAT (Tailscale), link-local, multicast and
+  reserved IPv4, IPv6 ULA / link-local / multicast, and our own global IPv6 prefixes. It runs
+  before `forward`, whose ICMP rules would otherwise let pings through.
+- `filter-untrusted` then accepts `wan` and `as211024` (IPv6 Internet transit) and rejects the
+  rest.
+- Rejecting rather than dropping makes clients fall back from colony's IPv6 addresses (such as
+  `git.nul.ie`'s) to IPv4 immediately.
+- Replies to connections from `hi` and `lo` are allowed, so trusted boxes can still reach
+  `untrusted` hosts.
+- Traffic to the routers themselves goes through the same `input` rules as `wan`.
+- Clients on `untrusted` share layer 2 with each other; the routers can't filter that.
+
 #### DNS binding
 
 `pdns-recursor` binds the VIPs directly; see
@@ -406,8 +424,8 @@ The bare-metal backup uses DHCP from the Virgin Media modem on `wan` (VLAN 130),
 
 The full fabric story — which switch port carries what, why VLAN 10 is trunked untranslated,
 and the multi-ONT plan — is in [sites/home/switches.md](sites/home/switches.md); the
-`my.homeRouter.*` options (`dns.wanSkipBroadcasts`, `firewall.untrustedRejectV4`) let each box
-tell `routing-common` about subnets sharing its WAN interface.
+`my.homeRouter.dns.wanSkipBroadcasts` option lets each box tell `routing-common` about subnets
+sharing its WAN interface.
 
 ## The AS211024 L2 mesh
 
