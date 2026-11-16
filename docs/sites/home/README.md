@@ -17,6 +17,7 @@ pair, and everything clients touch (gateway, DNS) is a floating VIP that follows
 | [`stream`](stream.md) | Secondary router (VRRP pair with `river`) | physical |
 | [`cellar`](cellar.md) | NVMe-oF / SPDK storage target | VM on `palace` |
 | [`sfh`](sfh/README.md) | NixOS container host (containers on its page) | VM on `palace` |
+| [`slop-cannon`](slop-cannon.md) | Coding agents, driven remotely through Paseo; on `untrusted` | VM on `palace` |
 | [`castle`](castle.md) | Workstation / gaming desktop | physical |
 
 ## Router VIPs

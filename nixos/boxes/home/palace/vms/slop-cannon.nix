@@ -1,33 +1,30 @@
 { lib, ... }:
 let
   inherit (lib.my) net;
-  inherit (lib.my.c.home) domain prefixes vips vlanDns hiMTU;
+  inherit (lib.my.c.home) domain prefixes vips;
 in
 {
-  nixos.systems.slop-cannon = { config, ... }: {
+  nixos.systems.slop-cannon = {
     system = "x86_64-linux";
     nixpkgs = "mine";
     home-manager = "mine";
-    rendered = config.configuration.config.my.asContainer;
 
-    assignments = {
-      hi = {
-        name = "slop-cannon-ctr";
-        inherit domain;
-        mtu = hiMTU;
-        ipv4 = {
-          address = net.cidr.host 104 prefixes.hi.v4;
-          mask = 22;
-          gateway = vips.hi.v4;
-        };
-        ipv6 = {
-          iid = "::5:4";
-          address = net.cidr.host (65536*5+4) prefixes.hi.v6;
-        };
+    # The routers limit traffic from the untrusted VLAN to the Internet
+    assignments.untrusted = {
+      inherit domain;
+      mtu = prefixes.untrusted.mtu;
+      ipv4 = {
+        address = net.cidr.host 5 prefixes.untrusted.v4;
+        mask = 24;
+        gateway = vips.untrusted.v4;
+      };
+      ipv6 = {
+        iid = "::5";
+        address = net.cidr.host 5 prefixes.untrusted.v6;
       };
     };
 
-    configuration = { lib, config, pkgs, inputs, assignments, ... }:
+    configuration = { lib, modulesPath, config, pkgs, assignments, ... }:
     let
       inherit (builtins) toJSON;
       inherit (lib) mkMerge;
@@ -35,15 +32,8 @@ in
 
       agentUser = "slop-cannon";
       agentHome = "/home/${agentUser}";
-
-      # TODO: Drop once Codex recognises bubblewrap's newer `/proc` error wording.
-      # Restore the diagnostic its procfs preflight expects so it uses its container fallback.
-      codexBubblewrap = pkgs.bubblewrap.overrideAttrs (old: {
-        postPatch = (old.postPatch or "") + ''
-          substituteInPlace bubblewrap.c \
-            --replace-fail "Can't mount proc on %s" "Can't mount proc on /newroot%s"
-        '';
-      });
+      giteaKey = config.age.secrets."slop-cannon/gitea-key".path;
+      paseoPasswordFile = config.age.secrets."slop-cannon/paseo.env".path;
 
       # Steer agents to the approval broker; these match command text, so they aren't a boundary
       claudeDeny = [
@@ -71,23 +61,107 @@ in
           if ! jj git clone --colocate "git@git.nul.ie:$repo.git" "$dest"; then
             echo >&2
             echo "Clone failed. If Gitea refused the key, add it as a write-enabled deploy key on $repo:" >&2
-            cat "$HOME/.ssh/id_ed25519.pub" >&2
+            ssh-keygen -y -f ${giteaKey} >&2
             exit 1
           fi
 
           paseo workspace create --isolation local --path "$dest"
         '';
       };
+
+      slopPair = pkgs.writeShellApplication {
+        name = "slop-pair";
+        runtimeInputs = [ pkgs.paseo ];
+        text = ''
+          if [ "$#" -ne 0 ]; then
+            echo "usage: slop-pair" >&2
+            exit 2
+          fi
+
+          paseo daemon pair
+          printf '\n'
+          exec doas ${pkgs.coreutils}/bin/cat ${paseoPasswordFile}
+        '';
+      };
     in
     {
+      imports = [
+        "${modulesPath}/profiles/qemu-guest.nix"
+      ];
+
       config = {
+        boot = {
+          # Load the passed-through ConnectX VF even when PCI probing doesn't autoload it.
+          kernelModules = [ "kvm-amd" "mlx5_core" ];
+          kernelParams = [ "console=ttyS0,115200n8" ];
+          initrd = {
+            availableKernelModules = [ "virtio_pci" "ahci" "sr_mod" "virtio_blk" ];
+            kernelModules = [ "dm-snapshot" ];
+          };
+          # On disk rather than in the tmpfs root, so agents' scratch files don't use RAM
+          tmp.cleanOnBoot = true;
+        };
+
+        hardware = {
+          enableRedistributableFirmware = true;
+        };
+
+        fileSystems = {
+          "/boot" = {
+            device = "/dev/disk/by-partlabel/esp";
+            fsType = "vfat";
+          };
+          "/nix" = {
+            device = "/dev/main/slop-cannon-nix";
+            fsType = "ext4";
+          };
+          "/persist" = {
+            device = "/dev/main/slop-cannon-persist";
+            fsType = "ext4";
+            neededForBoot = true;
+          };
+          "/tmp" = {
+            device = "/dev/main/slop-cannon-tmp";
+            fsType = "ext4";
+            # Return deleted scratch space to the thin pool straight away
+            options = [ "discard" ];
+          };
+        };
+
+        networking = { inherit domain; };
+
+        services = {
+          # The LVs are thin, so space moves between them as needed
+          lvm = {
+            boot.thin.enable = true;
+            dmeventd.enable = true;
+          };
+          fstrim.enable = true;
+        };
+
+        # Grow the pool into the VG's spare space before it fills
+        environment.etc."lvm/lvm.conf".text = ''
+          activation/thin_pool_autoextend_threshold = 80
+          activation/thin_pool_autoextend_percent = 10
+        '';
+
         my = {
-          deploy.enable = false;
           server.enable = true;
 
+          # Root inside this VM belongs to the agents, so it gets no shared secrets: in particular
+          # not `user-passwd.txt`
+          user = {
+            passwordSecret = null;
+            config = {
+              password = null;
+              hashedPassword = "!";
+            };
+          };
+
           secrets = {
-            key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILWhNyGER3E0cgpsl6eIiG1mJFcS6hckU74t9vzMY4Le";
+            key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBCkgBZh/YejY+gDnGa9r5SPo1+aHWPAAAIfENE7t0Om";
             files = {
+              "slop-cannon/gitea-key".owner = agentUser;
               # `PASEO_PASSWORD=...`
               "slop-cannon/paseo.env" = { };
             };
@@ -109,6 +183,8 @@ in
             isNormalUser = true;
             uid = uids.slop-cannon;
             group = agentUser;
+            # Agents get root (passwordless `doas`) and can run nested VMs
+            extraGroups = [ "wheel" "kvm" ];
             hashedPassword = "!";
             shell = pkgs.fish;
             openssh.authorizedKeys.keyFiles = [ lib.my.c.sshKeyFiles.me ];
@@ -118,7 +194,7 @@ in
         home-manager.users.${agentUser} = {
           my.agents.enable = true;
 
-          home.packages = [ slopClone codexBubblewrap ];
+          home.packages = [ slopClone slopPair ];
 
           programs = {
             claude-code.settings.permissions = {
@@ -129,12 +205,12 @@ in
 
             # The shared config pins `IdentityFile` for every host
             ssh.settings."git.nul.ie" = {
-              IdentityFile = [ "~/.ssh/id_ed25519" ];
+              IdentityFile = [ giteaKey ];
             };
           };
         };
 
-        # Managed settings can't be edited by agents (unlike `~/.claude`)
+        # Not editable by the agent user without `doas`; a convenience, not a boundary
         environment.etc."claude-code/managed-settings.json".text = toJSON {
           permissions = {
             disableBypassPermissionsMode = "disable";
@@ -143,34 +219,37 @@ in
         };
 
         systemd = {
-          network.networks."80-container-host0" = mkMerge [
-            (networkdAssignment "host0" assignments.hi)
-            { networkConfig = vlanDns "hi"; }
-          ];
-
-          services = {
-            # Box-wide key for Gitea deploy keys
-            slop-cannon-ssh-key = {
-              description = "Generate ${agentUser}'s SSH key";
-              wantedBy = [ "multi-user.target" ];
-              unitConfig.RequiresMountsFor = agentHome;
-              path = [ pkgs.openssh ];
-              script = ''
-                if [ ! -e ~/.ssh/id_ed25519 ]; then
-                  install -d -m 700 ~/.ssh
-                  ssh-keygen -q -t ed25519 -N "" -C "${agentUser}@${config.networking.hostName}" -f ~/.ssh/id_ed25519
-                fi
-              '';
-              serviceConfig = {
-                Type = "oneshot";
-                RemainAfterExit = true;
-                User = agentUser;
+          network = {
+            links = {
+              "10-lan-untrusted" = {
+                matchConfig = {
+                  Driver = "mlx5_core";
+                  PermanentMACAddress = "52:54:00:71:22:ea";
+                };
+                linkConfig = {
+                  Name = "lan-untrusted";
+                  MTUBytes = toString prefixes.untrusted.mtu;
+                };
               };
             };
+            networks = {
+              "80-lan-untrusted" = mkMerge [
+                (networkdAssignment "lan-untrusted" assignments.untrusted)
+                {
+                  # As `untrusted`'s DHCP and RAs hand out; the routers' resolvers aren't reachable
+                  networkConfig.DNS = [
+                    "1.1.1.1" "1.0.0.1"
+                    "2606:4700:4700::1111" "2606:4700:4700::1001"
+                  ];
+                }
+              ];
+            };
+          };
 
+          services = {
             paseo = {
               unitConfig.RequiresMountsFor = agentHome;
-              serviceConfig.EnvironmentFile = config.age.secrets."slop-cannon/paseo.env".path;
+              serviceConfig.EnvironmentFile = paseoPasswordFile;
               # Don't interrupt running agents on deploy; restart by hand when convenient
               restartIfChanged = false;
             };

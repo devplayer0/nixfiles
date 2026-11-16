@@ -1,7 +1,7 @@
 # palace
 
-The physical VM host for the home site. Runs the `river`, `cellar` and `sfh` VMs and feeds them
-SR-IOV VFs, PCI NVMe drives and LVM disks.
+The physical VM host for the home site. Runs the `river`, `cellar`, `sfh` and `slop-cannon` VMs and
+feeds them SR-IOV VFs, PCI NVMe drives, LVM disks and an NVMe-oF disk.
 
 - **Source:** [`nixos/boxes/home/palace/default.nix`](../../../nixos/boxes/home/palace/default.nix)
   (VM definitions in [`palace/vms/default.nix`](../../../nixos/boxes/home/palace/vms/default.nix))
@@ -35,7 +35,7 @@ See the consolidated [network assignments](../../networking.md#box-assignments) 
 ## Networking
 
 100G `uplink-dave` (mlx5, MTU 9000) connects to the `dave` switch and carries `lan-hi` (VLAN 100,
-the `hi` assignment). A udev rule creates five SR-IOV VFs on the PF. Two physically separate Intel
+the `hi` assignment). A udev rule creates six SR-IOV VFs on the PF. Two physically separate Intel
 connections lead to `jim`: `host-jim` serves `palace` and `sfh`, while `river-jim-phy` is exported
 exclusively to `river`.
 
@@ -64,14 +64,15 @@ BPDUs without a guest-to-host receive-filter synchronization service.
 ```text
 dave
 └─ palace uplink-dave (ConnectX-4 PF)
-   ├─ VLAN 100 ───────────────────────────────> palace lan-hi
+   ├─ VLAN 100 ───────────────────────────────> palace lan-hi ───> cellar NVMe/RDMA (slop-cannon's disk)
    ├─ VF 0  cellar-hi ────────────────────────> cellar lan-hi
    ├─ VF 1  river-rdma ───────────────────────> river rdma-hi ──> cellar NVMe/RDMA
    ├─ VF 2  sfh-hi ───────────────────────────> sfh lan-hi ─────> cellar NVMe/RDMA
    ├─ VF 3  sfh-ctrs ─────────────────────────> sfh ctrs-hi
    │                                             ├─> hass host0
    │                                             └─> unifi host0
-   └─ VF 4  river-dave ───────────────────────> river lan-dave ──┐
+   ├─ VF 4  river-dave ───────────────────────> river lan-dave ──┐
+   └─ VF 5  slop-cannon-ut ───> slop-cannon lan-untrusted        │
                                                                  ├─> river lan (RSTP)
 jim                                                              │
 ├─ palace river-jim-phy ── river-jim-tap ─────> river lan-jim ───┘
@@ -101,13 +102,13 @@ from the host to its guests. Interface names in the destination columns belong t
 
 | Switch port | Host interface | Host networks | Guest handoff |
 |---|---|---|---|
-| `dave` `palace` | `uplink-dave` | VLAN 100 → `lan-hi` | Five PCI VFs, listed below |
+| `dave` `palace` | `uplink-dave` | VLAN 100 → `lan-hi` | Six PCI VFs, listed below |
 | `jim` `palace` | `host-jim` | Native `core` → `lan-core`; VLAN 110 → `lan-lo-phy` → `lan-lo` | `sfh-core-tap` and `sfh-lo-tap` |
 | `jim` `river` | `river-jim-phy` | No host L3 configuration | `river-jim-tap` macvtap → `river` `lan-jim` |
 
 #### ConnectX-4 VFs
 
-All five VFs belong to `uplink-dave`. VLAN filtering and carrier policy are applied on the PF.
+All six VFs belong to `uplink-dave`. VLAN filtering and carrier policy are applied on the PF.
 
 | VF / PCI BDF | QEMU device | Guest | Guest interface | VLAN / carrier | Role |
 |---|---|---|---|---|---|
@@ -116,6 +117,7 @@ All five VFs belong to `uplink-dave`. VLAN filtering and carrier policy are appl
 | 2 / `44:00.3` | `sfh-hi` | [sfh](sfh/README.md) | `lan-hi` | 100 / forced up | NVMe/RDMA root and management |
 | 3 / `44:00.4` | `sfh-ctrs` | [sfh](sfh/README.md#networking) | `ctrs-hi` | 100 / forced up | Container `hi` network |
 | 4 / `44:00.5` | `river-dave` | [river](river.md#virtual-machine-and-network-attachment) | `lan-dave` | Unfiltered trunk / automatic | Preferred RSTP attachment |
+| 5 / `44:00.6` | `slop-cannon-ut` | [slop-cannon](slop-cannon.md#network) | `lan-untrusted` | 120 / automatic | Agents' only network. MAC spoof checking is on. |
 
 #### Virtual Ethernet handoffs
 
@@ -139,19 +141,43 @@ run before stage-two module loading. `sfh` requires the `frigate` LV before QEMU
 |---|---|---|---|---|
 | `cellar` | 8c × 2t | 16 GiB | `cellar-hi` VF 0 (`44:00.1`); NVMe `41:00.0`–`43:00.0` | pinned to NUMA node 1; split IRQ chip + vIOMMU |
 | `river` | 3c × 2t | 4 GiB | `river-rdma` VF 1 (`44:00.2`), `river-dave` VF 4 (`44:00.5`), `river-jim-tap` | only an ESP local disk (plus an installer ISO) — root is NVMe-oF from `cellar` |
-| `sfh` | 16c × 2t | 96 GiB | `sfh-hi` VF 2 (`44:00.3`), `sfh-ctrs` VF 3 (`44:00.4`); two USB host ports | no boot disk — netboots; gets the `hdds/frigate` LV |
+| `sfh` | 8c × 2t | 32 GiB | `sfh-hi` VF 2 (`44:00.3`), `sfh-ctrs` VF 3 (`44:00.4`); two USB host ports | no boot disk — netboots; gets the `hdds/frigate` LV |
+| `slop-cannon` | 16c × 2t | 48 GiB | `slop-cannon-ut` VF 5 (`44:00.6`) | disk is NVMe-oF from `cellar`, connected by `palace` (plus an installer ISO) |
 
-`sfh`'s vCPUs are overcommitted (the VMs total more vCPUs than the host's 32 threads) so the coding
-agents in [`slop-cannon`](sfh/containers/slop-cannon.md) can burst; that container's own CPU weight
-and memory cap keep `hass` and `unifi` responsive.
+`slop-cannon`'s vCPUs are overcommitted (the VMs total more vCPUs than the host's 32 threads) so
+coding agents can burst; `vm@slop-cannon` has a low `CPUWeight`, so `cellar`, `river` and `sfh`
+win under contention.
 
 Boot ordering is enforced with systemd dependencies: `vm@river` waits for `cellar`'s SSH port (and
 for the `river-jim-tap` device), and `vm@sfh` waits for `river` — storage first, then the router,
-then everything that boots off both.
+then everything that boots off both. `vm@slop-cannon` waits only for its disk (below); nothing
+waits for it.
+
+`vm@` units don't restart on deploy (`restartIfChanged = false`); a changed VM config applies the
+next time the VM starts.
+
+### `slop-cannon`'s disk
+
+`palace` is an NVMe-oF initiator for one guest: `slop-cannon`'s disk is
+`nqn.2016-06.io.spdk:slop-cannon` on [`cellar`](cellar.md), connected by `palace` (`my.nvme.uuid`
+is its host NQN) and passed to QEMU as a virtio disk. The guest never speaks NVMe-oF itself:
+SPDK only checks the host NQN, which root in the guest could forge.
+
+`palace` hosts `cellar`, so the connection is kept out of `palace`'s own boot and shutdown:
+
+- `slop-cannon-disk.service` waits for `cellar`'s SSH port, runs `nvme connect -t rdma` over
+  `lan-hi` and disconnects on stop. It is `BindsTo` / `After` `vm@cellar`, and only
+  `vm@slop-cannon` requires it. Nothing in the initrd, `fileSystems` or `multi-user.target` uses
+  the disk.
+- Shutdown runs in reverse: `vm@slop-cannon`, then the disconnect, then `cellar`.
+- `--ctrl-loss-tmo 60`: if `cellar` dies, the controller is removed after a minute and QEMU sees
+  I/O errors, instead of the kernel retrying forever.
+- `devices/global_filter` rejects `/dev/nvme*` in `lvm.conf`, so `palace` never activates the
+  guest's volume group (also called `main`). `palace` has no NVMe of its own.
 
 ## Notable config files
 
 - [`nixos/boxes/home/palace/default.nix`](../../../nixos/boxes/home/palace/default.nix) — host
   hardware, networkd (links/bridges/SR-IOV), LVM.
 - [`nixos/boxes/home/palace/vms/default.nix`](../../../nixos/boxes/home/palace/vms/default.nix) —
-  VM instances and boot ordering.
+  VM instances, boot ordering and `slop-cannon`'s disk connection.

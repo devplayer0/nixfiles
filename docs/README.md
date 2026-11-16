@@ -75,10 +75,10 @@ h.nul.ie
 ├── palace (physical VM host — AMD, 100G, SR-IOV)
 │   ├── river ── primary router VM (PPPoE / Digiweb WAN)
 │   ├── cellar ─ NVMe-oF / SPDK storage target VM
-│   └── sfh ──── container host VM ("shill from home")
-│       ├── hass ── Home Assistant + Frigate + MQTT (container)
-│       ├── unifi ─ UniFi controller (container)
-│       └── slop-cannon ─ coding agents via Paseo (container)
+│   ├── sfh ──── container host VM ("shill from home")
+│   │   ├── hass ── Home Assistant + Frigate + MQTT (container)
+│   │   └── unifi ─ UniFi controller (container)
+│   └── slop-cannon ─ coding agents via Paseo (VM, on untrusted)
 ├── stream (physical secondary router — Virgin Media WAN)
 └── castle (workstation / gaming desktop — netboot, NVMe-oF root)
 ```

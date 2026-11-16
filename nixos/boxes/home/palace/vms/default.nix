@@ -3,11 +3,13 @@
     ./cellar
     ./river.nix
     ./sfh
+    ./slop-cannon.nix
   ];
 
   nixos.systems.palace.configuration = { lib, pkgs, config, systems, allAssignments, ... }:
   let
     inherit (lib) mkMerge;
+    inherit (config.my.nvme) uuid;
     inherit (lib.my) vm;
     inherit (lib.my.c) networkd;
     inherit (lib.my.c.home) hiMTU;
@@ -24,6 +26,13 @@
       frontendOpts = {
         bootindex = 1;
       };
+    };
+
+    # `slop-cannon`'s disk: a partition of `cellar`'s RAID, connected here so the guest never
+    # speaks NVMe-oF itself
+    slopDisk = {
+      nqn = "nqn.2016-06.io.spdk:slop-cannon";
+      device = "/dev/disk/by-id/nvme-SPDK_bdev_Controller_SPDK00000000000004";
     };
   in
   {
@@ -99,6 +108,38 @@
         }
       ];
       "vm@sfh" = (awaitVM "river");
+
+      # Only `vm@slop-cannon` needs this; stops before `cellar` does, and gives up on a dead
+      # target rather than hanging I/O on `palace`
+      slop-cannon-disk = mkMerge [
+        (awaitVM "cellar")
+        {
+          description = "Connect slop-cannon's NVMe-oF disk";
+          path = with pkgs; [ nvme-cli systemd ];
+          script = ''
+            until nvme connect -t rdma -a ${allAssignments.cellar.hi.ipv4.address} -s 4420 \
+              -n ${slopDisk.nqn} -q nqn.2014-08.org.nvmexpress:uuid:${uuid} --ctrl-loss-tmo 60; do
+              sleep 5
+            done
+            udevadm wait --timeout 30 ${slopDisk.device}
+          '';
+          preStop = ''
+            nvme disconnect -n ${slopDisk.nqn}
+          '';
+          serviceConfig = {
+            Type = "oneshot";
+            RemainAfterExit = true;
+            TimeoutStartSec = "5min";
+          };
+        }
+      ];
+      "vm@slop-cannon" = {
+        requires = [ "slop-cannon-disk.service" ];
+        bindsTo = [ "slop-cannon-disk.service" ];
+        after = [ "slop-cannon-disk.service" ];
+        # Coding agents; keep storage and the router responsive
+        serviceConfig.CPUWeight = 20;
+      };
     };
 
     my = {
@@ -181,10 +222,10 @@
             uuid = "82ec149d-577c-421a-93e2-a9307c756cd8";
             cpu = "host,topoext";
             smp = {
-              cpus = 16;
+              cpus = 8;
               threads = 2;
             };
-            memory = 98304;
+            memory = 32768;
             cleanShutdown.timeout = 120;
             networks = {
               netboot = {
@@ -221,6 +262,28 @@
               # Front-left port
               "device usb-host,hostbus=1,hostport=3"
             ];
+          };
+
+          slop-cannon = {
+            uuid = "9de7dc84-7506-445f-8e37-37c4cc6d8ed5";
+            cpu = "host,topoext";
+            # Overcommitted so agents can burst; `vm@slop-cannon` has a low CPU weight
+            smp = {
+              cpus = 16;
+              threads = 2;
+            };
+            memory = 49152;
+            cleanShutdown.timeout = 120;
+            drives = [
+              installerDisk
+              (mkMerge [ (vm.blockDisk "disk" slopDisk.device) { frontendOpts.bootindex = 0; } ])
+            ];
+            hostDevices = {
+              slop-cannon-ut = {
+                index = 0;
+                hostBDF = "44:00.6";
+              };
+            };
           };
         };
       };

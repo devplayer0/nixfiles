@@ -128,6 +128,13 @@ in
             hostnqn =
               "nqn.2014-08.org.nvmexpress:uuid:85d7df36-0de0-431b-b06e-51f7c0a455b4";
             serial = "SPDK00000000000003";
+          }) ++ (nvmfBdev {
+            # `slop-cannon`'s disk; `palace` connects it and hands it to the VM
+            bdev = "NVMeRaidp4";
+            nqn = "nqn.2016-06.io.spdk:slop-cannon";
+            hostnqn =
+              "nqn.2014-08.org.nvmexpress:uuid:a5b573fe-59e0-4760-802d-4b6d2df6dcf2";
+            serial = "SPDK00000000000004";
           });
         };
       };

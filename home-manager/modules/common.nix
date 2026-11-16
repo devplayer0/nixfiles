@@ -171,12 +171,12 @@ in
 
             # Coding agents run as `slop-cannon`; never forward an agent there
             slop-cannon = {
-              HostName = "slop-cannon-ctr.${lib.my.c.home.domain}";
+              HostName = "slop-cannon.${lib.my.c.home.domain}";
               User = "slop-cannon";
               ForwardAgent = "no";
             };
             slop-cannon-dev = {
-              HostName = "slop-cannon-ctr.${lib.my.c.home.domain}";
+              HostName = "slop-cannon.${lib.my.c.home.domain}";
               User = "dev";
               ForwardAgent = "no";
             };

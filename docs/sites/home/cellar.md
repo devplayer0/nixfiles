@@ -2,7 +2,7 @@
 
 The home storage target. A VM on `palace` that drives three passed-through NVMe disks with SPDK
 and exports them over NVMe-oF/RDMA — `river`, `sfh` and `castle` all run their root storage off
-it.
+it, and `slop-cannon`'s disk lives on it.
 
 - **Source:** [`nixos/boxes/home/palace/vms/cellar/`](../../../nixos/boxes/home/palace/vms/cellar)
   (`default.nix`, `spdk.nix`)
@@ -22,6 +22,7 @@ it.
   | `NVMeRaidp1` | `nqn.2016-06.io.spdk:river` | [`river`](river.md) |
   | `NVMeRaidp2` | `nqn.2016-06.io.spdk:castle` | [`castle`](castle.md) |
   | `NVMeRaidp3` | `nqn.2016-06.io.spdk:sfh` | [`sfh`](sfh/README.md) |
+  | `NVMeRaidp4` | `nqn.2016-06.io.spdk:slop-cannon` | [`palace`](palace.md#slop-cannons-disk), for [`slop-cannon`](slop-cannon.md) |
 
   Each subsystem is pinned to its consumer's `hostnqn` (the `my.nvme.uuid` on the client side).
 - `spdk-tgt` doesn't restart on deploy (`restartIfChanged = false`): restarting it takes every
@@ -38,7 +39,7 @@ See the consolidated [network assignments](../../networking.md#box-assignments) 
 
 Partitions on `NVMeRaid` are ordinary GPT partitions. SPDK's `gpt` module finds them when it
 examines the RAID (`bdev_examine` in `spdk.nix`; auto-examine is off) and exposes those whose type
-GUID is SPDK's, as `NVMeRaidp<n>`. `p1`–`p3` use the current type GUID,
+GUID is SPDK's, as `NVMeRaidp<n>`. `p1`–`p4` use the current type GUID,
 `6527994e-2c5a-4eec-9613-8f5944074e8b`. Use it for new partitions and leave existing partition
 types as they are. SPDK still supports its deprecated type, `7c5222bd-8f5d-4087-9c00-bf9843c7b58c`,
 and exposes one fewer block for that type to preserve compatibility with existing on-disk metadata.
@@ -51,9 +52,10 @@ while the exports are live: every consumer has to be down. Start from a box that
 when the exports are offline.
 
 1. Shut down every consumer. Power off `castle` and run
-   `doas systemctl stop vm@sfh vm@river` on `palace`. `stream` takes over the router VIPs. On
-   `cellar`, verify that `doas spdk-rpc nvmf_subsystem_get_controllers <nqn>` returns `[]` for each
-   exported subsystem in the table above.
+   `doas systemctl stop vm@sfh vm@river slop-cannon-disk` on `palace`. `stream` takes over the
+   router VIPs. Stopping `slop-cannon-disk` shuts down `vm@slop-cannon` before disconnecting its
+   disk. On `cellar`, verify that `doas spdk-rpc nvmf_subsystem_get_controllers <nqn>` returns `[]`
+   for each exported subsystem in the table above.
 2. On `cellar`, stop the target and start `spdk-debug` in its place. It runs `spdk_tgt` on a
    config generated from the real one: the same controllers and RAID, but nothing examined (so
    the `gpt` module never claims the RAID), nothing exported, and the RAID exposed through ublk
@@ -88,7 +90,7 @@ when the exports are offline.
    serial), deploy `cellar` (the unit doesn't restart) and `doas systemctl start spdk-tgt`. Check
    `doas spdk-rpc bdev_get_bdevs` lists the new partition and `doas spdk-rpc nvmf_get_subsystems`
    the new subsystem.
-7. Start the consumers again.
+7. Start the consumers again. Starting `vm@slop-cannon` also starts `slop-cannon-disk`.
 
 If `spdk-tgt` won't start in step 6, the usual cause is a config naming a bdev that doesn't exist.
 Switch `cellar` back to its previous generation

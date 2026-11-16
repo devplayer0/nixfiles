@@ -53,7 +53,7 @@ in
               };
             };
           });
-          kernelModules = [ "dm-raid" "kvm-amd" ];
+          kernelModules = [ "dm-raid" "kvm-amd" "nvme-rdma" ];
           kernelParams = [ "amd_iommu=on" ];
           initrd = {
             availableKernelModules = [ "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" "sr_mod" ];
@@ -85,6 +85,12 @@ in
           };
         };
 
+        # NVMe-oF disks connected here belong to guests (`palace` has no NVMe of its own; its
+        # drives are passed to `cellar`); never activate their volume groups
+        environment.etc."lvm/lvm.conf".text = ''
+          devices/global_filter = [ "r|^/dev/nvme|" "a|.*|" ]
+        '';
+
         services = {
           lvm = {
             boot.thin.enable = true;
@@ -96,7 +102,7 @@ in
             extraOptions = [ "-A /var/log/smartd/" "--interval=600" ];
           };
           udev.extraRules = ''
-            ACTION=="add", SUBSYSTEM=="net", ENV{ID_NET_DRIVER}=="mlx5_core", ENV{ID_PATH}=="pci-0000:44:00.0", ATTR{device/sriov_numvfs}="5"
+            ACTION=="add", SUBSYSTEM=="net", ENV{ID_NET_DRIVER}=="mlx5_core", ENV{ID_PATH}=="pci-0000:44:00.0", ATTR{device/sriov_numvfs}="6"
           '';
         };
 
@@ -212,6 +218,14 @@ in
                   MACAddress=52:54:00:8a:8a:f4
                   Trust=yes
                   MACSpoofCheck=no
+
+                  # slop-cannon (untrusted)
+                  [SR-IOV]
+                  VirtualFunction=5
+                  VLANId=${toString vlans.untrusted}
+                  LinkState=auto
+                  MACAddress=52:54:00:71:22:ea
+                  MACSpoofCheck=yes
                 '';
               };
               "60-lan-hi" = mkMerge [
@@ -247,6 +261,9 @@ in
 
           server.enable = true;
           deploy.node.hostname = "192.168.68.22";
+
+          # Host NQN for guest disks on `cellar`; nothing on `palace` itself boots from it
+          nvme.uuid = "a5b573fe-59e0-4760-802d-4b6d2df6dcf2";
         };
       };
   };

@@ -127,8 +127,13 @@ a running custom installer, SSHing as root with `.keys/deploy.key`):
 | `installer-shell [cmd]` | Runs a command (default: a shell) inside the installer. |
 | `do-install [--no-bootloader] [--no-substitute] <system>` | Builds the system's `toplevel`, `nix copy`s it into the installer's target store, sets the system profile, and activates it with `switch-to-configuration boot` (with `NIXOS_INSTALL_BOOTLOADER=1` unless `--no-bootloader`). |
 
-From [`devshell/vm-tasks.nix`](../devshell/vm-tasks.nix) (remote VM consoles; they forward the
-VM's unix sockets from `/run/vms/<vm>/` on `<host>` over SSH):
+### VM consoles
+
+The [`my.vms` module](../nixos/modules/vms.nix) provides `doas vm-tty <vm>` on the VM host.
+It opens the serial console in `minicom` via `/run/vms/<vm>/tty.sock`.
+
+The [devshell commands](../devshell/vm-tasks.nix) forward the VM's Unix sockets from
+`/run/vms/<vm>/` on `<host>` over SSH.
 
 | Command | What it does |
 |---|---|

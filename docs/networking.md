@@ -380,6 +380,7 @@ blocks access to colony, where the home prefixes are trusted across the mesh.
   `untrusted` hosts.
 - Traffic to the routers themselves goes through the same `input` rules as `wan`.
 - Clients on `untrusted` share layer 2 with each other; the routers can't filter that.
+- [`slop-cannon`](sites/home/slop-cannon.md) uses a static address on the `untrusted` VLAN.
 
 #### DNS binding
 

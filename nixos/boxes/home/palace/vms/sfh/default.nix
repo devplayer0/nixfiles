@@ -168,10 +168,6 @@ in
               MACVLAN = mkForce "ctrs-hi:host0 ctrs-core:lan-core";
             };
           };
-          # nspawn's default `/tmp` is 10% of RAM; agents need more scratch space
-          slop-cannon = {
-            filesConfig.TemporaryFileSystem = [ "/tmp:mode=1777,size=32G" ];
-          };
         };
 
         systemd.services = {
@@ -183,11 +179,6 @@ in
             # Pass an empty directory to nspawn when the webcam is absent.
             RuntimeDirectory = "hass-webcam";
             BindPaths = [ "-/dev/video0:/run/hass-webcam/video0" ];
-          };
-          # Coding agents; keep the other containers responsive
-          "systemd-nspawn@slop-cannon".serviceConfig = {
-            CPUWeight = 20;
-            MemoryMax = "64G";
           };
         };
 
@@ -212,7 +203,6 @@ in
           let
             instances = {
               unifi = {};
-              slop-cannon = {};
               hass = {
                 bindMounts = {
                   "/mnt/frigate" = {
