@@ -18,7 +18,7 @@ integrations. A `hass-cli` wrapper uses a token from `my.secrets` to reach the l
 
 - **mosquitto** — MQTT broker (anonymous local listener; port 1883 allowed, alongside HTTP).
 - **go2rtc** — restreams the Reolink living-room camera (RTSP from `reolink-living-room`, on the
-  `lo` network) and the office USB webcam (`/dev/video0` via ffmpeg).
+  `lo` network) and the office USB webcam (`/dev/hass-webcam/video0` via ffmpeg).
 - **Frigate** (`services.frigate`, `frigate.h.nul.ie` — the `frigate` alt name on the `hi`
   assignment) — records both restreamed cameras with a short retention policy; detection is
   disabled.
@@ -42,7 +42,9 @@ Frigate footage lives on a **separate HDD LV**: `palace` passes the `hdds/frigat
 Passed through from `sfh` (USB host ports on `palace`):
 
 - Nabu Casa Connect ZBT-1 Zigbee coordinator → `/dev/ttyUSB0` (used by `zha`).
-- USB webcam → `/dev/video0` (go2rtc's `webcam_office` stream).
+- USB webcam → `/dev/hass-webcam/video0` (go2rtc's `webcam_office` stream). The container
+  starts with an empty `/dev/hass-webcam` directory if the webcam is absent. Restart the
+  container after reconnecting the webcam to expose it again.
 - The matching raw USB device node allowed through from `sfh`.
 
 ## Networking

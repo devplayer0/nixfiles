@@ -113,7 +113,7 @@ in
                   "rtsp://admin:@reolink-living-room:554/h264Preview_01_main"
                 ];
                 webcam_office = [
-                  "ffmpeg:device?video=/dev/video0&video_size=1024x576#video=h264"
+                  "ffmpeg:device?video=/dev/hass-webcam/video0&video_size=1024x576#video=h264"
                 ];
               };
             };

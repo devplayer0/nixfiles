@@ -175,10 +175,15 @@ in
         };
 
         systemd.services = {
-          "systemd-nspawn@hass".serviceConfig.DeviceAllow = [
-            "char-ttyUSB rw"
-            "char-video4linux rw"
-          ];
+          "systemd-nspawn@hass".serviceConfig = {
+            DeviceAllow = [
+              "char-ttyUSB rw"
+              "char-video4linux rw"
+            ];
+            # Pass an empty directory to nspawn when the webcam is absent.
+            RuntimeDirectory = "hass-webcam";
+            BindPaths = [ "-/dev/video0:/run/hass-webcam/video0" ];
+          };
           # Coding agents; keep the other containers responsive
           "systemd-nspawn@slop-cannon".serviceConfig = {
             CPUWeight = 20;
@@ -215,7 +220,10 @@ in
                     readOnly = false;
                   };
                   "/dev/bus/usb/001/002".readOnly = false;
-                  "/dev/video0".readOnly = false;
+                  "/run/hass-webcam" = {
+                    mountPoint = "/dev/hass-webcam";
+                    readOnly = false;
+                  };
                   "/dev/serial/by-id/usb-Nabu_Casa_Home_Assistant_Connect_ZBT-1_ce549704fe38ef11a2c2e5d154516304-if00-port0" = {
                     readOnly = false;
                     mountPoint = "/dev/ttyUSB0";
