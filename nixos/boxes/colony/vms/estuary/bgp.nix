@@ -140,6 +140,9 @@ in
               preference PREFPEER;
             };
           }
+          template bgp nlix_peer_bgp4 from peer_bgp4 {
+            ipv4 { preference (PREFPEER-1); };
+          }
           template bgp ixp_bgp4 from base_bgp4 {
             ipv4 {
               import filter bgp_import;
@@ -169,6 +172,9 @@ in
               import filter bgp_import;
               preference PREFPEER;
             };
+          }
+          template bgp nlix_peer_bgp6 from peer_bgp6 {
+            ipv6 { preference (PREFPEER-1); };
           }
           template bgp ixp_bgp6 from base_bgp6 {
             ipv6 {
@@ -219,14 +225,6 @@ in
           #   neighbor 2001:7f8:ca:1::107 as 208431;
           # }
 
-          protocol bgp peer4_cc_luje from peer_bgp4 {
-            description "LUJE.net (on ColoClue, IPv4)";
-            neighbor 94.142.240.20 as 212855;
-          }
-          protocol bgp peer6_cc_luje from peer_bgp6 {
-            description "LUJE.net (on ColoClue, IPv6)";
-            neighbor 2a02:898:0:20::166:1 as 212855;
-          }
           protocol bgp peer6_luje_labs from peer_bgp6 {
             description "LUJE.net labs (IPv6)";
             multihop 3;
@@ -245,6 +243,11 @@ in
             local role rs_client;
             ttl security on;
             neighbor 2001:7f8:154::21:8511:2 as 218511;
+          }
+
+          protocol bgp peer6_clueix_luje from peer_bgp6 {
+            description "LUJE.net (on Clue-IX, IPv6)";
+            neighbor 2001:7f8:154::21:2855:1 as 212855;
           }
 
           protocol bgp ixp4_frysix_rs3 from ixp_bgp4 {
@@ -305,19 +308,28 @@ in
             neighbor 2001:7f8:10f::3:3e9b:134 as 212635;
           }
 
-          protocol bgp peer4_nlix_meta1 from peer_bgp4 {
+          protocol bgp peer4_nlix_luje from nlix_peer_bgp4 {
+            description "LUJE.net (on NL-ix, IPv4)";
+            neighbor 193.239.116.87 as 212855;
+          }
+          protocol bgp peer6_nlix_luje from nlix_peer_bgp6 {
+            description "LUJE.net (on NL-ix, IPv6)";
+            neighbor 2001:7f8:13::a521:2855:1 as 212855;
+          }
+
+          protocol bgp peer4_nlix_meta1 from nlix_peer_bgp4 {
             description "Meta 1 (on NL-ix, IPv4)";
             neighbor 193.239.116.147 as 32934;
           }
-          protocol bgp peer4_nlix_meta2 from peer_bgp4 {
+          protocol bgp peer4_nlix_meta2 from nlix_peer_bgp4 {
             description "Meta 2 (on NL-ix, IPv4)";
             neighbor 193.239.116.148 as 32934;
           }
-          protocol bgp peer6_nlix_meta1 from peer_bgp6 {
+          protocol bgp peer6_nlix_meta1 from nlix_peer_bgp6 {
             description "Meta 1 (on NL-ix, IPv6)";
             neighbor 2001:7f8:13::a503:2934:1 as 32934;
           }
-          protocol bgp peer6_nlix_meta2 from peer_bgp6 {
+          protocol bgp peer6_nlix_meta2 from nlix_peer_bgp6 {
             description "Meta 2 (on NL-ix, IPv6)";
             neighbor 2001:7f8:13::a503:2934:2 as 32934;
           }
@@ -361,55 +373,45 @@ in
             ipv6 { preference (PREFIXP-1); };
           }
 
-          # protocol bgp peer4_nlix_cloudflare1 from peer_bgp4 {
+          # protocol bgp peer4_nlix_cloudflare1 from nlix_peer_bgp4 {
           #   description "Cloudflare NL-ix 1 (IPv4)";
           #   neighbor 193.239.117.14 as 13335;
-          #   ipv4 { preference (PREFPEER-1); };
           # }
-          # protocol bgp peer4_nlix_cloudflare2 from peer_bgp4 {
+          # protocol bgp peer4_nlix_cloudflare2 from nlix_peer_bgp4 {
           #   description "Cloudflare NL-ix 2 (IPv4)";
           #   neighbor 193.239.117.114 as 13335;
-          #   ipv4 { preference (PREFPEER-1); };
           # }
-          # protocol bgp peer4_nlix_cloudflare3 from peer_bgp4 {
+          # protocol bgp peer4_nlix_cloudflare3 from nlix_peer_bgp4 {
           #   description "Cloudflare NL-ix 3 (IPv4)";
           #   neighbor 193.239.118.138 as 13335;
-          #   ipv4 { preference (PREFPEER-1); };
           # }
-          # protocol bgp peer6_nlix_cloudflare1 from peer_bgp6 {
+          # protocol bgp peer6_nlix_cloudflare1 from nlix_peer_bgp6 {
           #   description "Cloudflare NL-ix 1 (IPv6)";
           #   neighbor 2001:7f8:13::a501:3335:1 as 13335;
-          #   ipv6 { preference (PREFPEER-1); };
           # }
-          # protocol bgp peer6_nlix_cloudflare2 from peer_bgp6 {
+          # protocol bgp peer6_nlix_cloudflare2 from nlix_peer_bgp6 {
           #   description "Cloudflare NL-ix 2 (IPv6)";
           #   neighbor 2001:7f8:13::a501:3335:2 as 13335;
-          #   ipv6 { preference (PREFPEER-1); };
           # }
-          # protocol bgp peer6_nlix_cloudflare3 from peer_bgp6 {
+          # protocol bgp peer6_nlix_cloudflare3 from nlix_peer_bgp6 {
           #   description "Cloudflare NL-ix 3 (IPv6)";
           #   neighbor 2001:7f8:13::a501:3335:3 as 13335;
-          #   ipv6 { preference (PREFPEER-1); };
           # }
-          protocol bgp peer4_nlix_jurrian from peer_bgp4 {
+          protocol bgp peer4_nlix_jurrian from nlix_peer_bgp4 {
             description "AS212635 aka jurrian (on NL-ix, IPv4)";
             neighbor 193.239.117.55 as 212635;
-            ipv4 { preference (PREFPEER-1); };
           }
-          protocol bgp peer6_nlix_jurrian from peer_bgp6 {
+          protocol bgp peer6_nlix_jurrian from nlix_peer_bgp6 {
             description "AS212635 aka jurrian (on NL-ix, IPv6)";
             neighbor 2001:7f8:13::a521:2635:1 as 212635;
-            ipv6 { preference (PREFPEER-1); };
           }
-          protocol bgp peer4_nlix_apple from peer_bgp4 {
+          protocol bgp peer4_nlix_apple from nlix_peer_bgp4 {
             description "Apple (on NL-ix, IPv4)";
             neighbor 193.239.117.113 as 714;
-            ipv4 { preference (PREFPEER-1); };
           }
-          protocol bgp peer6_nlix_apple from peer_bgp6 {
+          protocol bgp peer6_nlix_apple from nlix_peer_bgp6 {
             description "Apple (on NL-ix, IPv6)";
             neighbor 2001:7f8:13::a500:714:2 as 714;
-            ipv6 { preference (PREFPEER-1); };
           }
 
           protocol bgp ixp4_fogixp_rs1 from ixp_bgp4 {

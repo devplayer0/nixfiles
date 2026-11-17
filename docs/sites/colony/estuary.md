@@ -117,7 +117,7 @@ BIRD2 ([`bgp.nix`](../../../nixos/boxes/colony/vms/estuary/bgp.nix)) speaking **
 | Frys-IX | AS56393 | IXP route server | |
 | NL-ix | AS34307 | IXP route server | lower preference |
 | FogIXP | AS47498 | IXP route server | |
-| LUJE.net | AS212855 | Direct peer | ColoClue/Frys-IX/FogIXP + multihop labs |
+| LUJE.net | AS212855 | Direct peer | Clue-IX (IPv6), Frys-IX/FogIXP/NL-ix (v4+v6); NL-ix lower preference; multihop labs |
 | jurrian | AS212635 | Direct peer | |
 | Meta | AS32934 | Direct peer | Frys-IX/NL-ix |
 | Cloudflare | AS13335 | Direct peer | Frys-IX |
@@ -128,6 +128,10 @@ BIRD2 ([`bgp.nix`](../../../nixos/boxes/colony/vms/estuary/bgp.nix)) speaking **
 Statics originate the site prefixes: the `vip*` ranges via `base`, the
 ams1/internal v6 prefixes via `base`/`as211024`, and the home /48 towards the
 home routers' `as211024` VIP.
+
+NL-ix direct peers use `nlix_peer_bgp4` / `nlix_peer_bgp6`, which inherit the
+normal peer policy with preference `PREFPEER-1`. Meta uses the same lower
+NL-ix preference as the other direct peers.
 
 Currently disabled (commented out): efero transit over FogIXP ("not working so
 well lately") and the NL-ix Cloudflare sessions.
