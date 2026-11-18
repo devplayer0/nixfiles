@@ -129,6 +129,13 @@ in
       boot = {
         # Use latest LTS release by default
         kernelPackages = mkDefault (lib.my.c.kernel.lts pkgs);
+
+        # Containers share the host kernel. Block SCTP on the system that owns it.
+        extraModprobeConfig = mkIf (!config.boot.isContainer) ''
+          install sctp ${pkgs.coreutils}/bin/false
+        '';
+        kernelParams = mkIf (!config.boot.isContainer) [ "module_blacklist=sctp" ];
+
         kernel = {
           sysctl = {
             "net.ipv6.route.max_size" = mkDefault 16384;
