@@ -5,11 +5,11 @@ database, the containers (and the `git` VM) connect here over the `ctrs` network
 
 - **Source:** [`shill/containers/colony-psql.nix`](../../../../../nixos/boxes/colony/vms/shill/containers/colony-psql.nix)
 - **Host:** NixOS container on [`shill`](../README.md)
-- **nixpkgs:** `mine-stable`. NixOS 26.05 still packages PostgreSQL 14.
+- **nixpkgs:** `mine`
 
 ## Role
 
-- **PostgreSQL 14** with TCP/IP enabled, reachable from the whole colony address space using `md5`
+- **PostgreSQL 18** with TCP/IP enabled, reachable from the whole colony address space using `md5`
   authentication. The firewall allows `5432`.
 - Local `peer` auth maps `postgres`, `root`, `netdata` and `dev` to the `postgres` superuser via
   the ident map.
