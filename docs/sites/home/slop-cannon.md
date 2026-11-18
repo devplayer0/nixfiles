@@ -114,7 +114,7 @@ from the app don't survive a restart. It:
   password. Switching relays means re-pairing.
 - Push notifications go from the daemon to Expo's push service (`exp.host`), one outbound request
   per notification carrying its text.
-- `middleman` serves the static web app on `paseo.nul.ie`. The daemon's own web UI stays off.
+- `middleman` serves the static web app on `slop.nul.ie`. The daemon's own web UI stays off.
 
 ### State
 
@@ -191,7 +191,7 @@ To set up provider logins and repos on a fresh agent home, connect with `ssh slo
    rage --decrypt -i .keys/dev.key secrets/slop-cannon/paseo.env.age
    ```
 
-3. On a phone, scan the QR code from the Paseo app. In a browser, open `https://paseo.nul.ie` and
+3. On a phone, scan the QR code from the Paseo app. In a browser, open `https://slop.nul.ie` and
    use the app's paste-pairing-link option. Enter the value after `PASEO_PASSWORD=` when prompted
    and open the paired host. If the browser shows “Password required” after opening the link in
    the address bar, remove that host entry and pair again using the paste dialog.
