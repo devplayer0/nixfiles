@@ -398,7 +398,7 @@ in
         };
         useACMEHost = pubDomain;
       };
-      "paseo.${pubDomain}" = {
+      "slop.${pubDomain}" = {
         root = paseoWebUi;
         extraConfig = ''
           gzip_static on;

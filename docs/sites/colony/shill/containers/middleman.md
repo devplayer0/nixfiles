@@ -27,8 +27,9 @@ also waits for `colony-psql` through `systemdAwaitPostgres`, avoiding an early-b
 
 - `ams1.int.nul.ie` and its wildcard use a lego `exec` challenge that SSHes to
   `pdns-file-records@estuary-vm`. This is the default `useACMEHost` certificate internally.
-- `nul.ie`, `*.nul.ie` and `*.s3.nul.ie` use Cloudflare DNS. A `postRun` hook copies renewed
-  material to the `mail` VM and runs `mailcow-ssl-reload` there.
+- `nul.ie`, `*.nul.ie`, `*.s3.nul.ie` and `*.slop.nul.ie` (for `slop-broker` previews) use
+  Cloudflare DNS. A `postRun` hook copies renewed material to the `mail` VM and runs
+  `mailcow-ssl-reload` there.
 - Renewal reloads nginx; the `acme` group owns the secret files and includes the nginx user.
 
 ### nginx-sso
@@ -52,7 +53,7 @@ app, in place of Paseo's hosted relay.
   `paseo-relay.nul.ie`. It keeps no state, so a restart only drops connections.
 - The relay can't read or forge messages, so the vhost is open to the world. Its Prometheus
   `/metrics` is not exposed; `/health` and `/ready` are.
-- `paseo.nul.ie` serves Paseo's web app as static files, taken from the same patched Paseo package
+- `slop.nul.ie` serves Paseo's web app as static files, taken from the same patched Paseo package
   as the daemon. Pairing links from our daemon point there, and the app connects through the relay,
   so nothing from `paseo.sh` is needed in the browser.
 
@@ -93,7 +94,7 @@ all vhosts are `onlySSL`, kTLS and HTTP/2. "SSO" = gated behind nginx-sso (`gene
 | `speed.nul.ie` | `localhost:8989` | librespeed |
 | `librespeed.ams1.int.nul.ie` | `localhost:8989` | librespeed on the internal domain (internal wildcard cert) |
 | `paseo-relay.nul.ie` | `localhost:4000` | Paseo relay; websockets with long timeouts; `/metrics` blocked |
-| `paseo.nul.ie` | static Paseo web app | falls back to `index.html`; precompressed files served as-is |
+| `slop.nul.ie` | static Paseo web app | falls back to `index.html`; precompressed files served as-is |
 | `md.nul.ie` | `object-ctr:3000` | HedgeDoc; websockets |
 | `pb.nul.ie` | `object-ctr:8088` | wastebin |
 | `photos.nul.ie` | `jackflix-ctr:2342` | PhotoPrism; websockets |

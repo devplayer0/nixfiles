@@ -276,7 +276,7 @@ in
           settings = {
             version = 1;
             # Pairing links open our copy of the web app (served by `middleman`)
-            app.baseUrl = "https://paseo.${lib.my.c.pubDomain}";
+            app.baseUrl = "https://slop.${lib.my.c.pubDomain}";
             daemon = {
               # Keep agents from changing modes, answering prompts or opening terminals
               mcp.injectIntoAgents = false;

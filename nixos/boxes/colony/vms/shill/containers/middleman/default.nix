@@ -202,6 +202,7 @@ in
                   extraDomainNames = [
                     "*.${pubDomain}"
                     "*.s3.${pubDomain}"
+                    "*.slop.${pubDomain}"
                   ];
                   dnsProvider = "cloudflare";
                   environmentFile = config.age.secrets."middleman/cloudflare-credentials.conf".path;
