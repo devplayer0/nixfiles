@@ -227,7 +227,7 @@
 | `my.spdk.config.subsystems` | attribute set of list of (submodule) | `{ }` | Subsystem config / RPCs. |
 | `my.spdk.config.subsystems.<name>.*.method` | string | `null` | RPC method name. |
 | `my.spdk.config.subsystems.<name>.*.params` | attribute set of unspecified value | `{ }` | RPC params |
-| `my.spdk.debugCommands` | strings concatenated with "\n" | `""` | Commands to run with the spdk-debug script. |
+| `my.spdk.debug.ublkDisks` | list of string | `[ ]` | Bdevs `spdk-debug` exposes as `/dev/ublkb<n>`, numbered from 1, instead of serving the config. |
 | `my.spdk.enable` | boolean | `false` | Whether to enable SPDK target. |
 | `my.spdk.extraArgs` | string | `""` | Extra arguments to pass to spdk_tgt. |
 
