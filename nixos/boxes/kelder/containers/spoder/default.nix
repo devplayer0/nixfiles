@@ -7,7 +7,8 @@ in
 {
   nixos.systems.kelder-spoder = { config, ... }: {
     system = "x86_64-linux";
-    nixpkgs = "mine";
+    # TODO: Verify the deployed Nextcloud version, migrate to a supported major, and return to mine.
+    nixpkgs = "mine-stable";
     rendered = config.configuration.config.my.asContainer;
 
     assignments = {
@@ -87,12 +88,13 @@ in
           };
         };
 
+        nixpkgs.config.permittedInsecurePackages = [ "nextcloud-32.0.15" ];
+
         services = {
           resolved.settings.Resolve = mkForce { };
 
           nextcloud = {
             enable = true;
-            # TODO: Might need to do some bullshit to go from Nextcloud 28 (?) to 32
             package = pkgs.nextcloud32;
             datadir = "/mnt/storage/nextcloud";
             hostName = "cloud.${domain}";

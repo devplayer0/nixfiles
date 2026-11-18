@@ -6,7 +6,8 @@ in
 {
   nixos.systems.colony-psql = { config, ... }: {
     system = "x86_64-linux";
-    nixpkgs = "mine";
+    # TODO: Migrate PostgreSQL 14 to a supported major release, then return to mine.
+    nixpkgs = "mine-stable";
     rendered = config.configuration.config.my.asContainer;
 
     assignments = {

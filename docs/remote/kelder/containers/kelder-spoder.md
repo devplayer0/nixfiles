@@ -5,13 +5,15 @@ the site's services.
 
 - **Source:** [`nixos/boxes/kelder/containers/spoder/`](../../../../nixos/boxes/kelder/containers/spoder)
 - **Host:** NixOS container on [`kelder`](../README.md)
-- **nixpkgs:** `mine`
+- **nixpkgs:** `mine-stable` until the Nextcloud migration.
 
 ## Role
 
 - **Nextcloud** (`nextcloud32`) at `cloud.hentai.engineer` (trusted alias
   `cloud-local.hentai.engineer`), SQLite backend, data in `/mnt/storage/nextcloud`
   (`/mnt/storage` is bind-mounted from the host).
+  The package is temporarily allowlisted at `32.0.15`. Check the live version before planning
+  the migration because Nextcloud upgrades must proceed one major version at a time.
 - **nginx reverse proxy** (`openresty`) terminating TLS for the site's public vhosts, with a
   wildcard ACME cert for `hentai.engineer` via Cloudflare DNS. The kelder host forwards
   `http`/`https` to this container; uploads are unlimited (`clientMaxBodySize = 0`) for

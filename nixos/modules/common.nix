@@ -1,6 +1,6 @@
 { lib, pkgsFlake, pkgs, pkgs', self, inputs, config, ... }:
 let
-  inherit (lib) mkIf mkDefault mkMerge;
+  inherit (lib) mkIf mkDefault mkMerge optionalAttrs versionOlder;
   inherit (lib.my) mkDefault';
 in
 {
@@ -91,24 +91,6 @@ in
               preBuild = (old.preBuild or "") + "\nnpm run postinstall\n";
             });
           })
-          (final: prev:
-          let
-            # Bump nginx to a release with the NGINX2Root fixes until every pin ships one.
-            # TODO: Drop once all channels are past these versions.
-            bump = pkg: version: hash:
-              if prev.lib.versionOlder pkg.version version then
-                pkg.overrideAttrs {
-                  inherit version;
-                  src = final.fetchurl {
-                    url = "https://nginx.org/download/nginx-${version}.tar.gz";
-                    inherit hash;
-                  };
-                } else pkg;
-          in
-          {
-            nginxStable = bump prev.nginxStable "1.30.7" "sha256-JWW1yDcFDpWPcPsPc8SOK8pFQq00n9NW9G+wxyYQvG4=";
-            nginxMainline = bump prev.nginxMainline "1.31.9" "sha256-oRxe7uLiV/RHjw5kn4SwBAeH0nfS0+UjOVKqa23LgK0=";
-          })
         ];
         config = {
           allowUnfree = true;
@@ -131,6 +113,9 @@ in
         kernelPackages = mkDefault (lib.my.c.kernel.lts pkgs);
 
         # Containers share the host kernel. Block SCTP on the system that owns it.
+        # TODO: Lift once every kernel in use carries the NGINX2Root SCTP use-after-free fix,
+        # upstream f2540da93a11 ("sctp: do not free a new asoc peeled off while sendmsg slept").
+        # Not in 6.18.64 or 7.3.5 or their stable queues (checked 2026-11-22).
         extraModprobeConfig = mkIf (!config.boot.isContainer) ''
           install sctp ${pkgs.coreutils}/bin/false
         '';
@@ -162,8 +147,10 @@ in
 
         initrd = {
           systemd = {
-            enable = mkDefault true;
             emergencyAccess = mkDefault true;
+          } // optionalAttrs (versionOlder pkgsFlake.lib.trivial.release "26.11") {
+            # TODO: Remove when 26.11 is stable. Newer NixOS always uses systemd stage 1.
+            enable = mkDefault true;
           };
           services.lvm.enable = mkDefault true;
         };
@@ -202,7 +189,7 @@ in
 
       services = {
         # TODO: Remove if-else when 26.11 releases
-        kmscon = if (config.system.nixos.release == "26.08:u-26.11") then {
+        kmscon = if (pkgsFlake.lib.trivial.release == "26.11") then {
           enable = mkDefault false;
           config = {
             hwaccel = config.hardware.graphics.enable;

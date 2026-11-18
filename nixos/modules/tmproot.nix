@@ -1,8 +1,8 @@
-{ lib, pkgs, options, config, ... }:
+{ lib, pkgs, pkgsFlake, options, config, ... }:
 let
   inherit (lib)
     optionalString concatStringsSep concatMap concatMapStringsSep mkIf mkDefault mkMerge mkForce mkVMOverride
-    mkAliasDefinitions mapAttrsToList filterAttrs;
+    mkAliasDefinitions mapAttrsToList filterAttrs optionalAttrs versionOlder;
   inherit (lib.my) mkOpt' mkBoolOpt' mkVMOverride';
 
   cfg = config.my.tmproot;
@@ -232,33 +232,36 @@ in
           }
         ];
 
-        # Catch non-existent source directories that are needed for boot (see `pathsNeededForBoot` in
-        # nixos/lib/util.nix). We do this by monkey-patching the `waitDevice` function that would otherwise hang.
-        # Seems like systemd initrd doesn't care because it uses the systemd.mount units
-        # ("If this mount is a bind mount and the specified path does not exist yet it is created as directory.")
-        boot.initrd.postDeviceCommands = mkIf (!config.boot.initrd.systemd.enable) ''
-            ensurePersistSource() {
-              [ -e "/mnt-root$1" ] && return
-              echo "Persistent source directory $1 does not exist, creating..."
-              install -dm "$2" "/mnt-root$1" || fail
-            }
+        # TODO: Remove when 26.11 is stable. Newer NixOS has no scripted initrd.
+        boot = optionalAttrs (versionOlder pkgsFlake.lib.trivial.release "26.11") {
+          # Catch non-existent source directories that are needed for boot (see `pathsNeededForBoot` in
+          # nixos/lib/util.nix). We do this by monkey-patching the `waitDevice` function that would otherwise hang.
+          # Seems like systemd initrd doesn't care because it uses the systemd.mount units
+          # ("If this mount is a bind mount and the specified path does not exist yet it is created as directory.")
+          initrd.postDeviceCommands = mkIf (!config.boot.initrd.systemd.enable) ''
+              ensurePersistSource() {
+                [ -e "/mnt-root$1" ] && return
+                echo "Persistent source directory $1 does not exist, creating..."
+                install -dm "$2" "/mnt-root$1" || fail
+              }
 
-            _waitDevice() {
-              local device="$1"
+              _waitDevice() {
+                local device="$1"
 
-              ${concatMapStringsSep " || \\\n  " (d:
-                let
-                  sourceDir = "${d.persistentStoragePath}${d.directory}";
-                in
-                  ''([ "$device" = "/mnt-root${sourceDir}" ] && ensurePersistSource "${sourceDir}" "${d.mode}")'')
-                cfg.persistence.config.directories}
+                ${concatMapStringsSep " || \\\n  " (d:
+                  let
+                    sourceDir = "${d.persistentStoragePath}${d.directory}";
+                  in
+                    ''([ "$device" = "/mnt-root${sourceDir}" ] && ensurePersistSource "${sourceDir}" "${d.mode}")'')
+                  cfg.persistence.config.directories}
 
-              waitDevice "$@"
-            }
+                waitDevice "$@"
+              }
 
-            type waitDevice > /dev/null || (echo "waitDevice is missing!"; fail)
-            alias waitDevice=_waitDevice
-          '';
+              type waitDevice > /dev/null || (echo "waitDevice is missing!"; fail)
+              alias waitDevice=_waitDevice
+            '';
+        };
 
         environment.persistence."${cfg.persistence.dir}" = mkAliasDefinitions options.my.tmproot.persistence.config;
 
@@ -347,7 +350,7 @@ in
           }
         ];
       })
-      (mkIf config.services.minio.enable {
+      (mkIf (((options.services.minio or { }) ? enable) && config.services.minio.enable) {
         my.tmproot.persistence.config.directories = [
           {
             directory = config.services.minio.configDir;
@@ -546,9 +549,9 @@ in
 
         services.borgbackup.package = pkgs.borgbackup.overrideAttrs (o: {
           makeWrapperArgs = o.makeWrapperArgs ++ [
-            "--set-default BORG_BASE_DIR /var/lib/borgbackup"
-            "--set-default BORG_CONFIG_DIR /var/lib/borgbackup/config"
-            "--set-default BORG_CACHE_DIR /var/cache/borgbackup"
+            "--set-default" "BORG_BASE_DIR" "/var/lib/borgbackup"
+            "--set-default" "BORG_CONFIG_DIR" "/var/lib/borgbackup/config"
+            "--set-default" "BORG_CACHE_DIR" "/var/cache/borgbackup"
           ];
         });
       })

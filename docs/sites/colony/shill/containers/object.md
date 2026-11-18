@@ -5,7 +5,7 @@ Object storage and the Nix binary cache, plus HedgeDoc and wastebin.
 - **Source:** [`shill/containers/object.nix`](../../../../../nixos/boxes/colony/vms/shill/containers/object.nix)
 - **Host:** NixOS container on [`shill`](../README.md) (bind-mounts `/mnt/minio` and
   `/mnt/nix-cache` read-write)
-- **nixpkgs:** `mine`
+- **nixpkgs:** `mine`. The MinIO server, CLI, and service module come from `mine-stable`.
 
 ## Role
 

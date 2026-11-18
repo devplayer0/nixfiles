@@ -38,10 +38,9 @@
 
     # Determinate Nix, used as the common Nix implementation across systems, homes, the devshell and
     # CI (see lib.my.c.nix). We build it ourselves (FlakeHub's cache needs auth), so it flows through
-    # our own Harmonia cache like everything else. Keep its tested nixpkgs pin: its packaging carries
-    # compatibility patches that can conflict with newer nixpkgs patches.
+    # our own Harmonia cache like everything else. Let its own lockfile choose the tested nixpkgs
+    # revision because its packaging carries patches that can conflict with ours.
     determinate-nix.url = "https://flakehub.com/f/DeterminateSystems/nix-src/*";
-    determinate-nix.inputs.nixpkgs.url = "github:NixOS/nixpkgs/4382ed2b7a6839d4280a9b386db49cbc5907414d";
 
     # Stuff used by the flake for build / deployment
     # ragenix.url = "github:yaxitech/ragenix";

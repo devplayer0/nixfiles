@@ -7,6 +7,7 @@ in
   imports = [ ./containers ];
 
   nixos.systems.kelder = {
+    # Currently out of service. Defer live checks and service migrations until it returns.
     system = "x86_64-linux";
     nixpkgs = "mine";
     home-manager = "mine";

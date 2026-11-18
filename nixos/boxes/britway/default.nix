@@ -105,6 +105,9 @@ in
                   (networkdAssignment "as211024" assignments.as211024)
                   {
                     matchConfig.Name = "as211024";
+                    # The routing policy rule below holds this link in "configuring" until
+                    # tailscale0 exists, and tailscaled only starts once the network is online
+                    linkConfig.RequiredForOnline = "no";
                     networkConfig.IPv6AcceptRA = mkForce false;
                     routes = [
                       {

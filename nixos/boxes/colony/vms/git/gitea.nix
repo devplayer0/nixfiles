@@ -76,9 +76,9 @@ in
         mailerPasswordFile = config.age.secrets."gitea/mail.txt".path;
         settings = {
           server = {
-            DOMAIN = "git.${pubDomain}";
+            SSH_DOMAIN = "git.${pubDomain}";
             HTTP_ADDR = "::";
-            ROOT_URL = "https://git.${pubDomain}";
+            ROOT_URL = "https://git.${pubDomain}/";
           };
           service = {
             DISABLE_REGISTRATION = true;

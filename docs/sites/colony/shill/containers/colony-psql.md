@@ -5,7 +5,7 @@ database, the containers (and the `git` VM) connect here over the `ctrs` network
 
 - **Source:** [`shill/containers/colony-psql.nix`](../../../../../nixos/boxes/colony/vms/shill/containers/colony-psql.nix)
 - **Host:** NixOS container on [`shill`](../README.md)
-- **nixpkgs:** `mine`
+- **nixpkgs:** `mine-stable`. NixOS 26.05 still packages PostgreSQL 14.
 
 ## Role
 

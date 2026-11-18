@@ -62,7 +62,7 @@ in
         jack.enable = true;
       };
       dbus = {
-        packages = with pkgs; [ gcr ];
+        packages = [ (pkgs.gcr_3 or pkgs.gcr) ];
       };
       gnome = {
         gnome-keyring.enable = true;

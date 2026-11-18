@@ -53,6 +53,17 @@ the host.
 - Sets `system.nixos.distroName = "KelderOS"`, a custom Plymouth theme and an `amogus-beep`
   boot jingle ([`boot.nix`](../../../nixos/boxes/kelder/boot.nix)).
 
+## Returning to service
+
+kelder is out of service and missed the November 2026 upgrade's live checks. Before its first
+deploy after it returns:
+
+- Back up the `kelder-acquisition` state. The deploy moves Jellyfin to 12, Radarr to 7 and
+  Sonarr to 5, and each migrates its database on start. Check playback, a search, download and
+  import, and the Samba share afterwards.
+- Plan the `kelder-spoder` Nextcloud migration from its
+  [page](containers/kelder-spoder.md) and the TODO beside its `mine-stable` pin.
+
 ## Notable config files
 
 - [`nixos/boxes/kelder/default.nix`](../../../nixos/boxes/kelder/default.nix) — system, assignments, tunnel, NAT, containers.

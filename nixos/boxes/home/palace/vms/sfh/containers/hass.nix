@@ -143,7 +143,8 @@ in
                   };
                   record = {
                     enabled = true;
-                    retain.days = 1;
+                    continuous.days = 1;
+                    motion.days = 0;
                   };
                 };
 
@@ -158,7 +159,8 @@ in
                   detect.enabled = false;
                   record = {
                     enabled = true;
-                    retain.days = 1;
+                    continuous.days = 1;
+                    motion.days = 0;
                   };
                 };
               };

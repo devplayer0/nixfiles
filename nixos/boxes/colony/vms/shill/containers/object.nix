@@ -22,14 +22,28 @@ in
       };
     };
 
-    configuration = { lib, pkgs, config, assignments, ... }:
+    configuration = { lib, pkgs, pkgsFlakes, config, assignments, ... }:
     let
       inherit (lib) mkMerge mkIf mkForce;
       inherit (config.my.user.homeConfig.lib.file) mkOutOfStoreSymlink;
       inherit (lib.my) networkdAssignment systemdAwaitPostgres;
+
+      # TODO: Migrate the object store and remove this MinIO compatibility pin.
+      minioPkgs = import pkgsFlakes.mine-stable {
+        inherit (pkgs.stdenv.hostPlatform) system;
+        config.permittedInsecurePackages = [ "minio-2025-10-15T17-29-55Z" ];
+      };
+      # Unstable reserves services.minio for its removed-option diagnostic.
+      minioModule = import "${pkgsFlakes.mine-stable}/nixos/modules/services/web-servers/minio.nix" {
+        inherit lib;
+        pkgs = minioPkgs;
+        config = config // { services = config.services // { minio = config.my.minio; }; };
+      };
     in
     {
+      options.my.minio = minioModule.options.services.minio;
       config = mkMerge [
+        minioModule.config
         {
           fileSystems = {
             "/var/lib/harmonia" = {
@@ -42,6 +56,22 @@ in
           my = {
             deploy.enable = false;
             server.enable = true;
+
+            minio = {
+              enable = true;
+              region = "eu-central-1";
+              browser = true;
+              rootCredentialsFile = config.age.secrets."object/minio.env".path;
+              dataDir = [ "/mnt/minio" ];
+            };
+
+            tmproot.persistence.config.directories = mkIf (config.my.tmproot.persistence.dir != null) [
+              {
+                directory = config.my.minio.configDir;
+                user = "minio";
+                group = "minio";
+              }
+            ];
 
             secrets = {
               key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFdHbZErWLmTPO/aEWB1Fup/aGMf31Un5Wk66FJwTz/8";
@@ -150,24 +180,9 @@ in
             };
           };
 
-          environment = {
-            systemPackages = with pkgs; [
-              minio-client
-            ];
-          };
-
-          # TODO/FIXME: this is bad...
-          nixpkgs.config.permittedInsecurePackages = [ "minio-2025-10-15T17-29-55Z" ];
+          environment.systemPackages = [ minioPkgs.minio-client ];
 
           services = {
-            minio = {
-              enable = true;
-              region = "eu-central-1";
-              browser = true;
-              rootCredentialsFile = config.age.secrets."object/minio.env".path;
-              dataDir = [ "/mnt/minio" ];
-            };
-
             atticd = {
               enable = false;
               environmentFile = config.age.secrets."object/atticd.env".path;
