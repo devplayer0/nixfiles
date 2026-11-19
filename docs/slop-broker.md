@@ -16,6 +16,7 @@ it; for how it works, read the repository's
 |---|---|
 | [`palace`](sites/home/palace.md) | Runs the broker, its builder and the approvals web app's listener; holds the deploy key |
 | [`slop-cannon`](sites/home/slop-cannon.md) | The agents' VM; reaches the broker over vsock |
+| [`castle`](sites/home/castle.md) | Agents there are a requester over SSH; Dev also approves from it over SSH |
 | [`object`](sites/colony/shill/containers/object.md) | The binary cache that `slop build` pushes to |
 | [`middleman`](sites/colony/shill/containers/middleman.md) | Publishes the approvals web app at `approve.slop.nul.ie`, Pocket ID at `id.nul.ie` and Paseo's web app at `slop.nul.ie` |
 
@@ -41,6 +42,12 @@ target once it's merged.
 - **Devshell:** `slop` and `slop-approve`, built from the locked input. `slop` uses
   `.keys/slop-request.key` over SSH when that file exists; an approver key never goes in `.keys/`,
   because agents can read the checkout.
+
+## Other requesters and approvers
+
+`castle` uses [`programs.slop`](https://git.nul.ie/dev/slop-broker/src/branch/main/docs/design.md#other-requesters-and-approvers):
+its agents are the requester `castle` (same policy as `slop-cannon`), and Dev's approver key is
+`sshApprovers.castle`. Both log in to `palace` as `slop`.
 
 ## Binary cache
 
@@ -73,7 +80,7 @@ for simplicity.
 Each step updates this page, the box pages and `AGENTS.md` as it lands.
 
 1. **Done:** `slop.nul.ie`; the broker core, box queries, SSH transport, deploys and builds on
-   `palace`; Pocket ID at `id.nul.ie`.
+   `palace`; `castle` over SSH; Pocket ID at `id.nul.ie`.
 2. **Approvals web app:** remove the temporary `http://localhost:8095/auth/callback` from the
    `slop-approve` client, deploy `palace` and `middleman`.
 3. **Secrets:** the broker's age identity joins `.keys/dev.pub` in the recipients that

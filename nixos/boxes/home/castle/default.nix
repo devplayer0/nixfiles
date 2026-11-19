@@ -241,6 +241,19 @@ in
                 claude-code = {
                   enable = true;
                 };
+
+                # Try `slop-broker` from here; both keys are generated locally
+                slop = {
+                  host = "palace.${domain}";
+                  request = {
+                    enable = true;
+                    keyFile = "~/.ssh/slop-castle-request";
+                  };
+                  approve = {
+                    enable = true;
+                    keyFile = "~/.ssh/slop-castle-approve";
+                  };
+                };
               };
 
               services = {

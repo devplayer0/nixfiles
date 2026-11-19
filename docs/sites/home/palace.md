@@ -215,8 +215,10 @@ the agents on `slop-cannon` after policy and, usually, a human approve them.
   `palace/slop-broker-oidc-secret`); its sessions, push subscriptions and push signing key are in
   `/var/lib/slop-broker/web`. Deploys to the routers need a fresh passkey there.
 - Requesters and approvers on other boxes log in over SSH as `slop`, whose keys can only run the
-  broker's forced command (see the
-  [design](https://git.nul.ie/dev/slop-broker/src/branch/main/docs/design.md#other-requesters-and-approvers)).
+  broker's forced command (see
+  [Other requesters and approvers](../../slop-broker.md#other-requesters-and-approvers)). The
+  agents on `castle` are the requester `castle`, with the same policy as `slop-cannon`, and
+  `castle` also has an approver key (`sshApprovers.castle`).
 
 ## Notable config files
 
