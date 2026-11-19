@@ -42,10 +42,8 @@ in
         "Read(**/.keys/**)"
         "Edit(**/.keys/**)"
       ];
-      claudeAsk = [
-        "Bash(slop-deploy:*)"
-        "Bash(slop-ssh:*)"
-      ];
+      # The broker asks a human where policy says so; a second prompt here would only add noise
+      claudeAllow = [ "Bash(slop:*)" ];
 
       slopClone = pkgs.writeShellApplication {
         name = "slop-clone";
@@ -192,14 +190,17 @@ in
         };
 
         home-manager.users.${agentUser} = {
-          my.agents.enable = true;
+          my.agents = {
+            enable = true;
+            slop.enable = true;
+          };
 
           home.packages = [ slopClone slopPair ];
 
           programs = {
             claude-code.settings.permissions = {
+              allow = claudeAllow;
               deny = claudeDeny;
-              ask = claudeAsk;
             };
             codex.settings.cli_auth_credentials_store = "file";
 

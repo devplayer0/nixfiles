@@ -5,7 +5,7 @@ let
   inherit (lib.my.c.home) domain vlans prefixes vips vlanDns hiMTU;
 in
 {
-  imports = [ ./vms ];
+  imports = [ ./slop-broker.nix ./vms ];
 
   nixos.systems.palace = {
     system = "x86_64-linux";

@@ -27,6 +27,8 @@ feeds them SR-IOV VFs, PCI NVMe drives, LVM disks and an NVMe-oF disk.
   the `main` thin pool (`services.lvm.boot.thin.enable`).
 - AMD box (`kvm-amd`, `amd_iommu=on`, microcode updates); the kernel is built with
   `ACPI_APEI_PCIEAER`/`PCIEAER` for the PCIe passthrough work below.
+- Runs [`slop-broker`](../../slop-broker.md) for `slop-cannon`'s agents (see
+  [below](#slop-broker)).
 
 ## Network assignments
 
@@ -175,9 +177,27 @@ SPDK only checks the host NQN, which root in the guest could forge.
 - `devices/global_filter` rejects `/dev/nvme*` in `lvm.conf`, so `palace` never activates the
   guest's volume group (also called `main`). `palace` has no NVMe of its own.
 
+## `slop-broker`
+
+`palace` runs [`slop-broker`](../../slop-broker.md), which carries out privileged operations for
+the agents on `slop-cannon` after policy and, usually, a human approve them.
+
+- `slop-cannon` reaches it only over vsock: the VM has a `vhost-vsock-pci` device, and the broker
+  identifies it by that device's CID. Policy is set per operation in
+  [`palace/slop-broker.nix`](../../../nixos/boxes/home/palace/slop-broker.nix).
+- The broker holds the deploy key (age secret `palace/slop-broker-deploy.key`). That key is root on
+  every box, so `palace` must be treated as being as sensitive as a workstation with `.keys/`.
+- Answer requests on `palace` as `dev` with `slop-approve`. In a terminal it shows each request
+  in full, asks for an answer and waits for new ones; `slop-approve list` and
+  `slop-approve <id> <decision>` (any unique ID prefix) work from scripts. `slop-approve log`
+  shows recent requests, answers and results from the audit log
+  (`/var/lib/slop-broker/audit.jsonl`, also in the journal).
+
 ## Notable config files
 
 - [`nixos/boxes/home/palace/default.nix`](../../../nixos/boxes/home/palace/default.nix) — host
   hardware, networkd (links/bridges/SR-IOV), LVM.
 - [`nixos/boxes/home/palace/vms/default.nix`](../../../nixos/boxes/home/palace/vms/default.nix) —
   VM instances, boot ordering and `slop-cannon`'s disk connection.
+- [`nixos/boxes/home/palace/slop-broker.nix`](../../../nixos/boxes/home/palace/slop-broker.nix) —
+  the broker's policy for `slop-cannon`, its deploy key and the VM's vsock device.
