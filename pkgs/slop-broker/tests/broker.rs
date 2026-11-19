@@ -10,12 +10,12 @@ use tokio::io::DuplexStream;
 
 use slop_broker::config::Config;
 use slop_broker::proto::{
-    ApprovedBy, ClientMessage, Destination, OpResult, Operation, PROTOCOL_VERSION, Request, ServerMessage, Transport,
-    decode, encode, transport,
+    ApprovedBy, ClientMessage, Destination, OpResult, Operation, PROTOCOL_VERSION, Query, Request, ServerMessage,
+    Transport, decode, encode, transport,
 };
 use slop_broker::queue::Decision;
 use slop_broker::server::{Broker, handle};
-use slop_broker::types::Arg;
+use slop_broker::types::{Arg, Lines};
 
 const FAKE_SSH: &str = r#"#!/bin/sh
 echo $$ > "${0%/*}/pid"
@@ -126,8 +126,9 @@ async fn policy_can_deny_and_unlisted_operations_are_denied() {
 
     let mut client = Client::start(&broker, ssh(&["true"])).await;
     assert!(matches!(client.next(&mut String::new()).await, ServerMessage::Denied(_)));
-    let broker = self::broker(directory.path(), json!({}));
-    let mut client = Client::start(&broker, ssh(&["true"])).await;
+
+    let query = Operation::Query { destination: Destination::Node("river".parse().unwrap()), query: Query::Failed };
+    let mut client = Client::start(&broker, query).await;
     assert!(matches!(client.next(&mut String::new()).await, ServerMessage::Denied(_)));
 }
 
@@ -267,6 +268,31 @@ async fn disconnecting_kills_the_process() {
     tokio::time::sleep(Duration::from_millis(500)).await;
     let alive = unsafe { libc::kill(pid, 0) } == 0;
     assert!(!alive, "process {pid} survived its requester");
+}
+
+#[tokio::test]
+async fn queries_run_a_fixed_quoted_command_without_stdin() {
+    let directory = tempfile::tempdir().unwrap();
+    let broker = broker(directory.path(), json!({ "query": { "action": "auto" } }));
+
+    let query = Query::Logs {
+        unit: "nginx.service".parse().unwrap(),
+        lines: Lines::try_from(50).unwrap(),
+        since: Some("2h".parse().unwrap()),
+    };
+    let operation = Operation::Query { destination: Destination::Node("river".parse().unwrap()), query };
+
+    let mut client = Client::start(&broker, operation).await;
+    let mut output = String::new();
+
+    assert_eq!(client.next(&mut output).await, ServerMessage::Approved { by: ApprovedBy::Policy, stdin: false });
+    assert_eq!(client.next(&mut output).await, finished(3));
+    assert!(
+        output.contains(
+            "river.h.nul.ie journalctl --no-pager --output=short-iso --lines=50 --since=-7200s --unit=nginx.service"
+        ),
+        "{output}"
+    );
 }
 
 #[tokio::test]

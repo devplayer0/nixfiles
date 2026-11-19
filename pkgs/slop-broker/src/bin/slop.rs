@@ -9,10 +9,10 @@ use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use tokio::sync::mpsc;
 
 use slop_broker::proto::{
-    ApprovedBy, ClientMessage, DEFAULT_VSOCK_PORT, Destination, HOST_CID, OpResult, Operation, PROTOCOL_VERSION,
+    ApprovedBy, ClientMessage, DEFAULT_VSOCK_PORT, Destination, HOST_CID, OpResult, Operation, PROTOCOL_VERSION, Query,
     Request, ServerMessage, decode, encode, transport,
 };
-use slop_broker::types::{Arg, HostName, NodeName, UserName};
+use slop_broker::types::{Arg, HostName, Lines, NodeName, Since, UnitName, UserName};
 
 /// Exit status when the broker didn't run the operation (denied, expired, invalid or failed).
 const NOT_RUN: i32 = 125;
@@ -78,6 +78,29 @@ enum Command {
         #[arg(last = true)]
         command: Vec<Arg>,
     },
+    /// `systemctl status` on a box, of one unit or overall.
+    Status {
+        #[command(flatten)]
+        target: Target,
+        unit: Option<UnitName>,
+    },
+    /// A unit's journal on a box.
+    Logs {
+        #[command(flatten)]
+        target: Target,
+        unit: UnitName,
+        /// Lines to show (1-5000).
+        #[arg(short = 'n', long, default_value = "200")]
+        lines: Lines,
+        /// Start time: a duration back from now (30m, 2h, 1d) or a date (2026-01-31 12:00).
+        #[arg(long)]
+        since: Option<Since>,
+    },
+    /// Failed units on a box.
+    Failed {
+        #[command(flatten)]
+        target: Target,
+    },
     /// Show your pending requests and active leases.
     Requests,
     /// Print the guide for agents.
@@ -87,6 +110,13 @@ enum Command {
 fn operation(command: Command) -> Result<Operation> {
     Ok(match command {
         Command::Ssh { target, command } => Operation::Ssh { destination: target.destination()?, command },
+        Command::Status { target, unit } => {
+            Operation::Query { destination: target.destination()?, query: Query::Status { unit } }
+        }
+        Command::Logs { target, unit, lines, since } => {
+            Operation::Query { destination: target.destination()?, query: Query::Logs { unit, lines, since } }
+        }
+        Command::Failed { target } => Operation::Query { destination: target.destination()?, query: Query::Failed },
         Command::Requests => Operation::Requests,
         Command::Guide => unreachable!(),
     })

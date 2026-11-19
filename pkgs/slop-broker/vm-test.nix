@@ -34,7 +34,11 @@ pkgs.testers.runNixOSTest {
       my.slop-broker = {
         enable = true;
         approvers = [ "reviewer" ];
-        policies.agent.ops.ssh = { action = "ask"; leases = [ "5m" ]; rules = [ { match.target = "denied"; action = "deny"; } ]; };
+
+        policies.agent.ops = {
+          query.action = "auto";
+          ssh = { action = "ask"; leases = [ "5m" ]; rules = [ { match.target = "denied"; action = "deny"; } ]; };
+        };
         requesters.agent = {
           vsockCid = 1;
           policy = "agent";
@@ -56,6 +60,12 @@ pkgs.testers.runNixOSTest {
     # Denied by policy, without asking
     status, out = machine.execute(f"su agent -c \"{env} slop ssh denied -- true\" 2>&1")
     assert status == 125 and "denied by policy" in out, (status, out)
+
+    # Fixed queries run without asking
+    out = machine.succeed(f"su agent -c \"{env} slop status local sshd.service\"")
+    assert "sshd.service" in out, out
+    out = machine.succeed(f"su agent -c \"{env} slop logs local sshd.service -n 5 --since 1h\"")
+    print(out)
 
     # Ask, approve from a terminal, and see the real ssh run
     machine.execute(f"su agent -c \"{env} slop ssh local -- 'echo hi from \\$(whoami)'\" > /tmp/out 2>&1 &")

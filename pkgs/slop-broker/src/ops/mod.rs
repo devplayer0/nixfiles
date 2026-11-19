@@ -8,6 +8,7 @@ use crate::policy::Limits;
 use crate::proto::{LeaseSummary, OpResult, Operation, PendingSummary};
 use crate::server::Broker;
 
+pub mod query;
 pub mod ssh;
 
 pub struct Parsed {
@@ -64,6 +65,24 @@ pub fn plan(broker: &Broker, operation: Operation) -> Result<Parsed> {
                 operation,
             })
         }
+        Operation::Query { destination, query } => {
+            let config = broker.config.ssh.as_ref().context("SSH is not configured on this broker")?;
+            ssh::check(config, destination)?;
+            let mut scope = ssh::scope(destination);
+            scope.insert("query".into(), Value::from(query::name(query)));
+
+            Ok(Parsed {
+                op: "query",
+                scope,
+                summary: format!("{} on {}", query::name(query), ssh::describe(destination)),
+                detail: format!("Command: {}", shell_quote(&query::remote_command(query))),
+                limits: Limits::default(),
+                sensitive: false,
+                stdin: false,
+                builtin: false,
+                operation,
+            })
+        }
         Operation::Requests => Ok(Parsed {
             op: "requests",
             scope: Map::new(),
@@ -82,6 +101,9 @@ pub async fn execute(broker: &Broker, requester: &str, parsed: Parsed, io: &mut 
     match parsed.operation {
         Operation::Ssh { destination, command } => {
             ssh::execute(broker, &destination, &command, io).await.map(Into::into)
+        }
+        Operation::Query { destination, query } => {
+            query::execute(broker, &destination, &query, io).await.map(Into::into)
         }
         Operation::Requests => {
             let pending = broker

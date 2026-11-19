@@ -19,20 +19,25 @@ applies a policy, and asks a human to approve most requests.
 
 ## Commands
 
-| Command | What it does |
-|---|---|
-| `slop ssh <node> -- <command>…` | Run a command over SSH on a deploy node (as the deploy user, with `doas` for root). |
-| `slop ssh --host <user>@<host> [-p <port>] -- <command>…` | The same for a host outside the deploy nodes. |
-| `slop requests` | Your pending requests and active leases. |
+| Command | What it does | Approval |
+|---|---|---|
+| `slop status <node> [unit]` | `systemctl status`, of one unit or the whole box | usually none |
+| `slop logs <node> <unit> [-n 200] [--since 2h]` | A unit's journal; `--since` takes a duration or a date (`2026-01-31 12:00`) | usually none |
+| `slop failed <node>` | Failed units | usually none |
+| `slop ssh <node> -- <command>…` | Any command over SSH, as the deploy user (with `doas` for root) | asks |
+| `slop requests` | Your pending requests and active leases | none |
 
+- Prefer `status`, `logs` and `failed` to `slop ssh` for looking at a box: they don't wait for a
+  human.
+- Every box command also takes `--host <user>@<host> [-p <port>]` instead of a node, for hosts
+  outside the deploy nodes.
 - `--json` prints structured results (such as `slop requests`) as JSON.
-
-- The remote command is joined with spaces and run by the remote login shell, as with `ssh`. Boxes
-  usually use `fish`, so pipe multi-statement scripts through `bash`:
+- For `slop ssh`, the remote command is joined with spaces and run by the remote login shell, as
+  with `ssh`. Boxes usually use `fish`, so pipe multi-statement scripts through `bash`:
   `slop ssh <node> -- bash -s < script.sh`.
 - There is no TTY. Interactive programs won't work; use non-interactive flags (`--no-pager`,
   `-y`).
-- stdin is forwarded once the request is approved.
+- `slop ssh` forwards stdin once the request is approved.
 
 ## Don't
 

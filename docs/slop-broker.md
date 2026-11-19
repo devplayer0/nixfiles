@@ -314,7 +314,7 @@ Each step updates this page, the agent context and the box pages as it lands.
    messages, an operation registry (parse, scope, describe, execute, policy), the `slop` CLI, the
    audit log, and the existing SSH and Home Assistant support ported over. Run it on `palace` with
    the VM's CID.
-3. **Box queries** as `auto` operations.
+3. **Done — box queries** as `auto` operations.
 4. **Deploy executor and `slop build`:** fetch from Gitea, build as `slop-broker-build`, push to
    the main cache, run deploy-rs.
 5. **Secrets:** the broker's age identity, a one-off rekey, then the operations.

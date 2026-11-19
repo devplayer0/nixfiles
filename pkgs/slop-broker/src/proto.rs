@@ -15,7 +15,7 @@ use tokio_util::codec::{Framed, LengthDelimitedCodec};
 
 use crate::audit::Record;
 use crate::queue::{Decision, PendingInfo};
-use crate::types::{Arg, HostName, NodeName, UserName};
+use crate::types::{Arg, HostName, Lines, NodeName, Since, UnitName, UserName};
 
 /// Bumped on any incompatible change; the broker refuses other versions.
 pub const PROTOCOL_VERSION: u32 = 1;
@@ -46,6 +46,8 @@ pub struct Request {
 pub enum Operation {
     /// A command over SSH, joined with spaces and run by the remote shell (as `ssh` does).
     Ssh { destination: Destination, command: Vec<Arg> },
+    /// A fixed read-only query, run over SSH with a command the broker builds.
+    Query { destination: Destination, query: Query },
     /// This requester's pending requests and leases.
     Requests,
 }
@@ -60,6 +62,21 @@ pub enum Destination {
         host: HostName,
         port: NonZeroU16,
     },
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub enum Query {
+    /// `systemctl status`, of one unit or of the whole box.
+    Status {
+        unit: Option<UnitName>,
+    },
+    Logs {
+        unit: UnitName,
+        lines: Lines,
+        since: Option<Since>,
+    },
+    Failed,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -203,9 +220,9 @@ mod tests {
         let request = ClientMessage::Request(Request {
             version: PROTOCOL_VERSION,
             label: Some("test".into()),
-            operation: Operation::Ssh {
+            operation: Operation::Query {
                 destination: Destination::Node("river".parse().unwrap()),
-                command: vec!["uptime".parse().unwrap()],
+                query: Query::Logs { unit: "nginx.service".parse().unwrap(), lines: Lines::DEFAULT, since: None },
             },
         });
 

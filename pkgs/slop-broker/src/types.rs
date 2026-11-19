@@ -95,11 +95,83 @@ validated_string!(
 );
 
 validated_string!(
+    /// A systemd unit name, including `\x2d`-style escapes; never an option.
+    UnitName,
+    "unit name",
+    |s| {
+        let b = s.as_bytes();
+        !b.is_empty()
+            && b.len() <= 256
+            && b[0] != b'-'
+            && b.iter().all(|&c| c.is_ascii_alphanumeric() || b":_.@-\\".contains(&c))
+            && !s.contains("\\\\")
+    }
+);
+
+validated_string!(
     /// One word of a command; anything but NUL.
     Arg,
     "argument",
     |s| !s.contains('\0')
 );
+
+validated_string!(
+    /// A journal start: a duration back from now (`30m`, `2h`, `1d`) or a date
+    /// (`YYYY-MM-DD[ HH:MM[:SS]]`).
+    Since,
+    "time (use a duration like 2h or a date like 2026-01-31 12:00)",
+    |s| {
+        if crate::queue::parse_duration(s).is_some() {
+            return true;
+        }
+        let b = s.as_bytes();
+        (10..=19).contains(&b.len()) && b[..4].iter().all(u8::is_ascii_digit) && b.iter().all(|&c| c.is_ascii_digit() || b"-: ".contains(&c))
+    }
+);
+
+impl Since {
+    /// The value `journalctl --since` takes.
+    pub fn journalctl(&self) -> String {
+        match crate::queue::parse_duration(self) {
+            Some(seconds) => format!("-{seconds}s"),
+            None => self.0.clone(),
+        }
+    }
+}
+
+/// Journal lines to show, 1 to 5000.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(try_from = "u32", into = "u32")]
+pub struct Lines(u32);
+
+impl Lines {
+    pub const DEFAULT: Lines = Lines(200);
+    pub const MAX: u32 = 5000;
+
+    pub fn get(self) -> u32 {
+        self.0
+    }
+}
+
+impl TryFrom<u32> for Lines {
+    type Error = String;
+    fn try_from(value: u32) -> Result<Self, String> {
+        if (1..=Self::MAX).contains(&value) { Ok(Lines(value)) } else { Err(format!("lines must be 1-{}", Self::MAX)) }
+    }
+}
+
+impl FromStr for Lines {
+    type Err = String;
+    fn from_str(value: &str) -> Result<Self, String> {
+        value.parse::<u32>().map_err(|e| e.to_string()).and_then(Lines::try_from)
+    }
+}
+
+impl From<Lines> for u32 {
+    fn from(value: Lines) -> u32 {
+        value.0
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -121,10 +193,33 @@ mod tests {
     }
 
     #[test]
+    fn units() {
+        assert!("nginx.service".parse::<UnitName>().is_ok());
+        assert!("container@hass.service".parse::<UnitName>().is_ok());
+        assert!(r"dev-disk-by\x2duuid-1.device".parse::<UnitName>().is_ok());
+        assert!("-H".parse::<UnitName>().is_err());
+        assert!("a;b".parse::<UnitName>().is_err());
+        assert!(r"a\\b".parse::<UnitName>().is_err());
+    }
+
+    #[test]
+    fn since_and_lines() {
+        assert_eq!("2h".parse::<Since>().unwrap().journalctl(), "-7200s");
+        assert_eq!("2026-01-31 12:00".parse::<Since>().unwrap().journalctl(), "2026-01-31 12:00");
+        assert!("yesterday; reboot".parse::<Since>().is_err());
+        assert!("-1h".parse::<Since>().is_err());
+        assert!("0".parse::<Lines>().is_err());
+        assert!("5001".parse::<Lines>().is_err());
+        assert_eq!("50".parse::<Lines>().unwrap().get(), 50);
+    }
+
+    #[test]
     fn deserializing_validates() {
         let ok: Result<NodeName, _> = serde_json::from_str("\"river\"");
         assert!(ok.is_ok());
         let bad: Result<NodeName, _> = serde_json::from_str("\"-x\"");
+        assert!(bad.is_err());
+        let bad: Result<Lines, _> = serde_json::from_str("0");
         assert!(bad.is_err());
     }
 }
