@@ -1,51 +1,67 @@
-//! The approver socket and the `slop-approve` client, using the same framing and encoding as
-//! requesters ([`ApproveRequest`] in, [`ApproveResponse`] out).
-use std::path::Path;
+//! Approvers' connections and the `slop-approve` client, using the same framing and encoding as
+//! requesters: any number of [`ApproveRequest`]s, each answered with an [`ApproveResponse`].
 use std::sync::Arc;
 use std::time::Duration;
 
 use anyhow::{Result, anyhow, bail};
-use tokio::net::{UnixListener, UnixStream};
+use tokio::io::{AsyncRead, AsyncWrite};
+use tokio::net::UnixListener;
 
 use crate::audit::{Event, short};
 use crate::config::user_name;
-use crate::proto::{ApproveRequest, ApproveResponse, MAX_LOG_RECORDS, receive, send, transport};
+use crate::proto::{ApproveRequest, ApproveResponse, MAX_LOG_RECORDS, Transport, receive, send, transport};
 use crate::queue::{Decision, PendingInfo};
+use crate::remote::{Role, Stream, connect};
 use crate::server::Broker;
 
-/// Socket permissions admit approvers; requesters are refused even if misconfigured into the group.
+pub const DEFAULT_ADDRESS: &str = "unix:/run/slop-broker/approve.sock";
+
+/// The local approve socket. Its permissions admit approvers; requesters are refused even if
+/// misconfigured into the group.
 pub async fn listen(broker: Arc<Broker>, listener: UnixListener) -> Result<()> {
     loop {
         let (stream, _) = listener.accept().await?;
+        let uid = stream.peer_cred()?.uid();
+        if let Some(requester) = broker.config.requester_by_uid(uid) {
+            broker.audit.log(Event::Unknown { peer: format!("requester {requester} on the approve socket") });
+            continue;
+        }
+
         let broker = broker.clone();
         tokio::spawn(async move {
-            let _ = serve(broker, stream).await;
+            let _ = serve(broker, stream, user_name(uid)).await;
         });
     }
 }
 
-async fn serve(broker: Arc<Broker>, stream: UnixStream) -> Result<()> {
-    let uid = stream.peer_cred()?.uid();
+/// Answers `approver`'s requests until it disconnects.
+pub async fn serve<S: AsyncRead + AsyncWrite + Unpin>(broker: Arc<Broker>, stream: S, approver: String) -> Result<()> {
     let mut transport = transport(stream);
-    let request = tokio::time::timeout(Duration::from_secs(10), receive::<_, ApproveRequest>(&mut transport)).await;
-    let response = match request {
-        Ok(Ok(Some(request))) => {
-            answer(&broker, uid, request).unwrap_or_else(|e| ApproveResponse::Error(format!("{e:#}")))
-        }
-        Ok(Err(error)) => ApproveResponse::Error(format!("{error:#}")),
-        _ => return Ok(()),
-    };
-    send(&mut transport, &response).await
+    let first = tokio::time::timeout(Duration::from_secs(10), receive::<_, ApproveRequest>(&mut transport)).await;
+    let mut request = first.unwrap_or(Ok(None));
+
+    loop {
+        let response = match request {
+            Ok(Some(request)) => {
+                answer(&broker, &approver, request).unwrap_or_else(|e| ApproveResponse::Error(format!("{e:#}")))
+            }
+            Ok(None) => return Ok(()),
+            Err(error) => {
+                // The stream can't be trusted after a bad frame.
+                return send(&mut transport, &ApproveResponse::Error(format!("{error:#}"))).await;
+            }
+        };
+
+        send(&mut transport, &response).await?;
+        request = receive(&mut transport).await;
+    }
 }
 
-fn answer(broker: &Broker, uid: u32, request: ApproveRequest) -> Result<ApproveResponse> {
-    if broker.config.requester_by_uid(uid).is_some() {
-        bail!("requesters cannot approve");
-    }
+fn answer(broker: &Broker, approver: &str, request: ApproveRequest) -> Result<ApproveResponse> {
     match request {
         ApproveRequest::List => Ok(ApproveResponse::Pending(broker.queue.list())),
         ApproveRequest::Decide { id, decision } => {
-            approve(broker, &id, decision, &user_name(uid))?;
+            approve(broker, &id, decision, approver)?;
             Ok(ApproveResponse::Recorded)
         }
         ApproveRequest::Log { count } => Ok(ApproveResponse::Log(broker.audit.tail(count.min(MAX_LOG_RECORDS))?)),
@@ -65,21 +81,28 @@ pub fn approve(broker: &Broker, id: &str, decision: Decision, approver: &str) ->
     Ok(())
 }
 
-async fn call(socket: &Path, request: ApproveRequest) -> Result<ApproveResponse> {
-    let stream = UnixStream::connect(socket).await.map_err(|e| anyhow!("connecting to {}: {e}", socket.display()))?;
-    let mut transport = transport(stream);
-    send(&mut transport, &request).await?;
-    match receive(&mut transport).await? {
-        Some(ApproveResponse::Error(error)) => bail!("{error}"),
-        Some(response) => Ok(response),
-        None => bail!("the broker closed the connection"),
-    }
-}
+/// The client's one connection to the broker.
+pub struct Client(Transport<Box<dyn Stream>>);
 
-async fn list(socket: &Path) -> Result<Vec<PendingInfo>> {
-    match call(socket, ApproveRequest::List).await? {
-        ApproveResponse::Pending(entries) => Ok(entries),
-        _ => bail!("unexpected response from the broker"),
+impl Client {
+    pub async fn connect(address: &str) -> Result<Client> {
+        Ok(Client(transport(connect(address, Role::Approver).await?)))
+    }
+
+    async fn call(&mut self, request: ApproveRequest) -> Result<ApproveResponse> {
+        send(&mut self.0, &request).await?;
+        match receive(&mut self.0).await? {
+            Some(ApproveResponse::Error(error)) => bail!("{error}"),
+            Some(response) => Ok(response),
+            None => bail!("the broker closed the connection"),
+        }
+    }
+
+    async fn list(&mut self) -> Result<Vec<PendingInfo>> {
+        match self.call(ApproveRequest::List).await? {
+            ApproveResponse::Pending(entries) => Ok(entries),
+            _ => bail!("unexpected response from the broker"),
+        }
     }
 }
 
@@ -125,40 +148,50 @@ const USAGE: &str = "usage: slop-approve                    answer requests one 
        slop-approve <decision>         answer the only pending request
        slop-approve log [-n 50] [--json]
                                        recent requests, decisions and results
-IDs can be shortened to any unique prefix.";
+IDs can be shortened to any unique prefix. SLOP_APPROVE, or approve in ~/.config/slop/config.toml,
+selects the broker: unix:<path> (the default is unix:/run/slop-broker/approve.sock) or
+ssh:<destination>.";
 
-pub async fn main(socket: &Path, args: &[String]) -> Result<()> {
+pub async fn main(address: &str, args: &[String]) -> Result<()> {
     use std::io::IsTerminal;
+
+    if let [help] = args
+        && ["help", "--help", "-h"].contains(&help.as_str())
+    {
+        println!("{USAGE}");
+        return Ok(());
+    }
+
+    let client = &mut Client::connect(address).await?;
     match args {
-        [] if std::io::stdin().is_terminal() && std::io::stdout().is_terminal() => interactive(socket).await?,
-        [] => print_list(socket).await?,
-        [list] if list == "list" => print_list(socket).await?,
-        [help] if help == "help" || help == "--help" || help == "-h" => println!("{USAGE}"),
-        [log, options @ ..] if log == "log" => print_log(socket, options).await?,
+        [] if std::io::stdin().is_terminal() && std::io::stdout().is_terminal() => interactive(client).await?,
+        [] => print_list(client).await?,
+        [list] if list == "list" => print_list(client).await?,
+        [log, options @ ..] if log == "log" => print_log(client, options).await?,
         [show, id] if show == "show" => {
-            let entries = list(socket).await?;
+            let entries = client.list().await?;
             print!("{}", format(resolve(&entries, id)?, true));
         }
         [decision] => {
             let decision = Decision::parse(decision).map_err(|_| anyhow!("{USAGE}"))?;
-            let entries = list(socket).await?;
+            let entries = client.list().await?;
             let [entry] = entries.as_slice() else {
                 bail!("{} requests are pending; give an ID", entries.len());
             };
-            decide(socket, &entry.id, decision).await?;
+            decide(client, &entry.id, decision).await?;
         }
         [id, decision] => {
             let decision = Decision::parse(decision)?;
-            let entries = list(socket).await?;
-            decide(socket, &resolve(&entries, id)?.id, decision).await?;
+            let entries = client.list().await?;
+            decide(client, &resolve(&entries, id)?.id, decision).await?;
         }
         _ => bail!("{USAGE}"),
     }
     Ok(())
 }
 
-async fn print_list(socket: &Path) -> Result<()> {
-    let entries = list(socket).await?;
+async fn print_list(client: &mut Client) -> Result<()> {
+    let entries = client.list().await?;
     if entries.is_empty() {
         println!("No pending requests.");
     }
@@ -169,7 +202,7 @@ async fn print_list(socket: &Path) -> Result<()> {
     Ok(())
 }
 
-async fn print_log(socket: &Path, options: &[String]) -> Result<()> {
+async fn print_log(client: &mut Client, options: &[String]) -> Result<()> {
     let (mut count, mut json) = (50, false);
     let mut options = options.iter();
     while let Some(option) = options.next() {
@@ -185,7 +218,8 @@ async fn print_log(socket: &Path, options: &[String]) -> Result<()> {
             _ => bail!("{USAGE}"),
         }
     }
-    let ApproveResponse::Log(records) = call(socket, ApproveRequest::Log { count }).await? else {
+
+    let ApproveResponse::Log(records) = client.call(ApproveRequest::Log { count }).await? else {
         bail!("unexpected response from the broker");
     };
 
@@ -199,21 +233,21 @@ async fn print_log(socket: &Path, options: &[String]) -> Result<()> {
     Ok(())
 }
 
-async fn decide(socket: &Path, id: &str, decision: Decision) -> Result<()> {
-    call(socket, ApproveRequest::Decide { id: id.to_owned(), decision }).await?;
+async fn decide(client: &mut Client, id: &str, decision: Decision) -> Result<()> {
+    client.call(ApproveRequest::Decide { id: id.to_owned(), decision }).await?;
     println!("Recorded: {} for {}.", decision.name(), short(id));
     Ok(())
 }
 
 /// Shows pending requests one at a time and asks for an answer, then waits for more.
-async fn interactive(socket: &Path) -> Result<()> {
+async fn interactive(client: &mut Client) -> Result<()> {
     use tokio::io::{AsyncBufReadExt, BufReader};
     let mut input = BufReader::new(tokio::io::stdin()).lines();
     let mut skipped = std::collections::HashSet::new();
     let mut waiting = false;
 
     loop {
-        let entries = list(socket).await?;
+        let entries = client.list().await?;
         skipped.retain(|id| entries.iter().any(|e| &e.id == id));
         let Some(entry) = entries.iter().find(|e| !skipped.contains(&e.id)) else {
             if !waiting {
@@ -259,7 +293,7 @@ async fn interactive(socket: &Path) -> Result<()> {
             };
 
             // The request may have expired or been answered elsewhere while waiting.
-            if let Err(error) = decide(socket, &entry.id, decision).await {
+            if let Err(error) = decide(client, &entry.id, decision).await {
                 println!("{error:#}");
             }
             break;

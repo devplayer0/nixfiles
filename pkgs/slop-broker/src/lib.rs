@@ -9,5 +9,6 @@ pub mod ops;
 pub mod policy;
 pub mod proto;
 pub mod queue;
+pub mod remote;
 pub mod server;
 pub mod types;

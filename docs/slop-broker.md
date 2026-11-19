@@ -7,10 +7,11 @@ identity for secrets, the binary cache and the Cloudflare API. It is built for t
 it requests through the `slop` CLI, and it carries out each one under a policy, usually after Dev
 approves it from a terminal or the phone.
 
-**Status:** in progress. The broker core and `slop ssh` run on `palace` for `slop-cannon`; the
-other operations here are planned (see [Implementation plan](#implementation-plan)). The code is in
-[`pkgs/slop-broker`](../pkgs/slop-broker) (Rust), the service is `my.slop-broker`, and `palace`'s
-configuration is [`palace/slop-broker.nix`](../nixos/boxes/home/palace/slop-broker.nix).
+**Status:** in progress. The broker core, the box queries, `slop ssh` and the SSH transport are
+done; the other operations here are planned (see [Implementation plan](#implementation-plan)).
+The code is in [`pkgs/slop-broker`](../pkgs/slop-broker) (Rust), the service is
+`my.slop-broker`, and `palace`'s configuration is
+[`palace/slop-broker.nix`](../nixos/boxes/home/palace/slop-broker.nix).
 
 ## Trust model
 
@@ -48,18 +49,36 @@ configuration is [`palace/slop-broker.nix`](../nixos/boxes/home/palace/slop-brok
 - The VM never connects to the broker over the network. This keeps the `untrusted` VLAN filter on
   the routers unchanged.
 
-### Other requesters
+### Other requesters and approvers
 
-Agents on other boxes (for example Claude Code on a workstation) connect with SSH instead of
-vsock. That reuses `sshd` for authentication and stream handling.
+Requesters and approvers on other boxes connect with SSH instead of vsock. That reuses `sshd` for
+authentication and stream handling.
 
-- Each requester has its own key in `slop-broker`'s `authorized_keys` on `palace`, with a forced
-  command that names the requester. The key only allows making requests, so it's fine for the
-  agents on that box to be able to read it.
+- They log in as `slop` on `palace`. Each key has a forced command,
+  `slop-broker remote <requester|approver> <name>`, set from `requesters.<name>.sshKeys` or
+  `sshApprovers.<name>`. It connects to the broker's remote socket, which only `slop` can use, and
+  tells the broker whose key it is. The broker trusts that the same way it trusts a CID.
+- A key does one job. The module refuses the same key as both requester and approver, and the
+  client says which job it wants (`ssh … request` or `ssh … approve`), so a key used with the
+  wrong client fails with a clear error.
+- A requester key only allows making requests, so it's fine for the agents on that box to be able
+  to read it. An approver key must be out of their reach.
 - Each requester names a policy. `slop-cannon` is identified by its CID, the others by their
   key. For example, workstations might share a policy that only allows `dns`, the box queries
   and `requests`.
-- The `slop` CLI picks the transport: vsock when it's present, otherwise SSH to `palace`.
+- `slop` connects to `$SLOP_BROKER`, else `broker` in `~/.config/slop/config.toml`, else vsock;
+  `slop-approve` likewise uses `$SLOP_APPROVE`, else `approve`, else `approve.sock` on the box.
+  An `ssh:<destination>` address goes to `ssh` as is, so a `Host` entry with `IdentitiesOnly` can
+  pick the right key when a box has both kinds. `SLOP_SSH` replaces the `ssh` command, like
+  `GIT_SSH_COMMAND`.
+- The `my.slop` home-manager module sets this up: `my.slop.request` and `my.slop.approve` each take
+  a key file, and get the `slop-request` and `slop-approve` `Host` entries and the config file
+  pointing at them. A config file rather than session variables, because shells started before a
+  switch don't see new variables.
+- The nixfiles devshell has `slop` and `slop-approve` too, built from the checkout so they match
+  the branch. Its `slop` uses `.keys/slop-request.key` over SSH when that file exists, so a
+  checkout without the other keys only needs that one; otherwise it behaves like the installed
+  client. An approver key never goes in `.keys/`: agents can read the checkout.
 
 ## The `slop` CLI
 
@@ -87,8 +106,8 @@ automatically where it can. Approvals show it marked as agent-supplied.
   secret path.
 - Policies are named in `my.slop-broker.policies`, and each requester picks one with `policy`,
   so several requesters, for example agents on different boxes, can share the same rules.
-- An `ask` request waits up to five minutes for an answer from `slop-approve` on `palace` or a
-  Home Assistant Companion notification. The answers are **once**, a **lease** (the same scope
+- An `ask` request waits up to five minutes for an answer from `slop-approve` (on `palace`, or
+  over SSH from another box) or a Home Assistant Companion notification. The answers are **once**, a **lease** (the same scope
   is approved for a while, for example 5 min or 1 h, and only lengths the policy allows are
   offered) or **deny**.
 - `auto` operations are rate-limited per requester, so a looping agent can't hammer boxes or APIs.
@@ -315,11 +334,11 @@ Each step updates this page, the agent context and the box pages as it lands.
    audit log, and the existing SSH and Home Assistant support ported over. Run it on `palace` with
    the VM's CID.
 3. **Done — box queries** as `auto` operations.
-4. **Deploy executor and `slop build`:** fetch from Gitea, build as `slop-broker-build`, push to
+4. **Done — SSH transport** for requesters and approvers on other boxes.
+5. **Deploy executor and `slop build`:** fetch from Gitea, build as `slop-broker-build`, push to
    the main cache, run deploy-rs.
-5. **Secrets:** the broker's age identity, a one-off rekey, then the operations.
-6. **DNS**, with its Cloudflare token.
-7. **SSH transport for other requesters.**
+6. **Secrets:** the broker's age identity, a one-off rekey, then the operations.
+7. **DNS**, with its Cloudflare token.
 8. **Previews.**
 9. **TCP forwards and the VM-built cache**, if needed.
 

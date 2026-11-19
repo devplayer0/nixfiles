@@ -5,7 +5,8 @@ use std::sync::Arc;
 use anyhow::{Context, Result};
 use clap::Parser;
 
-use slop_broker::config::{Config, credential, group_id};
+use slop_broker::config::{Config, credential, group_id, user_id};
+use slop_broker::remote::{self, Role};
 use slop_broker::server::{self, Broker};
 use slop_broker::{approve, ha};
 
@@ -19,13 +20,19 @@ enum Command {
     },
     /// Answer requests (also available as `slop-approve`).
     Approve {
-        #[arg(long, default_value = DEFAULT_APPROVE_SOCKET)]
-        socket: PathBuf,
+        /// unix:<path> or ssh:<destination>; defaults like `slop-approve`'s.
+        #[arg(long)]
+        broker: Option<String>,
         args: Vec<String>,
     },
+    /// Forced command for SSH keys: joins the session to the broker as the key's owner.
+    Remote {
+        #[arg(long, default_value = "/run/slop-broker/remote.sock")]
+        socket: PathBuf,
+        role: Role,
+        name: String,
+    },
 }
-
-const DEFAULT_APPROVE_SOCKET: &str = "/run/slop-broker/approve.sock";
 
 #[tokio::main]
 async fn main() {
@@ -33,17 +40,22 @@ async fn main() {
     let name = args.first().and_then(|a| a.rsplit('/').next()).unwrap_or_default().to_owned();
 
     let result = if name == "slop-approve" {
-        let socket =
-            std::env::var_os("SLOP_APPROVE_SOCKET").map(PathBuf::from).unwrap_or(DEFAULT_APPROVE_SOCKET.into());
         approve_cli();
-        approve::main(&socket, &args.split_off(1)).await
+        match remote::address(Role::Approver, approve::DEFAULT_ADDRESS) {
+            Ok(address) => approve::main(&address, &args.split_off(1)).await,
+            Err(error) => Err(error),
+        }
     } else {
         match Command::parse() {
             Command::Serve { config } => serve(&config).await,
-            Command::Approve { socket, args } => {
+            Command::Approve { broker, args } => {
                 approve_cli();
-                approve::main(&socket, &args).await
+                match broker.map_or_else(|| remote::address(Role::Approver, approve::DEFAULT_ADDRESS), Ok) {
+                    Ok(address) => approve::main(&address, &args).await,
+                    Err(error) => Err(error),
+                }
             }
+            Command::Remote { socket, role, name } => remote::bridge(&socket, role, name).await,
         }
     };
 
@@ -84,11 +96,24 @@ async fn serve(path: &Path) -> Result<()> {
         None => None,
     };
 
+    let remote_listener = match &config.remote {
+        Some(settings) => {
+            server::check_runtime_dir(&settings.socket)?;
+            // Open to the SSH user's group; connections from anyone but the user are refused.
+            let (uid, gid) = user_id(&settings.user)?;
+            Some((server::bind_unix(&settings.socket, 0o660, Some(gid))?, uid))
+        }
+        None => None,
+    };
+
     let broker = Arc::new(Broker::new(config)?);
     let mut tasks = tokio::task::JoinSet::new();
     tasks.spawn(approve::listen(broker.clone(), approve_listener));
     if let Some(listener) = request_listener {
         tasks.spawn(server::listen_unix(broker.clone(), listener));
+    }
+    if let Some((listener, uid)) = remote_listener {
+        tasks.spawn(remote::listen(broker.clone(), listener, uid));
     }
     if let Some(port) = broker.config.vsock_port {
         tasks.spawn(server::listen_vsock(broker.clone(), port));

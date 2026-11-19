@@ -9,11 +9,13 @@ use serde_json::json;
 use tokio::io::DuplexStream;
 
 use slop_broker::config::Config;
+use slop_broker::proto::{ApproveRequest, ApproveResponse, receive, send};
 use slop_broker::proto::{
     ApprovedBy, ClientMessage, Destination, OpResult, Operation, PROTOCOL_VERSION, Query, Request, ServerMessage,
     Transport, decode, encode, transport,
 };
 use slop_broker::queue::Decision;
+use slop_broker::remote::{Hello, Role, write_hello};
 use slop_broker::server::{Broker, handle};
 use slop_broker::types::{Arg, Lines};
 
@@ -34,12 +36,13 @@ fn broker(directory: &Path, ops: serde_json::Value) -> Arc<Broker> {
     std::fs::set_permissions(&ssh, std::fs::Permissions::from_mode(0o755)).unwrap();
 
     let config: Config = serde_json::from_value(json!({
-        "requesters": { "agent": { "policy": "agent" } },
+        "requesters": { "agent": { "remote": true, "policy": "agent" } },
         "policies": { "agent": { "ops": ops } },
         "timeout": 2,
         "approve_socket": "/unused",
         "approver_group": "root",
         "audit_log": directory.join("audit.jsonl"),
+        "remote": { "socket": "/unused", "user": "root", "approvers": ["laptop"] },
         "ssh": {
             "ssh": ssh,
             "key": "/key",
@@ -314,5 +317,49 @@ async fn requests_lists_pending_and_leases() {
             assert!(leases.is_empty());
         }
         other => panic!("unexpected {other:?}"),
+    }
+}
+
+/// Connects to the remote socket the way `slop-broker remote` does.
+async fn remote(path: &Path, role: Role, name: &str) -> Transport<tokio::net::UnixStream> {
+    let mut stream = tokio::net::UnixStream::connect(path).await.unwrap();
+    write_hello(&mut stream, &Hello { role, name: name.into() }).await.unwrap();
+    transport(stream)
+}
+
+#[tokio::test]
+async fn remote_requesters_and_approvers_use_one_socket() {
+    let directory = tempfile::tempdir().unwrap();
+    let broker = broker(directory.path(), json!({ "ssh": { "action": "ask" } }));
+    let path = directory.path().join("remote.sock");
+    let listener = tokio::net::UnixListener::bind(&path).unwrap();
+    tokio::spawn(slop_broker::remote::listen(broker.clone(), listener, unsafe { libc::geteuid() }));
+
+    let mut requester = remote(&path, Role::Requester, "agent").await;
+    let request = ClientMessage::Request(Request { version: PROTOCOL_VERSION, label: None, operation: ssh(&["true"]) });
+    send(&mut requester, &request).await.unwrap();
+    let Some(ServerMessage::Pending { id, .. }) = receive(&mut requester).await.unwrap() else { panic!("not pending") };
+
+    // One approver connection carries several requests.
+    let mut approver = remote(&path, Role::Approver, "laptop").await;
+    send(&mut approver, &ApproveRequest::List).await.unwrap();
+    let Some(ApproveResponse::Pending(entries)) = receive(&mut approver).await.unwrap() else { panic!("no list") };
+    assert_eq!(entries[0].id, id);
+
+    send(&mut approver, &ApproveRequest::Decide { id: id.clone(), decision: Decision::Once }).await.unwrap();
+    assert!(matches!(receive(&mut approver).await.unwrap(), Some(ApproveResponse::Recorded)));
+    assert!(matches!(
+        receive::<_, ServerMessage>(&mut requester).await.unwrap(),
+        Some(ServerMessage::Approved { by: ApprovedBy::Approver, .. })
+    ));
+
+    let events: Vec<String> = broker.audit.tail(10).unwrap().iter().map(|r| r.event.to_string()).collect();
+    assert!(events.iter().any(|e| e.ends_with("answered once by laptop (ssh)")), "{events:?}");
+
+    // Names must be configured for the role they claim.
+    for (role, name) in [(Role::Approver, "agent"), (Role::Requester, "laptop")] {
+        let mut stream = remote(&path, role, name).await;
+        let _ = send(&mut stream, &ApproveRequest::List).await;
+        assert!(receive::<_, ApproveResponse>(&mut stream).await.map_or(true, |r| r.is_none()));
     }
 }

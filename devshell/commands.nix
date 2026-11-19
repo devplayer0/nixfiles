@@ -36,6 +36,27 @@ in
       command = "rm -f ${homeFlake}";
     }
     {
+      name = "slop";
+      category = "utilities";
+      help = "Ask slop-broker for privileged operations (`slop guide`); uses `.keys/slop-request.key` if present";
+      # Built from this checkout, so it matches the branch. Without a key it uses `SLOP_BROKER`,
+      # `~/.config/slop/config.toml` or vsock, as the installed client does.
+      command = ''
+        key="$PRJ_ROOT/.keys/slop-request.key"
+        if [ -z "''${SLOP_BROKER-}" ] && [ -f "$key" ]; then
+          export SLOP_BROKER=ssh:slop@palace.h.nul.ie
+          export SLOP_SSH="ssh -i $key -o IdentitiesOnly=yes -o IdentityAgent=none"
+        fi
+        exec ${pkgs.slop-broker}/bin/slop "$@"
+      '';
+    }
+    {
+      name = "slop-approve";
+      category = "utilities";
+      help = "Answer slop-broker requests; its key stays outside the checkout, where agents can't read it";
+      command = ''exec ${pkgs.slop-broker}/bin/slop-approve "$@"'';
+    }
+    {
       name = "ragenix";
       category = "utilities";
       help = "age-encrypted secrets for NixOS";

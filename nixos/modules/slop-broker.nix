@@ -1,7 +1,7 @@
 { lib, pkgs, config, self, ... }:
 let
-  inherit (builtins) any attrNames attrValues isAttrs isList;
-  inherit (lib) mkIf mapAttrs filterAttrs optional optionals hasPrefix concatStringsSep;
+  inherit (builtins) any attrValues attrNames isAttrs isList length concatLists;
+  inherit (lib) mkIf mkMerge mapAttrs mapAttrsToList filterAttrs optional optionals hasPrefix unique concatStringsSep;
   inherit (lib.my) mkOpt' mkBoolOpt';
 
   cfg = config.my.slop-broker;
@@ -11,6 +11,15 @@ let
   hasLocalRequesters = any (r: r.uid != null) (attrValues cfg.requesters);
   hasVsockRequesters = any (r: r.vsockCid != null) (attrValues cfg.requesters);
   missingPolicies = attrNames (filterAttrs (_: r: !(cfg.policies ? ${r.policy})) cfg.requesters);
+
+  # Each SSH key gets a forced command naming its owner and role
+  remoteUser = "slop";
+  remoteKeys = concatLists (
+    mapAttrsToList (n: r: map (key: { inherit key; role = "requester"; name = n; }) r.sshKeys) cfg.requesters
+    ++ mapAttrsToList (n: keys: map (key: { inherit key; role = "approver"; name = n; }) keys) cfg.sshApprovers
+  );
+  hasRemote = remoteKeys != [ ];
+  authorizedKey = k: ''restrict,command="${cfg.package}/bin/slop-broker remote ${k.role} ${k.name}" ${k.key}'';
 
   # TOML has no null; leave those keys out
   dropNulls = v:
@@ -46,6 +55,7 @@ let
     options = {
       vsockCid = mkOpt' (nullOr ints.unsigned) null "CID of a VM that connects over vsock.";
       uid = mkOpt' (nullOr ints.unsigned) null "UID of a local requester.";
+      sshKeys = mkOpt' (listOf str) [ ] "SSH public keys a requester on another box connects with (as `${remoteUser}`).";
       policy = mkOpt' str null "Name of the requester's policy in `policies`.";
     };
   };
@@ -54,6 +64,7 @@ let
     requesters = mapAttrs (_: r: {
       vsock_cid = r.vsockCid;
       inherit (r) uid policy;
+      remote = r.sshKeys != [ ];
     }) cfg.requesters;
 
     policies = mapAttrs (_: p: {
@@ -75,6 +86,13 @@ let
       known_hosts = "/var/lib/slop-broker/known_hosts";
       targets = mapAttrs (_: t: { inherit (t) hostname user; ssh_opts = t.sshOpts; }) cfg.ssh.targets;
     } else null;
+
+    remote = if hasRemote then {
+      socket = "/run/slop-broker/remote.sock";
+      user = remoteUser;
+      approvers = attrNames cfg.sshApprovers;
+    } else null;
+
     home_assistant = if ha.enable then {
       inherit (ha) url;
       notify_service = ha.notifyService;
@@ -90,7 +108,9 @@ in
 
     vsockPort = mkOpt' ints.unsigned 6262 "vsock port to listen on for VM requesters.";
     timeout = mkOpt' duration "5m" "How long a request waits for an approver.";
-    approvers = mkOpt' (listOf str) [ ] "Users allowed to answer requests with `slop-approve`.";
+    approvers = mkOpt' (listOf str) [ ] "Local users allowed to answer requests with `slop-approve`.";
+    sshApprovers = mkOpt' (attrsOf (listOf str)) { }
+      "Approvers on other boxes, by name, with the SSH public keys `slop-approve` connects with.";
     policies = mkOpt' (attrsOf (submodule policyOpts)) { } "Named policies; several requesters can share one.";
     requesters = mkOpt' (attrsOf (submodule requesterOpts)) { } "Who may send requests, and which policy applies.";
 
@@ -128,21 +148,37 @@ in
         message = "slop-broker requesters with an unknown policy: ${concatStringsSep ", " missingPolicies}.";
       }
       {
+        assertion = length (unique (map (k: k.key) remoteKeys)) == length remoteKeys;
+        message = "slop-broker SSH keys must be distinct; use separate keys for requesting and approving.";
+      }
+      {
         assertion = ha.enable -> (ha.url != "" && ha.notifyService != "" && ha.deviceId != "" && isRuntimePath ha.tokenFile);
         message = "slop-broker Home Assistant needs a URL, service, device ID and runtime token file.";
       }
     ];
 
-    users = {
-      groups = {
-        slop-broker = { };
-        slop-broker-approve.members = cfg.approvers;
-      };
-      users.slop-broker = {
-        isSystemUser = true;
-        group = "slop-broker";
-      };
-    };
+    users = mkMerge [
+      {
+        groups = {
+          slop-broker = { };
+          slop-broker-approve.members = cfg.approvers;
+        };
+        users.slop-broker = {
+          isSystemUser = true;
+          group = "slop-broker";
+        };
+      }
+      # Remote requesters and approvers log in as this user; their keys only run `slop-broker remote`
+      (mkIf hasRemote {
+        groups.${remoteUser} = { };
+        users.${remoteUser} = {
+          isSystemUser = true;
+          group = remoteUser;
+          shell = pkgs.bashInteractive;
+          openssh.authorizedKeys.keys = map authorizedKey remoteKeys;
+        };
+      })
+    ];
 
     environment.systemPackages = [ cfg.package ];
     boot.kernelModules = optional hasVsockRequesters "vhost_vsock";
@@ -168,7 +204,7 @@ in
 
         User = "slop-broker";
         Group = "slop-broker";
-        SupplementaryGroups = [ "slop-broker-approve" ];
+        SupplementaryGroups = [ "slop-broker-approve" ] ++ optional hasRemote remoteUser;
         RuntimeDirectory = "slop-broker";
         RuntimeDirectoryMode = "0755";
         StateDirectory = "slop-broker";

@@ -36,7 +36,7 @@ impl Broker {
     }
 }
 
-const MAX_CONNECTIONS: usize = 128;
+pub const MAX_CONNECTIONS: usize = 128;
 
 pub async fn listen_vsock(broker: Arc<Broker>, port: u32) -> Result<()> {
     let listener = VsockListener::bind(VsockAddr::new(VMADDR_CID_ANY, port)).context("binding vsock")?;

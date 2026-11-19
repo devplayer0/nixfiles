@@ -5,13 +5,14 @@ use std::process::exit;
 use anyhow::{Context, Result, bail};
 use clap::{Args, Parser, Subcommand};
 use futures_util::{SinkExt, StreamExt};
-use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::sync::mpsc;
 
 use slop_broker::proto::{
     ApprovedBy, ClientMessage, DEFAULT_VSOCK_PORT, Destination, HOST_CID, OpResult, Operation, PROTOCOL_VERSION, Query,
     Request, ServerMessage, decode, encode, transport,
 };
+use slop_broker::remote::{self, Role, Stream};
 use slop_broker::types::{Arg, HostName, Lines, NodeName, Since, UnitName, UserName};
 
 /// Exit status when the broker didn't run the operation (denied, expired, invalid or failed).
@@ -24,7 +25,8 @@ const GUIDE: &str = include_str!("../../slop-tools.md");
     about = "Ask the slop broker to run privileged operations",
     after_help = "Requests wait up to five minutes for an approver; don't retry them in a loop.\n\
                   Exit status 125 means the broker did not run the operation.\n\
-                  SLOP_BROKER selects the broker: vsock:<cid>:<port> or unix:<path>."
+                  SLOP_BROKER, or broker in ~/.config/slop/config.toml, selects the broker:\n\
+                  vsock:<cid>:<port>, unix:<path> or ssh:<destination>."
 )]
 struct Cli {
     /// Who is asking and why; shown to the approver as agent-supplied.
@@ -128,20 +130,9 @@ fn default_label() -> Option<String> {
     Some(format!("in {}", directory.file_name()?.to_string_lossy()))
 }
 
-trait Stream: AsyncRead + AsyncWrite + Send + Unpin {}
-impl<T: AsyncRead + AsyncWrite + Send + Unpin> Stream for T {}
-
 async fn connect() -> Result<Box<dyn Stream>> {
-    let target = std::env::var("SLOP_BROKER").unwrap_or_else(|_| format!("vsock:{HOST_CID}:{DEFAULT_VSOCK_PORT}"));
-    let failed = || format!("connecting to the broker at {target}");
-    if let Some(path) = target.strip_prefix("unix:") {
-        return Ok(Box::new(tokio::net::UnixStream::connect(path).await.with_context(failed)?));
-    }
-    if let Some((cid, port)) = target.strip_prefix("vsock:").and_then(|a| a.split_once(':')) {
-        let address = tokio_vsock::VsockAddr::new(cid.parse()?, port.parse()?);
-        return Ok(Box::new(tokio_vsock::VsockStream::connect(address).await.with_context(failed)?));
-    }
-    bail!("SLOP_BROKER must be vsock:<cid>:<port> or unix:<path>")
+    let target = remote::address(Role::Requester, &format!("vsock:{HOST_CID}:{DEFAULT_VSOCK_PORT}"))?;
+    remote::connect(&target, Role::Requester).await
 }
 
 #[tokio::main]

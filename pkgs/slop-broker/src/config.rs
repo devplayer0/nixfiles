@@ -36,6 +36,20 @@ pub struct Config {
     pub ssh: Option<SshConfig>,
     #[serde(default)]
     pub home_assistant: Option<HomeAssistantConfig>,
+    #[serde(default)]
+    pub remote: Option<RemoteConfig>,
+}
+
+/// Requesters and approvers on other boxes, connecting over SSH (see [`crate::remote`]).
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RemoteConfig {
+    pub socket: PathBuf,
+    /// The SSH user whose forced commands connect to the socket.
+    pub user: String,
+    /// Approvers by name; requesters opt in with `remote`.
+    #[serde(default)]
+    pub approvers: Vec<String>,
 }
 
 fn default_timeout() -> u64 {
@@ -53,6 +67,9 @@ pub struct Requester {
     pub vsock_cid: Option<u32>,
     #[serde(default)]
     pub uid: Option<u32>,
+    /// Connects over SSH, with a key that names it.
+    #[serde(default)]
+    pub remote: bool,
     /// The name of its entry in `policies`.
     pub policy: String,
 }
@@ -146,6 +163,14 @@ pub fn credential(path: &std::path::Path) -> PathBuf {
     PathBuf::from(directory).join(path)
 }
 
+/// Looks up a user's UID and primary GID by name.
+pub fn user_id(name: &str) -> anyhow::Result<(u32, u32)> {
+    let name = std::ffi::CString::new(name)?;
+    let user = unsafe { libc::getpwnam(name.as_ptr()) };
+    anyhow::ensure!(!user.is_null(), "unknown user {name:?}");
+    Ok(unsafe { ((*user).pw_uid, (*user).pw_gid) })
+}
+
 /// Looks up a group's GID by name.
 pub fn group_id(name: &str) -> anyhow::Result<u32> {
     let name = std::ffi::CString::new(name)?;
@@ -195,6 +220,14 @@ impl Config {
 
     pub fn requester_by_uid(&self, uid: u32) -> Option<&str> {
         self.requesters.iter().find(|(_, r)| r.uid == Some(uid)).map(|(n, _)| n.as_str())
+    }
+
+    pub fn remote_requester(&self, name: &str) -> bool {
+        self.remote.is_some() && self.requesters.get(name).is_some_and(|r| r.remote)
+    }
+
+    pub fn remote_approver(&self, name: &str) -> bool {
+        self.remote.as_ref().is_some_and(|r| r.approvers.iter().any(|a| a == name))
     }
 }
 

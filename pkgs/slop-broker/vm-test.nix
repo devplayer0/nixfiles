@@ -5,8 +5,10 @@ let
   inherit (pkgs) lib;
 
   key = pkgs.runCommand "test-key" { nativeBuildInputs = [ pkgs.openssh ]; } ''
-    mkdir $out && ssh-keygen -q -t ed25519 -N "" -f $out/key
+    mkdir $out
+    for k in key requester approver; do ssh-keygen -q -t ed25519 -N "" -f $out/$k; done
   '';
+  publicKey = name: builtins.readFile "${key}/${name}.pub";
 in
 pkgs.testers.runNixOSTest {
   name = "slop-broker";
@@ -28,6 +30,11 @@ pkgs.testers.runNixOSTest {
       users.users.reviewer.isNormalUser = true;
       users.users.agent.isNormalUser = true;
       environment.systemPackages = [ pkgs.util-linux ];
+      programs.ssh.extraConfig = ''
+        StrictHostKeyChecking no
+        UserKnownHostsFile /dev/null
+        LogLevel ERROR
+      '';
       # Not a store path, as the module requires
       environment.etc."slop-broker-test/key".source = "${key}/key";
 
@@ -39,10 +46,19 @@ pkgs.testers.runNixOSTest {
           query.action = "auto";
           ssh = { action = "ask"; leases = [ "5m" ]; rules = [ { match.target = "denied"; action = "deny"; } ]; };
         };
+        policies.workstation.ops.query.action = "auto";
+
         requesters.agent = {
           vsockCid = 1;
           policy = "agent";
         };
+        requesters.workstation = {
+          sshKeys = [ (publicKey "requester") ];
+          policy = "workstation";
+        };
+
+        sshApprovers.laptop = [ (publicKey "approver") ];
+
         ssh = {
           enable = true;
           keyFile = "/etc/slop-broker-test/key";
@@ -109,8 +125,25 @@ pkgs.testers.runNixOSTest {
     machine.wait_until_succeeds("grep -q 'denied by approver' /tmp/out3")
     machine.wait_until_succeeds("grep -qx 125 /tmp/out3", timeout=30)
 
+    # Over SSH: each key names its owner and role
+    for user, k in [("agent", "requester"), ("reviewer", "approver")]:
+        machine.succeed(f"install -D -m600 -o {user} ${key}/{k} /home/{user}/.ssh/id_ed25519")
+    remote = "SLOP_BROKER=ssh:slop@localhost"
+    out = machine.succeed(f"su agent -c \"{remote} slop status local sshd.service\"")
+    assert "sshd.service" in out, out
+    status, out = machine.execute(f"su agent -c \"{remote} slop ssh local -- true\" 2>&1")
+    assert status == 125 and "denied by policy" in out, (status, out)
+    status, out = machine.execute("su agent -c 'SLOP_APPROVE=ssh:slop@localhost slop-approve list' 2>&1")
+    assert status != 0 and "for sending requests" in out, (status, out)
+
+    machine.execute(f"su agent -c \"{env} slop ssh other -- echo remote approval\" > /tmp/out4 2>&1 &")
+    machine.wait_until_succeeds("su reviewer -c 'slop-approve list' | grep -q 'ssh other'")
+    machine.succeed("su reviewer -c 'SLOP_APPROVE=ssh:slop@localhost slop-approve once'")
+    machine.wait_until_succeeds("grep -q 'remote approval' /tmp/out4")
+
     audit = machine.succeed("su reviewer -c 'slop-approve log'")
     print(audit)
     assert "agent asks: ssh local" in audit and "answered 5m by reviewer" in audit, audit
+    assert "answered once by laptop (ssh)" in audit, audit
   '';
 }
