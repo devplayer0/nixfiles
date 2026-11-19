@@ -212,8 +212,10 @@ in churn.
 - Comment where it genuinely aids understanding, but not for trivial/obvious code — match the file's
   existing (fairly sparse) comment density. When adding something general, comment its general
   purpose, not the specific change or one-off reason it was introduced for.
-- Separate logical steps in code with blank lines. Keep closely related statements together, and leave a
-  blank line before a comment that introduces the next step.
+- Separate logical steps in code with blank lines, in every language and inside function bodies: a
+  function that gathers its inputs, checks them, acts and reports should read as short paragraphs,
+  not one block. Keep closely related statements together, and leave a blank line before a comment
+  that introduces the next step.
 - Prefer `lib.my` helpers (`mkOpt'`, `mkBoolOpt'`, `mkDefault'`) and `lib.my.c` constants over
   reimplementing.
 - New shared functionality → a module in `*/modules/` + entry in `_list.nix`, options under `my.*`.
