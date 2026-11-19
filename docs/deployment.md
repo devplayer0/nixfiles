@@ -305,7 +305,9 @@ systems as `system-<name>`, homes as `home-<name>` (with `@` changed to `-at-`),
 `package-<name>`, and the development `shell`. Each result is pushed to the
 Harmonia cache with [`ci/push-to-cache.sh`](../ci/push-to-cache.sh). Before the first push, the
 workflow deletes cache-profile generations older than its retention period, then collects
-unreachable paths so a full cache cannot prevent collection from being reached.
+unreachable paths so a full cache cannot prevent collection from being reached. Paths pushed by
+`slop build` survive collection through their own GC roots (see
+[`slop-broker.md`](slop-broker.md#binary-cache)).
 
 When `.#ciIfdReasons.x86_64-linux` lists an active exception, CI logs a warning with the reason
 and allows import from derivation for the target builds. It runs a build-capable flake

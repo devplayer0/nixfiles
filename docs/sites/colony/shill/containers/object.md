@@ -12,7 +12,7 @@ Object storage and the Nix binary cache, plus HedgeDoc and wastebin.
 | Service | Port | Purpose |
 | --- | --- | --- |
 | MinIO | `9000` (S3) / `9001` (console) | S3-compatible object storage, `s3.nul.ie` + `*.s3.nul.ie` (virtual-host style via `MINIO_DOMAIN`), console at `minio.nul.ie`; region `eu-central-1`; data on the `/mnt/minio` XFS volume |
-| Harmonia | `5000` | Nix binary cache at `nix-cache.nul.ie` — `harmonia-dev` cache serves `shill`'s `/nix/store` out of a dedicated store view rooted at `/var/lib/harmonia` (bind-mounted from `/mnt/nix-cache`), signed with the `nix-cache.key` secret; a `harmonia` user with authorized keys exists for cache pushes |
+| Harmonia | `5000` | Nix binary cache at `nix-cache.nul.ie` — `harmonia-dev` cache serves `shill`'s `/nix/store` out of a dedicated store view rooted at `/var/lib/harmonia` (bind-mounted from `/mnt/nix-cache`), signed with the `nix-cache.key` secret; a `harmonia` user with authorized keys exists for cache pushes, including `slop-broker`'s on `palace`, which is restricted to the store protocol and GC roots (`services.slop-broker-cache`, see [`slop-broker.md`](../../../../slop-broker.md#binary-cache)) |
 | HedgeDoc | `3000` | collaborative markdown notes at `md.nul.ie`; Postgres on [colony-psql](colony-psql.md); anonymous edits but no anonymous notes, email login, no open email registration |
 | wastebin | `8088` | pastebin at `pb.nul.ie` |
 | atticd | `8069` | **currently disabled** (`services.atticd.enable = false`) — an alternative Nix cache that would store locally and sit behind `nix-cache.nul.ie`; config (including the `object/atticd.env` secret) is kept around |

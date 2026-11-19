@@ -42,7 +42,7 @@ username/password provider. Its cookie domain is `.nul.ie`; gated vhosts include
 
 [Pocket ID](https://pocket-id.org) (`services.pocket-id`) is a passkey-only OpenID Connect
 provider at `id.nul.ie`, for apps that sign in with OIDC (first the `slop-broker` approvals web
-app, see [`slop-broker.md`](../../../../slop-broker.md)). It is meant to replace nginx-sso's
+app, see [`slop-broker.md`](../../../../slop-broker.md#approvals-web-app)). It is meant to replace nginx-sso's
 Google sign-in later, with oauth2-proxy in front of apps that lack OIDC.
 
 - Listens on `127.0.0.1:1411` behind nginx and keeps its SQLite database in `/var/lib/pocket-id`
@@ -108,6 +108,7 @@ all vhosts are `onlySSL`, kTLS and HTTP/2. "SSO" = gated behind nginx-sso (`gene
 | `librespeed.ams1.int.nul.ie` | `localhost:8989` | librespeed on the internal domain (internal wildcard cert) |
 | `paseo-relay.nul.ie` | `localhost:4000` | Paseo relay; websockets with long timeouts; `/metrics` blocked |
 | `slop.nul.ie` | static Paseo web app | falls back to `index.html`; precompressed files served as-is |
+| `approve.slop.nul.ie` | `palace.h.nul.ie:8095` | [`slop-broker`](../../../../slop-broker.md#approvals-web-app)'s approvals web app, which handles sign-in itself (Pocket ID) |
 | `md.nul.ie` | `object-ctr:3000` | HedgeDoc; websockets |
 | `pb.nul.ie` | `object-ctr:8088` | wastebin |
 | `photos.nul.ie` | `jackflix-ctr:2342` | PhotoPrism; websockets |

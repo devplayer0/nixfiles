@@ -183,6 +183,18 @@ in
           environment.systemPackages = [ minioPkgs.minio-client ];
 
           services = {
+            # `slop build` on `palace` pushes into Harmonia's store
+            slop-broker-cache = {
+              enable = true;
+              user = "harmonia";
+              store = "/var/lib/harmonia";
+              # As `ci/push-to-cache.sh` does; `harmonia-dev`'s runtime directory
+              home = "/run/harmonia";
+              brokerKeys = [
+                "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJMx9rrKaPGFnwdvdEKCHyonMjWi/kDWMkbZkSEHijhp slop-broker cache (palace)"
+              ];
+            };
+
             atticd = {
               enable = false;
               environmentFile = config.age.secrets."object/atticd.env".path;

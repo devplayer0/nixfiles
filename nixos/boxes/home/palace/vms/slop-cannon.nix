@@ -35,17 +35,14 @@ in
       giteaKey = config.age.secrets."slop-cannon/gitea-key".path;
       paseoPasswordFile = config.age.secrets."slop-cannon/paseo.env".path;
 
-      # Steer agents to the approval broker; these match command text, so they aren't a boundary
+      # Steer agents to the approval broker; these match command text, so they aren't a boundary.
+      # `.keys/` only has the committed public keys here, which agents may read.
       claudeDeny = [
         "Bash(deploy:*)"
         "Bash(ssh-machine:*)"
-        "Read(**/.keys/**)"
-        "Edit(**/.keys/**)"
       ];
-      claudeAsk = [
-        "Bash(slop-deploy:*)"
-        "Bash(slop-ssh:*)"
-      ];
+      # The broker asks a human where policy says so; a second prompt here would only add noise
+      claudeAllow = [ "Bash(slop:*)" ];
 
       slopClone = pkgs.writeShellApplication {
         name = "slop-clone";
@@ -192,16 +189,26 @@ in
         };
 
         home-manager.users.${agentUser} = {
-          my.agents.enable = true;
+          my.agents = {
+            enable = true;
+            slop.enable = true;
+          };
 
           home.packages = [ slopClone slopPair ];
 
           programs = {
+            # Permissive by default: the VM is the boundary, and `slop-broker` gates what needs
+            # credentials
             claude-code.settings.permissions = {
+              defaultMode = "bypassPermissions";
+              allow = claudeAllow;
               deny = claudeDeny;
-              ask = claudeAsk;
             };
-            codex.settings.cli_auth_credentials_store = "file";
+            codex.settings = {
+              cli_auth_credentials_store = "file";
+              approval_policy = "never";
+              sandbox_mode = "danger-full-access";
+            };
 
             # The shared config pins `IdentityFile` for every host
             ssh.settings."git.nul.ie" = {
@@ -212,10 +219,7 @@ in
 
         # Not editable by the agent user without `doas`; a convenience, not a boundary
         environment.etc."claude-code/managed-settings.json".text = toJSON {
-          permissions = {
-            disableBypassPermissionsMode = "disable";
-            deny = claudeDeny;
-          };
+          permissions.deny = claudeDeny;
         };
 
         systemd = {
@@ -281,12 +285,20 @@ in
               # Keep agents from changing modes, answering prompts or opening terminals
               mcp.injectIntoAgents = false;
               relay.requireProtectedSecurity = true;
+              # Paseo can't change a provider's default mode, only offer these; `slop-broker` gates
+              # what needs credentials
               agentProfiles = [
                 {
-                  id = "claude-accept-edits";
-                  name = "Claude, accept edits";
+                  id = "claude-bypass";
+                  name = "Claude, bypass permissions";
                   provider = "claude";
-                  modeId = "acceptEdits";
+                  modeId = "bypassPermissions";
+                }
+                {
+                  id = "codex-full-access";
+                  name = "Codex, full access";
+                  provider = "codex";
+                  modeId = "full-access";
                 }
               ];
             };

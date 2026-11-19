@@ -27,6 +27,8 @@ feeds them SR-IOV VFs, PCI NVMe drives, LVM disks and an NVMe-oF disk.
   the `main` thin pool (`services.lvm.boot.thin.enable`).
 - AMD box (`kvm-amd`, `amd_iommu=on`, microcode updates); the kernel is built with
   `ACPI_APEI_PCIEAER`/`PCIEAER` for the PCIe passthrough work below.
+- Runs [`slop-broker`](../../slop-broker.md) for `slop-cannon`'s agents (see
+  [below](#slop-broker)).
 
 ## Network assignments
 
@@ -142,7 +144,7 @@ run before stage-two module loading. `sfh` requires the `frigate` LV before QEMU
 | `cellar` | 8c × 2t | 16 GiB | `cellar-hi` VF 0 (`44:00.1`); NVMe `41:00.0`–`43:00.0` | pinned to NUMA node 1; split IRQ chip + vIOMMU |
 | `river` | 3c × 2t | 4 GiB | `river-rdma` VF 1 (`44:00.2`), `river-dave` VF 4 (`44:00.5`), `river-jim-tap` | only an ESP local disk (plus an installer ISO) — root is NVMe-oF from `cellar` |
 | `sfh` | 8c × 2t | 32 GiB | `sfh-hi` VF 2 (`44:00.3`), `sfh-ctrs` VF 3 (`44:00.4`); two USB host ports | no boot disk — netboots; gets the `hdds/frigate` LV |
-| `slop-cannon` | 16c × 2t | 48 GiB | `slop-cannon-ut` VF 5 (`44:00.6`) | disk is NVMe-oF from `cellar`, connected by `palace` (plus an installer ISO) |
+| `slop-cannon` | 16c × 2t | 24 GiB | `slop-cannon-ut` VF 5 (`44:00.6`) | disk is NVMe-oF from `cellar`, connected by `palace` (plus an installer ISO) |
 
 `slop-cannon`'s vCPUs are overcommitted (the VMs total more vCPUs than the host's 32 threads) so
 coding agents can burst; `vm@slop-cannon` has a low `CPUWeight`, so `cellar`, `river` and `sfh`
@@ -175,9 +177,52 @@ SPDK only checks the host NQN, which root in the guest could forge.
 - `devices/global_filter` rejects `/dev/nvme*` in `lvm.conf`, so `palace` never activates the
   guest's volume group (also called `main`). `palace` has no NVMe of its own.
 
+## `slop-broker`
+
+`palace` runs [`slop-broker`](../../slop-broker.md), which carries out privileged operations for
+the agents on `slop-cannon` after policy and, usually, a human approve them.
+
+- `slop-cannon` reaches it only over vsock: the VM has a `vhost-vsock-pci` device, and the broker
+  identifies it by that device's CID. Policy is set per operation in
+  [`palace/slop-broker.nix`](../../../nixos/boxes/home/palace/slop-broker.nix).
+- The broker holds the deploy key (age secret `palace/slop-broker-deploy.key`). That key is root on
+  every box, so `palace` must be treated as being as sensitive as a workstation with `.keys/`.
+- Deploys are built by `slop-broker-build`, a user without keys that the broker reaches over SSH
+  (`services.slop-broker-builder`). It fetches
+  commits from Gitea with a read-only deploy key on `dev/nixfiles` (age secret
+  `palace/slop-broker-git.key`, mirrored in `/var/lib/slop-broker-build/repository.git`) and builds
+  with `palace`'s Nix daemon, so builds use the host's spare CPU and memory.
+- Because they run agent-written Nix, builds (the `nixbld` group) and the builder's own fetches
+  are kept off internal networks like `lan-untrusted` is (`lib.my.c.internalNets`), and only
+  `git` gets the builder's Gitea key. `nix-daemon.service` has memory limits and a low
+  `CPUWeight`, so builds can't starve the VMs. Builds you run on `palace` yourself are confined
+  the same way.
+- Agents' use of the builder (the `builder` step of `slop deploy` and `slop build`) asks, showing
+  the commits and their diff, with a one-hour lease on offer; commits already on `master` don't
+  ask. `slop build` then pushes without asking again, while deploys still ask once built.
+- `slop build` outputs are pushed to the binary cache on [`object`](../colony/shill/containers/object.md)
+  as `harmonia`, with a key of the broker's own (age secret `palace/slop-broker-cache.key`) whose
+  forced command allows only the store protocol and adding GC roots (see
+  [Binary cache](../../slop-broker.md#binary-cache)).
+- Answer requests on `palace` as `dev` with `slop-approve`. In a terminal it shows each request
+  in full, asks for an answer and waits for new ones; `slop-approve list` and
+  `slop-approve <id> <decision>` (any unique ID prefix) work from scripts. `slop-approve log`
+  shows recent requests, answers and results from the audit log
+  (`/var/lib/slop-broker/audit.jsonl`, also in the journal).
+- The [approvals web app](../../slop-broker.md#approvals-web-app) listens on TCP port 8095,
+  which the firewall opens only to `middleman`, the reverse proxy for `approve.slop.nul.ie`.
+  Approvers sign in through Pocket ID (client secret in age secret
+  `palace/slop-broker-oidc-secret`); its sessions, push subscriptions and push signing key are in
+  `/var/lib/slop-broker/web`. Deploys to the routers need a fresh passkey there.
+- Requesters and approvers on other boxes log in over SSH as `slop`, whose keys can only run the
+  broker's forced command (see the
+  [design](https://git.nul.ie/dev/slop-broker/src/branch/main/docs/design.md#other-requesters-and-approvers)).
+
 ## Notable config files
 
 - [`nixos/boxes/home/palace/default.nix`](../../../nixos/boxes/home/palace/default.nix) — host
   hardware, networkd (links/bridges/SR-IOV), LVM.
 - [`nixos/boxes/home/palace/vms/default.nix`](../../../nixos/boxes/home/palace/vms/default.nix) —
   VM instances, boot ordering and `slop-cannon`'s disk connection.
+- [`nixos/boxes/home/palace/slop-broker.nix`](../../../nixos/boxes/home/palace/slop-broker.nix) —
+  the broker's policy for `slop-cannon`, its deploy key and the VM's vsock device.

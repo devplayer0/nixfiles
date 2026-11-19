@@ -13,7 +13,7 @@ inside it.
 
 | vCPUs | RAM | Disk | Network | Other |
 |---|---|---|---|---|
-| 16c × 2t (overcommitted) | 48 GiB | 512 GiB virtio, NVMe-oF from `cellar` via `palace` | SR-IOV VF 5 (`44:00.6`) on VLAN 120 | installer ISO |
+| 16c × 2t (overcommitted) | 24 GiB | 512 GiB virtio, NVMe-oF from `cellar` via `palace` | SR-IOV VF 5 (`44:00.6`) on VLAN 120 | installer ISO |
 
 `vm@slop-cannon` has a low `CPUWeight` on `palace`, so `cellar`, `river` and `sfh` win under
 contention. `palace` has `kvm_amd` `nested=1`, so the guest has `/dev/kvm`.
@@ -25,7 +25,8 @@ contention. `palace` has `kvm_amd` `nested=1`, so the guest has `/dev/kvm`.
 - A normal deploy node (`deploy .#slop-cannon`, `ssh-machine slop-cannon`).
 - Everything inside the guest is treated as agent-controlled. The boundaries are outside it:
   the `untrusted` filter on the routers, the VLAN tag on the NIC and the disk connection on
-  `palace`. Credentials for deploying or logging into other boxes stay outside the VM.
+  `palace`. Credentials for deploying or logging into other boxes stay outside the VM, with
+  [`slop-broker`](../../slop-broker.md) on `palace`.
 
 ## Network assignments
 
@@ -101,8 +102,9 @@ from the app don't survive a restart. It:
 - requires relay replay protection;
 - turns off dictation and voice, which would otherwise download a large local speech model;
 - hides providers other than Claude and Codex;
-- adds a "Claude, accept edits" agent profile. Each provider's default mode is hardcoded upstream
-  (Claude `auto`, Codex `auto-review`), and profiles are the only way to preset one.
+- adds "Claude, bypass permissions" and "Codex, full access" agent profiles. Each provider's
+  default mode is hardcoded upstream (Claude `auto`, Codex `auto-review`), and profiles are the
+  only way to preset one, so pick a profile when starting an agent for the permissive mode.
 
 ### Connectivity
 
@@ -150,12 +152,25 @@ Paseo has the full rights of `slop-cannon`, and `slop-cannon` has root: anyone w
 password or a pairing controls the VM.
 
 - Claude Code and Codex come from the shared `my.agents` home-manager module.
-- Claude's user settings deny raw `deploy`, `ssh-machine` and `.keys/`, and ask before
-  `slop-deploy` / `slop-ssh`. Claude's managed settings (`/etc/claude-code/managed-settings.json`)
-  repeat the `deny` rules and disable bypass mode. All of these match command text and live inside
-  the guest, so they steer agents rather than enforce anything.
-- Codex stores its credentials in a file and uses its standard Linux sandbox.
-- Deployments and administrative SSH to other boxes are handled by an operator outside the VM.
+- Claude's user settings deny raw `deploy` and `ssh-machine`, and allow `slop`, since the broker
+  asks a human where its policy says so. The checkout's `.keys/` only has the committed public
+  keys, so reading it isn't denied. Claude's managed settings
+  (`/etc/claude-code/managed-settings.json`) repeat the `deny` rules. All of these match command
+  text and live inside the guest, so they steer agents towards `slop` rather than enforce
+  anything.
+- Agents are permissive by default, since the VM is the boundary and
+  [`slop-broker`](../../slop-broker.md) gates everything that needs credentials: Claude starts in
+  `bypassPermissions` (the `deny` rules still apply), and Codex runs without approvals or its
+  sandbox (`approval_policy = "never"`, `sandbox_mode = "danger-full-access"`). Agents started
+  through Paseo use its defaults unless started with one of the profiles above.
+- Codex stores its credentials in a file.
+
+### Privileged operations
+
+Agents ask [`slop-broker`](../../slop-broker.md) on `palace` for anything needing credentials, with
+the `slop` command (`my.agents.slop.enable`). It connects over vsock (CID 3; see
+[`palace`](palace.md#slop-broker)). The agent guide, `slop guide`, is installed as a Claude rule
+(`~/.claude/rules/slop.md`) and as Codex's `AGENTS.md`.
 
 ## SSH and first login
 
@@ -200,9 +215,11 @@ To set up provider logins and repos on a fresh agent home, connect with `ssh slo
 
 - [`nixos/boxes/home/palace/vms/slop-cannon.nix`](../../../nixos/boxes/home/palace/vms/slop-cannon.nix) —
   the box: users, Paseo, Claude settings, `slop-clone`, `slop-pair`, disk layout, network.
+- [`nixos/boxes/home/palace/slop-broker.nix`](../../../nixos/boxes/home/palace/slop-broker.nix) —
+  the broker's policy for this box and the VM's vsock device.
 - [`nixos/boxes/home/palace/vms/default.nix`](../../../nixos/boxes/home/palace/vms/default.nix) —
   the VM on `palace` and `slop-cannon-disk.service`.
 - [`nixos/boxes/home/palace/default.nix`](../../../nixos/boxes/home/palace/default.nix) — VF 5, the
   NVMe host ID and the LVM filter.
 - [`home-manager/modules/agents/default.nix`](../../../home-manager/modules/agents/default.nix) —
-  shared Claude Code and Codex configuration.
+  shared Claude Code and Codex configuration, including the `slop` client and guide.

@@ -188,6 +188,19 @@ change, and keep the documented layout and `lib.my.c.home.vlans` in sync.
 These APs are not managed by the flake; only their DNS records are. Read and update
 `docs/sites/home/aps.md` when changing an AP or its VLAN layout.
 
+## Working from `slop-cannon`
+
+Agents on `slop-cannon` have no deploy or SSH keys, so `deploy` and `ssh-machine` don't work there.
+Use `slop` instead; `slop guide` explains it. Requests that need approval can wait up to five
+minutes for a human. See [`docs/slop-broker.md`](docs/slop-broker.md).
+
+- `slop status`, `slop logs` and `slop failed` look at a box without waiting for approval.
+- `slop ssh <node> -- <cmd>` runs anything else. Nodes are the deploy-rs nodes on `master`;
+  `--host <user>@<host>` reaches other boxes.
+- `slop deploy <node>…` builds and deploys a pushed commit; `--boot` stages it for the next boot.
+- `slop build <attr>…` builds a pushed commit's flake attributes into the binary cache.
+- `slop requests` lists your pending requests and leases.
+
 ## Secrets
 
 age-encrypted secrets in `secrets/`, managed with **ragenix**. Each module declares

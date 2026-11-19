@@ -416,6 +416,15 @@ in
         useACMEHost = pubDomain;
       };
 
+      # `slop-broker`'s approvals web app, which handles sign-in itself
+      "approve.slop.${pubDomain}" = {
+        locations."/" = {
+          proxyPass = "http://palace.${home.domain}:8095";
+          extraConfig = proxyHeaders;
+        };
+        useACMEHost = pubDomain;
+      };
+
       "id.${pubDomain}" =
       let
         pocketId = {
