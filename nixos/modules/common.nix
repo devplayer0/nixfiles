@@ -91,6 +91,24 @@ in
               preBuild = (old.preBuild or "") + "\nnpm run postinstall\n";
             });
           })
+          (final: prev:
+          let
+            # Bump nginx to a release with the NGINX2Root fixes until every pin ships one.
+            # TODO: Drop once all channels are past these versions.
+            bump = pkg: version: hash:
+              if prev.lib.versionOlder pkg.version version then
+                pkg.overrideAttrs {
+                  inherit version;
+                  src = final.fetchurl {
+                    url = "https://nginx.org/download/nginx-${version}.tar.gz";
+                    inherit hash;
+                  };
+                } else pkg;
+          in
+          {
+            nginxStable = bump prev.nginxStable "1.30.7" "sha256-JWW1yDcFDpWPcPsPc8SOK8pFQq00n9NW9G+wxyYQvG4=";
+            nginxMainline = bump prev.nginxMainline "1.31.9" "sha256-oRxe7uLiV/RHjw5kn4SwBAeH0nfS0+UjOVKqa23LgK0=";
+          })
         ];
         config = {
           allowUnfree = true;

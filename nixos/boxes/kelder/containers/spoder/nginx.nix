@@ -167,7 +167,8 @@ in
             onlySSL = mkDefault true;
             useACMEHost = mkDefault domain;
             kTLS = mkDefault true;
-            http2 = mkDefault true;
+            # TODO: Re-enable once OpenResty ships the NGINX2Root HTTP/2 fixes.
+            http2 = mkDefault false;
           });
         in
         mkMerge [
