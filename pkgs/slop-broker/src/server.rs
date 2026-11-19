@@ -168,7 +168,7 @@ async fn process(broker: &Broker, requester: &str, request: Request, io: &mut Io
 
     let id = new_id();
     let label = request.label.as_deref().map(|l| ops::truncate(l.trim(), 200)).filter(|l| !l.is_empty());
-    let parsed = match ops::plan(broker, request.operation) {
+    let mut parsed = match ops::plan(broker, request.operation) {
         Ok(parsed) => parsed,
         Err(error) => {
             let error = format!("{error:#}");
@@ -178,8 +178,9 @@ async fn process(broker: &Broker, requester: &str, request: Request, io: &mut Io
     };
 
     // Built-in operations only read the broker's own state, so they aren't logged.
+    let builtin = parsed.builtin;
     let log = |event| {
-        if !parsed.builtin {
+        if !builtin {
             broker.audit.log(event)
         }
     };
@@ -192,6 +193,37 @@ async fn process(broker: &Broker, requester: &str, request: Request, io: &mut Io
         detail: parsed.detail.clone(),
         label: label.clone(),
     });
+
+    // Some operations do work first, so approvers can see what they'll change; not if policy
+    // would refuse anyway.
+    if parsed.op == "deploy" {
+        let refused = match verdict(broker, requester, &parsed) {
+            Ok(verdict) if verdict.action == Action::Deny => Some(denied("denied by policy")),
+            Ok(_) => None,
+            Err(message) => Some(message),
+        };
+
+        if let Some(message) = refused {
+            let reason = match &message {
+                ServerMessage::Denied(reason) => reason.clone(),
+                other => format!("{other:?}"),
+            };
+            log(Event::Denied { id, reason });
+            return Some(message);
+        }
+
+        if let Err(error) = ops::prepare(broker, &mut parsed, io).await {
+            if io.cancel.is_cancelled() {
+                log(Event::Disconnected { id });
+                return None;
+            }
+            let error = format!("{error:#}");
+            log(Event::Failed { id, error: error.clone() });
+            return Some(ServerMessage::Error(error));
+        }
+
+        log(Event::Prepared { id: id.clone(), detail: parsed.detail.clone() });
+    }
 
     let (approved_by, approver) = match authorize(broker, &id, requester, &parsed, label, io).await {
         Ok(Some(approval)) => approval,
@@ -241,6 +273,16 @@ async fn process(broker: &Broker, requester: &str, request: Request, io: &mut Io
     }
 }
 
+/// What policy says about a request.
+fn verdict(broker: &Broker, requester: &str, parsed: &ops::Parsed) -> Result<policy::Verdict, ServerMessage> {
+    let settings = broker.config.policy(requester).ok_or_else(|| denied("unknown requester"))?;
+    let op = settings.ops.get(parsed.op);
+    if parsed.rule_scopes.is_empty() {
+        return Ok(policy::evaluate(op, &parsed.scope, parsed.limits));
+    }
+    Ok(policy::combine(parsed.rule_scopes.iter().map(|scope| policy::evaluate(op, scope, parsed.limits))))
+}
+
 /// Applies policy and waits for an approver if needed, returning who approved it (and the
 /// approver's name). `Ok(None)` means the requester left.
 async fn authorize(
@@ -256,7 +298,7 @@ async fn authorize(
     }
 
     let settings = broker.config.policy(requester).ok_or_else(|| denied("unknown requester"))?;
-    let verdict = policy::evaluate(settings.ops.get(parsed.op), &parsed.scope, parsed.limits);
+    let verdict = verdict(broker, requester, parsed)?;
     match verdict.action {
         Action::Deny => Err(denied("denied by policy")),
         Action::Auto => {

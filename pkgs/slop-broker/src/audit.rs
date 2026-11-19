@@ -44,6 +44,11 @@ pub enum Event {
         /// Agent-supplied.
         label: Option<String>,
     },
+    /// What approvers are shown once preparing a request (such as building a deploy) finished.
+    Prepared {
+        id: String,
+        detail: String,
+    },
     Approved {
         id: String,
         by: ApprovedBy,
@@ -110,6 +115,13 @@ impl fmt::Display for Event {
                 }
                 Ok(())
             }
+            Event::Prepared { id, detail } => {
+                write!(f, "{} ready for approval", short(id))?;
+                if let Some(line) = detail.lines().next() {
+                    write!(f, "; {line}")?;
+                }
+                Ok(())
+            }
             Event::Approved { id, by, approver } => {
                 let by = match (by, approver) {
                     (ApprovedBy::Policy, _) => "policy",
@@ -138,7 +150,7 @@ impl Record {
     pub fn describe(&self) -> String {
         let time = self.time.replace('T', " ").trim_end_matches('Z').to_owned();
         let mut text = format!("{time}  {}\n", self.event);
-        if let Event::Request { detail, .. } = &self.event {
+        if let Event::Request { detail, .. } | Event::Prepared { detail, .. } = &self.event {
             for line in detail.lines().skip(1) {
                 text += &format!("{:21}{line}\n", "");
             }

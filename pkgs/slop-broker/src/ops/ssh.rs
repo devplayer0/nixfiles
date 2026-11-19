@@ -3,7 +3,7 @@ use anyhow::{Result, bail};
 use serde_json::{Map, Value, json};
 use tokio::process::Command;
 
-use crate::config::{SshConfig, credential};
+use crate::config::{SshConfig, SshTarget, credential};
 use crate::exec::{self, Io};
 use crate::proto::Destination;
 use crate::server::Broker;
@@ -34,11 +34,10 @@ pub fn describe(destination: &Destination) -> String {
     }
 }
 
-/// The `ssh` invocation; every option comes from here or trusted target config.
-pub fn command<S: AsRef<str>>(config: &SshConfig, destination: &Destination, remote: &[S]) -> Command {
-    let mut command = Command::new(&config.ssh);
-    command.env_clear().env("PATH", "/run/current-system/sw/bin").env("HOME", "/var/empty");
-    command.args(["-F", "none", "-T", "-i"]).arg(credential(&config.key));
+/// Options for every connection; they come before any from target config, so they win.
+pub fn options(config: &SshConfig) -> Vec<String> {
+    let mut options: Vec<String> = vec!["-F".into(), "none".into(), "-i".into()];
+    options.push(credential(&config.key).to_string_lossy().into_owned());
     for option in [
         "IdentitiesOnly=yes",
         "IdentityAgent=none",
@@ -53,9 +52,18 @@ pub fn command<S: AsRef<str>>(config: &SshConfig, destination: &Destination, rem
         // Keeps notices like "Permanently added … to the list of known hosts" out of the output
         "LogLevel=ERROR",
     ] {
-        command.args(["-o", option]);
+        options.extend(["-o".into(), option.into()]);
     }
-    command.arg("-o").arg(format!("UserKnownHostsFile={}", config.known_hosts.display()));
+    options.extend(["-o".into(), format!("UserKnownHostsFile={}", config.known_hosts.display())]);
+    options
+}
+
+/// The `ssh` invocation; every option comes from here or trusted target config.
+pub fn command<S: AsRef<str>>(config: &SshConfig, destination: &Destination, remote: &[S]) -> Command {
+    let mut command = Command::new(&config.ssh);
+    command.env_clear().env("PATH", "/run/current-system/sw/bin").env("HOME", "/var/empty");
+    command.arg("-T").args(options(config));
+
     match destination {
         Destination::Node(node) => {
             let target = &config.targets[&**node];
@@ -70,6 +78,16 @@ pub fn command<S: AsRef<str>>(config: &SshConfig, destination: &Destination, rem
     command
 }
 
+/// The same, to a target that isn't a node (such as the builder).
+pub fn command_to<S: AsRef<str>>(config: &SshConfig, target: &SshTarget, remote: &[S]) -> Command {
+    let mut command = Command::new(&config.ssh);
+    command.env_clear().env("PATH", "/run/current-system/sw/bin").env("HOME", "/var/empty");
+    command.arg("-T").args(options(config));
+    command.args(&target.ssh_opts).args(["-l", &target.user, "--", &target.hostname]);
+    command.args(remote.iter().map(AsRef::as_ref));
+    command
+}
+
 pub async fn execute(broker: &Broker, destination: &Destination, remote: &[Arg], io: &mut Io) -> Result<i32> {
     let config = broker.config.ssh.as_ref().unwrap();
     exec::run(command(config, destination, remote), io, true).await
@@ -78,7 +96,6 @@ pub async fn execute(broker: &Broker, destination: &Destination, remote: &[Arg],
 #[cfg(test)]
 pub(crate) mod tests {
     use super::*;
-    use crate::config::SshTarget;
     use std::collections::BTreeMap;
 
     pub fn config() -> SshConfig {
@@ -89,6 +106,7 @@ pub(crate) mod tests {
                 hostname: "river.h.nul.ie".into(),
                 user: "deploy".into(),
                 ssh_opts: vec!["-p".into(), "2222".into()],
+                sudo: "doas -u".into(),
             },
         );
         SshConfig { ssh: "ssh".into(), key: "/key".into(), known_hosts: "/kh".into(), targets }

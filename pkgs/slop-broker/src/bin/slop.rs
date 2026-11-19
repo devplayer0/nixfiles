@@ -13,7 +13,7 @@ use slop_broker::proto::{
     Request, ServerMessage, decode, encode, transport,
 };
 use slop_broker::remote::{self, Role, Stream};
-use slop_broker::types::{Arg, HostName, Lines, NodeName, Since, UnitName, UserName};
+use slop_broker::types::{Arg, CommitId, DeployTarget, HostName, Lines, NodeName, Since, UnitName, UserName};
 
 /// Exit status when the broker didn't run the operation (denied, expired, invalid or failed).
 const NOT_RUN: i32 = 125;
@@ -103,6 +103,18 @@ enum Command {
         #[command(flatten)]
         target: Target,
     },
+    /// Build a pushed commit and deploy it to nodes, all at once, once approved.
+    Deploy {
+        /// Nodes (all their profiles, like `deploy .#node`) or node.profile.
+        #[arg(required = true)]
+        targets: Vec<DeployTarget>,
+        /// The commit, resolved in this checkout; it must already be pushed to Gitea.
+        #[arg(long, default_value = "HEAD")]
+        commit: String,
+        /// Make it the boot default instead of switching to it now.
+        #[arg(long)]
+        boot: bool,
+    },
     /// Show your pending requests and active leases.
     Requests,
     /// Print the guide for agents.
@@ -119,9 +131,27 @@ fn operation(command: Command) -> Result<Operation> {
             Operation::Query { destination: target.destination()?, query: Query::Logs { unit, lines, since } }
         }
         Command::Failed { target } => Operation::Query { destination: target.destination()?, query: Query::Failed },
+        Command::Deploy { targets, commit, boot } => Operation::Deploy { targets, commit: resolve(&commit)?, boot },
         Command::Requests => Operation::Requests,
         Command::Guide => unreachable!(),
     })
+}
+
+/// A full commit ID, from Git in the working directory unless it already is one.
+fn resolve(revision: &str) -> Result<CommitId> {
+    if let Ok(commit) = revision.parse() {
+        return Ok(commit);
+    }
+
+    let output = std::process::Command::new("git")
+        .args(["rev-parse", "--verify", "--quiet", "--end-of-options", &format!("{revision}^{{commit}}")])
+        .output()
+        .context("running git to resolve the commit")?;
+
+    if !output.status.success() {
+        bail!("{revision} isn't a commit in this checkout");
+    }
+    parse(String::from_utf8_lossy(&output.stdout).trim())
 }
 
 /// The working directory's name, so approvers can tell agents apart.

@@ -7,8 +7,8 @@ identity for secrets, the binary cache and the Cloudflare API. It is built for t
 it requests through the `slop` CLI, and it carries out each one under a policy, usually after Dev
 approves it from a terminal or the phone.
 
-**Status:** in progress. The broker core, the box queries, `slop ssh` and the SSH transport are
-done; the other operations here are planned (see [Implementation plan](#implementation-plan)).
+**Status:** in progress. The broker core, the box queries, `slop ssh`, the SSH transport and
+deploys are done; the other operations here are planned (see [Implementation plan](#implementation-plan)).
 The code is in [`pkgs/slop-broker`](../pkgs/slop-broker) (Rust), the service is
 `my.slop-broker`, and `palace`'s configuration is
 [`palace/slop-broker.nix`](../nixos/boxes/home/palace/slop-broker.nix).
@@ -28,8 +28,9 @@ The code is in [`pkgs/slop-broker`](../pkgs/slop-broker) (Rust), the service is
 - Anything returned to a requester should be treated as published. It ends up in the agent's
   context, so in the model provider's transcript and in the session logs under `~/.claude` and
   `~/.codex`.
-- The broker evaluates and builds agent-written Nix only as a separate user without keys. Its
-  privileged half only copies, signs, encrypts or activates the results.
+- The broker never evaluates agent-written Nix itself. A builder does, as a separate user that only
+  holds a read-only Git key. The broker's privileged half only copies, signs, encrypts or
+  activates the results.
 - `palace` already hosts the VM and will hold the deploy key, which is root on every box. Also
   giving the broker access to every secret adds little exposure on top of that.
 
@@ -89,7 +90,7 @@ then streams the output.
 |---|---|---|
 | `slop status <node> [unit]`, `slop logs <node> <unit>`, `slop failed <node>` | Fixed read-only queries on boxes | auto |
 | `slop ssh <node> -- <cmd>`, `slop ssh --host user@host[:port] -- <cmd>` | Any command over SSH | ask |
-| `slop deploy <node>… --commit <id> [--boot]` | Build an approved commit and deploy it | ask |
+| `slop deploy <node[.profile]>… [--commit <rev>] [--boot]` | Build a pushed commit and deploy it, to all targets at once | ask |
 | `slop build <attr>… --commit <id>` | Build on `palace` and push to the main binary cache | ask |
 | `slop secret keys\|set\|generate\|rekey\|read …` | Work with age secrets | `keys` auto, `read` always ask, others ask |
 | `slop dns list\|set\|delete …` | Change records in the public Cloudflare zones | `list` auto, others ask |
@@ -138,6 +139,33 @@ for each `ask` request.
 - If the connection fails, requests stay pending; a failure never approves anything. When the
   broker reconnects, it reissues pending notifications with new action IDs.
 
+### Approvals web app (later)
+
+Phone notifications are easy to lose, and a terminal isn't always at hand. A web app served by the
+broker would make approving reliable, and on a desktop it would also show what `slop-approve` can
+only print: the audit log, active leases, and a deploy's full comparison. Home Assistant stays as
+another way to answer. Nothing here is decided yet; these are the ideas so far.
+
+- **The page is the source of truth.** It always lists what's pending with full detail, so a
+  dismissed or missed notification costs nothing; a notification only points at its request.
+- **Passkeys per decision.** A passkey (WebAuthn) is a key pair made by a device, such as a phone or
+  laptop. The private half never leaves the device's secure hardware and is unlocked with a
+  fingerprint, face or PIN; the site only keeps the public half. To answer, the browser asks the
+  device to sign a fresh challenge from the broker that names the request and the decision. That
+  proves a registered device and its owner approved that exact answer, without passwords or a
+  long-lived session that could be replayed. Open: how to register a device the first time (for
+  example a one-time link from `slop-approve` on a trusted box), and how to remove one.
+- **Notifications.** Web Push works for installed web apps on Android and on iOS 16.4 and later,
+  even while the app is closed. Messages go through the browser vendor's push service (Google's
+  for Chrome on Android), end-to-end encrypted with keys the broker holds (VAPID), so no account
+  with them is needed. Android shows action buttons on these; iOS doesn't. Alternatives to
+  explore: a self-hosted ntfy server (UnifiedPush) on Android, or only Home Assistant.
+- **Exposure.** Either public behind `middleman`'s SSO (for example `approve.slop.nul.ie`), or only
+  on the home networks and headscale. Passkeys protect the answers either way; the choice is about
+  who can see pending requests.
+- **Desktop use.** The same page lists the audit log with filters, leases, and per-request detail,
+  such as a deploy's commits, package changes and units, with room for more than a terminal.
+
 ### Audit log
 
 Each request, decision, approver, lease use and result is an event with the request's ID. The
@@ -162,53 +190,65 @@ ciphertext before and after, never values.
 
 ### Deploys
 
-1. The agent pushes its commit to Gitea, then runs `slop deploy <node> --commit <id>`.
-2. The broker fetches that commit from `git.nul.ie`, not from the VM. It evaluates and builds it
-   as `slop-broker-build`, a user without keys, using `palace`'s Nix daemon with the main cache as
-   substituter. Building runs nothing privileged, so it happens **before** approval, rate-limited
-   per requester.
-3. The broker copies the node's current system closure from the node, a fixed read-only step that
-   runs no agent-written code. It then compares it with the new one.
-4. One approval shows the commit, the closure diff and the changed units (see the example below).
-5. Once approved, the privileged half runs deploy-rs on the built profile with the deploy key and
-   streams the output back to the agent.
+`slop deploy <target>… [--commit <rev>] [--boot]` deploys a pushed commit to one or more
+targets, each a node (all its profiles, like `deploy .#node`) or `node.profile` (such as
+`shill.container-middleman`). The client resolves `--commit` (default `HEAD`) to a full ID in
+its checkout.
 
-Activation, including `dry-activate`, runs agent-written code as root on the node. So nothing is
-activated before approval.
+1. **Build, before approval.** The broker runs the builder over SSH. The builder is a user
+   without keys, `slop-broker-build`, whose key's forced command is `slop-broker builder`
+   ([`my.slop-broker-builder`](../nixos/modules/slop-broker-builder.nix)). The builder fetches
+   every branch from Gitea with a read-only key, so the agent never supplies the source, and
+   refuses commits that aren't on a branch. It then evaluates the targets' deploy-rs profiles and
+   builds them with the box's Nix daemon. Evaluation runs agent-written Nix, which is why it
+   happens there and not in the broker. Build logs stream to the agent. One build runs at a time.
+2. **Compare, before approval.** The broker copies the closures to each node, as deploy-rs does
+   (nodes substitute what the caches have; progress streams to the agent), and runs a fixed read-only script on the node that
+   compares each profile with the one installed. Nothing runs as root, and no agent-written code
+   runs.
+3. **Approve.** One approval covers every target, the commit and the mode. Policy rules see one
+   scope per target (`node`, `profile`, `mode`, `commit`), and the strictest answer applies, so
+   for example a rule can allow routers only `boot`.
+4. **Activate, once approved.** On every node at once, the broker runs deploy-rs's `activate-rs`
+   on each profile in deploy-rs's order, as root through the node's `doas`, inside a transient
+   unit (`systemd-run`). The activation therefore finishes even if the connection drops, including
+   when the broker deploys its own box and restarts. Output comes back prefixed with the node.
+   Deploys run in parallel; an agent that needs an order sends separate requests.
 
-Paths built this way come from the daemon's sandboxed builds, so they can be pushed to the main
-cache. That's also what `slop build` does without deploying.
+There is no magic rollback, as with `deploy` from a workstation. `--boot` makes the new
+configuration the boot default without switching to it. Activation, including `dry-activate`, runs
+the new system's own code as root, so none of it happens before approval.
 
 #### Approval contents
 
-The closure diff comes from [`nvd`](https://khumba.net/projects/nvd/) and shows package versions,
-not configuration. The broker adds a configuration summary by comparing the two systems' `etc`
-trees: which systemd units and `/etc` files changed. That approximates what activation will
-restart, without running anything. The full view, in `slop-approve show <id>`, looks like this:
+Package versions come from `nix store diff-closures`. Configuration changes come from comparing
+the two profiles' `etc` trees, whose entries are links into the store: changed, added and removed
+systemd units (drop-ins count as their unit) and `/etc` files. That approximates what activation
+will restart without running anything. A kernel or initrd change is called out because it needs a
+reboot. Commit messages and the diffstat come from the agent's commits, so they're marked as
+agent-written. The full view, in `slop-approve show <id>`, looks like this:
 
 ```text
-deploy sfh  (switch)
-Commit 3f9c2e1…  by agent "hass-upgrade" on slop-cannon (agent-supplied)
+deploy sfh (switch) at 3f9c2e1a8b0c
+Commit 3f9c2e1a8b0c4d…
+Commits (agent-written messages):
   3f9c2e1 nixos/sfh: Update Home Assistant
   8a1b7d0 nixos/hass: Add Zigbee coordinator
-  nixos/boxes/home/sfh/containers/hass.nix | 14 +++++++++-----
-
-Packages (nvd):
-  [U.]  home-assistant         2026.11.1 -> 2026.11.2
-  [U.]  python3.13-zha         0.0.71 -> 0.0.72
-  [A.]  python3.13-bellows     0.46.1
-  Closure: 4211 -> 4219 paths, +38.2 MiB
-
-Configuration:
-  changed units:  container@hass.service, home-assistant.service (in hass)
-  changed files:  /etc/hass/configuration.yaml (in hass)
-  added units:    -
-  removed units:  -
+   nixos/boxes/home/sfh/containers/hass.nix | 14 +++++++++-----
+   1 file changed, 9 insertions(+), 5 deletions(-)
+sfh.system (switch):
+  packages: no version changes
+  changed units: container@hass.service
+sfh.container-hass (switch):
+  packages:
+    home-assistant: 2026.11.1 → 2026.11.2, +3.4 MiB
+    python3.13-zha: 0.0.71 → 0.0.72
+  changed units: home-assistant.service
+  changed files: /etc/hass/configuration.yaml
 ```
 
-The phone notification carries the first line, the counts (commits, package changes, changed
-units) and the label. It isn't the place to review a large deploy. For those, approve from a
-terminal.
+The phone notification carries only the first line and the label. It isn't the place to review a
+large deploy. For those, approve from a terminal.
 
 ### Binary cache
 
@@ -335,9 +375,12 @@ Each step updates this page, the agent context and the box pages as it lands.
    the VM's CID.
 3. **Done — box queries** as `auto` operations.
 4. **Done — SSH transport** for requesters and approvers on other boxes.
-5. **Deploy executor and `slop build`:** fetch from Gitea, build as `slop-broker-build`, push to
-   the main cache, run deploy-rs.
+5. **Done — deploys:** the builder, comparison on the nodes, and parallel activation.
+   **Next — `slop build`:** build attributes and push them to the main cache, which needs a
+   Harmonia push key for the broker.
 6. **Secrets:** the broker's age identity, a one-off rekey, then the operations.
+   **Later — approvals web app** (see [above](#approvals-web-app-later)), once its design is
+   settled.
 7. **DNS**, with its Cloudflare token.
 8. **Previews.**
 9. **TCP forwards and the VM-built cache**, if needed.

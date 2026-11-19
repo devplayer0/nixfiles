@@ -15,7 +15,7 @@ use tokio_util::codec::{Framed, LengthDelimitedCodec};
 
 use crate::audit::Record;
 use crate::queue::{Decision, PendingInfo};
-use crate::types::{Arg, HostName, Lines, NodeName, Since, UnitName, UserName};
+use crate::types::{Arg, CommitId, DeployTarget, HostName, Lines, NodeName, Since, UnitName, UserName};
 
 /// Bumped on any incompatible change; the broker refuses other versions.
 pub const PROTOCOL_VERSION: u32 = 1;
@@ -50,6 +50,13 @@ pub enum Operation {
     Query { destination: Destination, query: Query },
     /// This requester's pending requests and leases.
     Requests,
+    /// Builds a pushed commit and, once approved, activates it on deploy nodes, all at once.
+    Deploy {
+        targets: Vec<DeployTarget>,
+        commit: CommitId,
+        /// Make it the boot default without switching to it.
+        boot: bool,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -171,8 +178,12 @@ pub enum ApproveResponse {
 
 pub type Transport<S> = Framed<S, LengthDelimitedCodec>;
 
+pub fn codec() -> LengthDelimitedCodec {
+    LengthDelimitedCodec::builder().max_frame_length(MAX_MESSAGE).new_codec()
+}
+
 pub fn transport<S: AsyncRead + AsyncWrite>(stream: S) -> Transport<S> {
-    Framed::new(stream, LengthDelimitedCodec::builder().max_frame_length(MAX_MESSAGE).new_codec())
+    Framed::new(stream, codec())
 }
 
 pub fn encode<T: Serialize>(message: &T) -> Result<Bytes> {

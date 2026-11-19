@@ -1,6 +1,6 @@
 { lib, pkgs, config, self, ... }:
 let
-  inherit (builtins) any attrValues attrNames isAttrs isList length concatLists;
+  inherit (builtins) any head attrValues attrNames isAttrs isList length concatLists;
   inherit (lib) mkIf mkMerge mapAttrs mapAttrsToList filterAttrs optional optionals hasPrefix unique concatStringsSep;
   inherit (lib.my) mkOpt' mkBoolOpt';
 
@@ -84,7 +84,13 @@ let
       ssh = "${pkgs.openssh}/bin/ssh";
       key = "ssh-key";
       known_hosts = "/var/lib/slop-broker/known_hosts";
-      targets = mapAttrs (_: t: { inherit (t) hostname user; ssh_opts = t.sshOpts; }) cfg.ssh.targets;
+      targets = mapAttrs (_: t: { inherit (t) hostname user sudo; ssh_opts = t.sshOpts; }) cfg.ssh.targets;
+    } else null;
+
+    deploy = if cfg.deploy.enable then {
+      builder = with cfg.deploy.builder; { inherit hostname user; ssh_opts = sshOpts; };
+      nix = "${config.nix.package}/bin/nix";
+      cache = "/var/lib/slop-broker/cache";
     } else null;
 
     remote = if hasRemote then {
@@ -122,9 +128,20 @@ in
           hostname = mkOpt' str null "Host to connect to.";
           user = mkOpt' str null "Remote user.";
           sshOpts = mkOpt' (listOf str) [ ] "Extra SSH arguments (trusted).";
+          sudo = mkOpt' str "doas -u" "How the user becomes root for deploys, followed by `root`.";
         };
-      })) (mapAttrs (_: n: { inherit (n) hostname sshOpts; user = n.sshUser; }) self.deploy.nodes)
+      })) (mapAttrs (_: n: { inherit (n) hostname sshOpts; user = n.sshUser; sudo = n.sudo or "doas -u"; }) self.deploy.nodes)
         "Named SSH targets; defaults to every deploy-rs node.";
+    };
+
+    deploy = {
+      enable = mkBoolOpt' false "Whether to build and deploy commits (`slop deploy`); needs `ssh`.";
+      builder = {
+        hostname = mkOpt' str "localhost" "Box running the builder (`my.slop-broker-builder`).";
+        user = mkOpt' str "slop-broker-build" "The builder's user.";
+        sshOpts = mkOpt' (listOf str) [ "-p" (toString (head config.services.openssh.ports)) ]
+          "Extra SSH arguments for reaching the builder.";
+      };
     };
 
     homeAssistant = {
@@ -142,6 +159,10 @@ in
       {
         assertion = cfg.ssh.enable -> isRuntimePath cfg.ssh.keyFile;
         message = "slop-broker SSH needs a runtime key file.";
+      }
+      {
+        assertion = cfg.deploy.enable -> cfg.ssh.enable;
+        message = "slop-broker deploys need `ssh`.";
       }
       {
         assertion = missingPolicies == [ ];

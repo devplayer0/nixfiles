@@ -21,6 +21,7 @@
     spdk = ./spdk.nix;
     librespeed = ./librespeed;
     slop-broker = ./slop-broker.nix;
+    slop-broker-builder = ./slop-broker-builder.nix;
     paseo-relay = ./paseo-relay.nix;
     netboot = ./netboot;
   };

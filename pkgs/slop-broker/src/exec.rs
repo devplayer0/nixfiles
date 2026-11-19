@@ -4,7 +4,7 @@ use std::process::{ExitStatus, Stdio};
 use std::time::Duration;
 
 use anyhow::{Context, Result, bail};
-use tokio::io::{AsyncRead, AsyncReadExt, AsyncWriteExt};
+use tokio::io::{AsyncBufReadExt, AsyncRead, AsyncReadExt, AsyncWriteExt};
 use tokio::process::Command;
 use tokio::sync::mpsc;
 use tokio_util::sync::CancellationToken;
@@ -80,6 +80,45 @@ pub async fn run(mut command: Command, io: &mut Io, with_stdin: bool) -> Result<
     };
 
     // Output still buffered in the pipes belongs before the exit status.
+    let _ = tokio::time::timeout(Duration::from_secs(5), async {
+        let _ = stdout.await;
+        let _ = stderr.await;
+    })
+    .await;
+    Ok(exit_code(status))
+}
+
+/// Runs `command` without stdin, sending each line of its output with `prefix`, so several can
+/// share the requester's output.
+pub async fn run_prefixed(mut command: Command, out: &Output, prefix: &str, cancel: &CancellationToken) -> Result<i32> {
+    command.stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::piped()).process_group(0).kill_on_drop(true);
+    let mut child = spawn(&mut command).await?;
+    let pid = child.id().context("process exited immediately")? as i32;
+
+    let lines = |reader, wrap: fn(Vec<u8>) -> ServerMessage| {
+        let (out, prefix) = (out.clone(), prefix.to_owned());
+        tokio::spawn(async move {
+            let mut lines = tokio::io::BufReader::new(reader).lines();
+            while let Ok(Some(line)) = lines.next_line().await {
+                out.send(wrap(format!("{prefix}{line}\n").into_bytes())).await;
+            }
+        })
+    };
+
+    let stdout =
+        lines(Box::new(child.stdout.take().unwrap()) as Box<dyn AsyncRead + Send + Unpin>, ServerMessage::Stdout);
+    let stderr =
+        lines(Box::new(child.stderr.take().unwrap()) as Box<dyn AsyncRead + Send + Unpin>, ServerMessage::Stderr);
+
+    let status = tokio::select! {
+        status = child.wait() => status?,
+        _ = cancel.cancelled() => {
+            terminate(pid, &mut child).await;
+            bail!("requester disconnected");
+        }
+    };
+
+    // Lines still buffered belong before the exit status.
     let _ = tokio::time::timeout(Duration::from_secs(5), async {
         let _ = stdout.await;
         let _ = stderr.await;

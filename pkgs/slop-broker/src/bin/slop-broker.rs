@@ -25,6 +25,11 @@ enum Command {
         broker: Option<String>,
         args: Vec<String>,
     },
+    /// Forced command for the builder's SSH key: builds one request read from stdin.
+    Builder {
+        #[arg(long)]
+        config: PathBuf,
+    },
     /// Forced command for SSH keys: joins the session to the broker as the key's owner.
     Remote {
         #[arg(long, default_value = "/run/slop-broker/remote.sock")]
@@ -56,6 +61,7 @@ async fn main() {
                 }
             }
             Command::Remote { socket, role, name } => remote::bridge(&socket, role, name).await,
+            Command::Builder { config } => slop_broker::builder::worker(&config).await,
         }
     };
 

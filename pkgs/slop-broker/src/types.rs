@@ -109,6 +109,48 @@ validated_string!(
 );
 
 validated_string!(
+    /// A full Git commit ID, SHA-1 or SHA-256, in lowercase hex.
+    CommitId,
+    "commit ID (use the full hash)",
+    |s| matches!(s.len(), 40 | 64) && s.bytes().all(|c| c.is_ascii_digit() || (b'a'..=b'f').contains(&c))
+);
+
+impl CommitId {
+    pub fn short(&self) -> &str {
+        &self.0[..12]
+    }
+}
+
+validated_string!(
+    /// What to deploy: a node (all its profiles, as `deploy .#node` does) or `node.profile`.
+    DeployTarget,
+    "deploy target (use node or node.profile)",
+    |s| {
+        let name = |p: &str| {
+            let b = p.as_bytes();
+            !b.is_empty()
+                && b.len() <= 128
+                && b[0].is_ascii_alphanumeric()
+                && b.iter().all(|&c| c.is_ascii_alphanumeric() || b"_-".contains(&c))
+        };
+        match s.split_once('.') {
+            Some((node, profile)) => name(node) && name(profile),
+            None => name(s),
+        }
+    }
+);
+
+impl DeployTarget {
+    pub fn node(&self) -> &str {
+        self.0.split_once('.').map_or(&self.0, |(node, _)| node)
+    }
+
+    pub fn profile(&self) -> Option<&str> {
+        self.0.split_once('.').map(|(_, profile)| profile)
+    }
+}
+
+validated_string!(
     /// One word of a command; anything but NUL.
     Arg,
     "argument",
@@ -176,6 +218,21 @@ impl From<Lines> for u32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn commits_and_deploy_targets() {
+        assert!("0123456789abcdef0123456789abcdef01234567".parse::<CommitId>().is_ok());
+        for bad in ["HEAD", "0123456", "0123456789ABCDEF0123456789abcdef01234567"] {
+            assert!(bad.parse::<CommitId>().is_err(), "{bad}");
+        }
+        let target: DeployTarget = "shill.container-middleman".parse().unwrap();
+        assert_eq!((target.node(), target.profile()), ("shill", Some("container-middleman")));
+        let target: DeployTarget = "sfh".parse().unwrap();
+        assert_eq!((target.node(), target.profile()), ("sfh", None));
+        for bad in ["a.b.c", ".a", "a.", "-a", "a b", "a.\"$x\""] {
+            assert!(bad.parse::<DeployTarget>().is_err(), "{bad}");
+        }
+    }
 
     #[test]
     fn names() {

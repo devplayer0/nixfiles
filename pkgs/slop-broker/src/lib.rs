@@ -2,6 +2,7 @@
 //! approval. See `docs/slop-broker.md` in nixfiles.
 pub mod approve;
 pub mod audit;
+pub mod builder;
 pub mod config;
 pub mod exec;
 pub mod ha;

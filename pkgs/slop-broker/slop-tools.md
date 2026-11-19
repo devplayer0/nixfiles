@@ -25,6 +25,7 @@ applies a policy, and asks a human to approve most requests.
 | `slop logs <node> <unit> [-n 200] [--since 2h]` | A unit's journal; `--since` takes a duration or a date (`2026-01-31 12:00`) | usually none |
 | `slop failed <node>` | Failed units | usually none |
 | `slop ssh <node> -- <command>…` | Any command over SSH, as the deploy user (with `doas` for root) | asks |
+| `slop deploy <node>… [--commit <rev>] [--boot]` | Build a pushed commit and deploy it to all the nodes at once | asks |
 | `slop requests` | Your pending requests and active leases | none |
 
 - Prefer `status`, `logs` and `failed` to `slop ssh` for looking at a box: they don't wait for a
@@ -38,6 +39,18 @@ applies a policy, and asks a human to approve most requests.
 - There is no TTY. Interactive programs won't work; use non-interactive flags (`--no-pager`,
   `-y`).
 - `slop ssh` forwards stdin once the request is approved.
+
+### Deploying
+
+- Push the commit first: the broker fetches it from Gitea, not from you, and only finds commits
+  on a branch. `--commit` defaults to `HEAD` of your checkout (with `jj`, pass the commit).
+- A target is a node (all its profiles, like `deploy .#node`) or `node.profile`, such as
+  `shill.container-middleman`. Several targets deploy in parallel; for an order, deploy them one
+  at a time.
+- The build and the copy to the nodes happen before approval, and their output streams to you,
+  so build errors show up without waiting for a human. Approval waits start after that.
+- `--boot` makes it the boot default without switching; the box uses it after its next reboot.
+- Check the result afterwards with `slop failed` and `slop status`.
 
 ## Don't
 

@@ -73,6 +73,17 @@ pub fn evaluate(policy: Option<&OpPolicy>, scope: &Map<String, Value>, limits: L
     Verdict { action, leases }
 }
 
+/// The strictest of several verdicts: the highest action, and only leases all of them allow.
+pub fn combine(verdicts: impl IntoIterator<Item = Verdict>) -> Verdict {
+    let mut verdicts = verdicts.into_iter();
+    let Some(mut combined) = verdicts.next() else { return Verdict { action: Action::Deny, leases: vec![] } };
+    for verdict in verdicts {
+        combined.action = combined.action.max(verdict.action);
+        combined.leases.retain(|l| verdict.leases.contains(l));
+    }
+    combined
+}
+
 fn matches(patterns: &BTreeMap<String, String>, scope: &Map<String, Value>) -> bool {
     patterns.iter().all(|(field, pattern)| {
         let value = match scope.get(field) {
@@ -115,6 +126,15 @@ pub fn glob(pattern: &[u8], text: &[u8]) -> bool {
 mod tests {
     use super::*;
     use serde_json::json;
+
+    #[test]
+    fn combining_takes_the_strictest() {
+        let verdict = |action, leases: &[u64]| Verdict { action, leases: leases.to_vec() };
+        let combined = combine([verdict(Action::Auto, &[300, 3600]), verdict(Action::Ask, &[300])]);
+        assert_eq!(combined, verdict(Action::Ask, &[300]));
+        assert_eq!(combine([verdict(Action::Ask, &[]), verdict(Action::Deny, &[])]).action, Action::Deny);
+        assert_eq!(combine([]).action, Action::Deny);
+    }
 
     fn scope(value: Value) -> Map<String, Value> {
         value.as_object().unwrap().clone()

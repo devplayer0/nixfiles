@@ -8,6 +8,7 @@ use crate::policy::Limits;
 use crate::proto::{LeaseSummary, OpResult, Operation, PendingSummary};
 use crate::server::Broker;
 
+pub mod deploy;
 pub mod query;
 pub mod ssh;
 
@@ -15,6 +16,9 @@ pub struct Parsed {
     pub op: &'static str,
     /// What an approval covers; also what policy rules match against.
     pub scope: Map<String, Value>,
+    /// If set, policy rules are checked against each of these instead, and the strictest
+    /// answer applies (such as one per node of a deploy).
+    pub rule_scopes: Vec<Map<String, Value>>,
     pub summary: String,
     pub detail: String,
     pub limits: Limits,
@@ -24,6 +28,8 @@ pub struct Parsed {
     pub stdin: bool,
     /// Needs no policy or approval.
     pub builtin: bool,
+    /// What [`prepare`] made before approval.
+    pub prepared: Option<crate::builder::BuildResult>,
     pub operation: Operation,
 }
 
@@ -62,6 +68,8 @@ pub fn plan(broker: &Broker, operation: Operation) -> Result<Parsed> {
                 sensitive: false,
                 stdin: true,
                 builtin: false,
+                rule_scopes: Vec::new(),
+                prepared: None,
                 operation,
             })
         }
@@ -80,9 +88,12 @@ pub fn plan(broker: &Broker, operation: Operation) -> Result<Parsed> {
                 sensitive: false,
                 stdin: false,
                 builtin: false,
+                rule_scopes: Vec::new(),
+                prepared: None,
                 operation,
             })
         }
+        Operation::Deploy { .. } => deploy::plan(broker, operation),
         Operation::Requests => Ok(Parsed {
             op: "requests",
             scope: Map::new(),
@@ -92,12 +103,27 @@ pub fn plan(broker: &Broker, operation: Operation) -> Result<Parsed> {
             sensitive: false,
             stdin: false,
             builtin: true,
+            rule_scopes: Vec::new(),
+            prepared: None,
             operation,
         }),
     }
 }
 
+/// Work done before approval so approvers can see what a request does, such as building a
+/// deploy. Runs nothing privileged.
+pub async fn prepare(broker: &Broker, parsed: &mut Parsed, io: &Io) -> Result<()> {
+    match parsed.operation {
+        Operation::Deploy { .. } => deploy::prepare(broker, parsed, io).await,
+        _ => Ok(()),
+    }
+}
+
 pub async fn execute(broker: &Broker, requester: &str, parsed: Parsed, io: &mut Io) -> Result<Outcome> {
+    if let Operation::Deploy { .. } = parsed.operation {
+        return deploy::execute(broker, &parsed, io).await.map(Into::into);
+    }
+
     match parsed.operation {
         Operation::Ssh { destination, command } => {
             ssh::execute(broker, &destination, &command, io).await.map(Into::into)
@@ -121,6 +147,7 @@ pub async fn execute(broker: &Broker, requester: &str, parsed: Parsed, io: &mut 
                 .collect();
             Ok(Outcome { exit: 0, result: Some(OpResult::Requests { pending, leases }) })
         }
+        Operation::Deploy { .. } => unreachable!(),
     }
 }
 

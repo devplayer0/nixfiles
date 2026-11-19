@@ -38,6 +38,21 @@ pub struct Config {
     pub home_assistant: Option<HomeAssistantConfig>,
     #[serde(default)]
     pub remote: Option<RemoteConfig>,
+    #[serde(default)]
+    pub deploy: Option<DeployConfig>,
+}
+
+/// Deploys: a builder evaluates and builds commits, then the broker copies and activates them
+/// over SSH like deploy-rs does. Needs `ssh`, whose key and options it uses.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DeployConfig {
+    /// Runs `slop-broker builder` as its forced command, as a user without keys.
+    pub builder: SshTarget,
+    /// `nix`, for copying closures to nodes.
+    pub nix: PathBuf,
+    /// Writable directory for `nix`'s cache.
+    pub cache: PathBuf,
 }
 
 /// Requesters and approvers on other boxes, connecting over SSH (see [`crate::remote`]).
@@ -114,6 +129,13 @@ pub struct SshTarget {
     pub user: String,
     #[serde(default)]
     pub ssh_opts: Vec<String>,
+    /// How `user` becomes root, followed by the user name (deploy-rs's `sudo`).
+    #[serde(default = "default_sudo")]
+    pub sudo: String,
+}
+
+fn default_sudo() -> String {
+    "doas -u".into()
 }
 
 #[derive(Debug, Clone, Deserialize)]
