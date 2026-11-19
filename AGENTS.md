@@ -186,8 +186,9 @@ These APs are not managed by the flake; only their DNS records are. Read and upd
 
 Agents on `slop-cannon` have no deploy or SSH keys, so `deploy` and `ssh-machine` don't work there.
 Use `slop` instead (`slop guide` explains it): `slop status`, `slop logs` and `slop failed` to look
-at a box without waiting, and `slop ssh <node> -- <cmd>` for anything else. Requests that need
-approval can wait up to five minutes for a human. See [`docs/slop-broker.md`](docs/slop-broker.md).
+at a box without waiting, `slop deploy <node>…` to deploy a pushed commit, and
+`slop ssh <node> -- <cmd>` for anything else. Requests that need approval can wait up to five
+minutes for a human. See [`docs/slop-broker.md`](docs/slop-broker.md).
 
 ## Secrets
 

@@ -187,6 +187,11 @@ the agents on `slop-cannon` after policy and, usually, a human approve them.
   [`palace/slop-broker.nix`](../../../nixos/boxes/home/palace/slop-broker.nix).
 - The broker holds the deploy key (age secret `palace/slop-broker-deploy.key`). That key is root on
   every box, so `palace` must be treated as being as sensitive as a workstation with `.keys/`.
+- Deploys are built by `slop-broker-build`, a user without keys that the broker reaches over SSH
+  ([`my.slop-broker-builder`](../../../nixos/modules/slop-broker-builder.nix)). It fetches
+  commits from Gitea with a read-only deploy key on `dev/nixfiles` (age secret
+  `palace/slop-broker-git.key`) and builds with `palace`'s Nix daemon, so builds use the host's
+  spare CPU and memory.
 - Answer requests on `palace` as `dev` with `slop-approve`. In a terminal it shows each request
   in full, asks for an answer and waits for new ones; `slop-approve list` and
   `slop-approve <id> <decision>` (any unique ID prefix) work from scripts. `slop-approve log`
