@@ -94,6 +94,7 @@ The laptop is indexed in [`mobile/README.md`](mobile/README.md).
 ## Misc
 
 - [`misc/installer.md`](misc/installer.md) — the custom NixOS installer image.
+- [`slop-broker.md`](slop-broker.md) — `slop-cannon`'s credential and approval broker (design).
 
 ## A note on the assignment tables
 

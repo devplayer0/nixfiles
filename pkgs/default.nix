@@ -7,6 +7,7 @@ in
   monocraft' = callPackage ./monocraft.nix { };
   vfio-pci-bind = callPackage ./vfio-pci-bind.nix { };
   librespeed-go = callPackage ./librespeed-go.nix { };
+  slop-broker = callPackage ./slop-broker { };
   paseo-relay = callPackage ./paseo-relay.nix { };
   # modrinth-app = callPackage ./modrinth-app { };
   chocolate-doom2xx = callPackage ./chocolate-doom2xx { };

@@ -6,3 +6,4 @@ result*
 /.keys/*.key
 *.swp
 /.claude/settings.local.json
+/pkgs/slop-broker/target/
