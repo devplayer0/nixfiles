@@ -192,6 +192,11 @@ the agents on `slop-cannon` after policy and, usually, a human approve them.
   `slop-approve <id> <decision>` (any unique ID prefix) work from scripts. `slop-approve log`
   shows recent requests, answers and results from the audit log
   (`/var/lib/slop-broker/audit.jsonl`, also in the journal).
+- Requesters and approvers on other boxes log in over SSH as `slop`, whose keys can only run the
+  broker's forced command (see
+  [Other requesters and approvers](../../slop-broker.md#other-requesters-and-approvers)). The
+  agents on `castle` are the requester `castle`, with the same policy as `slop-cannon`, and
+  `castle` also has an approver key (`sshApprovers.castle`).
 
 ## Notable config files
 

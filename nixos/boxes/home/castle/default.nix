@@ -229,6 +229,18 @@ in
             homeConfig = {
               services = { };
 
+              # Try `slop-broker` from here; both keys are generated locally
+              my.slop = {
+                request = {
+                  enable = true;
+                  keyFile = "~/.ssh/slop-castle-request";
+                };
+                approve = {
+                  enable = true;
+                  keyFile = "~/.ssh/slop-castle-approve";
+                };
+              };
+
               home = {
                 packages = with pkgs; [
                   jacktrip

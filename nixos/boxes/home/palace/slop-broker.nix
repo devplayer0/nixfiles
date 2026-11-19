@@ -29,6 +29,18 @@
           vsockCid = slopCannonCid;
           policy = "agent";
         };
+
+        # Agents on `castle` connecting over SSH
+        requesters.castle = {
+          sshKeys = [
+            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINY4Znri43VCA0gJYBbO9g72OsN3xnMYbMZ79G5tAZnr slop requester (castle)"
+          ];
+          policy = "agent";
+        };
+
+        # Answering requests from `castle` over SSH
+        sshApprovers.castle = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAnv2y4uuABxHtk2iXhKe67W8jRIJcLrDVt9/LQaG14l slop approver (castle)" ];
+
         ssh = {
           enable = true;
           keyFile = config.age.secrets."palace/slop-broker-deploy.key".path;
