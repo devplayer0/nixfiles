@@ -13,7 +13,7 @@ inside it.
 
 | vCPUs | RAM | Disk | Network | Other |
 |---|---|---|---|---|
-| 16c × 2t (overcommitted) | 48 GiB | 512 GiB virtio, NVMe-oF from `cellar` via `palace` | SR-IOV VF 5 (`44:00.6`) on VLAN 120 | installer ISO |
+| 16c × 2t (overcommitted) | 24 GiB | 512 GiB virtio, NVMe-oF from `cellar` via `palace` | SR-IOV VF 5 (`44:00.6`) on VLAN 120 | installer ISO |
 
 `vm@slop-cannon` has a low `CPUWeight` on `palace`, so `cellar`, `river` and `sfh` win under
 contention. `palace` has `kvm_amd` `nested=1`, so the guest has `/dev/kvm`.

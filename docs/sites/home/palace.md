@@ -144,7 +144,7 @@ run before stage-two module loading. `sfh` requires the `frigate` LV before QEMU
 | `cellar` | 8c × 2t | 16 GiB | `cellar-hi` VF 0 (`44:00.1`); NVMe `41:00.0`–`43:00.0` | pinned to NUMA node 1; split IRQ chip + vIOMMU |
 | `river` | 3c × 2t | 4 GiB | `river-rdma` VF 1 (`44:00.2`), `river-dave` VF 4 (`44:00.5`), `river-jim-tap` | only an ESP local disk (plus an installer ISO) — root is NVMe-oF from `cellar` |
 | `sfh` | 8c × 2t | 32 GiB | `sfh-hi` VF 2 (`44:00.3`), `sfh-ctrs` VF 3 (`44:00.4`); two USB host ports | no boot disk — netboots; gets the `hdds/frigate` LV |
-| `slop-cannon` | 16c × 2t | 48 GiB | `slop-cannon-ut` VF 5 (`44:00.6`) | disk is NVMe-oF from `cellar`, connected by `palace` (plus an installer ISO) |
+| `slop-cannon` | 16c × 2t | 24 GiB | `slop-cannon-ut` VF 5 (`44:00.6`) | disk is NVMe-oF from `cellar`, connected by `palace` (plus an installer ISO) |
 
 `slop-cannon`'s vCPUs are overcommitted (the VMs total more vCPUs than the host's 32 threads) so
 coding agents can burst; `vm@slop-cannon` has a low `CPUWeight`, so `cellar`, `river` and `sfh`

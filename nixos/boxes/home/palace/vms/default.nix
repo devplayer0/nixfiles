@@ -272,7 +272,7 @@
               cpus = 16;
               threads = 2;
             };
-            memory = 49152;
+            memory = 24576;
             cleanShutdown.timeout = 120;
             drives = [
               installerDisk
