@@ -218,8 +218,10 @@ in churn.
 - Comment where it genuinely aids understanding, but not for trivial/obvious code — match the file's
   existing (fairly sparse) comment density. When adding something general, comment its general
   purpose, not the specific change or one-off reason it was introduced for.
-- Separate logical steps in code with blank lines. Keep closely related statements together, and leave a
-  blank line before a comment that introduces the next step.
+- Separate logical steps in code with blank lines, in every language and inside function bodies: a
+  function that gathers its inputs, checks them, acts and reports should read as short paragraphs,
+  not one block. Keep closely related statements together, and leave a blank line before a comment
+  that introduces the next step.
 - Prefer `lib.my` helpers (`mkOpt'`, `mkBoolOpt'`, `mkDefault'`) and `lib.my.c` constants over
   reimplementing.
 - New shared functionality → a module in `*/modules/` + entry in `_list.nix`, options under `my.*`.
@@ -271,8 +273,10 @@ gets the section with a short explanation instead of a generated-table link.
 **Structure and layout:**
 - Use **tables** for lists of structured items (BGP peers, forwarded ports, vhosts, containers,
   VMs, VLANs). Make the item **name the link**; don't add a separate `Page`/`Docs` column.
-- Break up **long prose**: any bullet running past ~4 lines over several distinct facts becomes a
-  `###` subheading (lead sentence + nested bullets). Don't leave walls of long bullets.
+- Break up **long prose**. A bullet or numbered step running past ~3 lines over several facts
+  becomes a short lead (a bold phrase or one sentence) with nested bullets, a fact each; several
+  such points on one topic become a `###` subheading. A paragraph listing several facts becomes
+  bullets or a table. Restructure a long bullet you're adding to rather than lengthening it.
 - Prefer durable concepts and named configuration identifiers over copying exact numbers that are
   tunable, generated or likely to drift. Exact values are appropriate when they are useful parts of
   the inventory or interface: VM resource allocations, hardware-fixed properties, network and
