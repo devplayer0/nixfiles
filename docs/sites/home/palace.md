@@ -197,6 +197,10 @@ the agents on `slop-cannon` after policy and, usually, a human approve them.
   `slop-approve <id> <decision>` (any unique ID prefix) work from scripts. `slop-approve log`
   shows recent requests, answers and results from the audit log
   (`/var/lib/slop-broker/audit.jsonl`, also in the journal).
+- Requests that ask also go to Dev's phone as Home Assistant Companion notifications, from the
+  `slop-broker` user on `hass` (age secret `palace/slop-broker-ha-token`). That user is local-only,
+  so the broker connects to `hass` over IPv4: Home Assistant counts the public IPv6 addresses as
+  remote.
 - Requesters and approvers on other boxes log in over SSH as `slop`, whose keys can only run the
   broker's forced command (see
   [Other requesters and approvers](../../slop-broker.md#other-requesters-and-approvers)). The

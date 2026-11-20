@@ -1,5 +1,5 @@
 {
-  nixos.systems.palace.configuration = { lib, config, ... }:
+  nixos.systems.palace.configuration = { lib, config, allAssignments, ... }:
   let
     # `slop-cannon`'s vsock address; the kernel reports it for every connection from the guest
     slopCannonCid = 3;
@@ -8,6 +8,11 @@
     my = {
       secrets.files = {
         "palace/slop-broker-deploy.key" = {
+          owner = "root";
+          mode = "0400";
+        };
+        # Long-lived token of the `slop-broker` Home Assistant user
+        "palace/slop-broker-ha-token" = {
           owner = "root";
           mode = "0400";
         };
@@ -63,6 +68,15 @@
           keyFile = config.age.secrets."palace/slop-broker-deploy.key".path;
         };
         deploy.enable = true;
+
+        # Phone notifications; IPv4, so Home Assistant sees a local address for the local-only user
+        homeAssistant = {
+          enable = true;
+          url = "ws://${allAssignments.hass.hi.ipv4.address}:8123/api/websocket";
+          notifyService = "mobile_app_nothing_phone_3a";
+          deviceId = "ca1ba6cb1a209fb5";
+          tokenFile = config.age.secrets."palace/slop-broker-ha-token".path;
+        };
       };
 
       vms.instances.slop-cannon.qemuFlags = [ "device vhost-vsock-pci,guest-cid=${toString slopCannonCid}" ];

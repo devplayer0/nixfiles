@@ -7,8 +7,8 @@ identity for secrets, the binary cache and the Cloudflare API. It is built for t
 it requests through the `slop` CLI, and it carries out each one under a policy, usually after Dev
 approves it from a terminal or the phone.
 
-**Status:** in progress. The broker core, the box queries, `slop ssh`, the SSH transport and
-deploys are done; the other operations here are planned (see [Implementation plan](#implementation-plan)).
+**Status:** in progress. The broker core, the box queries, `slop ssh`, the SSH transport,
+deploys and Home Assistant notifications are done and running on `palace`; the other operations here are planned (see [Implementation plan](#implementation-plan)).
 The code is in [`pkgs/slop-broker`](../pkgs/slop-broker) (Rust), the service is
 `my.slop-broker`, and `palace`'s configuration is
 [`palace/slop-broker.nix`](../nixos/boxes/home/palace/slop-broker.nix).
