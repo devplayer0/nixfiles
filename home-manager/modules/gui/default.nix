@@ -376,8 +376,8 @@ in
                   "${mod}+Shift+n" = "exec ${clearWsName}";
 
                   # Screenshots
-                  "${mod}+Shift+d" = ''exec grim - | satty -f -'';
-                  "${mod}+Shift+s" = ''exec grim -g "$(slurp)" - | satty -f -'';
+                  "${mod}+Shift+d" = ''exec grim - | satty -f - --copy-command "${pkgs.wl-clipboard}/bin/wl-copy"'';
+                  "${mod}+Shift+s" = ''exec grim -g "$(slurp)" - | satty -f - --copy-command "${pkgs.wl-clipboard}/bin/wl-copy"'';
 
                   "XF86MonBrightnessDown" = "exec ${pkgs.brightnessctl}/bin/brightnessctl set 5%-";
                   "XF86MonBrightnessUp" = "exec ${pkgs.brightnessctl}/bin/brightnessctl set +5%";
