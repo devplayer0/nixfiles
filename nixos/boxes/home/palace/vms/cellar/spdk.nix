@@ -75,6 +75,18 @@ in
           ];
         in
         {
+          # Sized with `scripts/calc-iobuf.py` for the 16-core mask: the bdev and accel caches
+          # plus the RDMA transport's, with headroom for in-flight I/O
+          iobuf = [
+            {
+              method = "iobuf_set_options";
+              params = {
+                small_pool_count = 16384;
+                large_pool_count = 2048;
+              };
+            }
+          ];
+
           scheduler = [
             {
               method = "framework_set_scheduler";
@@ -107,7 +119,12 @@ in
           nvmf = [
             {
               method = "nvmf_create_transport";
-              params.trtype = "RDMA";
+              params = {
+                trtype = "RDMA";
+                # The default takes whatever the shared pool has left, starving the other caches
+                iobuf_small_cache_size = 32;
+                iobuf_large_cache_size = 32;
+              };
             }
             (nvmfListener "nqn.2014-08.org.nvmexpress.discovery")
           ] ++ (nvmfBdev {
