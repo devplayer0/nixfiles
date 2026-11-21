@@ -253,10 +253,8 @@ in
                 valid = "5s";
               };
               proxyResolveWhileRunning = true;
+              workerProcesses = "auto";
 
-              appendConfig = ''
-                worker_processes auto;
-              '';
               # Based on recommended*Settings, but probably better to be explicit about these
               appendHttpConfig = ''
                 ${baseHttpConfig}
