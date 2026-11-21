@@ -86,6 +86,51 @@ See the consolidated [network assignments](../../networking.md#box-assignments) 
   public IP (so the port forwards also work from inside), and forwards the
   customer prefixes through with minimal filtering ("trust for now").
 
+## BMC
+
+The board's AMI-based BMC provides the web UI, remote console and IPMI over LAN.
+
+- The dedicated management port is LAN channel 1, with the static address `198.18.10.38/24`
+  and gateway `198.18.10.254` in Coloclue's management network. Channel 8 holds the unused
+  shared-NIC configuration.
+- The host reaches the BMC in-band through `ipmi_si` (`/dev/ipmi0`), which Netdata's FreeIPMI
+  plugin also uses. `ipmitool` is installed for this.
+
+### In-band recovery
+
+While `colony` is running, root can change the BMC's LAN settings, users and passwords, or
+restart it, without network access or BMC credentials:
+
+```sh
+ssh-machine colony doas ipmitool lan print 1
+```
+
+- Pass multi-command scripts on stdin with `ssh-machine colony bash -s`. `ssh-machine`
+  flattens a quoted `sh -c` argument.
+- "Received a response with unexpected ID" warnings are harmless.
+- `ipmitool mc reset cold` restarts only the BMC, not the host.
+- In-band recovery needs the host to be up. Change and verify the BMC's network settings from
+  outside before rebooting `colony`, not together with a reboot.
+
+### Changing the LAN settings
+
+Save the current settings with `lan print 1`, then apply the new ones. Set the gateway last so
+that it falls inside the new subnet:
+
+```sh
+ssh-machine colony bash -s <<'EOF'
+doas ipmitool lan set 1 ipsrc static
+doas ipmitool lan set 1 ipaddr 198.18.10.38
+doas ipmitool lan set 1 netmask 255.255.255.0
+doas ipmitool lan set 1 defgw ipaddr 198.18.10.254
+doas ipmitool lan print 1
+EOF
+```
+
+- From outside, check `ipmitool -I lanplus -H <address> -U admin chassis status` and the
+  remote console in the web UI.
+- To roll back, run the same commands with the previous values.
+
 ## VMs
 
 Declared in `my.vms.instances` (`cpus`/`threads` are QEMU `smp` values):

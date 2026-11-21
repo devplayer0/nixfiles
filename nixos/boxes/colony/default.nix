@@ -138,6 +138,7 @@ in
           linuxPackages.cpupower
           smartmontools
           xfsprogs
+          ipmitool
         ];
 
         systemd = {
