@@ -1196,7 +1196,8 @@
         "openwrt-feeds": "openwrt-feeds",
         "openwrt-imagebuilder": "openwrt-imagebuilder",
         "paseo": "paseo",
-        "ragenix": "ragenix"
+        "ragenix": "ragenix",
+        "slop-broker": "slop-broker"
       }
     },
     "rust-overlay": {
@@ -1239,6 +1240,27 @@
         "owner": "oxalica",
         "repo": "rust-overlay",
         "type": "github"
+      }
+    },
+    "slop-broker": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs-unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795563488,
+        "narHash": "sha256-fTRKZn95BBANQpEGkhrmHSoPb9yTl59ZfvfzVbXeo5g=",
+        "ref": "main",
+        "rev": "21c2d4715ec3bcf4a90b41c16125db75c599b8b7",
+        "revCount": 26,
+        "type": "git",
+        "url": "https://git.nul.ie/dev/slop-broker"
+      },
+      "original": {
+        "ref": "main",
+        "type": "git",
+        "url": "https://git.nul.ie/dev/slop-broker"
       }
     },
     "systems": {

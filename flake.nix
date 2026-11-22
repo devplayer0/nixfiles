@@ -77,6 +77,8 @@
     # Pinned to a release. Don't make it follow our nixpkgs: its npm dependency hash is tied to its
     # own nixpkgs pin.
     paseo.url = "github:getpaseo/paseo/v0.15.4";
+    slop-broker.url = "git+https://git.nul.ie/dev/slop-broker?ref=main";
+    slop-broker.inputs.nixpkgs.follows = "nixpkgs-unstable";
     borgthin.url = "github:devplayer0/borg";
     # TODO: Update borgthin so this works
     # borgthin.inputs.nixpkgs.follows = "nixpkgs-mine";
@@ -167,6 +169,7 @@
 
             myPkgsOverlay
             determinateOverlay
+            inputs.slop-broker.overlays.default
             inputs.devshell.overlays.default
             inputs.ragenix.overlays.default
             inputs.deploy-rs.overlays.default
@@ -183,6 +186,7 @@
 
             myPkgsOverlay
             determinateOverlay
+            inputs.slop-broker.overlays.default
           ];
 
           config = {

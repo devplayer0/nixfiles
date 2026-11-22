@@ -17,6 +17,7 @@ in
     inputs.harmonia.nixosModules.harmonia
     inputs.bootvine.nixosModules.default
     inputs.paseo.nixosModules.paseo
+    inputs.slop-broker.nixosModules.default
   ];
 
   config = mkMerge [

@@ -42,8 +42,8 @@ username/password provider. Its cookie domain is `.nul.ie`; gated vhosts include
 
 [Pocket ID](https://pocket-id.org) (`services.pocket-id`) is a passkey-only OpenID Connect
 provider at `id.nul.ie`, for apps that sign in with OIDC (first the `slop-broker` approvals web
-app). It is meant to replace nginx-sso's Google sign-in later, with oauth2-proxy in front of apps
-that lack OIDC.
+app, see [`slop-broker.md`](../../../../slop-broker.md)). It is meant to replace nginx-sso's
+Google sign-in later, with oauth2-proxy in front of apps that lack OIDC.
 
 - Listens on `127.0.0.1:1411` behind nginx and keeps its SQLite database in `/var/lib/pocket-id`
   (persisted by `my.tmproot`). The `middleman/pocket-id-encryption-key` secret encrypts it.

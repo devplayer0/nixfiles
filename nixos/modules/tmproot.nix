@@ -479,6 +479,26 @@ in
       })
       (persistSimpleSvc "headscale")
       (persistSimpleSvc "pocket-id")
+      (mkIf config.services.slop-broker.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = "/var/lib/slop-broker";
+            user = "slop-broker";
+            group = "slop-broker";
+            mode = "0700";
+          }
+        ];
+      })
+      (mkIf config.services.slop-broker-builder.enable {
+        my.tmproot.persistence.config.directories = [
+          {
+            directory = "/var/lib/slop-broker-build";
+            user = "slop-broker-build";
+            group = "slop-broker-build";
+            mode = "0700";
+          }
+        ];
+      })
       (mkIf config.services.tailscale.enable {
         my.tmproot.persistence.config.directories = [ "/var/lib/tailscale" ];
       })

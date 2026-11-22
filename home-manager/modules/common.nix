@@ -12,6 +12,7 @@ in
 {
   # Disabled: breaks `nix flake check` in CI (see flake.nix pi-agent note).
   # imports = [ inputs.pi-agent.homeModules.default ];
+  imports = [ inputs.slop-broker.homeModules.slop ];
 
   options = with lib.types; {
     my = {
