@@ -1,5 +1,7 @@
 # Flashing an OpenWrt box
 
+The shared agent skill is [`flash-openwrt`](../.agents/skills/flash-openwrt/SKILL.md).
+
 Guided procedure for putting a flake-built OpenWrt image onto a box. The images themselves are
 declared in [`openwrt/default.nix`](../openwrt/default.nix) and described in
 [`deployment.md`](deployment.md#openwrt-images); the boxes are listed on their site pages (today

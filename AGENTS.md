@@ -20,6 +20,9 @@ committed allow list of safe-to-auto-approve commands) and `.claude/settings.loc
 gitignored — where interactive "always allow" grants accumulate). Put durable, generally-safe
 commands in the shared file; leave one-off or workstation-specific grants in the local one.
 
+Project skills live under `.agents/skills/`. Claude Code discovers them through the
+`.claude/skills` symlink.
+
 ## Overview
 
 Personal Nix flake managing NixOS systems and home-manager configurations for a set of

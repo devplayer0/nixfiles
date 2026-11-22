@@ -1,9 +1,8 @@
 # Installing a box
 
 Procedure for bringing a new NixOS box into this flake, from bare hardware booted into the custom
-installer through to a deployable system. Written to be followed by a person or any coding agent; a
-Claude Code entry point exists at `.claude/skills/install-box/` but the steps below are the
-canonical source.
+installer through to a deployable system. The shared agent skill is
+[`install-box`](../.agents/skills/install-box/SKILL.md).
 
 The install is **guided, not automated**: the mechanical steps (probing hardware, partitioning,
 writing the config, evaluating it) can be done straight through, but stop at the judgment points
