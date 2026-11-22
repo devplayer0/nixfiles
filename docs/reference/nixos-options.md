@@ -167,7 +167,7 @@
 | `my.nginx-sso.includes.instances.<name>.auth.redirect` | string | `"$scheme://$http_host$request_uri"` | URL to redirect to upon successful login. |
 | `my.nginx-sso.includes.instances.<name>.logout.path` | string | `"/sso-logout"` | HTTP path for SSO logout. |
 | `my.nginx-sso.includes.instances.<name>.logout.redirect` | string | `"$scheme://$http_host/"` | URL to redirect to upon successful logout. |
-| `my.nginx-sso.package` | package | `<derivation nginx-sso-0.27.8>` | nginx-sso package to use. |
+| `my.nginx-sso.package` | package | `<derivation nginx-sso-0.27.9>` | nginx-sso package to use. |
 
 ## `nvme` — [`nixos/modules/nvme`](../../nixos/modules/nvme)
 
@@ -286,11 +286,11 @@
 | `my.vms.instances.<name>.networks.<name>.model` | string | `"virtio-net"` | Device type for network interface. |
 | `my.vms.instances.<name>.networks.<name>.tapFD` | null or (unsigned integer, meaning >=0) | `null` | FD to use to pass existing TAP device. |
 | `my.vms.instances.<name>.networks.<name>.waitOnline` | boolean or string | `true` | Whether to wait for networkd to consider the bridge / existing TAP device online. Pass a string to set the OPERSTATE will wait for. |
-| `my.vms.instances.<name>.qemuBin` | absolute path | `"/nix/store/2lkr0v29a67jybn8ckjawpg08y0yizfp-qemu-host-cpu-only-11.1.0/bin/qemu-kvm"` | Path to QEMU executable. |
+| `my.vms.instances.<name>.qemuBin` | absolute path | `"/nix/store/ziacjpynpg4536dll8ja4qs1la0fvn7l-qemu-host-cpu-only-11.1.2/bin/qemu-kvm"` | Path to QEMU executable. |
 | `my.vms.instances.<name>.qemuFlags` | list of string | `[ ]` | Additional flags to pass to QEMU. |
 | `my.vms.instances.<name>.smp.cpus` | unsigned integer, meaning >=0 | `1` | Number of CPU cores. |
 | `my.vms.instances.<name>.smp.threads` | unsigned integer, meaning >=0 | `1` | Number of threads per core. |
 | `my.vms.instances.<name>.spice.enable` | boolean | `true` | Whether to enable SPICE. |
 | `my.vms.instances.<name>.uuid` | string | `null` | QEMU machine UUID. |
 | `my.vms.instances.<name>.vga` | string | `"virtio"` | VGA card type. |
-| `my.vms.ovmfPackage` | package | `<derivation OVMF-202605>` | OVMF package. |
+| `my.vms.ovmfPackage` | package | `<derivation OVMF-202608>` | OVMF package. |
