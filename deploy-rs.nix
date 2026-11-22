@@ -27,6 +27,11 @@ in
       internal = true;
       description = "Rendered deploy-rs configuration.";
     };
+    sshConnections = mkOption {
+      type = attrsOf unspecified;
+      internal = true;
+      description = "SSH connection settings and container names for ssh-machine.";
+    };
   };
 
   config = {
@@ -53,6 +58,20 @@ in
 
       # Filter out null values so deploy merges overriding options correctly
       rendered = lib.my.deploy-rs.filterOpts cfg.deploy;
+
+      sshConnections = mapAttrs (name: node:
+      let
+        system = systems.${name}.configuration.config or null;
+        hostnames = if system == null then [ ] else system.my.deploy.sshHostnames;
+        instances = if system == null then { } else system.my.containers.instances;
+      in
+      {
+        inherit (node) sshUser;
+        sshOpts = cfg.rendered.sshOpts ++ node.sshOpts;
+        hostnames = if hostnames == [ ] then [ node.hostname ] else hostnames;
+        containers = attrNames instances;
+        sudo = node.sudo or (cfg.rendered.sudo or "sudo -u");
+      }) cfg.rendered.nodes;
     };
   };
 }

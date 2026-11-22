@@ -58,9 +58,10 @@ Common ones:
   (`deploy --boot .#<host>`) — the box keeps running its current generation until it reboots. Use this
   when a live `switch` would break connectivity mid-change (e.g. a router's WAN VLAN rework), then
   reboot to cut over.
-- `ssh-machine <name> [cmd]` — SSH to a NixOS system or home-manager config by name. Resolves the
-  target and ssh options (identity, port) from its deploy-rs node, so it needs `my.deploy.enable`
-  (same gate as `deploy`). Connection settings for all nodes are cached together and invalidated
+- `ssh-machine <name> [cmd]` — connect to a box, home-manager config or NixOS container by name.
+  Uses SSH settings from the deploy-rs node, so the box or container host needs `my.deploy.enable`.
+  For containers use the instance name or `<host>.container-<name>` to get a root shell through
+  the host. Connection settings for all nodes are cached together and invalidated
   by checkout changes (the jj working copy, else tracked Git changes); use
   `ssh-machine --refresh` to force a refresh (see `docs/deployment.md#ssh-machine`).
   Boxes default to the `fish` login shell, so pipe multi-statement remote

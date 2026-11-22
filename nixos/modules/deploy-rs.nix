@@ -100,6 +100,8 @@ in
 
     enable = mkBoolOpt' true "Whether to expose deploy-rs configuration for this system.";
     inherit (lib.my.deploy-rs) node;
+    sshHostnames = mkOpt' (listOf str) [ ]
+      "Addresses for ssh-machine in order of preference. Defaults to the deploy-rs hostname.";
 
     generate = {
       system = {

@@ -42,6 +42,8 @@ over Tailscale.
 
 - NetworkManager (`wpa_supplicant` backend) with `systemd-resolved`; networkd `wait-online`
   is disabled. The Wi-Fi interface is renamed to `wifi` by MAC.
+- `ssh-machine tower` uses `tower.dyn.h.nul.ie` when its SSH port is reachable and
+  `tower.ts.nul.ie` over Tailscale otherwise.
 - Steam and Wireshark enabled; `fstrim`, LVM thin provisioning.
 - `nix.gc.automatic = false` — GC is run manually on the laptop.
 

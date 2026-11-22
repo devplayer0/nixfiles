@@ -4,8 +4,8 @@ let
   devKey = ".keys/dev.key";
   sshMachine = pkgs.writeShellApplication {
     name = "ssh-machine";
-    runtimeInputs = with pkgs; [ coreutils git jujutsu jq openssh ];
-    text = builtins.readFile ./ssh-machine.sh;
+    runtimeInputs = with pkgs; [ git jujutsu netcat-openbsd openssh ];
+    text = ''exec ${pkgs.python3.interpreter} ${./ssh-machine.py} "$@"'';
   };
 in
 {
@@ -56,7 +56,7 @@ in
     {
       name = "ssh-machine";
       category = "utilities";
-      help = "SSH to a machine by NixOS system or home-manager config name";
+      help = "Connect to a box, home-manager config or NixOS container by name";
       command = ''exec ${sshMachine}/bin/ssh-machine "$@"'';
     }
     {

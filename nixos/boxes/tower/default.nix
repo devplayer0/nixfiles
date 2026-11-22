@@ -196,6 +196,11 @@
             };
           };
 
+          deploy.sshHostnames = with lib.my.c; [
+            "tower.dyn.${home.domain}"
+            "tower.ts.${pubDomain}"
+          ];
+
           #deploy.generate.system.mode = "boot";
           secrets = {
             key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOU+UxJh8PZoiXV+0CRumv9Xsk6Fks4YMYRZcThmaJkB";

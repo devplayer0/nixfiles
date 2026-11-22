@@ -57,10 +57,19 @@ Generated profiles deploy in this order:
 
 #### `ssh-machine`
 
-`ssh-machine <name> [cmd]` resolves `user@host` and the merged global/node `sshOpts` from
-`.#deploy`, using the same `my.deploy.enable` gate and `@` → `-at-` mangling as `deploy`, then runs
-`ssh`. Connection settings for all nodes are cached together in `.cache/ssh-machine/`;
-normal connections read the cache without running Nix. A fingerprint of the checkout
+`ssh-machine <name> [cmd]` connects using the deploy-rs node's SSH user and merged global and
+node `sshOpts`. Box and home targets use the same `my.deploy.enable` gate and `@` → `-at-`
+mangling as `deploy`. If a box sets `my.deploy.sshHostnames`, the command checks the
+addresses in order for a reachable SSH port and uses the last address if the earlier checks fail.
+
+For NixOS containers, use `ssh-machine middleman` or `ssh-machine shill.container-middleman`.
+The qualified name selects the host when multiple containers share a name or a deploy node has
+the same name. The command connects to the host's deploy node and uses `systemd-run` to open a
+root Bash shell in the container or run the supplied command there. Stdin and the command's
+exit status are available to the caller.
+
+Connection settings and container names are cached together in `.cache/ssh-machine/`.
+Normal connections read the cache without running Nix. A fingerprint of the checkout
 automatically invalidates it. In a Jujutsu workspace (including secondary workspaces without a
 Git checkout) it is the working-copy commit ID, so any snapshotted change counts, including new
 files that are not ignored. In a Git-only checkout it is HEAD plus staged/unstaged tracked
@@ -102,7 +111,7 @@ command with no arguments for its help. From
 | `home-switch [args]` | `home-manager switch --flake .`. |
 | `deploy [args]` | `deploy-rs --skip-checks` (wrapper package in `devshell/default.nix`). |
 | `deploy --targets .#<node1> .#<node2>` | Deploys several nodes in one invocation. |
-| `ssh-machine <name> [cmd]` | SSH to a system or home by name, resolving target/options from its deploy-rs node (see above). |
+| `ssh-machine <name> [cmd]` | Connect to a box, home-manager config or NixOS container using deploy-rs SSH settings. |
 | `run-vm <host>` | Boots a system as a dev VM: installs `.keys/dev.key` into a temp `xchg/`, then `nix run`s `config.my.buildAs.devVM`. |
 | `build-iso <host>` | Builds `config.my.buildAs.iso`. |
 | `build-kexec <host>` | Builds `config.my.buildAs.kexecTree`. |
