@@ -42,7 +42,7 @@ in
       };
     };
 
-    configuration = { lib, config, pkgs, assignments, allAssignments, ... }:
+    configuration = { lib, config, pkgs, assignments, ... }:
     let
       inherit (lib) mkMerge mkIf mkForce;
       inherit (lib.my) networkdAssignment;
@@ -208,15 +208,8 @@ in
                 external_url = "https://hass.${pubDomain}";
                 internal_url = "http://hass-ctr.${domain}:${toString hassPort}";
               };
-              http = {
-                server_port = hassPort;
-                use_x_forwarded_for = true;
-                trusted_proxies = with allAssignments.middleman.internal; [
-                  ipv4.address
-                  ipv6.address
-                ];
-                ip_ban_enabled = false;
-              };
+              # HTTP settings (port, trusted proxies) are managed in the UI; Home Assistant ignores
+              # an `http` block here once it has migrated it to `.storage/http`.
               automation = "!include automations.yaml";
               script = "!include scripts.yaml";
               scene = "!include scenes.yaml";

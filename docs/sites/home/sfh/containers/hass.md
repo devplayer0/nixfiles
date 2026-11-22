@@ -22,8 +22,11 @@ integrations. A `hass-cli` wrapper uses a token from `my.secrets` to reach the l
 - **Frigate** (`services.frigate`, `frigate.h.nul.ie` — the `frigate` alt name on the `hi`
   assignment) — records both restreamed cameras with a short retention policy; detection is
   disabled.
-- External access is via `https://hass.nul.ie` through the `middleman` reverse proxy
-  (`trusted_proxies`); internally it's `hass-ctr.h.nul.ie`.
+- External access is via `https://hass.nul.ie` through the `middleman` reverse proxy;
+  internally it's `hass-ctr.h.nul.ie`. Home Assistant's HTTP settings (port `8123`, forwarded
+  headers and `middleman`'s addresses as trusted proxies) live in the UI under Settings › System
+  › Network, stored in `.storage/http`, not in Nix. Update the trusted proxies there if
+  `middleman`'s addresses change, or logins through the proxy will fail.
 - Not a deploy-rs target (`my.deploy.enable = false`) — it's rendered via `my.asContainer` and
   started by `sfh`'s `my.containers.instances`.
 
