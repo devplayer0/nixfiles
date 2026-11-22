@@ -17,6 +17,7 @@ An 8-port SFP+ switch running OpenWrt, bought to sit in front of
 | Memory | 512 MB |
 | Storage | 32 MiB SPI NOR (`spi0.0`) |
 | Network | 8×SFP+ (`lan1`…`lan8`) |
+| Console | Front-panel RJ-45 RS-232 at 9600 baud, 8N1, for stock U-Boot and OpenWrt. [OpenWrt board support](https://lists.infradead.org/pipermail/lede-commits/2025-January/024155.html) |
 
 ## Role
 
