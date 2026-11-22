@@ -416,6 +416,28 @@ in
         useACMEHost = pubDomain;
       };
 
+      "id.${pubDomain}" =
+      let
+        pocketId = {
+          proxyPass = "http://127.0.0.1:${toString config.services.pocket-id.settings.PORT}";
+          extraConfig = proxyHeaders;
+        };
+      in
+      {
+        locations = {
+          "/" = pocketId;
+          # Creating the first admin account is only possible from inside
+          "~ ^/(setup|api/signup/setup)$" = pocketId // {
+            extraConfig = ''
+              ${concatStringsSep "\n" (map (n: "allow ${n};") (with lib.my.c.internalNets; v4 ++ v6))}
+              deny all;
+              ${proxyHeaders}
+            '';
+          };
+        };
+        useACMEHost = pubDomain;
+      };
+
       "md.${pubDomain}" = {
         locations."/" = {
           proxyPass = "http://object-ctr.${domain}:3000";

@@ -62,6 +62,8 @@ in
                   group = "nginx";
                 };
                 "librespeed.toml" = { };
+                # Pocket ID's database encryption key; it reads it through `LoadCredential`
+                "middleman/pocket-id-encryption-key" = { };
               };
             };
 
@@ -224,6 +226,19 @@ in
           };
 
           services = {
+            # Passkey-only OpenID Connect provider at `id.nul.ie`, published by nginx
+            pocket-id = {
+              enable = true;
+              settings = {
+                APP_URL = "https://id.${pubDomain}";
+                HOST = "127.0.0.1";
+                PORT = 1411;
+                TRUST_PROXY = true;
+                ANALYTICS_DISABLED = true;
+              };
+              credentials.ENCRYPTION_KEY = config.age.secrets."middleman/pocket-id-encryption-key".path;
+            };
+
             netdata = {
               enable = true;
               configDir = {

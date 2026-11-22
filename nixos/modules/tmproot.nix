@@ -478,6 +478,7 @@ in
         ];
       })
       (persistSimpleSvc "headscale")
+      (persistSimpleSvc "pocket-id")
       (mkIf config.services.tailscale.enable {
         my.tmproot.persistence.config.directories = [ "/var/lib/tailscale" ];
       })
