@@ -80,10 +80,12 @@ Common ones:
 
 Use the narrowest relevant evaluation while iterating: `check-system <host>` for a box config,
 `nix eval .#nixfiles.config.nixos.allAssignments --json` for assignment generation, or
-`nix build --no-link .#nixfiles.config.nixos.optionsDoc` for the option reference. Reserve
-`nix flake check --no-build` for final broad validation or reproducing CI.
-CI builds each attr of `.#ci.x86_64-linux` (systems, homes, packages, shell) and pushes to the
-Harmonia binary cache; see `.gitea/workflows/ci.yaml` and `ci/push-to-cache.sh`. A separate
+`nix build --no-link .#nixfiles.config.nixos.optionsDoc` for the option reference. Runtime
+dependency replacement can build store reference graphs during evaluation, so use
+`nix flake check` for broad validation when replacements are enabled.
+CI runs an eval-only flake check before building and caching `.#ci.x86_64-linux`. An active
+`ciIfdReasons` entry allows import from derivation and moves the flake check after the builds.
+See [CI in `docs/deployment.md`](docs/deployment.md#ci). A separate
 workflow (`.gitea/workflows/update-docs.yaml`) regenerates the network assignments, NixOS option
 reference and live DNS reference under `docs/`.
 

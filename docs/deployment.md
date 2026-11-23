@@ -296,12 +296,19 @@ GitHub/Gitea Actions workflows live in [`.gitea/workflows/`](../.gitea/workflows
 
 On pushes to `master`, this installs Determinate Nix on the runner (via
 `DeterminateSystems/determinate-nix-action`, configured with the same performance settings and
-Harmonia substituter as the boxes), runs `nix flake check --no-build`, then builds every attribute
-of `.#ci.x86_64-linux`: systems as `system-<name>`, homes as `home-<name>` (with `@` changed to
-`-at-`), packages as `package-<name>`, and the development `shell`. Each result is pushed to the
+Harmonia substituter as the boxes). CI normally runs `nix flake check --no-build` first and
+keeps import from derivation disabled. It builds every attribute of `.#ci.x86_64-linux`:
+systems as `system-<name>`, homes as `home-<name>` (with `@` changed to `-at-`), packages as
+`package-<name>`, and the development `shell`. Each result is pushed to the
 Harmonia cache with [`ci/push-to-cache.sh`](../ci/push-to-cache.sh). Before the first push, the
 workflow deletes cache-profile generations older than its retention period, then collects
 unreachable paths so a full cache cannot prevent collection from being reached.
+
+When `.#ciIfdReasons.x86_64-linux` lists an active exception, CI logs a warning with the reason
+and allows import from derivation for the target builds. It runs a build-capable flake
+check afterward. CI checks [the shared runtime replacement list](../lib/runtime-dependency-replacements.nix)
+against the nixpkgs channels used by its systems and standalone homes. A matching entry
+requires reading generated store reference graphs during evaluation.
 
 It then builds `.#ciDrv.x86_64-linux`, a `linkFarm` of all CI attributes, and pushes it with
 `UPDATE_PROFILE=1`. That updates the `nixfiles` profile on the cache box. The SSH store uses

@@ -30,27 +30,48 @@ jobs:
             extra-trusted-public-keys = nix-cache.nul.ie-1:BzH5yMfF4HbzY1C977XzOxoPhEc9Zbu39ftPkUbH+m4=
 
       - name: Check flake
-        run: nix flake check --no-build
+        id: ifd
+        run: |
+          reasons="$(nix eval --option allow-import-from-derivation false --json .#ciIfdReasons.x86_64-linux)"
+          required="$(jq -r 'length > 0' <<< "$reasons")"
+          echo "required=$required" >> "$GITHUB_OUTPUT"
+
+          if [[ "$required" == true ]]; then
+            jq -r '.[] | "::warning::\(.). The flake check will run after the target builds."' <<< "$reasons"
+          else
+            nix flake check --no-build --option allow-import-from-derivation false
+          fi
 
       - name: Build (and cache) the world
         id: build
         env:
           HARMONIA_SSH_KEY: ${{ secrets.HARMONIA_SSH_KEY }}
+          CI_IFD_REQUIRED: ${{ steps.ifd.outputs.required }}
         run: |
+          set -o pipefail
+          nix_options=(--option allow-import-from-derivation "$CI_IFD_REQUIRED")
+
           echo "::group::Collect cache garbage"
           ci/push-to-cache.sh --gc
           echo "::endgroup::"
 
-          nix eval --json --apply "builtins.attrNames" .#ci.x86_64-linux | jq -cr '.[]' | while read job; do
+          nix eval "${nix_options[@]}" --json --apply "builtins.attrNames" .#ci.x86_64-linux | jq -cr '.[]' | while read job; do
             echo "::group::Build $job"
-            nix build --no-link .#ci.x86_64-linux."$job"
+            nix build "${nix_options[@]}" --no-link .#ci.x86_64-linux."$job"
             echo "::endgroup::"
 
             echo "::group::Cache $job"
-            ci/push-to-cache.sh "$(nix eval --raw .#ci.x86_64-linux."$job")"
+            ci/push-to-cache.sh "$(nix eval "${nix_options[@]}" --raw .#ci.x86_64-linux."$job")"
             echo "::endgroup::"
           done
 
+          if [[ "$CI_IFD_REQUIRED" == true ]]; then
+            echo "::group::Check flake"
+            # The target closures are available for the evaluation-time reference graphs.
+            nix flake check "${nix_options[@]}"
+            echo "::endgroup::"
+          fi
+
           echo "Building and caching CI derivation"
-          nix build --no-link .#ciDrv.x86_64-linux
-          UPDATE_PROFILE=1 ci/push-to-cache.sh "$(nix eval --raw .#ciDrv.x86_64-linux)"
+          nix build "${nix_options[@]}" --no-link .#ciDrv.x86_64-linux
+          UPDATE_PROFILE=1 ci/push-to-cache.sh "$(nix eval "${nix_options[@]}" --raw .#ciDrv.x86_64-linux)"

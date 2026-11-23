@@ -7,7 +7,7 @@ let
   inherit (lib.hm) dag;
   inherit (lib.my) mkOpt' dummyOption;
 
-  jsonCRuntimeReplacements = import ../../lib/json-c-runtime.nix { inherit lib pkgs pkgsFlake; };
+  runtimeDependencyReplacements = import ../../lib/runtime-dependency-replacements.nix { inherit lib pkgs pkgsFlake; };
 in
 {
   # Disabled: breaks `nix flake check` in CI (see flake.nix pi-agent note).
@@ -34,14 +34,14 @@ in
 
     home.activationPackage = mkOption {
       apply = drv:
-        if config.my.isStandalone && jsonCRuntimeReplacements != [ ] then
+        if config.my.isStandalone && runtimeDependencyReplacements != [ ] then
           (pkgs.replaceDependencies.override {
             replaceDirectDependencies = pkgs.replaceDirectDependencies.override {
               nix = config.nix.package;
             };
           }) {
             inherit drv;
-            replacements = jsonCRuntimeReplacements;
+            replacements = runtimeDependencyReplacements;
           }
         else drv;
     };

@@ -296,5 +296,20 @@
           inherit shell;
         };
       ciDrv = pkgs.linkFarm "ci" ci;
+
+      ciIfdReasons =
+        let
+          inherit (nixfiles.config) nixos home-manager;
+          targets = builtins.attrValues nixos.systems ++ builtins.attrValues home-manager.homes;
+          channels = lib.unique (map (target: target.nixpkgs) (builtins.filter (target: target.system == system) targets));
+          hasReplacements = channel:
+            (import ./lib/runtime-dependency-replacements.nix {
+              inherit lib;
+              pkgs = pkgs'.${channel}.${system};
+              pkgsFlake = pkgsFlakes.${channel};
+            }) != [ ];
+        in
+        lib.optional (lib.any hasReplacements channels)
+          "Runtime dependency replacement reads generated store reference graphs";
     }));
 }

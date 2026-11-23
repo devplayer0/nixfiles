@@ -43,7 +43,7 @@ against the candidate revisions and leave a concrete next step for any outstandi
   - `home-manager-stable.url = "home-manager/release-<STABLE>"`
 - **Devshell commands:** `update-nixpkgs` = `nix flake update nixpkgs-{unstable,stable,mine,mine-stable}`;
   `update-home-manager` = `nix flake update home-manager-{unstable,stable}`.
-- **Validation:** prefer `check-system <host>` and `nix flake check --no-build` over full builds.
+- **Validation:** prefer `check-system <host>` while iterating and reserve the flake check for final validation.
 
 ## Phase 1 — Determine the current NixOS stable
 
@@ -188,7 +188,8 @@ Don't blanket-update. Walk the other inputs deliberately:
 
 ## Phase 7 — Validate
 
-1. `nix flake check --no-build` (broad eval; reproduces CI's cheap checks).
+1. `nix flake check --no-build` for broad validation. If `.#ciIfdReasons.x86_64-linux` lists
+   an active exception, use `nix flake check` so evaluation can build the required inputs.
 2. `check-system <host>` on a representative box, and one exercising the stable channel if the
    boxes mix channels. This must exercise the refreshed kernel constants on both channels.
 3. Build the actual devshell with
