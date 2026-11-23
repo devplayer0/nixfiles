@@ -95,6 +95,7 @@
 | `my.deploy.node.sudo` | null or string | `null` | Command to elevate privileges with (used if the deployment user != profile user). |
 | `my.deploy.node.tempPath` | null or string | `null` | Path that deploy-rs will use for temporary files. |
 | `my.deploy.node.user` | null or string | `null` | Username deploy-rs will deploy with. |
+| `my.deploy.sshHostnames` | list of string | `[ ]` | Addresses for ssh-machine in order of preference. Defaults to the deploy-rs hostname. |
 
 ## `dynamic-motd` — [`nixos/modules/dynamic-motd.nix`](../../nixos/modules/dynamic-motd.nix)
 
