@@ -2,6 +2,8 @@
 let
   inherit (lib) mkIf mkDefault mkMerge optionalAttrs versionOlder;
   inherit (lib.my) mkDefault';
+
+  jsonCRuntimeReplacements = import ../../lib/json-c-runtime.nix { inherit lib pkgs pkgsFlake; };
 in
 {
   options = with lib.types; {
@@ -18,6 +20,10 @@ in
   ];
 
   config = mkMerge [
+    (optionalAttrs (jsonCRuntimeReplacements != [ ]) {
+      system.replaceDependencies.replacements = jsonCRuntimeReplacements;
+    })
+
     {
       system = {
         stateVersion = "22.05";

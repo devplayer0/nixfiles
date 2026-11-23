@@ -2,10 +2,12 @@
 let
   inherit (builtins) listToAttrs mapAttrs readFile;
   inherit (lib)
-    optionalString nameValuePair concatMapStrings concatStringsSep optionalAttrs
+    optionalString nameValuePair concatMapStrings concatStringsSep
     mapAttrsToList mkMerge mkIf mkDefault mkOption;
   inherit (lib.hm) dag;
   inherit (lib.my) mkOpt' dummyOption;
+
+  jsonCRuntimeReplacements = import ../../lib/json-c-runtime.nix { inherit lib pkgs pkgsFlake; };
 in
 {
   # Disabled: breaks `nix flake check` in CI (see flake.nix pi-agent note).
@@ -28,6 +30,20 @@ in
           files = mkOpt' (listOf path) [ ] "List of OpenSSH key files to allow";
         };
       };
+    };
+
+    home.activationPackage = mkOption {
+      apply = drv:
+        if config.my.isStandalone && jsonCRuntimeReplacements != [ ] then
+          (pkgs.replaceDependencies.override {
+            replaceDirectDependencies = pkgs.replaceDirectDependencies.override {
+              nix = config.nix.package;
+            };
+          }) {
+            inherit drv;
+            replacements = jsonCRuntimeReplacements;
+          }
+        else drv;
     };
   };
 
