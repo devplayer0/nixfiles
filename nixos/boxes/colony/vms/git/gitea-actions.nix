@@ -68,12 +68,17 @@ in
 
     systemd = {
       services = {
-        gitea-runner-main.serviceConfig = {
-          # Needs to be able to read its secrets
-          CacheDirectory = "gitea-runner";
-          DynamicUser = mkForce false;
-          User = "gitea-runner";
-          Group = "gitea-runner";
+        gitea-runner-main = {
+          # The runner exits if Gitea isn't serving yet when it starts
+          after = [ "gitea.service" ];
+
+          serviceConfig = {
+            # Needs to be able to read its secrets
+            CacheDirectory = "gitea-runner";
+            DynamicUser = mkForce false;
+            User = "gitea-runner";
+            Group = "gitea-runner";
+          };
         };
       };
     };
