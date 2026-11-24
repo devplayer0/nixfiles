@@ -201,6 +201,9 @@ minutes for a human. See [`docs/slop-broker.md`](docs/slop-broker.md).
 - `slop build <attr>…` builds a pushed commit's flake attributes into the binary cache.
 - `slop secret keys|read|set|generate|rekey <file>` changes age secrets instead of `ragenix`.
 - `slop requests` lists your pending requests and leases.
+- Push your work to a branch and open a pull request with `tea pulls create`; only Dev merges into
+  `master`. Git and `tea` use the bot user's token (see
+  [`docs/sites/home/slop-cannon.md`](docs/sites/home/slop-cannon.md#gitea)).
 
 ## Secrets
 

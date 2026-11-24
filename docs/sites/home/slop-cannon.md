@@ -43,7 +43,7 @@ See the consolidated [network assignments](../../networking.md#box-assignments) 
   `untrusted`.
 - The routers keep `untrusted` to the Internet (see
   [Untrusted clients](../../networking.md#untrusted-clients)). `git.nul.ie` and
-  `paseo-relay.nul.ie` resolve to colony IPv6 addresses, which are rejected, so Gitea SSH and the
+  `paseo-relay.nul.ie` resolve to colony IPv6 addresses, which are rejected, so Gitea and the
   Paseo relay fall back to IPv4 immediately.
 - SSH from `hi` and `lo` works through the routers. The VM shares layer 2 with other clients
   on the `untrusted` VLAN.
@@ -70,7 +70,7 @@ See the consolidated [network assignments](../../networking.md#box-assignments) 
 - No `user-passwd.txt` (`my.user.passwordSecret = null`): root belongs to the agents, so the box
   gets no shared secrets. Recovery is through the installer ISO.
 - The VM's SSH host key is the age identity for `slop-cannon/paseo.env` and
-  `slop-cannon/gitea-key`. Agents can read the host key and decrypt anything encrypted to it.
+  `slop-cannon/gitea-token`. Agents can read the host key and decrypt anything encrypted to it.
 
 ## Paseo
 
@@ -179,20 +179,35 @@ the `slop` command (`my.agents.slop.enable`). It connects over vsock (CID 3; see
 logged in. For recovery, use the [VM serial console](../../deployment.md#vm-consoles) for
 `slop-cannon` on `palace`.
 
-The VM uses a Gitea deploy key from the age secret
-`slop-cannon/gitea-key`. As `slop-cannon`, run
-`ssh-keygen -y -f /run/secrets/slop-cannon/gitea-key` to get its public key. Add that public key
-in Gitea as a write-enabled deploy key on each repo agents may use. Commits are authored as Dev
-through the shared Git config.
-
 To set up provider logins and repos on a fresh agent home, connect with `ssh slop-cannon`:
 
 1. `claude auth login` (a full login; `setup-token` tokens are not enough for every feature).
 2. `codex login --device-auth`.
 3. [Pair a Paseo client](#pair-a-paseo-client).
-4. `slop-clone <owner>/<repo>` for each repo. It clones a colocated jj repo into `~/src/<repo>`,
-   registers it with Paseo as a local workspace, and prints the box's public key if Gitea refuses
-   the clone.
+4. `slop-clone <owner>/<repo>` for each repo. It clones a colocated jj repo over HTTPS into
+   `~/src/<repo>` and registers it with Paseo as a local workspace.
+
+## Gitea
+
+Agents reach Gitea as a bot user, with its access token (age secret `slop-cannon/gitea-token`,
+scopes `write:repository` and `write:issue`).
+
+- **Git** uses HTTPS: a credential helper for `git.nul.ie` sends the token. Commits are still
+  authored as Dev through the shared Git config; the pushes are the bot's.
+- **`tea`**, Gitea's CLI, is wrapped to log in with the same token, so agents can open and update
+  pull requests.
+- **Pull requests:** a rule for every agent (`my.agents.rules.gitea`: a Claude rule, and part of
+  Codex's `AGENTS.md`) makes a pull request from a branch of its own the default way to finish a
+  piece of work, and says how with jj and `tea`. A repository's own `AGENTS.md` can allow more,
+  such as pushing to its main branch.
+- **Access per repo:** where agents should only propose changes (`dev/nixfiles`, `slop-broker`),
+  protect the main branch so only Dev pushes and merges. Elsewhere the bot's Write access is
+  enough to push directly.
+- **Access:** the bot is a collaborator with Write on each repo agents may use. `master` on
+  `dev/nixfiles` only takes pushes and merges from Dev (see
+  [`slop-broker`](../../slop-broker.md#master-is-protected)).
+- **Replacing the token:** make a new one for the bot and put it in the secret with
+  `ragenix -e secrets/slop-cannon/gitea-token.age`, then deploy `slop-cannon`.
 
 ## Pair a Paseo client
 

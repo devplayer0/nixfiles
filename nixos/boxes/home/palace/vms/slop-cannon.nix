@@ -32,7 +32,9 @@ in
 
       agentUser = "slop-cannon";
       agentHome = "/home/${agentUser}";
-      giteaKey = config.age.secrets."slop-cannon/gitea-key".path;
+      # The bot user's access token, for Git over HTTPS and Gitea's API
+      giteaToken = config.age.secrets."slop-cannon/gitea-token".path;
+      giteaUrl = "https://git.nul.ie";
       paseoPasswordFile = config.age.secrets."slop-cannon/paseo.env".path;
 
       # Steer agents to the approval broker; these match command text, so they aren't a boundary.
@@ -44,9 +46,41 @@ in
       # The broker asks a human where policy says so; a second prompt here would only add noise
       claudeAllow = [ "Bash(slop:*)" ];
 
+      # Gitea takes a token as the username when the password is `x-oauth-basic`
+      gitCredential = pkgs.writeShellScript "gitea-credential" ''
+        [ "$1" = get ] || exit 0
+        printf 'username=%s\npassword=x-oauth-basic\n' "$(cat ${giteaToken})"
+      '';
+
+      # `tea`, logged in as the bot
+      tea = pkgs.writeShellScriptBin "tea" ''
+        GITEA_INSTANCE_URL=${giteaUrl} GITEA_TOKEN="$(cat ${giteaToken})" exec ${pkgs.tea}/bin/tea "$@"
+      '';
+
+      giteaRule = ''
+        # Pull requests
+
+        By default, your work reaches Dev as a pull request on Gitea (`${giteaUrl}`), and Dev
+        merges it. The task or the repository's own instructions (its `AGENTS.md`) can say
+        otherwise, for example that you may push to its main branch yourself; follow them.
+
+        - When a piece of work is done, push it to a branch of its own and open a pull request.
+          Name the branch after the work, such as `fix-paseo-relay`.
+        - Push with jj: `jj bookmark set <branch> -r <revision>` then `jj git push -b <branch>`.
+          With Git: `git push origin HEAD:refs/heads/<branch>`.
+        - Open the pull request with `tea`, which is already logged in, as a bot user:
+          `tea pulls create --head <branch> --title "<summary>" --description "<what and why>"`.
+          Pass `--head`, since a jj checkout has no current branch. Outside a clone, add
+          `--repo <owner>/<repo>`.
+        - To update a pull request, push to its branch again; rewriting its commits is fine.
+        - Read a pull request and its comments with `tea pulls <index> --comments`, and reply with
+          `tea comment <index> "<text>"`.
+        - The repository's commit conventions still apply.
+      '';
+
       slopClone = pkgs.writeShellApplication {
         name = "slop-clone";
-        runtimeInputs = with pkgs; [ jujutsu openssh paseo ];
+        runtimeInputs = with pkgs; [ git jujutsu paseo ];
         text = ''
           if [ $# -ne 1 ] || [[ "$1" != */* ]]; then
             echo "usage: slop-clone <owner>/<repo>" >&2
@@ -55,10 +89,9 @@ in
           repo="$1"
           dest="$HOME/src/''${repo##*/}"
 
-          if ! jj git clone --colocate "git@git.nul.ie:$repo.git" "$dest"; then
+          if ! jj git clone --colocate "${giteaUrl}/$repo.git" "$dest"; then
             echo >&2
-            echo "Clone failed. If Gitea refused the key, add it as a write-enabled deploy key on $repo:" >&2
-            ssh-keygen -y -f ${giteaKey} >&2
+            echo "Clone failed. If Gitea refused, add the bot user to $repo as a collaborator with Write." >&2
             exit 1
           fi
 
@@ -158,7 +191,7 @@ in
           secrets = {
             key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBCkgBZh/YejY+gDnGa9r5SPo1+aHWPAAAIfENE7t0Om";
             files = {
-              "slop-cannon/gitea-key".owner = agentUser;
+              "slop-cannon/gitea-token".owner = agentUser;
               # `PASEO_PASSWORD=...`
               "slop-cannon/paseo.env" = { };
             };
@@ -192,9 +225,10 @@ in
           my.agents = {
             enable = true;
             slop.enable = true;
+            rules.gitea = giteaRule;
           };
 
-          home.packages = [ slopClone slopPair ];
+          home.packages = [ slopClone slopPair tea ];
 
           programs = {
             # Permissive by default: the VM is the boundary, and `slop-broker` gates what needs
@@ -210,10 +244,7 @@ in
               sandbox_mode = "danger-full-access";
             };
 
-            # The shared config pins `IdentityFile` for every host
-            ssh.settings."git.nul.ie" = {
-              IdentityFile = [ giteaKey ];
-            };
+            git.settings.credential.${giteaUrl}.helper = "${gitCredential}";
           };
         };
 

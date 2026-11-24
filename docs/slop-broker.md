@@ -74,8 +74,8 @@ collects garbage in that store on every run, which the roots survive until they 
 ### `master` is protected
 
 Deploy approvals ("on the branch", the diff since `master`) and secret approvals both trust
-`master`, so only Dev may push to it: branch protection on `dev/nixfiles` in Gitea refuses pushes
-from deploy keys, including `slop-cannon`'s.
+`master`, so only Dev may push to it or merge into it: branch protection on `dev/nixfiles` in Gitea
+refuses everyone else, including the bot user that agents on `slop-cannon` push as.
 
 ## Approvals web app
 
