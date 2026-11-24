@@ -29,6 +29,8 @@ One Docker-mode instance (`main-docker`) on podman (privileged, `podman` network
 - Labels for `node:24-trixie` and the self-built `git.nul.ie/dev/actions-ubuntu:26.04` images.
 - Runs as a fixed `gitea-runner` user (not `DynamicUser`) so it can read its token; jobs have a
   configured timeout.
+- Gitea's `actions.ENDLESS_TASK_TIMEOUT` matches the runner's job timeout. Otherwise the server's
+  shorter default marks long builds as failed while the runner keeps working on them.
 - The action cache lives on a dedicated disk (`/var/cache/gitea-runner`).
 - Executes the repo's own `.gitea/workflows/ci.yaml`.
 

@@ -119,6 +119,8 @@ in
           };
           actions = {
             ENABLED = true;
+            # Match the runner's job timeout; the default (3h) fails long builds that are still running
+            ENDLESS_TASK_TIMEOUT = "8h";
           };
         };
       };
