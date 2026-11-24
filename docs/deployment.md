@@ -92,6 +92,9 @@ The shared cache settings in `lib.my.c.nix.cache` and the flake's `nixConfig` in
 the [Numtide binary cache](https://github.com/numtide/llm-agents.nix#binary-cache), so
 both agents can be downloaded prebuilt. Keep the input's tested nixpkgs pin to preserve cache hits.
 
+They also include the [nix-community cache](https://nix-community.org/cache/), which builds
+unfree packages that `cache.nixos.org` doesn't, such as the MongoDB used by UniFi.
+
 `programs.codex.mutableSettings` merges the declared status-line settings into the writable
 `~/.codex/config.toml` during activation. Declared values take precedence on each switch;
 other settings, including model selection, providers and project trust, remain imperative.
