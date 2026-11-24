@@ -1,6 +1,8 @@
 {
   nixos.systems.palace.configuration = { lib, config, allAssignments, ... }:
   let
+    inherit (lib) mapAttrs fileContents;
+
     # `slop-cannon`'s vsock address; the kernel reports it for every connection from the guest
     slopCannonCid = 3;
 
@@ -24,6 +26,11 @@
         };
         # The approvals web app's client secret at Pocket ID
         "palace/slop-broker-oidc-secret" = {
+          owner = "root";
+          mode = "0400";
+        };
+        # The broker's age identity, a recipient of every secret (`.keys/slop-broker.pub`)
+        "palace/slop-broker-age.key" = {
           owner = "root";
           mode = "0400";
         };
@@ -106,6 +113,17 @@
           action = "ask";
           leases = [ "5m" "1h" ];
         };
+        # Approvals show whether the file and its recipients match `master`; reading always asks
+        secret = {
+          action = "ask";
+          leases = [ "5m" ];
+          rules = [
+            {
+              match.action = "keys";
+              action = "auto";
+            }
+          ];
+        };
       };
 
       requesters.slop-cannon = {
@@ -134,6 +152,13 @@
         hostname = "object-ctr.${lib.my.c.colony.domain}";
         user = "harmonia";
         keyFile = config.age.secrets."palace/slop-broker-cache.key".path;
+      };
+
+      # Checked against `master`'s `secrets.nix`, which only people can push to
+      secrets = {
+        enable = true;
+        identityFile = config.age.secrets."palace/slop-broker-age.key".path;
+        names = mapAttrs (_: fileContents) lib.my.c.ageKeyFiles;
       };
 
       # `approve.slop.nul.ie`, published by `middleman`; approvers sign in with Pocket ID

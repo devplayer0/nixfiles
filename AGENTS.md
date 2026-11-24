@@ -199,6 +199,7 @@ minutes for a human. See [`docs/slop-broker.md`](docs/slop-broker.md).
   `--host <user>@<host>` reaches other boxes.
 - `slop deploy <node>…` builds and deploys a pushed commit; `--boot` stages it for the next boot.
 - `slop build <attr>…` builds a pushed commit's flake attributes into the binary cache.
+- `slop secret keys|read|set|generate|rekey <file>` changes age secrets instead of `ragenix`.
 - `slop requests` lists your pending requests and leases.
 
 ## Secrets

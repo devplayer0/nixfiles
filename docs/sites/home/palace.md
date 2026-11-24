@@ -204,6 +204,11 @@ the agents on `slop-cannon` after policy and, usually, a human approve them.
   as `harmonia`, with a key of the broker's own (age secret `palace/slop-broker-cache.key`) whose
   forced command allows only the store protocol and adding GC roots (see
   [Binary cache](../../slop-broker.md#binary-cache)).
+- The broker's age identity (age secret `palace/slop-broker-age.key`, public key
+  `.keys/slop-broker.pub`) is a recipient of every secret, so it can carry out `slop secret`. Its
+  builder looks each request's file up on `master` and evaluates `master`'s `secrets.nix` for the
+  approval (see [Secrets](../../slop-broker.md#secrets)). Listing a secret's keys doesn't ask;
+  everything else does, and reading one never offers a lease.
 - Answer requests on `palace` as `dev` with `slop-approve`. In a terminal it shows each request
   in full, asks for an answer and waits for new ones; `slop-approve list` and
   `slop-approve <id> <decision>` (any unique ID prefix) work from scripts. `slop-approve log`

@@ -517,4 +517,9 @@ rec {
   sshHostKeys = {
     mail-vm = ../.keys/mail-vm-host.pub;
   };
+  # age recipients that every secret is encrypted to (see `secrets.nix`)
+  ageKeyFiles = {
+    dev = ../.keys/dev.pub;
+    slop-broker = ../.keys/slop-broker.pub;
+  };
 }

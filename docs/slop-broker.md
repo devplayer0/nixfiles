@@ -1,7 +1,7 @@
 # slop-broker
 
 [`slop-broker`](https://git.nul.ie/dev/slop-broker) carries out privileged operations (SSH
-commands, deploys, builds, and later secrets, DNS and previews) for the coding agents on
+commands, deploys, builds and age secrets, and later DNS and previews) for the coding agents on
 [`slop-cannon`](sites/home/slop-cannon.md) and other boxes, under a policy and usually after Dev
 approves each one. Agents use the `slop` CLI.
 
@@ -56,6 +56,27 @@ the store protocol and GC roots (`services.slop-broker-cache` in `object`'s conf
 collects garbage in that store on every run, which the roots survive until they expire (see the
 [design](https://git.nul.ie/dev/slop-broker/src/branch/main/docs/design.md#binary-cache)).
 
+## Secrets
+
+`slop secret` lets agents change age secrets without the dev key. The broker's own age identity
+(`palace/slop-broker-age.key`, public key `.keys/slop-broker.pub`) is in `defaultKeys` in
+[`secrets.nix`](../secrets.nix), so every secret is encrypted to it; adding it took one full rekey.
+
+- The agent sends the `.age` file from its checkout, and the broker returns new ciphertext, which
+  the agent commits. Recipients come from the agent's `secrets.nix`.
+- Before approval, the builder fetches `master`, looks the file's content up there and evaluates
+  `master`'s `secrets.nix`. The approval says which file the content really is and whether the
+  recipients match `master`'s rules for it (see the
+  [design](https://git.nul.ie/dev/slop-broker/src/branch/main/docs/design.md#secrets)).
+- `secrets.names` labels `dev` and `slop-broker` in approvals (`lib.my.c.ageKeyFiles`); host keys
+  are shown abbreviated.
+
+### `master` is protected
+
+Deploy approvals ("on the branch", the diff since `master`) and secret approvals both trust
+`master`, so only Dev may push to it: branch protection on `dev/nixfiles` in Gitea refuses pushes
+from deploy keys, including `slop-cannon`'s.
+
 ## Approvals web app
 
 `middleman` proxies `approve.slop.nul.ie` to port 8095 on `palace`. Approvers sign in through
@@ -80,11 +101,7 @@ for simplicity.
 Each step updates this page, the box pages and `AGENTS.md` as it lands.
 
 1. **Done:** `slop.nul.ie`; the broker core, box queries, SSH transport, deploys and builds on
-   `palace`; `castle` over SSH; Pocket ID at `id.nul.ie`.
-2. **Approvals web app:** remove the temporary `http://localhost:8095/auth/callback` from the
-   `slop-approve` client, deploy `palace` and `middleman`.
-3. **Secrets:** the broker's age identity joins `.keys/dev.pub` in the recipients that
-   `secrets.nix` generates (one full rekey), so the dev key never goes to `palace`.
-4. **DNS**, with a Cloudflare token of the broker's own for the public zones.
-5. **Previews** on `*.slop.nul.ie`, through `middleman`.
-6. **TCP forwards and a cache for VM builds**, if needed.
+   `palace`; `castle` over SSH; Pocket ID at `id.nul.ie`; the approvals web app; secrets.
+2. **DNS**, with a Cloudflare token of the broker's own for the public zones.
+3. **Previews** on `*.slop.nul.ie`, through `middleman`.
+4. **TCP forwards and a cache for VM builds**, if needed.
