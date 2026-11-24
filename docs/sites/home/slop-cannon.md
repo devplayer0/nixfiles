@@ -80,9 +80,15 @@ installed `claude` and its claude.ai login; Codex runs through `codex app-server
 
 ### Service
 
-- The upstream `services.paseo` module (flake input `paseo`, pinned to a release, imported in
+- The `services.paseo` module from our Paseo fork (flake input `paseo`, imported in
   `nixos/modules/common.nix`), with a package override for the web UI bug
   [getpaseo/paseo#7673](https://github.com/getpaseo/paseo/issues/7673).
+- The fork, [`dev/paseo`](https://git.nul.ie/dev/paseo), adds support for colocated Jujutsu
+  repositories: Jujutsu workspaces, change views and actions in the app, and
+  `paseo workspace jj` in the CLI. Each `fork/jujutsu-v<version>` branch carries the fork commits
+  on an upstream release; `main` mirrors upstream. The branch's `docs/jujutsu-fork.md` explains
+  the controls and how to rebase the fork.
+- The daemon runs the `jj` from the system and user profiles on its `PATH`.
 - Runs as `slop-cannon`, so agents use that user's logins and settings, with `~/.paseo` as
   `PASEO_HOME`.
 - The daemon password comes from the age secret `slop-cannon/paseo.env`. To read it for a new

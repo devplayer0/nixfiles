@@ -66,7 +66,8 @@ app, in place of Paseo's hosted relay.
 - The relay can't read or forge messages, so the vhost is open to the world. Its Prometheus
   `/metrics` is not exposed; `/health` and `/ready` are.
 - `slop.nul.ie` serves Paseo's web app as static files, taken from the same patched Paseo package
-  as the daemon. Pairing links from our daemon point there, and the app connects through the relay,
+  (our Jujutsu fork) as the daemon, so deploy it together with
+  [`slop-cannon`](../../../home/slop-cannon.md). Pairing links from our daemon point there, and the app connects through the relay,
   so nothing from `paseo.sh` is needed in the browser.
 
 ## Network assignments

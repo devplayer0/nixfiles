@@ -74,9 +74,9 @@
     # Packages not in nixpkgs
     # Keep its tested nixpkgs pin so packages can use the upstream binary cache.
     llm-agents.url = "github:numtide/llm-agents.nix";
-    # Pinned to a release. Don't make it follow our nixpkgs: its npm dependency hash is tied to its
-    # own nixpkgs pin.
-    paseo.url = "github:getpaseo/paseo/v0.15.4";
+    # Our fork with Jujutsu support, one branch per upstream release it is rebased onto. Don't make
+    # it follow our nixpkgs: its npm dependency hash is tied to its own nixpkgs pin.
+    paseo.url = "git+https://git.nul.ie/dev/paseo?ref=fork/jujutsu-v0.17.4";
     slop-broker.url = "git+https://git.nul.ie/dev/slop-broker?ref=main";
     slop-broker.inputs.nixpkgs.follows = "nixpkgs-unstable";
     borgthin.url = "github:devplayer0/borg";
