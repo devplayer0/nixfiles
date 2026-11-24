@@ -10,6 +10,18 @@ let
   devVMKeyPath = "/run/dev.key";
   ctrProfiles = n: "/nix/var/nix/profiles/per-container/${n}";
 
+  # Restart a container when its rendered .nspawn file changes
+  # TODO: Drop the fallback when 26.11 is stable. Older NixOS renders all .nspawn files into one directory.
+  nspawnTrigger = n:
+    let
+      hash = hashString "sha256" (
+        if options.systemd.nspawn.type.getSubOptions [ ] ? settings
+        then config.environment.etc."systemd/nspawn/${n}.nspawn".text
+        else toJSON config.systemd.nspawn."${n}"
+      );
+    in
+    "${n}.nspawn:${hash}";
+
   dummyReady = pkgs.runCommandCC "dummy-sd-ready" {
     buildInputs = [ pkgs.systemd ];
     passAsFile = [ "code" ];
@@ -188,9 +200,7 @@ in
             # Without this, systemd-nspawn will do cgroupsv1
             SYSTEMD_NSPAWN_UNIFIED_HIERARCHY = "1";
           };
-          restartTriggers = [
-            (''${n}.nspawn:${hashString "sha256" (toJSON config.systemd.nspawn."${n}")}'')
-          ];
+          restartTriggers = [ (nspawnTrigger n) ];
 
           preStart =
           ''
