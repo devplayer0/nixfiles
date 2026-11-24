@@ -231,7 +231,9 @@ be available.
 ### Recipient rules
 
 [`secrets.nix`](../secrets.nix) is generated from every system's `my.secrets.files` and `key`.
-Each recipient list also includes `.keys/dev.pub`, so the development key can open every secret.
+Each recipient list also includes `.keys/dev.pub`, so the development key can open every secret,
+and `.keys/slop-broker.pub`, so [`slop-broker`](slop-broker.md#secrets) can change secrets for
+agents.
 Run `ragenix -r` after adding a box or secret to re-key the files.
 
 ### Local keys and editing

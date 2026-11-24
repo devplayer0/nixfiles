@@ -9,6 +9,8 @@ let
 
   defaultKeys = [
     (fileContents .keys/dev.pub)
+    # `slop-broker` on `palace`, which changes secrets for agents
+    (fileContents .keys/slop-broker.pub)
   ];
   secretKeys =
     zipAttrsWith
