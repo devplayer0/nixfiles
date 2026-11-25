@@ -36,6 +36,7 @@ in
           my = {
             deploy.enable = false;
             server.enable = true;
+            network.bbr = true;
 
             secrets = {
               key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAQM9U1e/XcUCyMJITrpAHjAGahpqkZCmtX6pJkYzuks";

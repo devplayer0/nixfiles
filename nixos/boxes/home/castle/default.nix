@@ -221,6 +221,7 @@ in
 
         my = {
           tmproot.size = "24G";
+          network.bbr = true;
 
           user = {
             config.extraGroups = [ "input" ];

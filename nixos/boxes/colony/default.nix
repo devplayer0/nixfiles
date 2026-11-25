@@ -379,6 +379,8 @@ in
 
         my = {
           #deploy.generate.system.mode = "boot";
+          network.bbr = true;
+
           secrets = {
             key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPIijqzAWF6OxKr4aeCa1TAc5xGn4rdIjVTt0wAPU6uY";
             files = {

@@ -317,6 +317,7 @@ in
                 as211024 = config.age.secrets."l2mesh/as211024.key".path;
               };
             };
+            network.bbr = true;
             firewall = {
               trustedInterfaces = [ "lan-hi" "lan-lo" ];
               udp.allowed = [ 5353 ];

@@ -166,6 +166,7 @@ in
             my = {
               secrets.key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ6bc1pQCYalLXdB4X+7kFXtkTdFalbH5rchjuYj2ceU";
               server.enable = true;
+              network.bbr = true;
 
               firewall = {
                 tcp.allowed = [ 19999 ];

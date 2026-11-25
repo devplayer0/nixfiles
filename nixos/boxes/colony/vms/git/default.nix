@@ -180,6 +180,8 @@ in
             };
 
             my = {
+              network.bbr = true;
+
               secrets = {
                 key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP+KINpHLMduBuW96JzfSRDLUzkI+XaCBghu5/wHiW5R";
                 files = {
