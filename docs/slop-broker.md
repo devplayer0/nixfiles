@@ -25,6 +25,15 @@ the requesters, the `agent` policy they share, the secrets, and the web app sett
 targets are the deploy-rs nodes on `master`, which the builder reads there, so a new box is a
 target once it's merged.
 
+### Updating the broker
+
+- **Deploying `palace` doesn't restart the broker** (`restartIfChanged = false`), so it can see a
+  deploy of its own box through. Afterwards, restart it for a new version or configuration to take
+  effect: `doas systemctl --no-block restart slop-broker` on `palace`. A restart drops pending
+  requests and leases.
+- **Deploy every requester with it** when `slop`'s protocol version changes, or their requests fail
+  with a protocol version error: `slop-cannon`, and `castle` over SSH.
+
 ## In this flake
 
 - **Input:** `slop-broker` in [`flake.nix`](../flake.nix). Its overlay provides `pkgs.slop-broker`,
