@@ -4,6 +4,11 @@ on:
   push:
     branches: [master]
 
+# Only the newest commit is worth building and caching
+concurrency:
+  group: ci
+  cancel-in-progress: true
+
 jobs:
   check:
     name: Check, build and cache nixfiles
