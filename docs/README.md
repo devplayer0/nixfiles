@@ -42,7 +42,7 @@ Physical host and public-infrastructure hub — see [`sites/colony/README.md`](s
 ```
 colony (physical VM host, ams1)
 ├── estuary ── edge router: WAN, firewall/NAT, DNS, BGP (AS211024), WireGuard
-├── shill ──── NixOS container host ──┬── middleman    (reverse proxy, ACME, nginx-sso, librespeed)
+├── shill ──── NixOS container host ──┬── middleman    (reverse proxy, ACME, Pocket ID, librespeed)
 │                                     ├── vaultwarden  (password manager)
 │                                     ├── colony-psql  (shared PostgreSQL)
 │                                     ├── chatterbox   (Matrix Synapse + bridges)

@@ -48,7 +48,7 @@ their current addresses. Each container has its own page:
 
 | Container | Role |
 |---|---|
-| [`middleman`](containers/middleman.md) | Reverse proxy, ACME, nginx-sso, librespeed, Paseo relay |
+| [`middleman`](containers/middleman.md) | Reverse proxy, ACME, Pocket ID and SSO, librespeed, Paseo relay |
 | [`vaultwarden`](containers/vaultwarden.md) | Password manager |
 | [`colony-psql`](containers/colony-psql.md) | Shared PostgreSQL (14) |
 | [`chatterbox`](containers/chatterbox.md) | Matrix Synapse + bridges |

@@ -187,7 +187,7 @@ descriptions) see [`reference/nixos-options.md`](reference/nixos-options.md).
 | `vms` | `my.vms.instances` — QEMU/KVM VMs as systemd units: TAP/bridge networking, LVM-backed disks, VFIO host-device passthrough (with udev tagging), UEFI, SPICE/TTY/QMP unix sockets under `/run/vms/`, clean shutdown via QMP `system_powerdown`. |
 | `network` | Baseline networking: networkd only (`useDHCP = false`), IPv6 on, resolved domain/negative-cache settings; dev VMs get DHCP on `eth0` and an SSH port forward. |
 | `pdns` | `my.pdns` — PowerDNS: authoritative server driven by BIND-style zone files (with templating and serial management) and recursor extra-settings wiring. |
-| `nginx-sso` | `my.nginx-sso` — runs `nginx-sso` (instead of the stock NixOS module) and generates per-instance nginx `auth_request` include files. |
+| `pocket-id` | `my.pocket-id` — Pocket ID with user groups and OIDC clients declared in Nix; `pocket-id-sync` applies them through the API with a static API key. |
 | `gui` | `my.gui.enable` (default on) — desktop baseline: graphics, polkit, swaylock PAM entry, Android udev rules, screenshot tmpdir. |
 | `l2mesh` | Consumes `nixos.vpns.l2` — builds the VXLAN + IPsec layer-2 meshes between edge routers; see [networking.md](networking.md). |
 | `borgthin` | `my.borgthin.jobs` — borg backups of thin-LVM snapshots to local or SSH repos on a systemd timer, with pruning. |

@@ -9,14 +9,40 @@ let
   dualStackListen' = l: map (addr: l // { inherit addr; }) [ "0.0.0.0" "[::]" ];
   dualStackListen = ll: flatten (map dualStackListen' ll);
 
-  ssoServer = i: {
+  # Gate a vhost behind oauth2-proxy, for members of any of the given Pocket ID groups. The
+  # session cookie is host-only, so other `.nul.ie` sites never see it; Pocket ID's own session
+  # makes signing in to the next gated vhost a redirect.
+  oauth2Proxy = config.services.oauth2-proxy.httpAddress;
+  ssoServer = groups: {
+    locations = {
+      "^~ /oauth2/" = {
+        proxyPass = oauth2Proxy;
+        extraConfig = ''
+          auth_request off;
+          ${proxyHeaders}
+          # Where to return after signing in; on a 401 this is still the original request
+          proxy_set_header X-Auth-Request-Redirect $request_uri;
+        '';
+      };
+      # A literal `proxy_pass`: `proxyPass` sets `$nix_proxy_target`, which this subrequest would
+      # overwrite for the main request too
+      "= /oauth2/auth".extraConfig = ''
+        proxy_pass ${oauth2Proxy}/oauth2/auth?allowed_groups=${concatStringsSep "," groups};
+        internal;
+        auth_request off;
+        proxy_pass_request_body off;
+        proxy_set_header Content-Length "";
+        ${proxyHeaders}
+      '';
+    };
+    # A location with its own `add_header` would drop the refreshed cookie
     extraConfig = ''
-      include /etc/nginx/includes/sso/server-${i}.conf;
-    '';
-  };
-  ssoLoc = i: {
-    extraConfig = ''
-      include /etc/nginx/includes/sso/location-${i}.conf;
+      auth_request /oauth2/auth;
+      error_page 401 = /oauth2/start;
+
+      # Pass on the session cookie when a check refreshes it
+      auth_request_set $sso_cookie $upstream_http_set_cookie;
+      add_header Set-Cookie $sso_cookie;
     '';
   };
 
@@ -58,12 +84,6 @@ let
   };
 in
 {
-  my = {
-    nginx-sso.includes.instances = {
-      generic = {};
-    };
-  };
-
   services.nginx.virtualHosts =
   let
     hosts = {
@@ -111,11 +131,6 @@ in
         };
       };
 
-      "sso.${pubDomain}" = {
-        locations."/".proxyPass = config.my.nginx-sso.includes.endpoint;
-        useACMEHost = pubDomain;
-      };
-
       "netdata-colony.${pubDomain}" =
       let
         hosts = [
@@ -130,26 +145,23 @@ in
           locations = {
             "= /".return = "301 https://$host/vm/";
             "~ /(?<behost>${matchHosts})$".return = "301 https://$host/$behost/";
-            "~ /(?<behost>${matchHosts})/(?<ndpath>.*)" = mkMerge [
-              {
-                proxyPass = "http://$behost.${domain}:19999/$ndpath$is_args$args";
-                extraConfig = ''
-                  proxy_pass_request_headers on;
-                  ${proxyHeaders}
-                  proxy_set_header Connection "keep-alive";
-                  proxy_store off;
+            "~ /(?<behost>${matchHosts})/(?<ndpath>.*)" = {
+              proxyPass = "http://$behost.${domain}:19999/$ndpath$is_args$args";
+              extraConfig = ''
+                proxy_pass_request_headers on;
+                ${proxyHeaders}
+                proxy_set_header Connection "keep-alive";
+                proxy_store off;
 
-                  gzip on;
-                  gzip_proxied any;
-                  gzip_types *;
-                '';
-              }
-              (ssoLoc "generic")
-            ];
+                gzip on;
+                gzip_proxied any;
+                gzip_types *;
+              '';
+            };
           };
           useACMEHost = pubDomain;
         }
-        (ssoServer "generic")
+        (ssoServer [ "admins" ])
       ];
 
       "pass.${pubDomain}" =
@@ -242,56 +254,40 @@ in
 
       "torrents.${pubDomain}" = mkMerge [
         {
-          locations."/" = mkMerge [
-            {
-              proxyPass = "http://jackflix-ctr.${domain}:9091";
-            }
-            (ssoLoc "generic")
-          ];
+          locations."/".proxyPass = "http://jackflix-ctr.${domain}:9091";
           useACMEHost = pubDomain;
         }
-        (ssoServer "generic")
+        (ssoServer [ "admins" ])
       ];
 
       "jackett.${pubDomain}" = mkMerge [
         {
-          locations."/" = mkMerge [
-            {
-              proxyPass = "http://jackflix-ctr.${domain}:9117";
-            }
-            (ssoLoc "generic")
-          ];
+          locations."/".proxyPass = "http://jackflix-ctr.${domain}:9117";
           useACMEHost = pubDomain;
         }
-        (ssoServer "generic")
+        (ssoServer [ "admins" ])
       ];
       "radarr.${pubDomain}" = mkMerge [
         {
-          locations."/" = mkMerge [
-            {
-              proxyPass = "http://jackflix-ctr.${domain}:7878";
-              proxyWebsockets = true;
-              extraConfig = proxyHeaders;
-            }
-            (ssoLoc "generic")
-          ];
+          locations."/" = {
+            proxyPass = "http://jackflix-ctr.${domain}:7878";
+            proxyWebsockets = true;
+            extraConfig = proxyHeaders;
+          };
           useACMEHost = pubDomain;
         }
-        (ssoServer "generic")
+        (ssoServer [ "admins" ])
       ];
       "sonarr.${pubDomain}" = mkMerge [
         {
-          locations."/" = mkMerge [
-            {
-              proxyPass = "http://jackflix-ctr.${domain}:8989";
-              proxyWebsockets = true;
-              extraConfig = proxyHeaders;
-            }
-            (ssoLoc "generic")
-          ];
+          locations."/" = {
+            proxyPass = "http://jackflix-ctr.${domain}:8989";
+            proxyWebsockets = true;
+            extraConfig = proxyHeaders;
+          };
           useACMEHost = pubDomain;
         }
-        (ssoServer "generic")
+        (ssoServer [ "admins" ])
       ];
       "gib.${pubDomain}" = {
         locations."/".proxyPass = "http://jackflix-ctr.${domain}:5055";
@@ -427,9 +423,14 @@ in
 
       "id.${pubDomain}" =
       let
+        # API keys (including `pocket-id-sync`'s admin key) only work from inside
+        pocketIdHeaders = ''
+          ${proxyHeaders}
+          proxy_set_header X-API-Key "";
+        '';
         pocketId = {
           proxyPass = "http://127.0.0.1:${toString config.services.pocket-id.settings.PORT}";
-          extraConfig = proxyHeaders;
+          extraConfig = pocketIdHeaders;
         };
       in
       {
@@ -440,7 +441,7 @@ in
             extraConfig = ''
               ${concatStringsSep "\n" (map (n: "allow ${n};") (with lib.my.c.internalNets; v4 ++ v6))}
               deny all;
-              ${proxyHeaders}
+              ${pocketIdHeaders}
             '';
           };
         };
@@ -470,24 +471,18 @@ in
 
       "pront.${pubDomain}" = mkMerge [
         {
-          locations."/" = mkMerge [
-            {
-              proxyPass = "http://stream-hi.${home.domain}:5000";
-              proxyWebsockets = true;
-              extraConfig = proxyHeaders;
-            }
-            (ssoLoc "generic")
-          ];
-          locations."~* ^/webcam/(.*)" = mkMerge [
-            {
-              proxyPass = "http://stream-hi.${home.domain}:5050/$1$is_args$args";
-              extraConfig = proxyHeaders;
-            }
-            (ssoLoc "generic")
-          ];
+          locations."/" = {
+            proxyPass = "http://stream-hi.${home.domain}:5000";
+            proxyWebsockets = true;
+            extraConfig = proxyHeaders;
+          };
+          locations."~* ^/webcam/(.*)" = {
+            proxyPass = "http://stream-hi.${home.domain}:5050/$1$is_args$args";
+            extraConfig = proxyHeaders;
+          };
           useACMEHost = pubDomain;
         }
-        (ssoServer "generic")
+        (ssoServer [ "admins" ])
       ];
       "hass.${pubDomain}" = {
         locations."/" = {

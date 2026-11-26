@@ -13,7 +13,7 @@
     vms = ./vms.nix;
     network = ./network.nix;
     pdns = ./pdns.nix;
-    nginx-sso = ./nginx-sso.nix;
+    pocket-id = ./pocket-id;
     gui = ./gui;
     l2mesh = ./l2mesh.nix;
     borgthin = ./borgthin.nix;

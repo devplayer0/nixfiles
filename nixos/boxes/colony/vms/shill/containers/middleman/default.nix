@@ -29,7 +29,7 @@ in
       inherit (lib.my) networkdAssignment;
     in
     {
-      imports = [ ./vhosts.nix ];
+      imports = [ ./auth.nix ./vhosts.nix ];
 
       config = mkMerge [
         {
@@ -54,17 +54,11 @@ in
                   group = "acme";
                   mode = "400";
                 };
-                "middleman/nginx-sso.yaml" = {
-                  owner = "nginx-sso";
-                  group = "nginx-sso";
-                };
                 "middleman/htpasswd" = {
                   owner = "nginx";
                   group = "nginx";
                 };
                 "librespeed.toml" = { };
-                # Pocket ID's database encryption key; it reads it through `LoadCredential`
-                "middleman/pocket-id-encryption-key" = { };
               };
             };
 
@@ -77,56 +71,6 @@ in
                   }
                 }
               '';
-            };
-
-            nginx-sso = {
-              enable = true;
-              extraConfigFile = config.age.secrets."middleman/nginx-sso.yaml".path;
-              configuration = {
-                listen = {
-                  addr = "[::]";
-                  port = 8082;
-                };
-                login = {
-                  title = "${pubDomain} login";
-                  default_redirect = "https://${pubDomain}";
-                  default_method = "google_oauth";
-                  names = {
-                    google_oauth = "Google account";
-                    simple = "Username / password";
-                  };
-                };
-                cookie = {
-                  domain = ".${pubDomain}";
-                  secure = true;
-                };
-                audit_log = {
-                  targets = [ "fd://stdout" ];
-                  events  = [
-                    "access_denied"
-                    "login_success"
-                    "login_failure"
-                    "logout"
-                    #"validate"
-                  ];
-                };
-                providers = {
-                  simple = {
-                    groups = {
-                      admin = [ "dev" ];
-                    };
-                  };
-                  google_oauth = {
-                    client_id = "545475967061-cag4g1qf0pk33g3pdbom4v69562vboc8.apps.googleusercontent.com";
-                    redirect_url = "https://sso.${pubDomain}/login";
-                    user_id_method = "user-id";
-                  };
-                };
-              };
-              includes = {
-                endpoint = "http://localhost:8082";
-                baseURL = "https://sso.${pubDomain}";
-              };
             };
 
             librespeed = {
@@ -227,19 +171,6 @@ in
           };
 
           services = {
-            # Passkey-only OpenID Connect provider at `id.nul.ie`, published by nginx
-            pocket-id = {
-              enable = true;
-              settings = {
-                APP_URL = "https://id.${pubDomain}";
-                HOST = "127.0.0.1";
-                PORT = 1411;
-                TRUST_PROXY = true;
-                ANALYTICS_DISABLED = true;
-              };
-              credentials.ENCRYPTION_KEY = config.age.secrets."middleman/pocket-id-encryption-key".path;
-            };
-
             netdata = {
               enable = true;
               configDir = {
