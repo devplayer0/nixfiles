@@ -1,0 +1,47 @@
+name: Build llm-agents
+
+on:
+  pull_request:
+    branches: [master]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+jobs:
+  build:
+    # Only the update branch, whether dispatched by the updater or pushed by hand
+    if: >-
+      (github.event_name == 'workflow_dispatch' &&
+       github.ref == 'refs/heads/automation/llm-agents') ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+       github.event.pull_request.head.ref == 'automation/llm-agents')
+
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: DeterminateSystems/determinate-nix-action@v3
+        with:
+          github-token: ${{ secrets.GH_PULL_TOKEN }}
+          extra-conf: |
+            sandbox-fallback = false
+
+            lazy-trees = true
+            eval-cores = 0
+
+      - name: Build installed agent packages
+        shell: bash
+        run: |
+          attrs="$(nix eval --accept-flake-config --no-update-lock-file --raw \
+            .#llmAgentPackages.x86_64-linux \
+            --apply 'packages: builtins.concatStringsSep "\n" (builtins.attrNames packages)')"
+
+          if [[ -n "$attrs" ]]; then
+            mapfile -t packages <<< "$attrs"
+            nix build --accept-flake-config --no-update-lock-file --no-link \
+              "${packages[@]/#/.#llmAgentPackages.x86_64-linux.}"
+          fi

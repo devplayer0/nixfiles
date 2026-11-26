@@ -84,9 +84,10 @@ Boxes default to `fish`, so pipe multi-statement remote scripts through `bash`, 
 
 ## Coding agents
 
-The shared GUI home-manager module installs Codex and Claude Code from the `llm-agents` input, retaining
-that input's tested nixpkgs pin. Run `nix flake update llm-agents`, then switch the system
-or home configuration to use the updated package.
+The shared GUI home-manager module installs Codex and Claude Code from the `llm-agents` input,
+retaining that input's tested nixpkgs pin. [CI proposes version updates](#llm-agents-updates).
+To refresh the pin manually, run `nix flake update llm-agents`, then switch the system or home
+configuration to use the updated packages.
 
 The shared cache settings in `lib.my.c.nix.cache` and the flake's `nixConfig` include
 the [Numtide binary cache](https://github.com/numtide/llm-agents.nix#binary-cache), so
@@ -326,6 +327,28 @@ It then builds `.#ciDrv.x86_64-linux`, a `linkFarm` of all CI attributes, and pu
 
 Pushing the `installer` tag (refreshed by `update-installer`) builds `my.buildAs.iso` and
 `my.buildAs.netbootArchive`, then attaches both to a release.
+
+### llm-agents updates
+
+[`update-llm-agents.yaml`](../.gitea/workflows/update-llm-agents.yaml) checks for updates every
+four hours and can also be run manually on `master`. It matches packages directly installed
+by the x86_64 Linux NixOS and home-manager configurations to derivations exported by
+`llm-agents`. This discovers the tracked packages without building a whole system.
+
+When an installed version changes, CI commits the updated lockfile on the dedicated
+`automation/llm-agents` branch. The commit message lists the version changes. New versions
+refresh the branch behind the existing open PR. Upstream revisions with the same package
+versions leave that branch alone.
+
+- **Declining:** close the PR without merging. CI won't propose the same versions again, and
+  opens a new PR once a later version appears.
+- **Obsolete PRs:** if `master` already has the latest installed versions, for example after a
+  manual update, CI comments on the open PR and closes it.
+
+[`llm-agents.yaml`](../.gitea/workflows/llm-agents.yaml) builds the discovered packages for
+the update commit using the flake's caches. The updater dispatches the build explicitly
+because Gitea suppresses automatic workflow events from its job token. The updater needs
+the repository's Actions token limits to allow writes to code, pull requests and Actions.
 
 ### `update-docs.yaml`
 

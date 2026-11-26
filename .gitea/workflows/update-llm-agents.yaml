@@ -1,0 +1,36 @@
+name: Update llm-agents
+
+on:
+  schedule:
+    - cron: '19 */4 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: update-llm-agents
+
+jobs:
+  update:
+    if: github.ref == 'refs/heads/master'
+
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: master
+          persist-credentials: false
+
+      - uses: DeterminateSystems/determinate-nix-action@v3
+        with:
+          github-token: ${{ secrets.GH_PULL_TOKEN }}
+
+      - name: Update the dependency PR
+        env:
+          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
+        run: >-
+          nix shell --accept-flake-config .#nixpkgs.unstable.x86_64-linux.python3
+          --command python3 ci/update-llm-agents.py

@@ -287,6 +287,8 @@
         (import ./pkgs { inherit lib pkgs; }) //
         (import ./openwrt { inherit pkgs inputs; }));
 
+      llmAgentPackages = import ./ci/llm-agent-packages.nix { inherit lib inputs nixfiles system; };
+
       devShells.default = shell;
 
       ci =
