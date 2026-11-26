@@ -82,17 +82,45 @@ def find_pull_request(state: str, sort: str | None = None):
                 return pull
 
 
-def create_pull_request():
-    return api("pulls", data={
-        "base": BASE,
-        "head": BRANCH,
-        "title": TITLE,
-        "body": (
-            "Updates the llm-agents pin when an installed package changes version. "
-            "See the commit message for the version changes. Close this PR to skip "
-            "these versions; a later release opens a new one."
-        ),
-    })
+def version_changes(before: dict[str, str], after: dict[str, str]) -> list[tuple[str, str, str]]:
+    return [
+        (name, before.get(name, "absent"), after.get(name, "absent"))
+        for name in sorted(before.keys() | after.keys())
+        if before.get(name) != after.get(name)
+    ]
+
+
+def locked_source(lock: bytes) -> dict[str, str]:
+    nodes = json.loads(lock)["nodes"]
+    return nodes[nodes["root"]["inputs"]["llm-agents"]]["locked"]
+
+
+def pull_request_body(
+    before: dict[str, str], after: dict[str, str], base_lock: bytes, proposed_lock: bytes,
+) -> str:
+    rows = "\n".join(
+        f"| `{name}` | {old} | {new} |" for name, old, new in version_changes(before, after)
+    )
+
+    old, new = locked_source(base_lock), locked_source(proposed_lock)
+    source = f"`{old['rev'][:12]}` → `{new['rev'][:12]}`"
+    if new.get("type") == "github":
+        compare = f"https://github.com/{new['owner']}/{new['repo']}/compare/{old['rev']}...{new['rev']}"
+        source = f"[{source}]({compare})"
+
+    return (
+        f"Updates the `llm-agents` pin ({source}). Installed package versions:\n"
+        "\n"
+        f"| Package | `{BASE}` | Proposed |\n"
+        "| --- | --- | --- |\n"
+        f"{rows}\n"
+        "\n"
+        "Close this PR to skip these versions; a later release opens a new one."
+    )
+
+
+def create_pull_request(body: str):
+    return api("pulls", data={"base": BASE, "head": BRANCH, "title": TITLE, "body": body})
 
 
 def close_obsolete(pull) -> None:
@@ -126,9 +154,7 @@ def declined(after: dict[str, str], reference: Path) -> bool:
 
 def publish(previous: str, before: dict[str, str], after: dict[str, str]) -> str:
     changes = "\n".join(
-        f"{name} {before.get(name, 'absent')} -> {after.get(name, 'absent')}"
-        for name in sorted(before.keys() | after.keys())
-        if before.get(name) != after.get(name)
+        f"{name} {old} -> {new}" for name, old, new in version_changes(before, after)
     )
 
     subprocess.run(["git", "add", "--", str(LOCK)], check=True)
@@ -182,15 +208,23 @@ def main() -> None:
             return
 
         pending = None
+        pending_lock = None
         if previous and git_output("show", f"{previous}^:{LOCK}") == base_lock:
             pending_lock = git_output("show", f"{previous}:{LOCK}")
             reference.write_bytes(pending_lock)
             pending = after if pending_lock == candidate_lock else versions(reference)
 
-    head = previous if pending == after else publish(previous, before, after)
+    if pending == after:
+        head, proposed_lock = previous, pending_lock
+    else:
+        head, proposed_lock = publish(previous, before, after), candidate_lock
 
+    # Keep the description in step with the branch, including after master moves.
+    body = pull_request_body(before, after, base_lock, proposed_lock)
     if pull is None:
-        pull = create_pull_request()
+        pull = create_pull_request(body)
+    elif pull["body"] != body:
+        api(f"pulls/{pull['number']}", method="PATCH", data={"body": body})
     print(f"Update PR {pull['html_url']}")
 
     # Gitea suppresses events from the Actions token. Dispatch explicitly and

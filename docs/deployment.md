@@ -336,8 +336,9 @@ by the x86_64 Linux NixOS and home-manager configurations to derivations exporte
 `llm-agents`. This discovers the tracked packages without building a whole system.
 
 When an installed version changes, CI commits the updated lockfile on the dedicated
-`automation/llm-agents` branch. The commit message lists the version changes. New versions
-refresh the branch behind the existing open PR. Upstream revisions with the same package
+`automation/llm-agents` branch. The PR description tabulates the version changes and links
+the upstream comparison, and the commit message lists them too. New versions refresh the branch
+behind the existing open PR, and the updater rewrites the description to match. Upstream revisions with the same package
 versions leave that branch alone.
 
 - **Declining:** close the PR without merging. CI won't propose the same versions again, and
