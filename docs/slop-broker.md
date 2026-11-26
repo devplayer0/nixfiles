@@ -86,6 +86,17 @@ Deploy approvals ("on the branch", the diff since `master`) and secret approvals
 `master`, so only Dev may push to it or merge into it: branch protection on `dev/nixfiles` in Gitea
 refuses everyone else, including the bot user that agents on `slop-cannon` push as.
 
+## Approval timeout
+
+[`services.slop-broker.timeout` on `palace`](../nixos/boxes/home/palace/slop-broker.nix) gives
+each approval step up to 45 minutes. For example, a deploy can wait for builder approval before
+the build and for deploy approval afterward, with a separate window for each step.
+The five-minute window in `slop guide` and `slop --help` is the broker's upstream default.
+
+Keep `slop` running while the request is pending. Use a background session for commands that
+may need approval. If the client disconnects, the broker cancels the pending request.
+`slop requests` shows how much time each pending request has left.
+
 ## Approvals web app
 
 `middleman` proxies `approve.slop.nul.ie` to port 8095 on `palace`. Approvers sign in through

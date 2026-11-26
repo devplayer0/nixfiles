@@ -226,6 +226,14 @@ in
             enable = true;
             slop.enable = true;
             rules.gitea = giteaRule;
+            rules.slop-approvals = ''
+              # Slop approval requests
+
+              Run `slop` in a background session when it may need approval so it can stay
+              connected for the broker's configured approval window. If a request expires and
+              the task still depends on it, tell the user what is blocked and pause for their
+              direction. Continue any independent work you can do under the existing approvals.
+            '';
           };
 
           home.packages = [ slopClone slopPair tea ];

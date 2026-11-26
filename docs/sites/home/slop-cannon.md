@@ -180,6 +180,8 @@ Agents ask [`slop-broker`](../../slop-broker.md) on `palace` for anything needin
 the `slop` command (`my.agents.slop.enable`). It connects over vsock (CID 3; see
 [`palace`](palace.md#slop-broker)). The agent guide, `slop guide`, is installed as a Claude rule
 (`~/.claude/rules/slop.md`) and as Codex's `AGENTS.md`.
+The `my.agents.rules.slop-approvals` rule adds the local guidance on waiting for approval
+and pausing after expiry to both providers' user-level instructions, including in Paseo sessions.
 
 ## SSH and first login
 

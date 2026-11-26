@@ -78,6 +78,7 @@
 
     services.slop-broker = {
       enable = true;
+      timeout = "45m";
       approvers = [ config.my.user.config.name ];
 
       # For coding agents, wherever they run
