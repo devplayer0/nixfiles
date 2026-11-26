@@ -31,12 +31,15 @@ if [ "${1-}" = "--gc" ]; then
   exit
 fi
 
-path="$1"
+if [ -n "${UPDATE_PROFILE-}" ] && [ $# -ne 1 ]; then
+  echo "UPDATE_PROFILE needs exactly one path" >&2
+  exit 1
+fi
 
-echo "Pushing $path to cache..."
-nix copy --no-check-sigs --to "$STORE_URI" "$path"
+echo "Pushing $# path(s) to cache..."
+nix copy --no-check-sigs --to "$STORE_URI" "$@"
 
-if [ -n "$UPDATE_PROFILE" ]; then
+if [ -n "${UPDATE_PROFILE-}" ]; then
   echo "Updating profile..."
-  remote_cmd nix-env -p "$REMOTE_STORE"/nix/var/nix/profiles/nixfiles --set "$path"
+  remote_cmd nix-env -p "$REMOTE_STORE"/nix/var/nix/profiles/nixfiles --set "$1"
 fi

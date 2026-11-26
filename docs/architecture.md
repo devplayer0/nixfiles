@@ -51,8 +51,7 @@ Per platform (`eachDefaultSystem`), the flake produces:
 - `devShells.default` — the `numtide/devshell` from [`devshell/`](../devshell) (see
   [deployment.md](deployment.md)).
 - `ci.<system>` — one attr per buildable thing (`system-<name>`, `home-<name>` with `@` mangled
-  to `-at-`, `package-<name>`, plus `shell`), consumed by CI; `ciDrv` is a `linkFarm` of all of
-  them.
+  to `-at-`, `package-<name>`, plus `shell`), consumed by CI.
 
 ## Systems: `systemOpts` and `mkSystem`
 

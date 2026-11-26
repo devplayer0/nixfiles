@@ -303,7 +303,6 @@
         homes' // systems' // packages' // {
           inherit shell;
         };
-      ciDrv = pkgs.linkFarm "ci" ci;
 
       ciIfdReasons =
         let

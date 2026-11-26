@@ -302,26 +302,40 @@ GitHub/Gitea Actions workflows live in [`.gitea/workflows/`](../.gitea/workflows
 
 On pushes to `master`, this installs Determinate Nix on the runner (via
 `DeterminateSystems/determinate-nix-action`, configured with the same performance settings and
-Harmonia substituter as the boxes). CI normally runs `nix flake check --no-build` first and
-keeps import from derivation disabled. It builds every attribute of `.#ci.x86_64-linux`:
-systems as `system-<name>`, homes as `home-<name>` (with `@` changed to `-at-`), packages as
-`package-<name>`, and the development `shell`. Each result is pushed to the
-Harmonia cache with [`ci/push-to-cache.sh`](../ci/push-to-cache.sh). Before the first push, the
-workflow deletes cache-profile generations older than its retention period, then collects
-unreachable paths so a full cache cannot prevent collection from being reached. Paths pushed by
-`slop build` survive collection through their own GC roots (see
-[`slop-broker.md`](slop-broker.md#binary-cache)).
+Harmonia substituter as the boxes). A newer push cancels a run still in progress. CI normally
+runs `nix flake check --no-build` first and keeps import from derivation disabled. It then runs
+[`ci/build-and-cache.py`](../ci/build-and-cache.py), which builds every attribute of
+`.#ci.x86_64-linux`: systems as `system-<name>`, homes as `home-<name>` (with `@` changed to
+`-at-`), packages as `package-<name>`, and the development `shell`.
+
+The script works in stages:
+
+- **Collect garbage.** It deletes cache-profile generations older than their retention period,
+  then collects unreachable paths so a full cache cannot prevent collection from being reached.
+  Paths pushed by `slop build` survive collection through their own GC roots (see
+  [`slop-broker.md`](slop-broker.md#binary-cache)).
+- **Evaluate.** [`nix-eval-jobs`](https://github.com/nix-community/nix-eval-jobs) evaluates the
+  attributes in a pool of workers. Each worker reuses one evaluation of the flake for several
+  jobs, and the worker count and per-worker memory bound (`CI_EVAL_WORKERS`,
+  `CI_EVAL_WORKER_MEMORY`) cap the evaluation's memory on the runner.
+- **Build.** One `nix build --keep-going` builds every evaluated derivation, so a failing job
+  doesn't stop the others.
+- **Cache.** Every output that built is pushed to the Harmonia cache with
+  [`ci/push-to-cache.sh`](../ci/push-to-cache.sh). Any evaluation or build failure fails the run
+  at this point.
+- **Update the profile.** A `linkFarm` of all the outputs, built from their known store paths
+  rather than a second evaluation, is pushed with `UPDATE_PROFILE=1`. That updates the
+  `nixfiles` profile on the cache box.
 
 When `.#ciIfdReasons.x86_64-linux` lists an active exception, CI logs a warning with the reason
-and allows import from derivation for the target builds. It runs a build-capable flake
-check afterward. CI checks [the shared runtime replacement list](../lib/runtime-dependency-replacements.nix)
+and allows import from derivation for the evaluation. The evaluation workers then wait on those
+builds in parallel. CI runs a build-capable flake check after caching and before updating the
+profile. CI checks [the shared runtime replacement list](../lib/runtime-dependency-replacements.nix)
 against the nixpkgs channels used by its systems and standalone homes. A matching entry
 requires reading generated store reference graphs during evaluation.
 
-It then builds `.#ciDrv.x86_64-linux`, a `linkFarm` of all CI attributes, and pushes it with
-`UPDATE_PROFILE=1`. That updates the `nixfiles` profile on the cache box. The SSH store uses
-`/var/lib/harmonia`, `HARMONIA_SSH_KEY`, and pinned `ci/known_hosts`; clients use
-`https://nix-cache.nul.ie` through `lib.my.c.nix.cache`.
+The SSH store uses `/var/lib/harmonia`, `HARMONIA_SSH_KEY`, and pinned `ci/known_hosts`; clients
+use `https://nix-cache.nul.ie` through `lib.my.c.nix.cache`.
 
 ### `installer.yaml`
 
