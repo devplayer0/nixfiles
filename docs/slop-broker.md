@@ -36,9 +36,11 @@ target once it's merged.
 
 ## In this flake
 
-- **Input:** `slop-broker` in [`flake.nix`](../flake.nix). Its overlay provides `pkgs.slop-broker`,
-  and the common modules import `services.slop-broker`, `services.slop-broker-builder`,
-  `services.slop-broker-cache` and `programs.slop`. Update it with `nix flake update slop-broker`.
+- **Input:** `slop-broker` in [`flake.nix`](../flake.nix) selects a release tag. To upgrade,
+  change the tag and run `nix flake update slop-broker`.
+  - Its overlay provides `pkgs.slop-broker`.
+  - The common modules import `services.slop-broker`, `services.slop-broker-builder`,
+    `services.slop-broker-cache` and `programs.slop`.
 - **Persistence:** [`tmproot.nix`](../nixos/modules/tmproot.nix) keeps `/var/lib/slop-broker` and
   the builder's home when those services are enabled.
 - **Firewall:** the web app's port is open only to `middleman`, in `palace`'s configuration.
