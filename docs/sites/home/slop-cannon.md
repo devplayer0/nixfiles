@@ -88,6 +88,9 @@ installed `claude` and its claude.ai login; Codex runs through `codex app-server
   `paseo workspace jj` in the CLI. Each `fork/jujutsu-v<version>` branch carries the fork commits
   on an upstream release; `main` mirrors upstream. The branch's `docs/jujutsu-fork.md` explains
   the controls and how to rebase the fork.
+- The fork also compacts an idle Claude agent with a large context shortly before its one-hour
+  prompt cache expires, as Claude Code does in a terminal. It is on by default and set with
+  `agents.idleCompaction` (see the fork's `public-docs/configuration.md`).
 - The daemon runs the `jj` from the system and user profiles on its `PATH`.
 - Runs as `slop-cannon`, so agents use that user's logins and settings, with `~/.paseo` as
   `PASEO_HOME`.
