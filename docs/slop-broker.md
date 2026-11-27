@@ -79,8 +79,9 @@ collects garbage in that store on every run, which the roots survive until they 
   `master`'s `secrets.nix`. The approval says which file the content really is and whether the
   recipients match `master`'s rules for it (see the
   [design](https://git.nul.ie/dev/slop-broker/src/branch/main/docs/design.md#secrets)).
-- `secrets.names` labels `dev` and `slop-broker` in approvals (`lib.my.c.ageKeyFiles`); host keys
-  are shown abbreviated.
+- Approvals label recipients by name: `dev` and `slop-broker` through `secrets.names`
+  (`lib.my.c.ageKeyFiles`), and host keys through the system name `secrets.nix` writes after each
+  key as its comment.
 
 ### `master` is protected
 
