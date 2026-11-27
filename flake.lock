@@ -1111,11 +1111,11 @@
         "nixpkgs": "nixpkgs_7"
       },
       "locked": {
-        "lastModified": 1795690197,
-        "narHash": "sha256-Rg0vv9Qdce77/KD0C4vGbflJqX7fmGjgz7Rjot6zYhY=",
+        "lastModified": 1795790016,
+        "narHash": "sha256-a+U4/NT4sGMLRX4K9x4yhTn/wkb/8yAGS21p9WMKkws=",
         "ref": "fork/jujutsu-v0.17.5",
-        "rev": "caecb4e13517742cffb0a238ae127f35cc3e023c",
-        "revCount": 6848,
+        "rev": "d871d1a678ddef68e5237f61a784f6f23b368ace",
+        "revCount": 6850,
         "type": "git",
         "url": "https://git.nul.ie/dev/paseo"
       },

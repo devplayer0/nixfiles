@@ -136,15 +136,18 @@ sessions live under `~/.claude/projects/` and Codex sessions under `~/.codex/ses
 
 ## Repos, worktrees and jj
 
-Repos live under `~/src` as colocated jj clones (see `slop-clone` below). Paseo only calls `git`:
+Repos live under `~/src` as colocated jj clones (see `slop-clone` below). The fork drives them
+through `jj`:
 
-- A `local` workspace runs the agent in the checkout itself; `jj` and Paseo's git views see the same
-  changes. Use it for work you want to steer with `jj`.
-- A worktree workspace is a `git worktree` under `~/.paseo/worktrees` on its own branch. Use it for
-  unattended agents. Archiving it removes the worktree with `--force`, losing uncommitted work.
-- Archiving a `local` workspace removes only Paseo's record; the folder is kept.
-- Only one colocated working copy per repo is possible, so parallel jj-driven work needs separate
-  clones.
+- A `local` workspace runs the agent in the checkout itself. Archiving it removes only Paseo's
+  record; the folder is kept.
+- A new jj workspace is a colocated `jj workspace` under `~/.paseo/worktrees` with its own
+  working-copy change. Use it for parallel or unattended agents. Archiving saves the change for
+  restore before removing the directory.
+- A workspace goes stale when another one rewrites its `@`, typically a `jj git fetch` after its
+  pull request is merged. Paseo then offers **Update stale workspace** (`jj workspace
+  update-stale`), which keeps edits jj hadn't recorded in a separate change. Run it once the
+  workspace's agent is idle, since it changes the files under it.
 - Don't run `jj` in a folder while an agent is mid-turn there: jj snapshots its partial edits.
 
 ## Terminal access
