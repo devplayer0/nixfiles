@@ -33,6 +33,18 @@ The VM attaches to a dedicated, unbridged TAP (`vm-mail`). `colony` puts the poi
   estuary's reverse zone). `estuary` accepts traffic to the customer prefixes
   without per-port filtering; `colony` forwards it on ("trust for now").
 
+## Sign-in with Pocket ID
+
+mailcow's Generic-OIDC identity provider signs mailboxes in to the mailcow UI and SOGo with
+Pocket ID on [`middleman`](shill/containers/middleman.md#pocket-id).
+
+- The `mailcow` client is declared in `middleman`'s `auth.nix`; its secret
+  `mailcow/oidc-secret.txt` is only deployed there. On the mailcow side the provider is set up
+  by hand under System → Configuration → Access → Identity Provider, with that secret pasted in.
+- Only mailboxes whose auth source is the identity provider use it. IMAP, SMTP and the DAV and
+  ActiveSync clients can't follow a redirect, so those mailboxes use mailcow app passwords there.
+- Admin and domain-admin logins are unaffected.
+
 ## Notes
 
 - ACME certificates are issued on `middleman` and pushed to the VM over SSH

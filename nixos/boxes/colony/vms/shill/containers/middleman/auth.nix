@@ -17,6 +17,8 @@ in
       "middleman/oauth2-proxy.env" = { };
       # Client secrets shared with the boxes that run the apps
       "gitea/oidc-secret.txt" = { };
+      # Not deployed anywhere else: mailcow isn't NixOS, so it's pasted into its admin UI
+      "mailcow/oidc-secret.txt" = { };
     };
 
     pocket-id = {
@@ -47,6 +49,14 @@ in
           callbackURLs = [ "https://git.${pubDomain}/user/oauth2/id.${pubDomain}/callback" ];
           launchURL = "https://git.${pubDomain}/";
           secret.file = config.age.secrets."gitea/oidc-secret.txt".path;
+        };
+
+        # mailcow's Generic-OIDC identity provider (`mail` VM), for mailbox sign-in
+        mailcow = {
+          name = "mailcow";
+          callbackURLs = [ "https://mail.${pubDomain}" "https://mail.${pubDomain}/" ];
+          launchURL = "https://mail.${pubDomain}/";
+          secret.file = config.age.secrets."mailcow/oidc-secret.txt".path;
         };
       };
     };
