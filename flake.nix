@@ -77,7 +77,7 @@
     # Our fork with Jujutsu support, one branch per upstream release it is rebased onto. Don't make
     # it follow our nixpkgs: its npm dependency hash is tied to its own nixpkgs pin.
     paseo.url = "git+https://git.nul.ie/dev/paseo?ref=fork/jujutsu-v0.17.5";
-    slop-broker.url = "git+https://git.nul.ie/dev/slop-broker?ref=refs/tags/v0.1.1";
+    slop-broker.url = "git+https://git.nul.ie/dev/slop-broker?ref=refs/tags/v0.2.1";
     slop-broker.inputs.nixpkgs.follows = "nixpkgs-unstable";
     borgthin.url = "github:devplayer0/borg";
     # TODO: Update borgthin so this works
