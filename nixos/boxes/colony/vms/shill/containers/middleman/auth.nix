@@ -15,6 +15,8 @@ in
       "middleman/pocket-id-api-key" = { };
       # `OAUTH2_PROXY_CLIENT_SECRET` and `OAUTH2_PROXY_COOKIE_SECRET`
       "middleman/oauth2-proxy.env" = { };
+      # Client secrets shared with the boxes that run the apps
+      "gitea/oidc-secret.txt" = { };
     };
 
     pocket-id = {
@@ -37,6 +39,14 @@ in
             file = config.age.secrets."middleman/oauth2-proxy.env".path;
             key = "OAUTH2_PROXY_CLIENT_SECRET";
           };
+        };
+
+        # Gitea's `id.nul.ie` login source (`git` VM)
+        gitea = {
+          name = "Gitea";
+          callbackURLs = [ "https://git.${pubDomain}/user/oauth2/id.${pubDomain}/callback" ];
+          launchURL = "https://git.${pubDomain}/";
+          secret.file = config.age.secrets."gitea/oidc-secret.txt".path;
         };
       };
     };

@@ -20,6 +20,15 @@ The Git forge at `git.nul.ie` (self-registration disabled), configured in
   `gitea`, on [`object`](shill/containers/object.md)) — the secret is spliced into `app.ini` at
   startup.
 - Mail goes out via `mail.nul.ie`, including the issue-reply incoming-mail poller.
+- **Sign-in with Pocket ID:** `preStart` adds or updates the `id.nul.ie` OpenID Connect login
+  source. The client `gitea` and its secret `gitea/oidc-secret.txt` are declared on
+  [`middleman`](shill/containers/middleman.md#pocket-id).
+  - Registration stays disabled, so a Pocket ID sign-in can't create an account. The first one
+    links to an existing account after signing in with its password.
+  - It runs before the server, which only reads login sources at startup. If it fails, Gitea
+    starts without the source and logs a warning.
+  - The CLI only takes the secret as an argument, so it is briefly visible in the process list
+    while `preStart` runs.
 
 ### Gitea Actions runner
 

@@ -1,8 +1,11 @@
 { lib, pkgs, config, assignments, allAssignments, ... }:
 let
-  inherit (lib) mkMerge;
+  inherit (lib) mkMerge mkAfter getExe;
   inherit (lib.my.c) pubDomain;
   inherit (lib.my.c.colony) prefixes;
+
+  # Pocket ID login source, client `gitea` (declared on `middleman`)
+  oidcSource = "id.${pubDomain}";
 in
 {
   config = {
@@ -47,6 +50,40 @@ in
             # Uploaded release assets are buffered through a temp file before being stored.
             # The default /tmp is on the small tmpfs root, so keep them on the state volume.
             environment.TMPDIR = "${config.services.gitea.stateDir}/tmp";
+          }
+          {
+            # Gitea keeps login sources in its database: add the Pocket ID one, or bring it up to
+            # date. The server only reads them at startup, so this runs before it; a failure only
+            # warns, so Gitea still starts. The CLI only takes the secret as an argument.
+            preStart = mkAfter (
+            let
+              gitea = getExe config.services.gitea.package;
+            in
+            ''
+              oidc_source_setup() {
+                local oidc_args=(
+                  --name '${oidcSource}'
+                  --provider openidConnect
+                  --key gitea
+                  --secret "$(< '${config.age.secrets."gitea/oidc-secret.txt".path}')"
+                  --auto-discover-url 'https://${oidcSource}/.well-known/openid-configuration'
+                  --scopes openid --scopes email --scopes profile
+                )
+
+                local list oidc_id
+                list="$(${gitea} admin auth list)" || return
+                oidc_id="$(${pkgs.gawk}/bin/awk '$2 == "${oidcSource}" { print $1 }' <<< "$list")" || return
+                if [ -n "$oidc_id" ]; then
+                  ${gitea} admin auth update-oauth --id "$oidc_id" "''${oidc_args[@]}"
+                else
+                  ${gitea} admin auth add-oauth "''${oidc_args[@]}"
+                fi
+              }
+
+              if ! oidc_source_setup; then
+                echo "Couldn't set up the ${oidcSource} login source; starting without it" >&2
+              fi
+            '');
           }
         ];
       };
@@ -139,6 +176,8 @@ in
           "gitea/db.txt" = ownedByGit;
           "gitea/mail.txt" = ownedByGit;
           "gitea/minio.txt" = ownedByGit;
+          # Shared with `middleman`, which registers it with Pocket ID
+          "gitea/oidc-secret.txt" = ownedByGit;
         };
       };
     };
