@@ -94,7 +94,7 @@ refuses everyone else, including the bot user that agents on `slop-cannon` push 
 [`services.slop-broker.timeout` on `palace`](../nixos/boxes/home/palace/slop-broker.nix) gives
 each approval step up to 45 minutes. For example, a deploy can wait for builder approval before
 the build and for deploy approval afterward, with a separate window for each step.
-The five-minute window in `slop guide` and `slop --help` is the broker's upstream default.
+`slop` prints the window when a request starts waiting (`approvers have 45m to answer`).
 
 Keep `slop` running while the request is pending. Use a background session for commands that
 may need approval. If the client disconnects, the broker cancels the pending request.

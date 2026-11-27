@@ -1249,16 +1249,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1795804711,
-        "narHash": "sha256-VlbfIs1/q+5tOm0LbwS0foJYZxGZtZVv3R73K1/po5E=",
-        "ref": "refs/tags/v0.2.1",
-        "rev": "fed05e18d7f388ab0abc0858e39d1f4678df7b20",
-        "revCount": 37,
+        "lastModified": 1795807119,
+        "narHash": "sha256-I8LDdH1nOGNw4m7fRaAzZZTyBEygRzUqp3clT6TY98w=",
+        "ref": "refs/tags/v0.2.2",
+        "rev": "ef53a39597ddb3052cd4da245829ed7d22a1b167",
+        "revCount": 38,
         "type": "git",
         "url": "https://git.nul.ie/dev/slop-broker"
       },
       "original": {
-        "ref": "refs/tags/v0.2.1",
+        "ref": "refs/tags/v0.2.2",
         "type": "git",
         "url": "https://git.nul.ie/dev/slop-broker"
       }
